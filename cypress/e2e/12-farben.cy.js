@@ -12,7 +12,7 @@ describe('Farbe und Farbschema-Editor', () => {
     cy.get('#palette option[value="0"]').should('have.text', 'Klassisch');   // Nummer 0 und Standard
     cy.get('#palette').should('have.value', '0');
     cy.rerender(() => cy.pickOption('palette', 18));
-    cy.expectHash('pal', '18');
+    cy.expectHash('pal', 'silver');
   });
 
   it('Paletten aus Stützstellen laufen über die Farbtabelle', () => {
@@ -22,7 +22,7 @@ describe('Farbe und Farbschema-Editor', () => {
         cy.task('pngDiff', { a: a.file, b: b.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, 'Farbtabelle statt Kosinus').to.be.greaterThan(5));
       });
     });
-    cy.expectHash('pal', '6');
+    cy.expectHash('pal', 'woodcut');
   });
 
   it('Quilez-Palette: zwölf Regler, Formel im Link, aus Klassisch dasselbe Bild', () => {
@@ -49,7 +49,7 @@ describe('Farbe und Farbschema-Editor', () => {
   it('Palette, Verlauf, Randlinien und Innen wirken auf Adresse und Bild', () => {
     cy.shotStats('farbe-klassisch').then(a => {
       cy.rerender(() => cy.pickOption('palette', 1));
-      cy.expectHash('pal', '1');
+      cy.expectHash('pal', 'mother-of-pearl');
       cy.shotStats('farbe-perlmutt').then(b => {
         cy.task('pngDiff', { a: a.file, b: b.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, 'andere Palette, anderes Bild').to.be.greaterThan(5));
       });
@@ -361,7 +361,7 @@ describe('Zweidimensionale Paletten', () => {
     cy.visitApp();
     cy.get('#palArt').should('have.attr', 'hidden');
     gruppen().should('deep.eq', ['Hell', 'Dunkel']);
-    cy.visitApp('mode=mandel&map=14&p2=3');
+    cy.visitApp('mode=mandel&map=14&p2=field-lines');
     cy.get('#palArt').should('not.have.attr', 'hidden');
     cy.get('#palArt [data-art="2"]').should('have.class', 'on');
     gruppen().should('deep.eq', ['Vorgaben']);
@@ -383,7 +383,7 @@ describe('Zweidimensionale Paletten', () => {
     cy.expectHash('p2', null);                                       // Vorgabe: nichts im Link
     cy.shotStats('zwei-reim').then(a => {
       cy.rerender(() => cy.pickOption('palette', 'z:4'));            // Kacheln
-      cy.expectHash('p2', '4');
+      cy.expectHash('p2', 'tiles');
       cy.shotStats('zwei-reim-kacheln').then(b => anders(a, b, 'andere Farben'));
       cy.rerender(() => art(1));                                     // auch die gewöhnlichen Paletten
       cy.rerender(() => cy.pickOption('palette', 0));
@@ -402,17 +402,17 @@ describe('Zweidimensionale Paletten', () => {
     cy.rowShown('offset', false);
     cy.shotStats('zwei-markus').then(a => {
       cy.rerender(() => cy.pickOption('palette', 'z:2'));            // Eis und Glut
-      cy.expectHash('p2', '2');
+      cy.expectHash('p2', 'ice-and-embers');
       cy.rowShown('offset', false);
       cy.shotStats('zwei-markus-eis').then(b => {
         anders(a, b, 'andere Farben');
         cy.rerender(() => cy.pickOption('palette', 'z:6'));          // Bänder: Formel mit Umlauf, der Farbversatz schiebt die Bänder
-        cy.expectHash('p2', '6');
+        cy.expectHash('p2', 'bands');
         cy.rowShown('offset', true);
         cy.shotStats('zwei-markus-baender').then(c => {
           anders(b, c, 'Bänder statt Eis und Glut');
           cy.rerender(() => cy.pickOption('palette', 'z:7'));        // Magenta und Mint: dieselben Bänder in anderen Tönen
-          cy.expectHash('p2', '7');
+          cy.expectHash('p2', 'magenta-and-mint');
           cy.shotStats('zwei-markus-magenta').then(d => anders(c, d, 'Magenta und Mint statt Bänder'));
         });
       });
@@ -437,7 +437,7 @@ describe('Zweidimensionale Paletten', () => {
         cy.rerender(() => art(2));
         cy.get('#palette').should('have.value', 'z:3');              // erste zweidimensionale hier: Feldlinien
         cy.rerender(() => cy.pickOption('palette', 'z:5'));          // Binärzerlegung
-        cy.expectHash('p2', '5');
+        cy.expectHash('p2', 'binary-decomposition');
         cy.shotStats('winkel-binaer').then(c => anders(b, c, 'Binärzerlegung'));
       });
     });
@@ -457,7 +457,7 @@ describe('Zweidimensionale Paletten', () => {
     cy.shotStats('zwei-newton').then(a => {
       cy.rerender(() => art(2));
       cy.get('#palette').should('have.value', 'z:4');                // Kacheln: je Wurzel eine Farbfamilie
-      cy.expectHash('p2', '4');
+      cy.expectHash('p2', 'tiles');
       cy.shotStats('zwei-newton-kacheln').then(b => anders(a, b, 'andere Farben'));
       cy.rerender(() => art(1));
       cy.expectHash('p2', null);
@@ -466,7 +466,7 @@ describe('Zweidimensionale Paletten', () => {
   });
 
   it('Editor „Aus Verläufen“: Kopie einer Vorgabe, Muster, Verlauf aus einer Palette, Speichern, Link, Löschen', () => {
-    cy.visitApp('mode=mandel&map=15&p2=3');                           // Feldlinien
+    cy.visitApp('mode=mandel&map=15&p2=field-lines');                           // Feldlinien
     cy.shotStats('ed2-feldlinien').then(a => {
       editor();
       cy.get('#palEd').should('have.attr', 'hidden');                // der Editor der gewöhnlichen Paletten bleibt zu

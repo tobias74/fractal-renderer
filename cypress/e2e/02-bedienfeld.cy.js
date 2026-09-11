@@ -136,7 +136,7 @@ describe('Bedienfeld am Handy', () => {
     cy.get('#palStrip button').should('have.length', 19);
     cy.get('#palStrip button[data-value="7"]').click();
     cy.get('#palette').should('have.value', '7');
-    cy.expectHash('pal', '7');
+    cy.expectHash('pal', 'deep-sea');
   });
 
   it('Speichern öffnet den Dialog, Mehr führt die Aktionen der Werkzeugleiste aus', () => {

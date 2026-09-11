@@ -39,24 +39,24 @@ describe('Dateien: Parameter und Bilder speichern und wieder öffnen', () => {
   });
 
   it('Dateien tragen die Farben in voller Form, auch bei Vorgaben', () => {
-    cy.visitApp('mode=mandel&pal=6&map=15&p2=3');                 // Holzschnitt, Fluchtwinkel mit Feldlinien
+    cy.visitApp('mode=mandel&pal=woodcut&map=15&p2=field-lines');                 // Holzschnitt, Fluchtwinkel mit Feldlinien
     cy.appState().then(s => {
-      expect(s.colors.palette).to.include({ name: 'Holzschnitt', preset: 6, cyclic: true });
+      expect(s.colors.palette).to.include({ name: 'Holzschnitt', preset: 'woodcut', cyclic: true });
       expect(s.colors.palette.stops).to.have.length(4);
       expect(s.colors.palette.stops[0]).to.deep.eq({ p: 0.21, c: '#1a1714' });
-      expect(s.colors.palette2).to.include({ name: 'Feldlinien', preset: 3, art: 'verlauf', muster: 'linien', n: 6 });
+      expect(s.colors.palette2).to.include({ name: 'Feldlinien', preset: 'field-lines', art: 'verlauf', muster: 'linien', n: 6 });
       expect(s.colors.palette2.a.stops).to.have.length(8);
     });
     cy.visitApp();                                                  // Klassisch: die Formel mit ihren Werten
-    cy.appState().then(s => expect(s.colors.palette).to.deep.include({ name: 'Klassisch', preset: 0, a: [0.5, 0.5, 0.5], d: [0.5, 0.6, 0.7] }));
+    cy.appState().then(s => expect(s.colors.palette).to.deep.include({ name: 'Klassisch', preset: 'classic', a: [0.5, 0.5, 0.5], d: [0.5, 0.6, 0.7] }));
   });
 
   it('eine Vorgabe mit anderen Werten als in der Datei: die gespeicherten Farben gelten, unverändert bleibt die Vorgabe', () => {
-    cy.visitApp('mode=mandel&pal=6&map=15&p2=3');
+    cy.visitApp('mode=mandel&pal=woodcut&map=15&p2=field-lines');
     cy.appState().then(s => {
       cy.window().then(win => win.fractalState.set(JSON.parse(JSON.stringify(s))));   // unverändert: Vorgaben bleiben
       cy.waitRender();
-      cy.expectHash('pal', '6'); cy.expectHash('p2', '3'); cy.expectHash('cp', null); cy.expectHash('cp2', null);
+      cy.expectHash('pal', 'woodcut'); cy.expectHash('p2', 'field-lines'); cy.expectHash('cp', null); cy.expectHash('cp2', null);
       const m = JSON.parse(JSON.stringify(s));                      // so, als hätte eine spätere Fassung die Vorgaben geändert
       m.colors.palette.stops[0].c = '#ff0000'; m.colors.palette2.n = 9;
       cy.window().then(win => win.fractalState.set(m));
@@ -160,7 +160,7 @@ describe('Dateien: Parameter und Bilder speichern und wieder öffnen', () => {
         const j = JSON.parse(text);
         expect(j.app).to.eq('Fraktal-Renderer');
         expect(j.params).to.contain('p=5');
-        expect(j.colors.palette, 'die Palette mit allen Werten im Bild').to.deep.include({ name: 'Klassisch', preset: 0, a: [0.5, 0.5, 0.5] });
+        expect(j.colors.palette, 'die Palette mit allen Werten im Bild').to.deep.include({ name: 'Klassisch', preset: 'classic', a: [0.5, 0.5, 0.5] });
       });
       cy.rerender(() => cy.pickOption('power', 2));
       cy.get('#fileInput').selectFile(files[0], { force: true });

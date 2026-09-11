@@ -20,7 +20,7 @@ describe('Zustand in der Adresse', () => {
 
   it('schreibt Änderungen zurück in die Adresse', () => {
     cy.visitApp();
-    cy.pickOption('palette', 3); cy.expectHash('pal', '3');
+    cy.pickOption('palette', 3); cy.expectHash('pal', 'cobalt');
     cy.pickOption('mapping', 1); cy.expectHash('map', '1');
     cy.pickOption('glowMode', 2); cy.expectHash('glow', '2');
     cy.expectHash('gw', v => expect(parseFloat(v)).to.be.greaterThan(0));
@@ -40,7 +40,7 @@ describe('Zustand in der Adresse', () => {
     cy.pickOption('power', 5);
     cy.setRange('density', 600);
     cy.expectHash('p', '5');
-    cy.expectHash('pal', '4');
+    cy.expectHash('pal', 'atoll');
     cy.location('hash').then(h => {
       cy.visitApp(h);
       cy.get('#palette').should('have.value', '4');
@@ -58,6 +58,20 @@ describe('Zustand in der Adresse', () => {
     cy.get('#zoomRead').should('have.text', 'Zoom 1,0×');
     cy.expectHash('re', re => expect(parseFloat(re)).to.be.closeTo(DEFAULT_RE, 1e-9));
     cy.get('#state').invoke('text').should('match', /Fertig/);
+  });
+
+  it('Vorgaben heißen im Link beim Namen; alte Nummern gelten weiter, eine entfernte fällt auf die Vorgabe zurück', () => {
+    cy.visitApp('mode=mandel&pal=6&map=15&p2=4');                    // alte Nummern: Holzschnitt, Feldlinien
+    cy.get('#palette').should('have.value', 'z:3');
+    cy.get('#palette option:selected').should('have.text', 'Feldlinien');
+    cy.expectHash('pal', 'woodcut');                                   // der Link nennt jetzt die Namen
+    cy.expectHash('p2', 'field-lines');
+    cy.visitApp('mode=mandel&map=16&p2=3');                           // 3 war eine inzwischen entfernte Vorgabe
+    cy.get('#palette option:selected').should('have.text', 'Feldlinien');   // die Vorgabe dieser Färbung
+    cy.expectHash('p2', null);
+    cy.visitApp('mode=mandel&map=15&p2=tiles&pal=deep-sea');
+    cy.get('#palette option:selected').should('have.text', 'Kacheln');
+    cy.expectHash('pal', 'deep-sea');
   });
 
   it('Julia-Parameter und Startwert wandern mit', () => {

@@ -1270,31 +1270,35 @@ function ddCInv(re, im) {           // 1 / (re + i·im) in Double-Double
 // Klassisch ist ein Kosinus-Verlauf: Farbe = a + b·cos(2π(c·t + d)) je Kanal, auf 0…1 begrenzt.
 // Alle anderen sind Verläufe aus Stützstellen „Farbe@Position“, zyklisch, und laufen wie eigene Farbschemata über die
 // Farbtabelle. Im Standard (logarithmisch, Farbdichte 0,04) liegt der Hintergrund der Übersicht bei t ≈ 0,75 … 0,85:
-// dort steht der Grundton, die Ränder der Menge durchlaufen danach ein bis zwei Umläufe. Links und Dateien speichern die Nummer.
-function verlauf(name, s) { return { name, cyclic: true, stops: s.trim().split(/\s+/).map(x => { const [c, p] = x.split('@'); return { p: +p, c: '#' + c }; }) }; }
+// dort steht der Grundton, die Ränder der Menge durchlaufen danach ein bis zwei Umläufe. Links und Dateien nennen die Kennung (fester Kurzname), nicht die Stelle in der Liste.
+function verlauf(kennung, name, s) { return { kennung, name, cyclic: true, stops: s.trim().split(/\s+/).map(x => { const [c, p] = x.split('@'); return { p: +p, c: '#' + c }; }) }; }
 const PALETTES = [
-  { name: 'Klassisch', a: [.5, .5, .5], b: [.5, .5, .5], c: [1, 1, 1], d: [.50, .60, .70] },
+  { kennung: 'classic', name: 'Klassisch', a: [.5, .5, .5], b: [.5, .5, .5], c: [1, 1, 1], d: [.50, .60, .70] },
   // heller Grund
-  verlauf('Perlmutt',      '9fd8d2@.03 f7d6e0@.09 fff4d6@.15 5d6b8a@.21 2c3350@.25 9aa9c9@.3 e6e1ef@.45 efebe6@.65 f3f0ea@.8 d8c7e6@.95'),
-  verlauf('Tusche',        '8a8070@.09 2b2723@.17 0f0d0c@.21 c23b22@.235 9a8f7d@.28 d9cfba@.45 ece4d2@.65 f1ebdd@.8 d8ccb2@.97'),   // Papier, Tusche, ein Strich Zinnober
-  verlauf('Kobalt',        '3d63c6@.07 16307a@.17 0a1640@.23 1f3f94@.3 5a7fd8@.4 c7d4f2@.55 eef2fa@.7 f4f6fb@.8 b8c9ec@.95'),
-  verlauf('Atoll',         '3cc2b8@.03 0f7f8c@.13 06384a@.2 0b5566@.25 2aa7a5@.32 9fdcc8@.41 e8e2c0@.55 f3e6c4@.8 bfe6d6@.93'),
-  verlauf('Lavendel',      '3a2266@.07 1a0f33@.15 6a4a9a@.21 f5e9a8@.27 ffffff@.32 d9ccef@.45 c7b6e3@.65 b9a6d9@.8 7b5aa6@.95'),
-  verlauf('Holzschnitt',   '1a1714@.21 f3eee2@.28 f3eee2@.75 1a1714@.82'),   // harte Kanten: Bänder wie geschnitten
+  verlauf('mother-of-pearl', 'Perlmutt',      '9fd8d2@.03 f7d6e0@.09 fff4d6@.15 5d6b8a@.21 2c3350@.25 9aa9c9@.3 e6e1ef@.45 efebe6@.65 f3f0ea@.8 d8c7e6@.95'),
+  verlauf('ink', 'Tusche',        '8a8070@.09 2b2723@.17 0f0d0c@.21 c23b22@.235 9a8f7d@.28 d9cfba@.45 ece4d2@.65 f1ebdd@.8 d8ccb2@.97'),   // Papier, Tusche, ein Strich Zinnober
+  verlauf('cobalt', 'Kobalt',        '3d63c6@.07 16307a@.17 0a1640@.23 1f3f94@.3 5a7fd8@.4 c7d4f2@.55 eef2fa@.7 f4f6fb@.8 b8c9ec@.95'),
+  verlauf('atoll', 'Atoll',         '3cc2b8@.03 0f7f8c@.13 06384a@.2 0b5566@.25 2aa7a5@.32 9fdcc8@.41 e8e2c0@.55 f3e6c4@.8 bfe6d6@.93'),
+  verlauf('lavender', 'Lavendel',      '3a2266@.07 1a0f33@.15 6a4a9a@.21 f5e9a8@.27 ffffff@.32 d9ccef@.45 c7b6e3@.65 b9a6d9@.8 7b5aa6@.95'),
+  verlauf('woodcut', 'Holzschnitt',   '1a1714@.21 f3eee2@.28 f3eee2@.75 1a1714@.82'),   // harte Kanten: Bänder wie geschnitten
   // dunkler Grund
-  verlauf('Tiefsee',       '0f7f95@.11 62e0d4@.23 e8fffa@.3 bff8ee@.35 3fb8c8@.43 0e4f86@.55 061a3d@.68 020713@.82 0a2f66@.97'),
-  verlauf('Blattgold',     '7a5a1e@.09 c99a3c@.19 f3d27a@.26 fff3c8@.3 e8c25e@.37 a07424@.47 3b2a10@.6 0d0a06@.73 070605@.82 2a1d0c@.95'),
-  verlauf('Glutkern',      '8f1408@.05 e0490f@.15 ffa21f@.23 ffe38a@.29 fff1c9@.35 ff8a1a@.43 b3260b@.53 3d0606@.65 050102@.8 3a0508@.93'),
-  verlauf('Abendrot',      '8e2f6e@.03 e0525f@.11 ff8f5a@.18 ffd08a@.25 fff2c4@.3 ffc07a@.37 f06d5b@.45 7a2b66@.55 2a1650@.67 150f3a@.8 3d1f63@.93'),
-  verlauf('Bordeaux',      'e8a0a8@.05 fff0e6@.11 d9b36b@.17 7a3a1e@.23 2a0a14@.29 3a0e1e@.39 5a1830@.55 671b37@.69 6b1d3a@.8 9e3552@.93'),
-  verlauf('Jugendstil',    '6fb8a8@.03 efe3b8@.11 d4a73a@.17 8a5a1c@.23 2a1d10@.28 0e2a30@.37 173f45@.55 1c5157@.69 1f5a5e@.8 2f7f7a@.93'),
-  verlauf('Patina',        '3fa58f@.05 9fe0c8@.15 f0e6cf@.21 e0a070@.27 b8652e@.37 6e3316@.47 2a150c@.6 10110d@.72 0f1a17@.8 1e4d44@.93'),   // Kupfer und Grünspan
-  verlauf('Aurora',        '0fa37a@.05 6dfca6@.13 c9ffe0@.19 3fd0c8@.25 5a6cff@.31 9b4dff@.38 5b2aa8@.48 24124f@.59 0a0d24@.7 040a14@.8 06343a@.93'),
-  verlauf('Stadtlichter',  '3f6fb0@.07 a9c7e8@.15 fff4e0@.2 ffb45c@.25 e0701f@.31 7a3412@.41 2a1a24@.55 0f1228@.7 0b1026@.8 1d2f5c@.95'),
-  verlauf('Leuchtreklame', '7a0fb0@.03 ff2bd6@.13 ffd1f4@.21 2de2ff@.28 0a7fd6@.37 1a1a6b@.5 120433@.65 0d0221@.8 3b0a5c@.95'),
-  verlauf('Tropenvogel',   '13b39a@.03 f5d33b@.11 ff7a2f@.18 e8246a@.25 6a1a8a@.32 1b2b7a@.43 0a2a45@.57 051a22@.7 04161a@.8 0a5a5a@.93'),
-  verlauf('Silber',        '9aa6b5@.11 e9eef4@.21 ffffff@.25 c4ccd6@.3 7a8594@.4 2e3540@.55 12161c@.7 0c0f14@.8 3a4350@.97'),
+  verlauf('deep-sea', 'Tiefsee',       '0f7f95@.11 62e0d4@.23 e8fffa@.3 bff8ee@.35 3fb8c8@.43 0e4f86@.55 061a3d@.68 020713@.82 0a2f66@.97'),
+  verlauf('gold-leaf', 'Blattgold',     '7a5a1e@.09 c99a3c@.19 f3d27a@.26 fff3c8@.3 e8c25e@.37 a07424@.47 3b2a10@.6 0d0a06@.73 070605@.82 2a1d0c@.95'),
+  verlauf('embers', 'Glutkern',      '8f1408@.05 e0490f@.15 ffa21f@.23 ffe38a@.29 fff1c9@.35 ff8a1a@.43 b3260b@.53 3d0606@.65 050102@.8 3a0508@.93'),
+  verlauf('afterglow', 'Abendrot',      '8e2f6e@.03 e0525f@.11 ff8f5a@.18 ffd08a@.25 fff2c4@.3 ffc07a@.37 f06d5b@.45 7a2b66@.55 2a1650@.67 150f3a@.8 3d1f63@.93'),
+  verlauf('bordeaux', 'Bordeaux',      'e8a0a8@.05 fff0e6@.11 d9b36b@.17 7a3a1e@.23 2a0a14@.29 3a0e1e@.39 5a1830@.55 671b37@.69 6b1d3a@.8 9e3552@.93'),
+  verlauf('art-nouveau', 'Jugendstil',    '6fb8a8@.03 efe3b8@.11 d4a73a@.17 8a5a1c@.23 2a1d10@.28 0e2a30@.37 173f45@.55 1c5157@.69 1f5a5e@.8 2f7f7a@.93'),
+  verlauf('patina', 'Patina',        '3fa58f@.05 9fe0c8@.15 f0e6cf@.21 e0a070@.27 b8652e@.37 6e3316@.47 2a150c@.6 10110d@.72 0f1a17@.8 1e4d44@.93'),   // Kupfer und Grünspan
+  verlauf('aurora', 'Aurora',        '0fa37a@.05 6dfca6@.13 c9ffe0@.19 3fd0c8@.25 5a6cff@.31 9b4dff@.38 5b2aa8@.48 24124f@.59 0a0d24@.7 040a14@.8 06343a@.93'),
+  verlauf('city-lights', 'Stadtlichter',  '3f6fb0@.07 a9c7e8@.15 fff4e0@.2 ffb45c@.25 e0701f@.31 7a3412@.41 2a1a24@.55 0f1228@.7 0b1026@.8 1d2f5c@.95'),
+  verlauf('neon-sign', 'Leuchtreklame', '7a0fb0@.03 ff2bd6@.13 ffd1f4@.21 2de2ff@.28 0a7fd6@.37 1a1a6b@.5 120433@.65 0d0221@.8 3b0a5c@.95'),
+  verlauf('tropical-bird', 'Tropenvogel',   '13b39a@.03 f5d33b@.11 ff7a2f@.18 e8246a@.25 6a1a8a@.32 1b2b7a@.43 0a2a45@.57 051a22@.7 04161a@.8 0a5a5a@.93'),
+  verlauf('silver', 'Silber',        '9aa6b5@.11 e9eef4@.21 ffffff@.25 c4ccd6@.3 7a8594@.4 2e3540@.55 12161c@.7 0c0f14@.8 3a4350@.97'),
 ];
+// Alte Links nannten die Stelle in der Liste: diese Reihenfolge galt damals und bleibt so, nur für solche Links
+const PAL_ALT = ['classic', 'mother-of-pearl', 'ink', 'cobalt', 'atoll', 'lavender', 'woodcut', 'deep-sea', 'gold-leaf', 'embers', 'afterglow',
+  'bordeaux', 'art-nouveau', 'patina', 'aurora', 'city-lights', 'neon-sign', 'tropical-bird', 'silver'];
+function palNr(k) { return PALETTES.findIndex(p => p.kennung === k); }   // −1: unbekannt oder entfernt
 // Gruppen und Reihenfolge im Menü; die Werte bleiben die Nummern in PALETTES, jede kommt genau einmal vor
 const PAL_GRUPPEN = [
   ['Hell', [0, 1, 2, 3, 4, 5, 6]],
@@ -1329,7 +1333,7 @@ function baender(d) {   // Kosinus-Bänder je Kanal mit Phase d, wo u ≤ 0; wo 
 }
 const PAL2 = [
   // Pastell, Vorgabe der Färbung nach Re und Im: Sinus und Kosinus der beiden Werte um 150 ± 100 (von 255), die Kanäle je Quadrant vertauscht
-  { name: 'Pastell', art: 'formel', leer: [1, 1, 1], q: (() => {
+  { kennung: 'pastel', name: 'Pastell', art: 'formel', leer: [1, 1, 1], q: (() => {
     const sn = (cu, cv) => [150 / 255, 100 / 255, cu, cv, -0.25], cs = (cu, cv) => [150 / 255, 100 / 255, cu, cv, 0];   // sin = cos eine Vierteldrehung früher
     return [[sn(1, 0), cs(0, 1), cs(1, 0)],    // u ≤ 0, v ≤ 0: (sin u, cos v, cos u)
             [cs(0, 1), cs(1, 0), sn(0, 1)],    // u > 0, v < 0: (cos v, cos u, sin v)
@@ -1337,21 +1341,21 @@ const PAL2 = [
             [cs(1, 0), sn(0, 1), sn(1, 0)]];   // u > 0, v ≥ 0: (cos u, sin v, sin u)
   })() },
   // die klassischen Lyapunov-Farben: λ ≈ 0 schwarz, chaotisch (λ > 0) zu Blau, stabil (λ < 0) zu Gold
-  { name: 'Gold und Blau', art: 'verlauf', muster: 'seiten', saett: 3, leer: LYGRAU,
+  { kennung: 'gold-and-blue', name: 'Gold und Blau', art: 'verlauf', muster: 'seiten', saett: 3, leer: LYGRAU,
     a: { cyclic: false, stops: [{ p: 0, c: [0, 0, 0] }, { p: 1, c: [0.12, 0.28, 1] }] }, b: { cyclic: false, stops: [{ p: 0, c: [0, 0, 0] }, { p: 1, c: [1, 0.78, 0.12] }] } },
-  { name: 'Eis und Glut', art: 'verlauf', muster: 'seiten', saett: 3, leer: LYGRAU,
+  { kennung: 'ice-and-embers', name: 'Eis und Glut', art: 'verlauf', muster: 'seiten', saett: 3, leer: LYGRAU,
     a: { cyclic: false, stops: stz('000000@0 5c1208@.35 d8602a@.7 fff0c8@1') }, b: { cyclic: false, stops: stz('000000@0 12305c@.35 5aa2d8@.7 e8f6ff@1') } },
   // Grundverlauf über u, dunkle Linien bei jedem Sechstel von v: am Fluchtwinkel die Feldlinien
-  { name: 'Feldlinien', art: 'verlauf', muster: 'linien', n: 6, breite: 0.07, staerke: 0.85, leer: LYGRAU, a: RUND },
+  { kennung: 'field-lines', name: 'Feldlinien', art: 'verlauf', muster: 'linien', n: 6, breite: 0.07, staerke: 0.85, leer: LYGRAU, a: RUND },
   // Schachbrett aus je vier Feldern je Umlauf von u und v, die Felder im Wechsel mit dem gegenüberliegenden Ton des Verlaufs
-  { name: 'Kacheln', art: 'verlauf', muster: 'kacheln', n: 4, nu: 4, leer: LYGRAU, a: RUND },
+  { kennung: 'tiles', name: 'Kacheln', art: 'verlauf', muster: 'kacheln', n: 4, nu: 4, leer: LYGRAU, a: RUND },
   // Seite von v: oben der Grundverlauf, unten abgedunkelt; am Fluchtwinkel die Binärzerlegung (Vorzeichen von Im z)
-  { name: 'Binärzerlegung', art: 'verlauf', muster: 'haelften', staerke: 0.7, leer: LYGRAU, a: RUND },
+  { kennung: 'binary-decomposition', name: 'Binärzerlegung', art: 'verlauf', muster: 'haelften', staerke: 0.7, leer: LYGRAU, a: RUND },
   // Bänder in Blau, Weiß und Kupfer, wo u ≤ 0 (Lyapunov: stabil), sonst schwarz (chaotisch); bei Standarddichte ein Band je 2 Einheiten λ.
   // Nicht definiert ebenfalls schwarz: so gibt es keine harte Kante zwischen Chaos und davonlaufenden Bahnen
-  { name: 'Bänder', art: 'formel', leer: [0, 0, 0], q: baender([-0.25, -0.194296, -0.130634]) },
+  { kennung: 'bands', name: 'Bänder', art: 'formel', leer: [0, 0, 0], q: baender([-0.25, -0.194296, -0.130634]) },
   // dieselben Bänder in Magenta, Rosa und Mint
-  { name: 'Magenta und Mint', art: 'formel', leer: [0, 0, 0], q: baender([-0.250875, 0.002818, -0.139546]) },
+  { kennung: 'magenta-and-mint', name: 'Magenta und Mint', art: 'formel', leer: [0, 0, 0], q: baender([-0.250875, 0.002818, -0.139546]) },
 ];
 const PAL2_N = 256, PAL2_AUS = { art: 0, achse: [0, 0], leer: [0, 0, 0], q: new Float32Array(80) };
 const PAL2_MUSTER = ['keins', 'linien', 'kacheln', 'haelften', 'seiten', 'produkt'];
@@ -1408,9 +1412,14 @@ function quelle2() {
   if (S.formula === 11) return 'newton';
   return { 13: 'lyap', 14: 'reim', 15: 'winkel', 16: 'komplex', 18: 'kreuz2', 21: 'vorzeichen' }[S.mapping] || '';
 }
-const PAL2_START = { reim: 0, markus: 1, komplex: 3, kreuz2: 3, vorzeichen: 3 };   // die neuen Färbungen zeigen sich mit Feldlinien
-const PAL2_ZWEI = { reim: 0, markus: 1, lyap: 1, newton: 4, winkel: 3, komplex: 3, kreuz2: 3, vorzeichen: 3 };   // erste zweidimensionale Palette beim Umschalten
-function pal2Start(q) { return q in PAL2_START ? PAL2_START[q] : -1; }
+// Vorgaben je Quelle beim Namen, damit Entfernen oder Umstellen einer Vorgabe nichts verschiebt
+const PAL2_START = { reim: 'pastel', markus: 'gold-and-blue', komplex: 'field-lines', kreuz2: 'field-lines', vorzeichen: 'field-lines' };   // die neuen Färbungen zeigen sich mit Feldlinien
+const PAL2_ZWEI = { reim: 'pastel', markus: 'gold-and-blue', lyap: 'gold-and-blue', newton: 'tiles', winkel: 'field-lines', komplex: 'field-lines', kreuz2: 'field-lines', vorzeichen: 'field-lines' };   // erste zweidimensionale beim Umschalten
+// Alte Links nannten die Stelle in der Liste (so lag sie am 11.09.2026; null: Vorgabe entfernt), nur für solche Links
+const PAL2_ALT = ['pastel', 'gold-and-blue', 'ice-and-embers', null, 'field-lines', 'tiles', 'binary-decomposition', 'bands', 'magenta-and-mint'];
+function pal2Nr(k) { return PAL2.findIndex(p => p.kennung === k); }   // −1: unbekannt oder entfernt
+function pal2Start(q) { return q in PAL2_START ? pal2Nr(PAL2_START[q]) : -1; }
+function pal2Zwei(q) { return pal2Nr(PAL2_ZWEI[q]); }
 function pal2Ref() { const q = quelle2(); if (!q) return -1; const v = S.pal2[q]; return v === undefined ? pal2Start(q) : v; }
 function pal2Objekt() {   // die geltende zweidimensionale Palette oder null (gewöhnliche Palette)
   const r = pal2Ref();
@@ -5134,8 +5143,8 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
   if (Number.isFinite(jre) && Number.isFinite(jim)) S.jc = [jre, jim];
   const it = parseInt(h.get('it'), 10);
   if (Number.isFinite(it)) { S.autoIter = false; S.manualIter = clamp(it, 50, MAX_ITER); }
-  const pal = parseInt(h.get('pal'), 10);
-  if (Number.isFinite(pal)) S.palette = clamp(pal, 0, PALETTES.length - 1);
+  const palW = h.get('pal'), pal = palW === null ? -1 : palNr(/^\d+$/.test(palW) ? PAL_ALT[+palW] : palW);   // Kennung, bei alten Links die Nummer
+  if (pal >= 0) S.palette = pal;
   const cp = decodePal(h.get('cp')); if (cp) S.customPal = cp;
   const den = parseFloat(h.get('den'));
   if (Number.isFinite(den)) S.density = clamp(den, 0.002, 100);
@@ -5174,7 +5183,11 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
   const cy = h.get('cyc'); if (cy === '0' || cy === '1') S.cycle = cy;
   const bla = h.get('bla'); if (bla === '0' || bla === '1') S.bla = bla;
   S.pal2 = {}; S.pal2Eigen = decodePal2(h.get('cp2')); const p2 = h.get('p2'), q2 = quelle2();   // Palette der Färbung mit zwei Werten, falls nicht die Vorgabe
-  if (q2 && p2 !== null) S.pal2[q2] = p2 === 'n' ? -1 : p2 === 'e' ? (S.pal2Eigen ? 'y:tmp' : pal2Start(q2)) : clamp(parseInt(p2, 10) || 0, 0, PAL2.length - 1);
+  if (q2 && p2 !== null) {   // n: gewöhnliche, e: eigenes Schema aus cp2, sonst die Kennung (bei alten Links die Nummer)
+    let r = p2 === 'n' ? -1 : p2 === 'e' ? (S.pal2Eigen ? 'y:tmp' : pal2Start(q2)) : pal2Nr(/^\d+$/.test(p2) ? PAL2_ALT[+p2] : p2);
+    if (r === -1 && p2 !== 'n') r = pal2Start(q2);   // unbekannt oder entfernt: die Vorgabe der Färbung
+    S.pal2[q2] = r;
+  }
   v.hasView = h.has('z');                   // ohne Ausschnitt: Standardansicht der gewählten Familie
   if (v.hasView && !h.has('re') && !h.has('im')) v.cx = centeredDefault({ cx: v.cx, cy: v.cy, zoom: v.zoom }).cx;   // Zoom ohne Position: Standardmitte neben dem Bedienfeld
   return v;
@@ -5187,10 +5200,10 @@ function buildParams() {
   if (S.mode === 'julia') { p.set('jre', String(S.jc[0])); p.set('jim', String(S.jc[1])); }
   if (S.z0[0] || S.z0[1]) { p.set('z0r', String(S.z0[0])); p.set('z0i', String(S.z0[1])); }
   if (!S.autoIter) p.set('it', String(S.manualIter));
-  if (S.palette) p.set('pal', String(S.palette));
+  if (S.palette) p.set('pal', PALETTES[S.palette].kennung);
   if (S.customPal) p.set('cp', encodePal(S.customPal));
   const q2 = quelle2(), r2 = pal2Ref();   // Palette der Färbung mit zwei Werten, falls nicht die Vorgabe: n = gewöhnliche, e = eigenes Schema (cp2)
-  if (q2 && r2 !== pal2Start(q2)) { if (typeof r2 === 'number') p.set('p2', r2 < 0 ? 'n' : String(r2)); else if (pal2Objekt()) { p.set('p2', 'e'); p.set('cp2', encodePal2(pal2Objekt())); } }
+  if (q2 && r2 !== pal2Start(q2)) { if (typeof r2 === 'number') p.set('p2', r2 < 0 ? 'n' : PAL2[r2].kennung); else if (pal2Objekt()) { p.set('p2', 'e'); p.set('cp2', encodePal2(pal2Objekt())); } }
   p.set('den', S.density.toPrecision(3));
   if (S.offset) p.set('off', S.offset.toFixed(3));
   if (S.animate) p.set('anim', '1');                                    // wandernde Farben gehören zum Bild
@@ -6207,7 +6220,7 @@ const pal2Zuletzt = {};
 for (const b of $('palArt').querySelectorAll('button')) b.addEventListener('click', () => {
   const q = quelle2(), zwei = b.dataset.art === '2';
   if (!q || zwei === zweiAktiv()) return;
-  if (zwei) S.pal2[q] = pal2Zuletzt[q] !== undefined ? pal2Zuletzt[q] : PAL2_ZWEI[q];
+  if (zwei) S.pal2[q] = pal2Zuletzt[q] !== undefined ? pal2Zuletzt[q] : pal2Zwei(q);
   else { pal2Zuletzt[q] = pal2Ref(); S.pal2[q] = -1; }
   applyPalette(); syncFarbUI();
 });
@@ -6311,7 +6324,7 @@ function p2eArtWechseln(art) {   // Aus Verläufen ↔ Quilez für zwei Werte; d
   if (art === p2Draft.art) return;
   const { id, name, leer } = p2Draft;
   p2Merk[p2Draft.art] = JSON.parse(JSON.stringify(p2Draft));
-  const start = p2Merk[art] || p2eNormal(JSON.parse(JSON.stringify(art === 'formel' ? PAL2[0] : PAL2[3])));   // Start: Pastell bzw. Feldlinien
+  const start = p2Merk[art] || p2eNormal(JSON.parse(JSON.stringify(PAL2[pal2Nr(art === 'formel' ? 'pastel' : 'field-lines')])));   // Start: Pastell bzw. Feldlinien
   p2Draft = Object.assign(JSON.parse(JSON.stringify(start)), { id, name, leer });
   p2eRender(); p2eChanged();
 }
@@ -6354,7 +6367,7 @@ function p2eShow(open) {
 }
 function p2eOpen() {   // Entwurf aus der geltenden Palette: ein eigenes Schema wird bearbeitet, eine Vorgabe kopiert
   const q = quelle2(); if (!q) return;
-  const p = pal2Objekt() || PAL2[PAL2_ZWEI[q]], eigen = !!p.id && (p.id === 'link' || eigene2.some(e => e.id === p.id));
+  const p = pal2Objekt() || PAL2[pal2Zwei(q)], eigen = !!p.id && (p.id === 'link' || eigene2.some(e => e.id === p.id));
   p2Draft = p2eNormal(JSON.parse(JSON.stringify(p)));
   if (!eigen) { p2Draft.id = 'q' + Date.now().toString(36); p2Draft.name = p.name + ' (eigen)'; }
   p2Merk = {}; p2Quad = 3; p2Start = JSON.stringify(p2Draft);
@@ -6377,8 +6390,8 @@ $('p2eClose').addEventListener('click', () => { p2eShow(false); $('palEdit').foc
 $('p2eDelete').addEventListener('click', () => {   // gelöscht ist gelöscht: kein Entwurf bleibt, die Färbung kehrt zu ihrer ersten zweidimensionalen Palette zurück
   const id = p2Draft.id, q = quelle2();
   eigene2 = eigene2.filter(p => p.id !== id); saveEigene2();
-  for (const k of Object.keys(S.pal2)) if (S.pal2[k] === 'y:' + id || S.pal2[k] === 'y:tmp') S.pal2[k] = PAL2_ZWEI[k];
-  if (q && S.pal2[q] === undefined) S.pal2[q] = PAL2_ZWEI[q];
+  for (const k of Object.keys(S.pal2)) if (S.pal2[k] === 'y:' + id || S.pal2[k] === 'y:tmp') S.pal2[k] = pal2Zwei(k);
+  if (q && S.pal2[q] === undefined) S.pal2[q] = pal2Zwei(q);
   S.pal2Eigen = null; p2eShow(false);
   buildPalSelect(); applyPalette(); syncFarbUI(); notify('Farbschema gelöscht');
 });
@@ -6662,18 +6675,18 @@ function resetAll() {   // alles auf Standard, nur Mandelbrot/Julia bleibt
 //  Dateien: Parameter in Bildern und als JSON, Wiederherstellen
 // ============================================================
 const FILE_KEY = 'FractalRenderer', APP_ID = 'Fraktal-Renderer';
-// Farben in voller Form: Links nennen bei Vorgaben nur die Nummer, Dateien tragen zusätzlich alle Werte der geltenden Palette
+// Farben in voller Form: Links nennen bei Vorgaben nur die Kennung, Dateien tragen zusätzlich alle Werte der geltenden Palette
 // (und der zweidimensionalen, falls sie gilt). So lassen sich die Farben laden, auch wenn eine spätere Fassung die Vorgabe ändert
 // oder nicht mehr kennt: Beim Laden bleibt die Vorgabe nur, wenn ihre Werte noch dieselben sind, sonst gelten die gespeicherten.
 function stabil(o) {   // JSON mit sortierten Schlüsseln: gleich ist gleich, egal in welcher Reihenfolge die Werte stehen
   return JSON.stringify(o, (k, v) => v && typeof v === 'object' && !Array.isArray(v) ? Object.fromEntries(Object.keys(v).sort().map(x => [x, v[x]])) : v);
 }
 function palDaten(p) { return p.stops ? { cyclic: !!p.cyclic, stops: p.stops.map(z => ({ p: +z.p, c: z.c })) } : { a: p.a.slice(), b: p.b.slice(), c: p.c.slice(), d: p.d.slice() }; }   // ohne Name und Nummer
-function pal2Daten(p) { const o = JSON.parse(JSON.stringify(p)); delete o.id; delete o.name; delete o.preset; return o; }
+function pal2Daten(p) { const o = JSON.parse(JSON.stringify(p)); delete o.id; delete o.kennung; delete o.name; delete o.preset; return o; }
 function farbenVoll() {
-  const p1 = palAktiv(), f = { palette: Object.assign({ name: p1.name, preset: S.customPal ? null : S.palette }, palDaten(p1)) };
+  const p1 = palAktiv(), f = { palette: Object.assign({ name: p1.name, preset: S.customPal ? null : PALETTES[S.palette].kennung }, palDaten(p1)) };
   const p2 = pal2Objekt(), r2 = pal2Ref();
-  if (p2) f.palette2 = Object.assign({ name: p2.name, preset: typeof r2 === 'number' ? r2 : null }, pal2Daten(p2));
+  if (p2) f.palette2 = Object.assign({ name: p2.name, preset: typeof r2 === 'number' ? PAL2[r2].kennung : null }, pal2Daten(p2));
   return f;
 }
 function farbenLaden(f) {   // nach readHash: weicht eine Vorgabe von den gespeicherten Werten ab, gelten diese als Schema aus der Datei
