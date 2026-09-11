@@ -1,0 +1,23 @@
+{
+  "name": "fractal-renderer",
+  "version": "1.0.0",
+  "description": "Fractal explorer in the browser (WebGPU, WebGL 2), a single-file app with Cypress end-to-end tests",
+  "scripts": {
+    "serve": "node tools/server.js",
+    "cy:open": "cypress open --e2e --browser electron",
+    "cy:smoke": "cypress run --browser electron --spec cypress/e2e/00-smoke.cy.js",
+    "cy:run": "cypress run --browser electron",
+    "cy:run:chrome": "cypress run --browser chrome",
+    "test:smoke": "start-server-and-test serve http://localhost:8765 cy:smoke",
+    "test:e2e": "start-server-and-test serve http://localhost:8765 cy:run",
+    "test:e2e:chrome": "start-server-and-test serve http://localhost:8765 cy:run:chrome"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "cypress": "^13.8.1",
+    "start-server-and-test": "^3.0.12"
+  },
+  "private": true
+}

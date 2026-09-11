@@ -1,0 +1,20 @@
+# Headless-Chrome-Profil und Test-Screenshots der Hilfsskripte
+tools/chrome-profile/
+tools/shots/
+*.png
+!docs/*.png
+
+# Betriebssystem
+Thumbs.db
+.DS_Store
+
+# Node und Cypress
+node_modules/
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/
+cypress-run.log
+cypress-12.log
+
+# Lokale Einstellungen der Entwicklungswerkzeuge
+.claude/
