@@ -7781,7 +7781,10 @@ async function exportPoster() {
         if (schreibt) await schreibt;              // höchstens ein Streifen wartet auf den Packer
         schreibt = png.addRows(streifen, sh);      // läuft weiter, während die nächsten Kacheln gerechnet werden
         sctx.putImageData(new ImageData(streifen, Wp, stripH), 0, 0);   // nur für das Vorschaubild
-        tctx.drawImage(strip, 0, 0, Wp, sh, 0, Math.round(ty * tscale), thumb.width, Math.max(1, Math.round(sh * tscale)));
+        // Der Streifen kommt zwischen seine beiden gerundeten Grenzen, nicht auf eine gerundete Höhe: sonst wandert der
+        // Anfang gegenüber der Höhe, und alle paar Streifen bleibt im Vorschaubild eine Zeile ungezeichnet stehen.
+        const vy0 = Math.round(ty * tscale), vy1 = Math.round((ty + sh) * tscale);
+        tctx.drawImage(strip, 0, 0, Wp, sh, 0, vy0, thumb.width, Math.max(1, vy1 - vy0));
       }
     }
     renderer.endExport();
