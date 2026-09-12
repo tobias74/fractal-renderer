@@ -5745,7 +5745,7 @@ function sprachGewechselt() {   // nach den festen Texten einmal alles, was der 
   aaSel.dataset.levels = '';                                    // Stufen der Glättung neu beschriften
   for (const sel of document.querySelectorAll('select')) if (sel._rebuild) sel._rebuild();   // Aufklappmenüs aus den Optionen
   for (const b of $('famChips').querySelectorAll('button')) b.textContent = $('family').querySelector('option[value="' + b.dataset.value + '"]').textContent;
-  zeigePaneName(); syncFormulaUI(); syncFarbUI(); showComp(); syncGlowUI(); syncAaUI(); syncCloudUI(); updateResInfo();
+  zeigePaneName(); syncAllUI(); syncCloudUI(); updateResInfo();   // syncAllUI: jeder Wert im Bedienfeld neu, auch die Zahlen
   if (!palEd.hidden) peRender();
   if (!$('pal2Ed').hidden) p2eRender();
   if (!posterEl.hidden) { posterZustand(...posterZustandJetzt); posterUpdateInfo(); }

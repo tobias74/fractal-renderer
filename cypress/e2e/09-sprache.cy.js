@@ -76,7 +76,7 @@ describe('Sprache', () => {
 
   it('Umschalten zur Laufzeit ergibt dieselbe Seite wie frisches Laden', () => {
     const inventar = () => cy.window().then(win => {
-      const norm = s => s.replace(/\s+/g, ' ').trim().replace(/[0-9][0-9.,]*/g, '#');
+      const norm = s => s.replace(/\s+/g, ' ').trim().replace(/[0-9]/g, '#');   // Ziffern egal, Komma und Punkt nicht
       const out = [], w = win.document.createTreeWalker(win.document.body, NodeFilter.SHOW_TEXT);
       for (let n = w.nextNode(); n; n = w.nextNode()) {
         const p = n.parentElement; if (!p || /^(SCRIPT|STYLE)$/.test(p.tagName)) continue;
