@@ -330,14 +330,18 @@ describe('Farbe und Farbschema-Editor', () => {
     cy.get('#palette option').should($o => expect(texte($o), 'kein toter Eintrag').to.not.contain('(nicht gespeichert)'));
   });
 
-  it('ohne Einwilligung für App-Einstellungen bleibt ein Schema nur im Link', () => {
+  // Ohne Einwilligung kann nichts im Browser landen, darum gibt es die Speichern-Knöpfe gar nicht erst. Das Schema
+  // wirkt trotzdem sofort im Bild und steckt im Link — verloren geht also nur das Ablegen.
+  it('ohne Einwilligung für App-Einstellungen gibt es kein Speichern, das Schema bleibt im Link', () => {
     cy.visitApp('', { consent: CONSENT_NONE });
     cy.revealInDetails('palEdit');
     cy.get('#palEdit').click();
     cy.get('#peName').clear().type('Fluechtig');
-    cy.get('#peSaveNew').should('not.be.visible');   // ein neuer Entwurf wird mit „Speichern“ angelegt
-    cy.get('#peSave').click();
+    cy.get('#peSaveRow').should('have.attr', 'hidden');
+    cy.get('#peSave').should('not.be.visible');
+    cy.get('#peNoStore').should('be.visible').and('contain.text', 'Kein Speichern');
     cy.expectHash('cp', v => expect(v).to.contain('Fluechtig'));
+    cy.get('#palette option:selected').invoke('text').should('contain', 'Fluechtig');
     cy.window().then(win => expect(win.localStorage.getItem('fractal.palettes')).to.be.null);
     cy.get('#peClose').click();
   });

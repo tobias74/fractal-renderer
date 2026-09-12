@@ -131,24 +131,28 @@ describe('Cookie-Einwilligung', () => {
     });
   });
 
-  // Ohne Einwilligung darf nichts im Browser landen — und der Nutzer soll es merken, statt sich zu wundern, warum
-  // sein Schema nach dem Neuladen weg ist.
-  it('ohne Einwilligung: ein eigenes Schema gilt nur für die Sitzung, mit Hinweis, und ist nach dem Neuladen weg', () => {
+  // Was nicht gespeichert werden kann, soll auch keinen Knopf zum Speichern haben: Ohne Einwilligung verschwinden die
+  // Speichern-Knöpfe beider Farbeditoren, an ihrer Stelle steht der Grund. Stimmt man bei offenem Editor zu, sind sie da.
+  it('ohne Einwilligung gibt es in den Farbeditoren kein Speichern, mit Einwilligung sofort wieder', () => {
     cy.visitApp('', { consent: CONSENT_NONE });
     cy.revealInDetails('palEdit');
     cy.get('#palEdit').click();
     cy.get('#peName').clear().type('Nur heute');
-    cy.get('#peSave').click();
-    cy.get('#state').invoke('text').should('contain', 'Nur für diese Sitzung gemerkt');
-    cy.get('#peState').should('have.text', 'gespeichert');                    // in dieser Sitzung ist es da
-    cy.get('#peClose').click();
-    cy.get('#palette option:selected').invoke('text').should('contain', 'Nur heute');
+    cy.get('#peSaveRow').should('have.attr', 'hidden');
+    cy.get('#peNoStore').should('be.visible').and('contain.text', 'Kein Speichern');
+    cy.get('#palette option:selected').invoke('text').should('contain', 'Nur heute');   // im Bild gilt es trotzdem
     cy.window().then(win => {
       expect(win.localStorage.getItem('fractal.palettes'), 'nichts abgelegt').to.be.null;
       expect(win.localStorage.getItem('fractal.palettes2'), 'auch keine zweidimensionalen').to.be.null;
     });
-    cy.visitApp('', { keep: true, consent: null, lang: null, aa: null });     // ohne Link ist das Schema fort
-    cy.get('#palette optgroup[label="Eigene"]').should('not.exist');
+    cy.get('#siteCookies').click();                                          // bei offenem Editor zustimmen
+    cy.get('#consentSettingsCb').check();
+    cy.get('#consentSave').click();
+    cy.get('#peSaveRow').should('not.have.attr', 'hidden');
+    cy.get('#peNoStore').should('not.be.visible');
+    cy.get('#peSave').click();
+    cy.get('#peState').should('have.text', 'gespeichert');
+    cy.window().then(win => expect(win.localStorage.getItem('fractal.palettes'), 'jetzt abgelegt').to.not.be.null);
   });
 
   it('ohne Einwilligung landet außer der Auswahl selbst und der Sprache nichts im Browser', () => {

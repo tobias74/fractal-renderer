@@ -155,6 +155,7 @@
   }
   select option { background: #14161d; color: var(--text); padding: 4px 6px; }
   select optgroup { background: #14161d; color: var(--muted); font-weight: 600; font-style: normal; letter-spacing: .02em; }
+  .link-knopf { border: 0; background: none; padding: 0; color: var(--accent); font: inherit; text-decoration: underline; cursor: pointer; }
   .sel-hidden { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
   .crop-bar .menu-btn { width: auto; }
   .menu-btn:disabled { opacity: .5; cursor: default; }
@@ -803,10 +804,12 @@
         <button type="button" id="peReset" class="ghost" data-i18n-title="editor.discard-changes-since-opening" data-i18n="editor.reset"></button>
         <label class="chk"><input type="checkbox" id="peCyclic" checked> <span data-i18n="editor.cyclic"></span></label>
       </div>
-      <div class="btns">
+      <div class="btns" id="peSaveRow">
         <button type="button" id="peSave" class="primary" data-i18n="editor.save"></button>
         <button type="button" id="peSaveNew" class="ghost" data-i18n="editor.as-new-scheme"></button>
       </div>
+      <p class="hint" id="peNoStore" hidden><span data-i18n="editor.storing-declined"></span>
+        <button type="button" class="link-knopf" data-cookies data-i18n="menu.cookie-settings"></button></p>
       <div class="btns">
         <button type="button" id="peDelete" class="ghost" data-i18n="editor.delete"></button>
         <button type="button" id="peClose" class="ghost" data-i18n="editor.close"></button>
@@ -863,10 +866,12 @@
       <div class="btns">
         <button type="button" id="p2eReset" class="ghost" data-i18n-title="editor.discard-changes-since-opening" data-i18n="editor.reset"></button>
       </div>
-      <div class="btns">
+      <div class="btns" id="p2eSaveRow">
         <button type="button" id="p2eSave" class="primary" data-i18n="editor.save"></button>
         <button type="button" id="p2eSaveNew" class="ghost" data-i18n="editor.as-new-scheme"></button>
       </div>
+      <p class="hint" id="p2eNoStore" hidden><span data-i18n="editor.storing-declined"></span>
+        <button type="button" class="link-knopf" data-cookies data-i18n="menu.cookie-settings"></button></p>
       <div class="btns">
         <button type="button" id="p2eDelete" class="ghost" data-i18n="editor.delete"></button>
         <button type="button" id="p2eClose" class="ghost" data-i18n="editor.close"></button>
@@ -1439,7 +1444,6 @@ const TEXTE = {
   'panel.adaptive-smoothing-not-available': { de: 'Adaptive Glättung nicht verfügbar: {0}', en: 'Adaptive smoothing not available: {0}' },
   'panel.adaptive-up-samples-per': { de: 'adaptiv, bis {0} Proben je Pixel', en: 'adaptive, up to {0} samples per pixel' },
   'panel.fast-up-samples-per': { de: 'schnell, bis {0} Proben je Pixel', en: 'fast, up to {0} samples per pixel' },
-  'panel.fast-hint': { de: ' Das schnelle Verfahren legt die Proben geordnet statt zufällig, so fällt der Fehler rascher, und es lässt Rauschen dort stehen, wo ein Pixel in sich ohnehin stark schwankt und es nicht auffällt. Darum steht die höchste Probenzahl schon durch das Restrauschen fest, lange vor dem Deckel.', en: ' The fast method places its samples in order rather than at random, so the error falls faster, and it leaves noise where a pixel varies strongly within itself and it does not show. The highest sample count therefore follows from the residual noise alone, well below the limit.' },
   'panel.areas': { de: 'Bereiche', en: 'Areas' },
   'panel.b-amplitude': { de: 'b · Ausschlag', en: 'b · amplitude' },
   'panel.base': { de: 'a · Grundwert', en: 'a · base' },
@@ -1467,6 +1471,7 @@ const TEXTE = {
   'panel.gradient-positive-first-value': { de: 'Verlauf für positiven ersten Wert', en: 'Gradient for a positive first value' },
   'panel.gradient-positive-second-value': { de: 'Verlauf für positiven zweiten Wert', en: 'Gradient for a positive second value' },
   'panel.graphics-card-could-not': { de: 'Die Grafikkarte konnte {0} × {0} ({1} MB) nicht anlegen: gerechnet wird {2} × {2}.', en: 'The graphics card could not allocate {0} × {0} ({1} MB): rendering at {2} × {2}.' },
+  'editor.storing-declined': { de: 'Kein Speichern: Im Browser ablegen ist abgelehnt.', en: 'No saving: storing in the browser is declined.' },
   'panel.kept-this-session-only': { de: 'Nur für diese Sitzung gemerkt: Speichern im Browser ist in den Cookie-Einstellungen abgelehnt', en: 'Kept for this session only: storing in the browser is declined in the cookie settings' },
   'panel.linear': { de: ' · linear', en: ' · linear' },
   'panel.log': { de: ' · Log', en: ' · log' },
@@ -5857,11 +5862,11 @@ function storeConsent(settings, marketing) {
   else { try { for (const k of SETTINGS_KEYS) localStorage.removeItem(k); } catch (e) { /* egal */ } }
   consentEl.hidden = true;
   if (consent.marketing) loadMarketingPixels();
+  syncSpeicherKnoepfe();   // der Editor darf offen sein, während die Wahl getroffen wird
 }
 let pixelsLoaded = false;
-function loadMarketingPixels() {   // wird nur nach Einwilligung aufgerufen; hier die Pixel-Skripte des Betreibers einfügen
+function loadMarketingPixels() {   // wird nur nach Einwilligung aufgerufen; die App lädt derzeit nichts
   if (pixelsLoaded) return; pixelsLoaded = true;
-  // Beispiel (deaktiviert): const s = document.createElement('script'); s.src = 'https://…/pixel.js'; document.head.append(s);
 }
 $('consentRejectAll').addEventListener('click', () => storeConsent(false, false));
 $('consentAll').addEventListener('click', () => storeConsent(true, true));
@@ -6594,12 +6599,22 @@ function peRender() {
   pePreviewDraw();
 }
 function peChanged() { peDraft.name = $('peName').value.trim() || t('panel.custom-scheme'); if (peDraft.stops) peDraft.cyclic = $('peCyclic').checked; S.customPal = peDraft; pePreviewDraw(); applyPalette(); syncPalStrip(); }
+// Ohne Einwilligung fürs Ablegen im Browser kann nichts gespeichert werden – dann gibt es den Knopf auch nicht, statt
+// ein Versprechen zu machen, das nicht gehalten wird. Der Entwurf wirkt ohnehin sofort im Bild und steht im Link.
+function syncSpeicherKnoepfe() {
+  const erlaubt = storeAllowed();
+  for (const [reihe, hinweis] of [['peSaveRow', 'peNoStore'], ['p2eSaveRow', 'p2eNoStore']]) {
+    $(reihe).hidden = !erlaubt; $(hinweis).hidden = erlaubt;
+  }
+}
+for (const b of document.querySelectorAll('[data-cookies]')) b.addEventListener('click', showConsent);
 function peShow(open) {   // Editor ein- oder ausklappen (er sitzt im Bedienfeld, das Bild bleibt daneben sichtbar)
   palEd.hidden = !open;
   $('palEdit').setAttribute('aria-expanded', String(!!open));
 }
 let peStart = '';   // Stand beim Öffnen oder letzten Speichern, für „Zurücksetzen“
 function peOpen() {
+  syncSpeicherKnoepfe();
   peFormel = null;
   if (S.customPal) peDraft = JSON.parse(JSON.stringify(S.customPal));
   else peDraft = { id: 'p' + Date.now().toString(36), name: t(PALETTES[S.palette].name) + t('panel.own'), cyclic: true, stops: presetStops(PALETTES[S.palette]) };
@@ -6802,6 +6817,7 @@ function p2eShow(open) {
   $('palEdit').setAttribute('aria-expanded', String(!!open));
 }
 function p2eOpen() {   // Entwurf aus der geltenden Palette: ein eigenes Schema wird bearbeitet, eine Vorgabe kopiert
+  syncSpeicherKnoepfe();
   const q = quelle2(); if (!q) return;
   const p = pal2Objekt() || PAL2[pal2Zwei(q)], eigen = !!p.id && (p.id === 'link' || eigene2.some(e => e.id === p.id));
   p2Draft = p2eNormal(JSON.parse(JSON.stringify(p)));
@@ -7013,7 +7029,7 @@ function syncAaUI() {
   if (adaptive) {
     $('aaVal').textContent = t(S.aaMode === 'fast' ? 'panel.fast-up-samples-per' : 'panel.adaptive-up-samples-per', aaParams().maxN);
     const done = aaOn && W ? Math.round(100 * (1 - aaActive / (W * H))) : 0;
-    $('aaHint').textContent = W ? t('panel.mb-graphics-memory-px', Math.round((aaBytes(W, H, 1) + W * H * AA_ADAPT_BYTES) / 1e6), W, H, done) + (S.aaMode === 'fast' ? t('panel.fast-hint') : '') : '';
+    $('aaHint').textContent = W ? t('panel.mb-graphics-memory-px', Math.round((aaBytes(W, H, 1) + W * H * AA_ADAPT_BYTES) / 1e6), W, H, done) : '';
     return;
   }
   const eff = W ? aaEff : S.aa, mb = a => Math.round(aaBytes(W, H, a) / 1e6);
