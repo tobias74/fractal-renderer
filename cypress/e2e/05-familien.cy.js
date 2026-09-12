@@ -62,15 +62,15 @@ describe('Fraktalfamilien', () => {
 
   it('Belichtung 0,1 bis 1000 und Gamma 0,2 bis 5, beide logarithmisch', () => {
     cy.pickOption('family', 'clifford');
-    cy.get('#exposureVal').should('have.text', '1,00');   // die Vorgaben stehen weiter mitten auf der Skala
-    cy.get('#gammaVal').should('have.text', '2,00');
-    cy.setRange('exposure', 1000); cy.get('#exposureVal').should('have.text', '1000'); cy.expectHash('ex', '1000');
-    cy.setRange('exposure', 0); cy.get('#exposureVal').should('have.text', '0,10'); cy.expectHash('ex', '0.1');
-    cy.setRange('gamma', 0); cy.get('#gammaVal').should('have.text', '0,20'); cy.expectHash('ga', '0.2');
-    cy.setRange('gamma', 1000); cy.get('#gammaVal').should('have.text', '5,00'); cy.expectHash('ga', '5');
+    cy.get('#exposureVal').should('have.value', '1,00');   // die Vorgaben stehen weiter mitten auf der Skala
+    cy.get('#gammaVal').should('have.value', '2,00');
+    cy.setRange('exposure', 1000); cy.get('#exposureVal').should('have.value', '1000'); cy.expectHash('ex', '1000');
+    cy.setRange('exposure', 0); cy.get('#exposureVal').should('have.value', '0,10'); cy.expectHash('ex', '0.1');
+    cy.setRange('gamma', 0); cy.get('#gammaVal').should('have.value', '0,20'); cy.expectHash('ga', '0.2');
+    cy.setRange('gamma', 1000); cy.get('#gammaVal').should('have.value', '5,00'); cy.expectHash('ga', '5');
     cy.visitApp('fam=clifford&ex=500&ga=0.3');           // Werte jenseits der alten Grenzen 10 und 1 kommen aus dem Link an
-    cy.get('#exposureVal').should('have.text', '500');
-    cy.get('#gammaVal').should('have.text', '0,30');
+    cy.get('#exposureVal').should('have.value', '500');
+    cy.get('#gammaVal').should('have.value', '0,30');
   });
 
   // Früher sprang die Helligkeitsskala bei jedem Neustart des Sammelns auf 1: das erste Bild blitzte übersteuert auf,
@@ -126,16 +126,16 @@ describe('Fraktalfamilien', () => {
     cy.get('#family').should('have.value', 'clifford');
     cy.expectHash('pa', '-1.500');
     cy.get('#cloudPrm input[type=range]').first().should('have.value', String(Math.round(1000 * (-1.5 + 3) / 6)));
-    cy.get('#exposureVal').should('have.text', '1,00');
+    cy.get('#exposureVal').should('have.value', '1,00');
   });
 
   it('Symmetrische Ikone: sechs Regler, n ganzzahlig, alle im Link (pa bis pf)', () => {
     cy.visitApp('fam=ikone&at=3000000');
     cy.get('#cloudPrm input[type=range]').should('have.length', 6);
     cy.get('#cloudPrm .lbl span:first-child').then($l => expect([...$l].map(e => e.textContent)).to.deep.eq(['λ', 'α', 'β', 'γ', 'ω', 'n']));
-    cy.get('#cloudPrm .val').last().should('have.text', '7');
+    cy.get('#cloudPrm .val').last().should('have.value', '7');
     cy.get('#cloudPrm input[type=range]').last().invoke('val', 480).trigger('input');   // n von 3 bis 9: 3 + 6 · 0,48 = 5,88, gerundet 6
-    cy.get('#cloudPrm .val').last().should('have.text', '6');
+    cy.get('#cloudPrm .val').last().should('have.value', '6');
     cy.expectHash('pf', n => expect(parseFloat(n)).to.eq(6));
     cy.expectHash('pa', a => expect(parseFloat(a)).to.be.closeTo(-2.5, 0.001));
   });

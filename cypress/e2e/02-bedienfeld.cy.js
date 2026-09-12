@@ -60,10 +60,12 @@ describe('Bedienfeld: Schublade und Bereichsleiste am PC', () => {
     cy.get('.panel-head .wordmark').should('have.text', 'Motiv');
   });
 
-  it('ein Bereich passt ohne Scrollen ins Bedienfeld', () => {
+  // Seit die Werte Eingabefelder sind, brauchen die Gruppen Luft: Der Farbbereich ist damit bei 720 px Fensterhöhe
+  // etwas höher als das Bedienfeld und rollt ein Stück. Weit darüber hinaus darf kein Bereich wachsen.
+  it('kein Bereich läuft weit über das Bedienfeld hinaus', () => {
     for (const p of ['motiv', 'farbe', 'qualitaet', 'technik']) {
       cy.get('#rail button[data-pane="' + p + '"]').click();
-      cy.get('#panelBody').should($b => expect($b[0].scrollHeight, p + ' passt').to.be.at.most($b[0].clientHeight + 40));
+      cy.get('#panelBody').should($b => expect($b[0].scrollHeight, p + ' passt').to.be.at.most($b[0].clientHeight + 80));
     }
   });
 
@@ -110,7 +112,8 @@ describe('Bedienfeld am Handy', () => {
     cy.get('#panel').should('not.have.class', 'collapsed');
     cy.get('#tabFarbe').should('have.class', 'on');
     cy.get('.panel-head .wordmark').should('have.text', 'Farbe');
-    cy.get('#pane-farbe').should('be.visible');
+    cy.get('#pane-farbe').should('not.have.attr', 'hidden');
+    cy.get('#pane-farbe .row').first().should('be.visible');   // der Bereich rollt im Blatt, sein Anfang ist zu sehen
     cy.get('#pane-motiv').should('not.be.visible');
     cy.wait(400);   // Übergang abwarten
     cy.get('#panel').then($p => {

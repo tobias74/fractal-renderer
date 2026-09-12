@@ -60,7 +60,7 @@ describe('Farbe und Farbschema-Editor', () => {
     cy.expectHash('glow', '1');
     cy.setRange('glowWidth', 800);
     cy.expectHash('gw', v => expect(parseFloat(v)).to.be.greaterThan(1));
-    cy.get('#glowVal').invoke('text').should('match', /\d/);
+    cy.get('#glowVal').invoke('val').should('match', /\d/);
     cy.rerender(() => cy.pickOption('interior', 2));
     cy.expectHash('in', '2');
     cy.setRange('offset', 500);
@@ -121,17 +121,17 @@ describe('Farbe und Farbschema-Editor', () => {
     cy.get('#palette').should('have.value', 'z:0');                  // Pastell: erster Eintrag der zweidimensionalen
     cy.get('#palette').parent().should('not.have.attr', 'hidden');
     cy.get('#lyGrenzeRow').should('not.have.attr', 'hidden');
-    cy.get('#lyGrenzeVal').should('have.text', '2');                 // Vorgabe
+    cy.get('#lyGrenzeVal').should('have.value', '2');                 // Vorgabe
     cy.expectHash('lg', null);
     cy.shotStats('lyap-grenze-2').then(a => {
       cy.rerender(() => cy.setRange('lyGrenze', 1000));
-      cy.get('#lyGrenzeVal').should('have.text', '1.000.000.000');
+      cy.get('#lyGrenzeVal').should('have.value', '1.000.000.000');
       cy.expectHash('lg', '1000000000');
       cy.shotStats('lyap-grenze-1e9').then(b => {
         cy.task('pngDiff', { a: a.file, b: b.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, 'Muster rund um die Menge ändert sich').to.be.greaterThan(5));
       });
       cy.rerender(() => cy.setRange('lyGrenze', 0));                // 0 ist ein gültiger Wert, nicht „fehlt“
-      cy.get('#lyGrenzeVal').should('have.text', '0');
+      cy.get('#lyGrenzeVal').should('have.value', '0');
       cy.expectHash('lg', '0');
       cy.shotStats('lyap-grenze-0').then(c => {
         cy.task('pngDiff', { a: a.file, b: c.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, 'nur noch der erste Schritt').to.be.greaterThan(5));
@@ -214,16 +214,16 @@ describe('Farbe und Farbschema-Editor', () => {
     cy.rowShown('compRow', false);
     cy.rerender(() => cy.pickOption('mapping', 11));
     cy.rowShown('compRow', true);
-    cy.get('#compVal').should('contain.text', 'Log');
+    cy.get('#compNote').should('contain.text', 'Log');
     cy.expectHash('sc', '0.000');
     cy.shotStats('stauchung-log').then(a => {
       cy.setRange('comp', 0);
-      cy.get('#compVal').should('contain.text', 'linear');
+      cy.get('#compNote').should('contain.text', 'linear');
       cy.expectHash('sc', '1.000');
       cy.setRange('comp', 167);
-      cy.get('#compVal').should('contain.text', 'Wurzel');
+      cy.get('#compNote').should('contain.text', 'Wurzel');
       cy.setRange('comp', 1000);
-      cy.get('#compVal').should('contain.text', 'stärker');
+      cy.get('#compNote').should('contain.text', 'stärker');
       cy.expectHash('sc', '-2.000');
       cy.wait(300);
       cy.shotStats('stauchung-stark').then(b => {
@@ -251,7 +251,7 @@ describe('Farbe und Farbschema-Editor', () => {
 
   it('Farbdichte: Regler, Anzeige und Adresse stimmen überein', () => {
     cy.setRange('density', 700);
-    cy.get('#densVal').invoke('text').then(t => {
+    cy.get('#densVal').invoke('val').then(t => {
       const shown = parseFloat(t.replace(',', '.'));
       cy.expectHash('den', v => expect(parseFloat(v)).to.be.closeTo(shown, 0.01));
     });

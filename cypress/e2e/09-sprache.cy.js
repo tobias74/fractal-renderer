@@ -104,10 +104,10 @@ describe('Sprache', () => {
 
   it('Zahlen folgen der Sprache: Komma auf Deutsch, Punkt auf Englisch', () => {
     cy.visitApp('mode=mandel&den=0.04', { lang: 'de' });
-    cy.get('#densVal').should('have.text', '0,040');
+    cy.get('#densVal').should('have.value', '0,040');
     cy.get('#zoomRead').should('contain.text', '1,0×');
     cy.visitApp('mode=mandel&den=0.04', { lang: 'en' });
-    cy.get('#densVal').should('have.text', '0.040');
+    cy.get('#densVal').should('have.value', '0.040');
     cy.get('#zoomRead').should('contain.text', '1.0×');
   });
 

@@ -31,7 +31,7 @@ describe('Formelfamilie', () => {
     cy.get('#paramLabel').should('have.text', 'Phoenix p');
     cy.setRange('param', 900);
     cy.expectHash('pp', v => expect(parseFloat(v)).to.be.closeTo(0.8, 0.01));
-    cy.get('#paramVal').should('contain.text', '0,8');
+    cy.get('#paramVal').invoke('val').should('contain', '0,8');
     cy.waitRender();
   });
 

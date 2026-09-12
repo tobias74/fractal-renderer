@@ -47,18 +47,18 @@ describe('Glättung und Technik', () => {
     cy.get('#aaGridRow').should('have.attr', 'hidden');
     cy.get('#aaAdaptRow').should('not.have.attr', 'hidden');
     cy.get('#aaPresets button[data-preset="4"]').click();   // Voreinstellung Maximal stellt die Regler
-    cy.get('#aaTolVal').should('have.text', '0,3 %');
-    cy.get('#aaMaxVal').should('have.text', '1024');
+    cy.get('#aaTolVal').should('have.value', '0,3 %');
+    cy.get('#aaMaxVal').should('have.value', '1024');
     cy.get('#aaPresets button[data-preset="4"]').should('have.class', 'on');
     cy.get('#aaPresets button[data-preset="1"]').click();
-    cy.get('#aaTolVal').should('have.text', '3,0 %');
-    cy.get('#aaMaxVal').should('have.text', '16');
+    cy.get('#aaTolVal').should('have.value', '3,0 %');
+    cy.get('#aaMaxVal').should('have.value', '16');
     cy.get('#aaPresets button[data-preset="1"]').should('have.class', 'on');
     cy.setRange('aaTol', 1000);   // 5 % Restrauschen: schnell fertig, kein Preset passt mehr
     cy.get('#aaPresets button.on').should('have.length', 0);
     cy.get('#aaVal').should('contain.text', 'adaptiv, bis 16 Proben je Pixel');
-    cy.get('#aaTolVal').should('have.text', '5,0 %');
-    cy.get('#aaMaxVal').should('have.text', '16');
+    cy.get('#aaTolVal').should('have.value', '5,0 %');
+    cy.get('#aaMaxVal').should('have.value', '16');
     cy.get('#resInfo').should('contain.text', 'Glättung adaptiv');
     cy.waitRender(/Fertig · [\d,]+ (ms|s) \+ [\d,]+ (ms|s) Glättung/, 120000);
     cy.get('#aaHint').should('contain.text', '100 % der Pixel fertig');
@@ -111,7 +111,7 @@ describe('Glättung und Technik', () => {
       cy.rerender(() => cy.pickOption('aaModeSel', 'fast'), /Fertig · [\d,]+ (ms|s) \+ [\d,]+ (ms|s) Glättung/);
       cy.get('#aaGridRow').should('have.attr', 'hidden');           // dieselben Regler wie beim adaptiven Verfahren
       cy.get('#aaAdaptRow').should('not.have.attr', 'hidden');
-      cy.get('#aaMaxVal').should('have.text', '256');
+      cy.get('#aaMaxVal').should('have.value', '256');
       cy.get('#resInfo').should('contain.text', 'Glättung adaptiv schnell');
       cy.get('#aaHint').should('contain.text', '100 % der Pixel fertig');
       cy.window().then(win => expect(win.localStorage.getItem('fractal.aamode')).to.eq('fast'));
@@ -127,8 +127,8 @@ describe('Glättung und Technik', () => {
     cy.visitApp('', { storage: { 'fractal.aamode': 'adaptive', 'fractal.aamax': '256', 'fractal.aatol': '0.006', 'fractal.aasigma': '0.6', 'fractal.palfilter': '1' } });
     cy.get('#aaModeSel').should('have.value', 'adaptive');
     cy.get('#aaMax').should('have.value', '5');
-    cy.get('#aaTolVal').should('have.text', '0,6 %');
-    cy.get('#aaSigmaVal').should('have.text', '0,60 px');
+    cy.get('#aaTolVal').should('have.value', '0,6 %');
+    cy.get('#aaSigmaVal').should('have.value', '0,60 px');
     cy.get('#palFilter').should('be.checked');
     cy.get('#aaVal').should('contain.text', 'bis 256 Proben je Pixel');
     cy.appState().then(s => { expect(s.extra.aaMax).to.eq(256); expect(s.extra.palFilter).to.be.true; });
@@ -142,17 +142,17 @@ describe('Glättung und Technik', () => {
     cy.revealInDetails('palFilter');
     cy.get('#palFilter').check({ force: true });
     cy.get('#palFilterRow').should('not.have.attr', 'hidden');
-    cy.get('#palFilterKVal').should('have.text', '1,00×');
+    cy.get('#palFilterKVal').should('have.value', '1,00×');
     cy.window().then(win => expect(win.localStorage.getItem('fractal.palfilter')).to.eq('1'));
     cy.expectHash('pf', '1');                 // ändert die Farben, gehört also in den Link
     cy.setRange('palFilterK', 1000);
-    cy.get('#palFilterKVal').should('have.text', '4,00×');
+    cy.get('#palFilterKVal').should('have.value', '4,00×');
     cy.window().then(win => expect(win.localStorage.getItem('fractal.palfilterk')).to.eq('4'));
     cy.expectHash('pfk', '4.00');
     cy.appState().then(s => { expect(s.extra.palFilter).to.be.true; expect(s.extra.palFilterK).to.eq(4); });
     cy.waitRender();
     cy.setRange('palFilterK', 500);
-    cy.get('#palFilterKVal').should('have.text', '1,00×');
+    cy.get('#palFilterKVal').should('have.value', '1,00×');
     cy.get('#palFilter').uncheck({ force: true });
     cy.get('#palFilterRow').should('have.attr', 'hidden');
     cy.window().then(win => expect(win.localStorage.getItem('fractal.palfilter')).to.eq('0'));

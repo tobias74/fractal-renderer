@@ -96,7 +96,7 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
     cy.get('#posterCancel').click();
     cy.rerender(() => cy.pickOption('aaModeSel', 'adaptive'));
     cy.setRange('aaMax', 5);            // Deckel 256 Proben je Pixel
-    cy.get('#aaMaxVal').should('have.text', '256');
+    cy.get('#aaMaxVal').should('have.value', '256');
     cy.get('#save').click();
     cy.setRange('posterRes', 2);
     cy.get('#posterInfo').should('contain.text', 'adaptiv wie am Bildschirm');
@@ -159,7 +159,7 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
     // Neuer Rechenweg: Die Exportkachel liegt in den Bildschirmpuffern und wird Runde für Runde verfeinert.
     cy.rerender(() => cy.pickOption('aaModeSel', 'adaptive'));
     cy.setRange('aaMax', 0);            // Deckel 8 Proben je Pixel: kurz genug für den Test
-    cy.get('#aaMaxVal').should('have.text', '8');
+    cy.get('#aaMaxVal').should('have.value', '8');
     cy.get('#save').click();
     cy.setRange('posterRes', 3);
     cy.pickOption('posterFmt', 'png');

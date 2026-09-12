@@ -10,9 +10,9 @@ describe('Zustand in der Adresse', () => {
     cy.get('#power').should('have.value', '3');
     cy.revealInDetails('iterAuto');
     cy.get('#iterAuto').should('not.be.checked');
-    cy.get('#iterVal').should('have.text', '300');
-    cy.get('#densVal').should('contain.text', '0,100');
-    cy.get('#glowVal').invoke('text').should('match', /2,0/);
+    cy.get('#iterVal').should('have.value', '300');
+    cy.get('#densVal').invoke('val').should('contain', '0,100');
+    cy.get('#glowVal').invoke('val').should('match', /2,0/);
     cy.get('#coords').should('contain.text', 'Re -0,500').and('contain.text', 'Im 0,100');
     cy.get('#zoomRead').should('have.text', 'Zoom 3,0×');
     cy.get('#state').invoke('text').should('match', /300 Iterationen/);

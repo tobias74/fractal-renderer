@@ -132,6 +132,19 @@
   #aaAdaptRow { display: flex; flex-direction: column; gap: 7px; }
   #aaPresets { margin-bottom: 4px; }
 
+  /* Wertanzeigen sind Eingabefelder: dieselbe Optik wie die Zahlenfelder bei c und z₀, nur schmaler und rechtsbündig */
+  input.wert {
+    flex: none; width: 96px; text-align: right;
+    background: rgba(255, 255, 255, .05); color: var(--text);
+    border: 1px solid var(--line-strong); border-radius: 6px;
+    padding: 3px 6px; font: 12px var(--font-mono); font-variant-numeric: tabular-nums;
+  }
+  input.wert:disabled { opacity: .45; }
+  .sec-title input.wert { margin: -3px 0; }
+  .val-zusatz { margin-left: auto; padding-right: 8px; color: var(--muted); font-size: 11.5px; }
+  /* Gesetz der Nähe: Beschriftung und Feld gehören zu ihrem Regler, darum steht die nächste Gruppe deutlich ab */
+  .wertzeile { margin-top: 13px; align-items: center; }
+  .row > .wertzeile:first-child, .grid2 .wertzeile, #p2eNRow > .wertzeile { margin-top: 0; }
   input[type=range] { width: 100%; accent-color: var(--accent); margin: 3px 0 5px; }
   input[type=range]:disabled { opacity: .45; }
   select, .julia-c input[type=number] {
@@ -649,31 +662,31 @@
       </div>
       <div id="seqRow" class="lbl" hidden><label for="seq" data-i18n="subject.sequence-b"></label><input id="seq" type="text" maxlength="32" value="AB" spellcheck="false" style="width:56%;text-transform:uppercase"></div>
       <div id="paramRow" hidden>
-        <div class="lbl"><label for="param" id="paramLabel" data-i18n="subject.parameter"></label><span class="val mono" id="paramVal"></span></div>
+        <div class="lbl wertzeile"><label for="param" id="paramLabel" data-i18n="subject.parameter"></label><input class="val mono wert" id="paramVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="param" type="range" min="0" max="1000" value="500">
       </div>
       <button type="button" id="juliaHere" class="ghost" data-i18n="subject.julia-set-image-centre"></button>
       <div id="juliaC" class="julia-c" hidden>
-        <div class="lbl"><label for="jreRange" data-i18n="subject.real-part-c"></label><input id="jre" type="number" step="0.0005" data-i18n-aria-label="subject.real-part-c-number"></div>
+        <div class="lbl wertzeile"><label for="jreRange" data-i18n="subject.real-part-c"></label><input id="jre" type="number" step="0.0005" data-i18n-aria-label="subject.real-part-c-number"></div>
         <input id="jreRange" type="range" min="-2" max="1" step="0.0005" data-i18n-aria-label="subject.real-part-c">
-        <div class="lbl"><label for="jimRange" data-i18n="subject.imaginary-part-c"></label><input id="jim" type="number" step="0.0005" data-i18n-aria-label="subject.imaginary-part-c-number"></div>
+        <div class="lbl wertzeile"><label for="jimRange" data-i18n="subject.imaginary-part-c"></label><input id="jim" type="number" step="0.0005" data-i18n-aria-label="subject.imaginary-part-c-number"></div>
         <input id="jimRange" type="range" min="-1.5" max="1.5" step="0.0005" data-i18n-aria-label="subject.imaginary-part-c">
       </div>
       <div id="z0Row" class="julia-c" hidden>
-        <div class="lbl"><label for="z0reRange" data-i18n="subject.start-value-z-real"></label><input id="z0re" type="number" step="0.0005" data-i18n-aria-label="subject.real-part-z-number"></div>
+        <div class="lbl wertzeile"><label for="z0reRange" data-i18n="subject.start-value-z-real"></label><input id="z0re" type="number" step="0.0005" data-i18n-aria-label="subject.real-part-z-number"></div>
         <input id="z0reRange" type="range" min="-1.5" max="1.5" step="0.0005" data-i18n-aria-label="subject.real-part-z">
-        <div class="lbl"><label for="z0imRange" data-i18n="subject.start-value-z-imaginary"></label><input id="z0im" type="number" step="0.0005" data-i18n-aria-label="subject.imaginary-part-z-number"></div>
+        <div class="lbl wertzeile"><label for="z0imRange" data-i18n="subject.start-value-z-imaginary"></label><input id="z0im" type="number" step="0.0005" data-i18n-aria-label="subject.imaginary-part-z-number"></div>
         <input id="z0imRange" type="range" min="-1.5" max="1.5" step="0.0005" data-i18n-aria-label="subject.imaginary-part-z">
       </div>
     </section>
 
     <section class="row" id="accRow" hidden>
       <h2 class="sec-title" data-i18n="subject.accumulation"></h2>
-      <div class="lbl"><label for="exposure" data-i18n="subject.exposure"></label><span class="val mono" id="exposureVal"></span></div>
+      <div class="lbl wertzeile"><label for="exposure" data-i18n="subject.exposure"></label><input class="val mono wert" id="exposureVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
       <input id="exposure" type="range" min="0" max="1000" value="250">
-      <div class="lbl"><label for="gamma" data-i18n="subject.gamma"></label><span class="val mono" id="gammaVal"></span></div>
+      <div class="lbl wertzeile"><label for="gamma" data-i18n="subject.gamma"></label><input class="val mono wert" id="gammaVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
       <input id="gamma" type="range" min="0" max="1000" value="715">
-      <div class="lbl"><label for="accTarget">Proben</label>
+      <div class="lbl"><label for="accTarget" data-i18n="subject.samples"></label>
         <select id="accTarget" style="width:56%">
           <option value="3000000">3 Mio.</option>
           <option value="10000000">10 Mio.</option>
@@ -683,9 +696,9 @@
         </select></div>
     </section>
     <section class="row" id="iterRow">
-      <h2 class="sec-title"><label for="iterRange" data-i18n="subject.iterations"></label><span class="val" id="iterVal">–</span></h2>
+      <h2 class="sec-title"><label for="iterRange" data-i18n="subject.iterations"></label><input class="val mono wert" id="iterVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></h2>
       <input id="iterRange" type="range" min="0" max="1000" value="500">
-      <label class="chk"><input id="iterAuto" type="checkbox" checked> automatisch nach Zoomtiefe</label>
+      <label class="chk"><input id="iterAuto" type="checkbox" checked> <span data-i18n="subject.automatically-by-zoom-depth"></span></label>
     </section>
 
     </div>
@@ -731,11 +744,11 @@
         </optgroup>
       </select>
       <div id="compRow" hidden>
-        <div class="lbl"><label for="comp" data-i18n="colour.compression"></label><span class="val mono" id="compVal"></span></div>
+        <div class="lbl wertzeile"><label for="comp" data-i18n="colour.compression"></label><span class="val-zusatz" id="compNote"></span><input class="val mono wert" id="compVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="comp" type="range" min="0" max="1000" value="333">
       </div>
       <div id="lyGrenzeRow" hidden>
-        <div class="lbl"><label for="lyGrenze" data-i18n-title="colour.how-far-an-orbit" data-i18n="colour.boundary"></label><span class="val mono" id="lyGrenzeVal"></span></div>
+        <div class="lbl wertzeile"><label for="lyGrenze" data-i18n-title="colour.how-far-an-orbit" data-i18n="colour.boundary"></label><input class="val mono wert" id="lyGrenzeVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="lyGrenze" type="range" min="0" max="1000" value="0">
       </div>
       <div class="grid2">
@@ -753,7 +766,7 @@
             <option value="3" data-i18n="colour.angle"></option>
           </select></div>
       </div>
-      <div class="lbl"><label for="glowWidth" data-i18n="colour.edge-width"></label><span class="val mono" id="glowVal">–</span></div>
+      <div class="lbl wertzeile"><label for="glowWidth" data-i18n="colour.edge-width"></label><input class="val mono wert" id="glowVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
       <input id="glowWidth" type="range" min="0" max="1000" value="517">
     </section>
 
@@ -764,9 +777,9 @@
         <button type="button" data-art="2" data-i18n="colour.two-dimensional"></button>
       </div>
       <div class="pal-cell"><select id="palette"></select><div class="pal-strip" id="palStrip" role="listbox" data-i18n-aria-label="colour.colour-palette"></div><button type="button" id="palEdit" class="ghost" aria-expanded="false" aria-controls="palEd" data-i18n="colour.edit-colour-scheme"></button></div>
-      <div class="lbl"><label for="density" data-i18n="colour.colour-density"></label><span class="val mono" id="densVal">–</span></div>
+      <div class="lbl wertzeile"><label for="density" data-i18n="colour.colour-density"></label><input class="val mono wert" id="densVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
       <input id="density" type="range" min="0" max="1000" value="434">
-      <div class="lbl"><label for="offset" data-i18n="colour.colour-offset"></label></div>
+      <div class="lbl wertzeile"><label for="offset" data-i18n="colour.colour-offset"></label><input class="val mono wert" id="offsetVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
       <input id="offset" type="range" min="0" max="1000" value="0">
       <label class="chk" data-i18n-title="colour.keeps-colour-typical-iteration"><input id="colAnchor" type="checkbox"> <span data-i18n="colour.keep-colour-while-changing"></span></label>
       <label class="chk"><input id="animate" type="checkbox"> <span data-i18n="colour.animate-colours"></span></label>
@@ -821,15 +834,15 @@
             <option value="produkt" data-i18n="editor2.gradient-gradient"></option>
           </select></div>
         <p class="hint" id="p2eMusterText"></p>
-        <div id="p2eNRow"><div class="lbl"><label for="p2eN" data-i18n="editor2.count"></label><span class="val mono" id="p2eNVal"></span></div><input id="p2eN" type="range" min="1" max="32" step="1"></div>
+        <div id="p2eNRow"><div class="lbl wertzeile"><label for="p2eN" data-i18n="editor2.count"></label><input class="val mono wert" id="p2eNVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div><input id="p2eN" type="range" min="1" max="32" step="1"></div>
         <div class="pe2-v" data-v="a"></div>
         <div class="pe2-v" data-v="b"></div>
         <details class="pe2-mehr" id="p2eMehr">   <!-- seltene Einstellungen: aufklappbar, Standard zu -->
           <summary data-i18n="editor2.advanced"></summary>
           <div class="pe2-mehr-inhalt">
-            <div id="p2eNuRow"><div class="lbl"><label for="p2eNu" data-i18n="editor2.cells-along-first-value"></label><span class="val mono" id="p2eNuVal"></span></div><input id="p2eNu" type="range" min="1" max="16" step="1"></div>
-            <div id="p2eBreiteRow"><div class="lbl"><label for="p2eBreite" data-i18n="editor2.width"></label><span class="val mono" id="p2eBreiteVal"></span></div><input id="p2eBreite" type="range" min="0.01" max="0.3" step="0.005"></div>
-            <div id="p2eStaerkeRow"><div class="lbl"><label for="p2eStaerke" data-i18n="editor2.strength"></label><span class="val mono" id="p2eStaerkeVal"></span></div><input id="p2eStaerke" type="range" min="0" max="1" step="0.01"></div>
+            <div id="p2eNuRow"><div class="lbl wertzeile"><label for="p2eNu" data-i18n="editor2.cells-along-first-value"></label><input class="val mono wert" id="p2eNuVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div><input id="p2eNu" type="range" min="1" max="16" step="1"></div>
+            <div id="p2eBreiteRow"><div class="lbl wertzeile"><label for="p2eBreite" data-i18n="editor2.width"></label><input class="val mono wert" id="p2eBreiteVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div><input id="p2eBreite" type="range" min="0.01" max="0.3" step="0.005"></div>
+            <div id="p2eStaerkeRow"><div class="lbl wertzeile"><label for="p2eStaerke" data-i18n="editor2.strength"></label><input class="val mono wert" id="p2eStaerkeVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div><input id="p2eStaerke" type="range" min="0" max="1" step="0.01"></div>
             <label class="chk" data-i18n-title="editor2.gradient-grows-from-value"><input type="checkbox" id="p2eSaett"> <span data-i18n="editor2.runs-out-instead-repeating"></span></label>
             <label class="chk" id="p2eMitBRow"><input type="checkbox" id="p2eMitB"> <span data-i18n="editor2.own-second-gradient"></span></label>
             <div class="pe2-st" data-v="a"></div>
@@ -884,11 +897,11 @@
           <button type="button" data-preset="3" data-i18n="quality.fine"></button>
           <button type="button" data-preset="4" data-i18n="quality.maximum"></button>
         </div>
-        <div class="lbl"><label for="aaTol" data-i18n="quality.residual-noise"></label><span class="val mono" id="aaTolVal">–</span></div>
+        <div class="lbl wertzeile"><label for="aaTol" data-i18n="quality.residual-noise"></label><input class="val mono wert" id="aaTolVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="aaTol" type="range" min="0" max="1000" value="557">
-        <div class="lbl"><label for="aaMax" data-i18n="quality.samples-per-pixel-most"></label><span class="val mono" id="aaMaxVal">–</span></div>
+        <div class="lbl wertzeile"><label for="aaMax" data-i18n="quality.samples-per-pixel-most"></label><input class="val mono wert" id="aaMaxVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="aaMax" type="range" min="0" max="9" value="3">
-        <div class="lbl"><label for="aaSigma" data-i18n="quality.filter-width"></label><span class="val mono" id="aaSigmaVal">–</span></div>
+        <div class="lbl wertzeile"><label for="aaSigma" data-i18n="quality.filter-width"></label><input class="val mono wert" id="aaSigmaVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="aaSigma" type="range" min="20" max="100" value="45">
       </div>
       <div class="lbl"><label for="quality" data-i18n="quality.resolution"></label>
@@ -900,7 +913,7 @@
       </div>
       <label class="chk" data-i18n-title="quality.averages-palette-over-range"><input id="palFilter" type="checkbox"> <span data-i18n="quality.prefilter-palette"></span></label>
       <div id="palFilterRow" hidden>
-        <div class="lbl"><label for="palFilterK" data-i18n="quality.filter-strength"></label><span class="val mono" id="palFilterKVal">–</span></div>
+        <div class="lbl wertzeile"><label for="palFilterK" data-i18n="quality.filter-strength"></label><input class="val mono wert" id="palFilterKVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="palFilterK" type="range" min="0" max="1000" value="500">
       </div>
       <p class="hint" id="aaHint"></p>
@@ -1547,6 +1560,9 @@ const TEXTE = {
   'subject.inverted-1-z': { de: 'invertiert 1/z', en: 'inverted 1/z' },
   'subject.inverted-mirrored': { de: 'invertiert, gespiegelt', en: 'inverted, mirrored' },
   'subject.iterations': { de: 'Iterationen', en: 'Iterations' },
+  'subject.automatically-by-zoom-depth': { de: 'automatisch nach Zoomtiefe', en: 'automatically by zoom depth' },
+  'subject.samples': { de: 'Proben', en: 'Samples' },
+  'panel.number-entry': { de: '{0}, Zahleneingabe', en: '{0}, number entry' },
   'subject.julia-set': { de: 'Julia-Menge', en: 'Julia set' },
   'subject.julia-set-image-centre': { de: 'Julia-Menge zur Bildmitte', en: 'Julia set at image centre' },
   'subject.mandelbrot-set': { de: 'Mandelbrot-Menge', en: 'Mandelbrot set' },
@@ -5401,7 +5417,7 @@ function updateStatus() {
   $('mZoom').innerHTML = zoomTxt; $('mState').textContent = stateTxt; $('mCoords').textContent = $('coords').textContent;
   $('mDepthVal').textContent = $('depthVal').textContent; $('mDepthFill').style.width = $('depthFill').style.width;
   $('mStatus').classList.toggle('busy', S.family === 'accum' ? accRunning : phase !== 'idle' || gpuBusy || renderMs < 0);
-  if (S.autoIter) { $('iterVal').textContent = fmtGanz(maxIter); $('iterRange').value = iterToPos(maxIter); }
+  if (S.autoIter) { $('iterVal').value = fmtGanz(maxIter); $('iterRange').value = iterToPos(maxIter); }
 }
 const iterToPos = it => Math.round(1000 * Math.log(it / 50) / Math.log(2000));
 const posToIter = p => Math.round(50 * Math.pow(2000, p / 1000));
@@ -5796,7 +5812,7 @@ function sprachGewechselt() {   // nach den festen Texten einmal alles, was der 
   aaSel.dataset.levels = '';                                    // Stufen der Glättung neu beschriften
   for (const sel of document.querySelectorAll('select')) if (sel._rebuild) sel._rebuild();   // Aufklappmenüs aus den Optionen
   for (const b of $('famChips').querySelectorAll('button')) b.textContent = $('family').querySelector('option[value="' + b.dataset.value + '"]').textContent;
-  zeigePaneName(); syncAllUI(); syncCloudUI(); updateResInfo();   // syncAllUI: jeder Wert im Bedienfeld neu, auch die Zahlen
+  zeigePaneName(); beschrifteWertfelder(); syncAllUI(); syncCloudUI(); updateResInfo();   // syncAllUI: jeder Wert im Bedienfeld neu, auch die Zahlen
   if (!palEd.hidden) peRender();
   if (!$('pal2Ed').hidden) p2eRender();
   if (!posterEl.hidden) { posterZustand(...posterZustandJetzt); posterUpdateInfo(); }
@@ -6044,7 +6060,7 @@ function syncFamilyUI() {
   $('depthVal').parentElement.hidden = acc; $('depthFill').parentElement.hidden = acc; $('mDepthRow').hidden = acc;
   $('accRow').hidden = !acc;
   $('posterRes').disabled = acc;   // Punktwolken: nur die Bildschirmansicht, kein Rendern in größerer Auflösung
-  $('exposureVal').textContent = fmtStellen(S.exposure); $('gammaVal').textContent = fmtStellen(S.gamma);
+  $('exposureVal').value = fmtStellen(S.exposure); $('gammaVal').value = fmtStellen(S.gamma);
   $('exposure').value = logPos(S.exposure, EXPOSURE);
   $('gamma').value = logPos(S.gamma, GAMMA);
   $('accTarget').value = String(S.accTarget);
@@ -6177,13 +6193,18 @@ function syncCloudUI() {
   c.labels.forEach((label, i) => {
     const d = document.createElement('div');
     const [lo, hi] = c.bereiche ? c.bereiche[i] : [-3, 3], ganz = c.ganz === i, stellen = ganz ? 0 : 3;
-    d.innerHTML = '<div class="lbl"><span>' + label + '</span><span class="val mono">' + fmtZahl(S.cloudPrm[i], stellen) + '</span></div><input type="range" min="0" max="1000">';
-    const r = d.querySelector('input'); r.value = Math.round(1000 * (S.cloudPrm[i] - lo) / (hi - lo));
+    d.innerHTML = '<div class="lbl wertzeile"><span></span><input class="val mono wert" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div><input type="range" min="0" max="1000">';
+    d.querySelector('span').textContent = label;
+    const w = d.querySelector('input.wert'), r = d.querySelector('input[type=range]');
+    w.value = fmtZahl(S.cloudPrm[i], stellen);
+    r.value = Math.round(1000 * (S.cloudPrm[i] - lo) / (hi - lo));
     r.setAttribute('aria-label', t('cloud.parameter', label));   // Regler mit Namen, auch für Screenreader
+    w.setAttribute('aria-label', t('panel.number-entry', label));
     r.addEventListener('input', () => {
       const v = lo + (hi - lo) * (+r.value) / 1000; S.cloudPrm[i] = ganz ? Math.round(v) : v;
-      d.querySelector('.val').textContent = fmtZahl(S.cloudPrm[i], stellen); scheduleHash(); viewChanged();
+      w.value = fmtZahl(S.cloudPrm[i], stellen); scheduleHash(); viewChanged();
     });
+    wertFeld(w, r, () => [lo, hi], v => Math.round(1000 * (v - lo) / (hi - lo)));
     box.append(d);
   });
 }
@@ -6204,8 +6225,8 @@ famSel.addEventListener('change', () => {
   else accStopWorkers();
   resetView();
 });
-$('exposure').addEventListener('input', e => { S.exposure = logVal(+e.target.value, EXPOSURE); $('exposureVal').textContent = fmtStellen(S.exposure); colorDirty = true; scheduleHash(); requestFrame(); });
-$('gamma').addEventListener('input', e => { S.gamma = logVal(+e.target.value, GAMMA); $('gammaVal').textContent = fmtStellen(S.gamma); colorDirty = true; scheduleHash(); requestFrame(); });
+$('exposure').addEventListener('input', e => { S.exposure = logVal(+e.target.value, EXPOSURE); $('exposureVal').value = fmtStellen(S.exposure); colorDirty = true; scheduleHash(); requestFrame(); });
+$('gamma').addEventListener('input', e => { S.gamma = logVal(+e.target.value, GAMMA); $('gammaVal').value = fmtStellen(S.gamma); colorDirty = true; scheduleHash(); requestFrame(); });
 $('accTarget').addEventListener('change', e => { S.accTarget = parseInt(e.target.value, 10) || 5e7; accDirty = true; scheduleHash(); requestFrame(); });   // neue Probenzahl: neu sammeln
 $('juliaHere').addEventListener('click', () => {
   const re = S.cx[0], im = S.cy[0];
@@ -6233,7 +6254,7 @@ function syncFormulaUI() {
     const [label, lo, hi] = fm.param;
     $('paramLabel').textContent = t(label);
     paramEl.value = Math.round(1000 * (S.param - lo) / (hi - lo));
-    $('paramVal').textContent = fmtZahl(S.param, 3);
+    $('paramVal').value = fmtZahl(S.param, 3);
   }
 }
 let newtonHob = false;   // hat die Wahl von Newton/Nova die Potenz von 2 auf 3 gehoben?
@@ -6260,7 +6281,7 @@ $('seq').addEventListener('input', () => {
 paramEl.addEventListener('input', () => {
   const [, lo, hi] = FORMULAS[S.formula].param || ['', -1, 1];
   S.param = lo + (hi - lo) * (+paramEl.value) / 1000;
-  $('paramVal').textContent = fmtZahl(S.param, 3);
+  $('paramVal').value = fmtZahl(S.param, 3);
   viewChanged();
 });
 syncFormulaUI();
@@ -6302,12 +6323,12 @@ syncZ0UI();
 
 const iterRange = $('iterRange'), iterAuto = $('iterAuto');
 function syncIterUI() {
-  iterRange.disabled = S.autoIter;
+  iterRange.disabled = S.autoIter; $('iterVal').disabled = S.autoIter;
   const it = currentMaxIter();
-  $('iterVal').textContent = fmtGanz(it);
+  $('iterVal').value = fmtGanz(it);
   iterRange.value = iterToPos(it);
 }
-iterRange.addEventListener('input', () => { S.manualIter = posToIter(+iterRange.value); $('iterVal').textContent = fmtGanz(S.manualIter); viewChanged(); });
+iterRange.addEventListener('input', () => { S.manualIter = posToIter(+iterRange.value); $('iterVal').value = fmtGanz(S.manualIter); viewChanged(); });
 iterAuto.addEventListener('change', () => {
   if (!iterAuto.checked) S.manualIter = currentMaxIter();
   S.autoIter = iterAuto.checked; syncIterUI(); lastStatusKey = ''; viewChanged();
@@ -6706,7 +6727,7 @@ for (const key of ['a', 'b']) p2eVerlaufBlock(key);
 p2eAusListe();
 // Regler der Verlaufs-Art: Anzahl, Felder, Breite, Stärke
 const P2E_ZAHL = { n: ['p2eN', v => String(v)], nu: ['p2eNu', v => String(v)], breite: ['p2eBreite', v => fmtZahl(v, 3)], staerke: ['p2eStaerke', v => fmtZahl(v, 2)] };
-for (const [k, [id, fmt]] of Object.entries(P2E_ZAHL)) $(id).addEventListener('input', () => { p2Draft[k] = +$(id).value; $(id + 'Val').textContent = fmt(p2Draft[k]); p2eChanged(); });
+for (const [k, [id, fmt]] of Object.entries(P2E_ZAHL)) $(id).addEventListener('input', () => { p2Draft[k] = +$(id).value; $(id + 'Val').value = fmt(p2Draft[k]); p2eChanged(); });
 $('p2eMuster').addEventListener('change', () => { p2Draft.muster = $('p2eMuster').value; p2eRender(); p2eChanged(); });
 $('p2eSaett').addEventListener('change', e => { p2Draft.saett = e.target.checked ? 3 : 0; p2eChanged(); });
 $('p2eMitB').addEventListener('change', e => { p2Draft.b = e.target.checked ? JSON.parse(JSON.stringify(p2Draft.a)) : null; p2eRender(); p2eChanged(); });
@@ -6755,7 +6776,7 @@ function p2eRender() {   // alle Bedienelemente aus dem Entwurf
     $('p2eMuster').value = m; $('p2eMusterText').textContent = P2E_TEXT[m] ? t(P2E_TEXT[m]) : '';
     $('p2eNRow').hidden = !(m === 'linien' || m === 'kacheln'); $('p2eNuRow').hidden = m !== 'kacheln';
     $('p2eBreiteRow').hidden = m !== 'linien'; $('p2eStaerkeRow').hidden = !(m === 'linien' || (m === 'haelften' && !p2Draft.b));
-    for (const [k, [id, fmt]] of Object.entries(P2E_ZAHL)) { $(id).value = p2Draft[k]; $(id + 'Val').textContent = fmt(p2Draft[k]); }
+    for (const [k, [id, fmt]] of Object.entries(P2E_ZAHL)) { $(id).value = p2Draft[k]; $(id + 'Val').value = fmt(p2Draft[k]); }
     $('p2eSaett').checked = p2Draft.saett > 0;
     $('p2eMitBRow').hidden = !mitB; $('p2eMitB').checked = !!p2Draft.b;
     for (const key of ['a', 'b']) {   // Kopf oben, Stützstellen unter „Erweitert“; der zweite Verlauf nur, wenn das Muster ihn nutzt und er eingeschaltet ist
@@ -6816,16 +6837,17 @@ const densToPos = d => Math.round(1000 * Math.log(d / 0.002) / Math.log(50000));
 const posToDens = p => 0.002 * Math.pow(50000, p / 1000);
 const densEl = $('density');
 densEl.value = densToPos(S.density);
-const showDens = () => { $('densVal').textContent = fmtZahl(S.density, 3); };
+const showDens = () => { $('densVal').value = fmtZahl(S.density, 3); $('offsetVal').value = fmtZahl(S.offset, 3); };
 densEl.addEventListener('input', () => { S.density = posToDens(+densEl.value); showDens(); colorDirty = true; scheduleHash(); requestFrame(); });
 showDens();
-$('offset').addEventListener('input', e => { S.offset = (+e.target.value) / 1000; colorDirty = true; if (S.family === 'accum') accDirty = true; scheduleHash(); requestFrame(); });   // Punktwolken: die Farben stecken in den Zählern
+$('offset').addEventListener('input', e => { S.offset = (+e.target.value) / 1000; $('offsetVal').value = fmtZahl(S.offset, 3); colorDirty = true; if (S.family === 'accum') accDirty = true; scheduleHash(); requestFrame(); });   // Punktwolken: die Farben stecken in den Zählern
 $('offset').value = Math.round(S.offset * 1000);
 // Stauchung: Regler von links (linear, p = 1) über Wurzel (0,5) und Log (0) nach rechts (stärker, bis p = −2)
 const compToPos = p => Math.round((1 - p) / 3 * 1000), posToComp = pos => 1 - 3 * pos / 1000;
 function showComp() {
   const p = S.comp, near = (a) => Math.abs(p - a) < 0.02;
-  $('compVal').textContent = fmtZahl(p, 2) + (near(1) ? t('panel.linear') : near(0.5) ? t('panel.square-root') : near(0) ? t('panel.log') : p < 0 ? t('panel.stronger-than-log') : '');
+  $('compVal').value = fmtZahl(p, 2);
+  $('compNote').textContent = (near(1) ? t('panel.linear') : near(0.5) ? t('panel.square-root') : near(0) ? t('panel.log') : p < 0 ? t('panel.stronger-than-log') : '');
   $('compRow').hidden = !(S.mapping === 11 || S.mapping === 12) || S.family !== 'escape' || !!FORMULAS[S.formula].seq;
 }
 $('comp').addEventListener('input', () => { S.comp = posToComp(+$('comp').value); showComp(); colorDirty = true; scheduleHash(); requestFrame(); });
@@ -6852,7 +6874,7 @@ const posZuGrenze = p => {
   const g = LY_GRENZE.knick * Math.pow(LY_GRENZE.max / LY_GRENZE.knick, (p - LY_KNICK) / (1000 - LY_KNICK));
   return g < 1 ? Math.round(g * 100) / 100 : g < 10 ? Math.round(g * 10) / 10 : +g.toPrecision(2);
 };
-function syncLyGrenze() { $('lyGrenze').value = grenzeZuPos(S.lyGrenze); $('lyGrenzeVal').textContent = S.lyGrenze % 1 ? fmtZahl(S.lyGrenze, S.lyGrenze < 1 ? 2 : 1) : fmtGanz(S.lyGrenze); }
+function syncLyGrenze() { $('lyGrenze').value = grenzeZuPos(S.lyGrenze); $('lyGrenzeVal').value = S.lyGrenze % 1 ? fmtZahl(S.lyGrenze, S.lyGrenze < 1 ? 2 : 1) : fmtGanz(S.lyGrenze); }
 $('lyGrenze').addEventListener('input', () => { S.lyGrenze = posZuGrenze(+$('lyGrenze').value); syncLyGrenze(); scheduleHash(); viewChanged(); });   // neu rechnen: die Werte entstehen beim Iterieren
 syncLyGrenze();
 const glowSel = $('glowMode'), glowRange = $('glowWidth');
@@ -6862,7 +6884,8 @@ function syncGlowUI() {
   glowSel.value = String(S.glowMode);
   glowRange.value = gwToPos(S.glowWidth);
   glowRange.disabled = S.glowMode === 0;
-  $('glowVal').textContent = S.glowMode === 0 ? t('panel.off') : fmtZahl(S.glowWidth, 2) + ' px';
+  $('glowVal').value = S.glowMode === 0 ? t('panel.off') : fmtZahl(S.glowWidth, 2) + ' px';
+  $('glowVal').disabled = S.glowMode === 0;
 }
 glowSel.addEventListener('change', () => {
   S.glowMode = clamp(parseInt(glowSel.value, 10) || 0, 0, 2);
@@ -6871,7 +6894,7 @@ glowSel.addEventListener('change', () => {
 });
 glowRange.addEventListener('input', () => {
   S.glowWidth = posToGw(+glowRange.value);
-  $('glowVal').textContent = fmtZahl(S.glowWidth, 2) + ' px';
+  $('glowVal').value = fmtZahl(S.glowWidth, 2) + ' px';
   colorDirty = true; scheduleHash(); requestFrame();
 });
 syncGlowUI();
@@ -6974,13 +6997,13 @@ function buildAaOptions() {   // nur Stufen anbieten, die bei aktueller Fläche 
 function syncAaUI() {
   const adaptive = aaAdaptiv();
   aaModeSel.value = S.aaMode; palFilterEl.checked = S.palFilter; $('palFilterRow').hidden = !S.palFilter || !!FORMULAS[S.formula].seq || lyapModus() !== 0 || (winkelModus() & 1) !== 0 || zweiAktiv() || statModus() !== 0;
-  palFilterKEl.value = palKToPos(S.palFilterK); $('palFilterKVal').textContent = fmtZahl(S.palFilterK, 2) + '×';
+  palFilterKEl.value = palKToPos(S.palFilterK); $('palFilterKVal').value = fmtZahl(S.palFilterK, 2) + '×';
   for (const b of document.querySelectorAll('#aaPresets button')) {   // passender Preset-Knopf leuchtet
     const p = AA_PRESETS[b.dataset.preset];
     b.classList.toggle('on', !!p && Math.abs(S.aaTol - p.tol) < 1e-9 && S.aaMax === p.max && Math.abs(S.aaSigma - AA_SIGMA.def) < 1e-9);
   }
   aaTolEl.value = aaTolToPos(S.aaTol); aaMaxEl.value = aaMaxToPos(S.aaMax); aaSigmaEl.value = Math.round(S.aaSigma * 100);
-  $('aaTolVal').textContent = fmtZahl(S.aaTol * 100, 1) + ' %'; $('aaMaxVal').textContent = String(S.aaMax); $('aaSigmaVal').textContent = fmtZahl(S.aaSigma, 2) + ' px';
+  $('aaTolVal').value = fmtZahl(S.aaTol * 100, 1) + ' %'; $('aaMaxVal').value = String(S.aaMax); $('aaSigmaVal').value = fmtZahl(S.aaSigma, 2) + ' px';
   $('aaGridRow').hidden = adaptive; $('aaAdaptRow').hidden = !adaptive;
   buildAaOptions();
   if (adaptive) {
@@ -7052,6 +7075,76 @@ function showShot(url, filename) {
 let shotUrl = null;
 $('closeModal').addEventListener('click', () => { $('modal').hidden = true; $('shot').removeAttribute('src'); });
 $('modal').addEventListener('click', e => { if (e.target === $('modal')) $('closeModal').click(); });
+
+// ---- Werte tippen statt schieben --------------------------------------------------------------------------------
+// Jede Wertanzeige neben einem Regler ist ein Eingabefeld. Getippter Text wird auf die Reglerstellung zurückgerechnet
+// und dem Regler als sein eigenes input-Ereignis untergeschoben: Jede Änderung läuft damit durch denselben Weg wie das
+// Schieben, und kein Regler braucht seine Logik ein zweites Mal. Enter oder Verlassen übernimmt, Esc verwirft.
+function leseZahl(text) {
+  // Einheiten und Zusätze („%“, „px“, „×“) werden überlesen. Bei den Trennzeichen entscheidet die Sprache: Ein einzelnes
+  // Trennzeichen mit genau drei Ziffern dahinter ist ein Tausenderpunkt, wenn es in dieser Sprache einer ist – so wird
+  // im Deutschen „1.500“ zu 1500 und „1,5“ zu 1,5, im Englischen umgekehrt. Bei mehreren zählt nur das letzte.
+  const roh = String(text).replace(/[\s\u00A0\u202F]/g, '');
+  const m = /-?[0-9][0-9.,]*/.exec(roh);
+  if (!m) return NaN;
+  const vz = m[0][0] === '-' ? -1 : 1, ziffern = m[0].replace('-', '');
+  const teile = ziffern.split(/[.,]/), tausender = LANG === 'en' ? ',' : '.';
+  if (teile.length === 1) return vz * +teile[0];
+  const letztesTrenn = ziffern[ziffern.length - teile[teile.length - 1].length - 1];
+  const istTausender = teile[teile.length - 1].length === 3 && (teile.length > 2 || letztesTrenn === tausender);
+  return vz * +(istTausender ? teile.join('') : teile.slice(0, -1).join('') + '.' + teile[teile.length - 1]);
+}
+// Feld, Regler, Wertebereich, Wert → Reglerstellung, und wahlweise ein eigener Weg für Werte, die genau gelten sollen:
+// Der Regler hat nur tausend Stellungen, aus getippten 12.000 Iterationen würden sonst 11.995.
+function wertFeld(w, r, grenzen, zuStellung, genau) {
+  const uebernehmen = () => {
+    if (w.value === w.dataset.vorher) return;                                            // nichts getippt
+    const v = leseZahl(w.value), [lo, hi] = grenzen();
+    if (!isFinite(v) || r.disabled) { w.value = w.dataset.vorher || w.value; return; }    // unlesbar: alter Wert zurück
+    if (genau) genau(clamp(v, lo, hi));
+    else {
+      r.value = String(zuStellung(clamp(v, lo, hi)));
+      r.dispatchEvent(new Event('input', { bubbles: true }));   // derselbe Weg wie beim Schieben; der schreibt auch das Feld neu
+    }
+    w.dataset.vorher = w.value;
+  };
+  w.addEventListener('focus', () => { w.dataset.vorher = w.value; w.select(); });
+  w.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { w.value = w.dataset.vorher || w.value; w.blur(); e.stopPropagation(); e.preventDefault(); }
+    else if (e.key === 'Enter') { uebernehmen(); w.blur(); }
+  });
+  w.addEventListener('change', uebernehmen);   // Verlassen des Feldes übernimmt ebenso
+}
+// Regler mit Wertanzeige: Feld, Regler, Wertebereich, Wert → Reglerstellung. Bei den Reglern des Paletteneditors ist die
+// Stellung der Wert selbst, darum die Einsfunktion.
+const WERTFELDER = [
+  ['iterVal', 'iterRange', () => [50, 100000], iterToPos, v => { S.manualIter = Math.round(v); syncIterUI(); viewChanged(); }],
+  ['paramVal', 'param', () => (FORMULAS[S.formula].param || ['', -1, 1]).slice(1),
+    v => { const [, lo, hi] = FORMULAS[S.formula].param || ['', -1, 1]; return Math.round(1000 * (v - lo) / (hi - lo)); }],
+  ['exposureVal', 'exposure', () => [EXPOSURE.min, EXPOSURE.max], v => logPos(v, EXPOSURE)],
+  ['gammaVal', 'gamma', () => [GAMMA.min, GAMMA.max], v => logPos(v, GAMMA)],
+  ['compVal', 'comp', () => [-2, 1], compToPos],
+  ['lyGrenzeVal', 'lyGrenze', () => [LY_GRENZE.min, LY_GRENZE.max], grenzeZuPos],
+  ['glowVal', 'glowWidth', () => [0.25, 8], gwToPos],
+  ['densVal', 'density', () => [0.002, 100], densToPos],
+  ['offsetVal', 'offset', () => [0, 1], v => Math.round(1000 * v)],
+  ['p2eNVal', 'p2eN', () => [1, 32], v => Math.round(v)],
+  ['p2eNuVal', 'p2eNu', () => [1, 16], v => Math.round(v)],
+  ['p2eBreiteVal', 'p2eBreite', () => [0.01, 0.3], v => v],
+  ['p2eStaerkeVal', 'p2eStaerke', () => [0, 1], v => v],
+  ['aaTolVal', 'aaTol', () => [AA_TOL.min * 100, AA_TOL.max * 100], v => aaTolToPos(v / 100)],
+  ['aaMaxVal', 'aaMax', () => [8, 4096], aaMaxToPos],
+  ['aaSigmaVal', 'aaSigma', () => [AA_SIGMA.min, AA_SIGMA.max], v => Math.round(100 * v)],
+  ['palFilterKVal', 'palFilterK', () => [PALK.min, PALK.max], palKToPos],
+];
+for (const [f, reg, grenzen, zuStellung, genau] of WERTFELDER) wertFeld($(f), $(reg), grenzen, zuStellung, genau);
+function beschrifteWertfelder() {   // Name für Screenreader aus der Beschriftung des Reglers, in der aktuellen Sprache
+  for (const [f, reg] of WERTFELDER) {
+    const l = document.querySelector('label[for="' + reg + '"]');
+    $(f).setAttribute('aria-label', t('panel.number-entry', (l ? l.textContent : reg).trim()));
+  }
+}
+beschrifteWertfelder();
 
 // ============================================================
 //  Los geht's

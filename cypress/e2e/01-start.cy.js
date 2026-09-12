@@ -12,7 +12,7 @@ describe('Start und Grundzustand', () => {
     cy.get('#state').invoke('text').should('match', /Fertig · \d+ ms/).and('match', /120 Iterationen/);
     cy.get('#zoomRead').should('have.text', 'Zoom 1,0×');
     cy.get('#coords').should('contain.text', 'Re -0,008').and('contain.text', 'Im 0,000');   // Fraktal in der Fläche neben dem Bedienfeld zentriert
-    cy.get('#iterVal').should('have.text', '120');
+    cy.get('#iterVal').should('have.value', '120');
     cy.get('#depthVal').should('have.text', '10^0 von 10^26');
     cy.get('#techInfo').invoke('text').should('match', /WGSL|GLSL|WebGL/);
   });

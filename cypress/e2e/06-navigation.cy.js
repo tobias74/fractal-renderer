@@ -66,7 +66,7 @@ describe('Navigation im Bild', () => {
   it('Tiefenzoom aus der Adresse wird exakt wiederhergestellt', () => {
     cy.visitApp(DEEP_HASH);
     cy.get('#zoomRead').invoke('text').should('match', /Zoom 1,4·10.?20/);
-    cy.get('#iterVal').invoke('text').then(t => expect(parseInt(t.replace(/\D/g, ''), 10), 'Iterationen automatisch hoch').to.be.greaterThan(5000));
+    cy.get('#iterVal').invoke('val').then(t => expect(parseInt(t.replace(/\D/g, ''), 10), 'Iterationen automatisch hoch').to.be.greaterThan(5000));
     cy.get('#coords').should('contain.text', 'Re -0,7447252191636852');
     cy.get('#depthVal').should('contain.text', '10^20');
     cy.get('#state').invoke('text').should('match', /Fertig/);
