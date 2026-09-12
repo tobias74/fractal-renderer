@@ -95,6 +95,34 @@ describe('Glättung und Technik', () => {
     cy.get('#aaHint').should('contain.text', '100 % der Pixel fertig');
   });
 
+  // Das schnelle Verfahren nimmt dieselbe Gaußglocke und dieselben Regler, legt die Proben aber geordnet statt zufällig
+  // und lässt Rauschen dort stehen, wo das Pixel in sich ohnehin stark schwankt. Bei gleicher Einstellung muss es darum
+  // um ein Vielfaches früher fertig sein als das klassische adaptive Verfahren.
+  it('Schnelle Glättung: dieselben Regler, ein Bruchteil der Zeit', () => {
+    const glaettungsZeit = () => cy.get('#state').invoke('text').then(txt => {
+      const m = /\+ ([\d.,]+) (ms|s) Glättung/.exec(txt);
+      expect(m, 'Glättungszeit in der Statuszeile: ' + txt).to.not.be.null;
+      return (+m[1].replace(/\./g, '').replace(',', '.')) * (m[2] === 's' ? 1000 : 1);
+    });
+    cy.visitApp('mode=mandel&re=-0.7476861&im=0.0675545&z=2e5', { aa: null, wait: false,
+      storage: { 'fractal.aamode': 'adaptive', 'fractal.aamax': '256', 'fractal.aatol': '0.006', 'fractal.quality': '0.5' } });
+    cy.waitRender(/Fertig · [\d,]+ (ms|s) \+ [\d,]+ (ms|s) Glättung/, 240000);
+    glaettungsZeit().then(klassisch => {
+      cy.rerender(() => cy.pickOption('aaModeSel', 'fast'), /Fertig · [\d,]+ (ms|s) \+ [\d,]+ (ms|s) Glättung/);
+      cy.get('#aaGridRow').should('have.attr', 'hidden');           // dieselben Regler wie beim adaptiven Verfahren
+      cy.get('#aaAdaptRow').should('not.have.attr', 'hidden');
+      cy.get('#aaMaxVal').should('have.text', '256');
+      cy.get('#resInfo').should('contain.text', 'Glättung adaptiv schnell');
+      cy.get('#aaHint').should('contain.text', '100 % der Pixel fertig');
+      cy.window().then(win => expect(win.localStorage.getItem('fractal.aamode')).to.eq('fast'));
+      glaettungsZeit().then(schnell => {
+        expect(schnell, `schnell ${Math.round(schnell)} ms gegen adaptiv ${Math.round(klassisch)} ms`).to.be.lessThan(klassisch / 2);
+      });
+    });
+    cy.pickOption('aaModeSel', 'grid');
+    cy.waitRender();
+  });
+
   it('Adaptive Glättung aus dem Speicher: Verfahren, Regler und Palettenvorfilterung werden übernommen', () => {
     cy.visitApp('', { storage: { 'fractal.aamode': 'adaptive', 'fractal.aamax': '256', 'fractal.aatol': '0.006', 'fractal.aasigma': '0.6', 'fractal.palfilter': '1' } });
     cy.get('#aaModeSel').should('have.value', 'adaptive');

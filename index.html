@@ -871,6 +871,7 @@
         <select id="aaModeSel" style="width:44%">
           <option value="grid" data-i18n="quality.grid-n-n"></option>
           <option value="adaptive" data-i18n="quality.adaptive"></option>
+          <option value="fast" data-i18n="quality.adaptive-fast"></option>
         </select>
       </div>
       <div class="lbl" id="aaGridRow"><label for="aaSel" data-i18n="quality.samples-per-pixel"></label>
@@ -1424,6 +1425,8 @@ const TEXTE = {
   'panel.1-sample-per-pixel': { de: '1 Probe je Pixel', en: '1 sample per pixel' },
   'panel.adaptive-smoothing-not-available': { de: 'Adaptive Glättung nicht verfügbar: {0}', en: 'Adaptive smoothing not available: {0}' },
   'panel.adaptive-up-samples-per': { de: 'adaptiv, bis {0} Proben je Pixel', en: 'adaptive, up to {0} samples per pixel' },
+  'panel.fast-up-samples-per': { de: 'schnell, bis {0} Proben je Pixel', en: 'fast, up to {0} samples per pixel' },
+  'panel.fast-hint': { de: ' Das schnelle Verfahren legt die Proben geordnet statt zufällig, so fällt der Fehler rascher, und es lässt Rauschen dort stehen, wo ein Pixel in sich ohnehin stark schwankt und es nicht auffällt. Darum steht die höchste Probenzahl schon durch das Restrauschen fest, lange vor dem Deckel.', en: ' The fast method places its samples in order rather than at random, so the error falls faster, and it leaves noise where a pixel varies strongly within itself and it does not show. The highest sample count therefore follows from the residual noise alone, well below the limit.' },
   'panel.areas': { de: 'Bereiche', en: 'Areas' },
   'panel.b-amplitude': { de: 'b · Ausschlag', en: 'b · amplitude' },
   'panel.base': { de: 'a · Grundwert', en: 'a · base' },
@@ -1478,6 +1481,7 @@ const TEXTE = {
   'panel.would-need-mb-px': { de: '{0} × {0} bräuchte {1} MB bei {2} × {3} px, mehr als die festen {4} MB: gerechnet wird {5} × {5}. Auflösung senken oder Fenster verkleinern.', en: '{0} × {0} would need {1} MB at {2} × {3} px, more than the fixed {4} MB: rendering at {5} × {5}. Lower the resolution or shrink the window.' },
   // quality
   'quality.accumulation-not-available': { de: 'Akkumulation nicht verfügbar: {0}', en: 'Accumulation not available: {0}' },
+  'quality.adaptive-fast': { de: 'Adaptiv, schnell', en: 'Adaptive, fast' },
   'quality.adaptive': { de: 'Adaptiv', en: 'Adaptive' },
   'quality.averages-palette-over-range': { de: 'Mittelt die Palette über den Bereich, den sie innerhalb eines Pixels durchläuft: weniger Schnee bei dichten Paletten, feine Streifen werden weicher', en: 'Averages the palette over the range it passes through within one pixel: less snow with dense palettes, fine stripes get softer' },
   'quality.fast': { de: 'Schnell', en: 'Fast' },
@@ -1503,6 +1507,7 @@ const TEXTE = {
   'quality.smoothing': { de: 'Glättung', en: 'Smoothing' },
   'quality.smoothing-adaptive-preparing': { de: 'Glättung adaptiv (wird vorbereitet)', en: 'smoothing adaptive (preparing)' },
   'quality.smoothing-adaptive-up-samples': { de: 'Glättung adaptiv, bis {0} Proben je Pixel', en: 'smoothing adaptive, up to {0} samples per pixel' },
+  'quality.smoothing-fast-up-samples': { de: 'Glättung adaptiv schnell, bis {0} Proben je Pixel', en: 'smoothing adaptive fast, up to {0} samples per pixel' },
   'quality.smoothing-m-samples': { de: 'Glättung {0} × {0}{1} · {2} Mio. Proben', en: 'smoothing {0} × {0}{1} · {2} M samples' },
   // site
   'site.cookies': { de: 'Cookies', en: 'Cookies' },
@@ -1662,6 +1667,8 @@ const aaTolToPos = t => Math.round(1000 * Math.log(t / AA_TOL.min) / Math.log(AA
 const aaPosToTol = p => AA_TOL.min * Math.pow(AA_TOL.max / AA_TOL.min, Math.min(1000, Math.max(0, p)) / 1000);   // ohne clamp: das ist beim Laden des Speichers noch nicht definiert
 const aaMaxToPos = n => Math.min(9, Math.max(0, Math.round(Math.log2(n / 8))));
 const aaPosToMax = p => 8 * Math.pow(2, Math.min(9, Math.max(0, p)));
+const AA_MODI = ['grid', 'adaptive', 'fast'];   // Raster, adaptiv, adaptiv schnell
+const aaAdaptiv = () => S.aaMode === 'adaptive' || S.aaMode === 'fast';
 const AA_PRESETS = { 1: { tol: 0.03, max: 16 }, 2: { tol: 0.012, max: 64 }, 3: { tol: 0.006, max: 256 }, 4: { tol: 0.003, max: 1024 } };   // Voreinstellungen: Restrauschen und Obergrenze, Filterbreite jeweils Standard
 const ACC_TARGETS = [3e6, 1e7, 5e7, 2e8, 1e9];   // Auswahl unter „Proben“ beim Sammeln
 // Belichtung und Gamma der Punktwolken: beide logarithmisch, damit kleine und große Werte gleich fein einstellbar sind
@@ -1672,6 +1679,14 @@ const PALK = { min: 0.25, max: 4, def: 1 };   // Filterstärke der Palettenvorfi
 const palKToPos = k => Math.round(1000 * Math.log(k / PALK.min) / Math.log(PALK.max / PALK.min));
 const palPosToK = p => PALK.min * Math.pow(PALK.max / PALK.min, Math.min(1000, Math.max(0, p)) / 1000);
 const AA_MINN = 8;          // so viele Zufallsproben bekommt jedes Pixel mindestens, bevor die Streuung entscheidet
+// Schnelles Verfahren: dieselbe Gaußglocke, aber die Proben liegen geordnet (R2-Folge) statt zufällig, und die Schwelle
+// folgt der Sichtbarkeit. Beides zusammen bringt harte Kanten von rund 1700 Proben auf gut ein Dutzend.
+const AA_MINN_SCHNELL = 4;  // geordnete Proben: vier reichen, um die Streuung im Pixel zu schätzen
+const AA_MASKE = 12.5;      // Schwelle = Toleranz × diesem Faktor × Streuung im Pixel: je unruhiger das Pixel, desto weniger fällt ein Rest auf
+// Das Uniform des Akkumulationsdurchlaufs, für beide Renderer gleich: (Toleranz, höchste Probenzahl, kleinste
+// Probenzahl, Modus) und (schnelles Verfahren, Faktor der Sichtbarkeitsschwelle, 0, 0). Zum Zurücksetzen und zum
+// Fertigmelden gibt es keine Kennwerte, dann zählt nur der Modus.
+const aaUniform = (ap, modus) => ap ? [ap.tol, ap.maxN, ap.minN, modus, ap.schnell || 0, ap.maske || 0, 0, 0] : [0, 0, 0, modus, 0, 0, 0, 0];
 const AA_ADAPT_BYTES = 50;  // je Pixel neben der Ebene 0: Probe 8, zwei Farbsummen 32, zwei Zähler 8, zwei Bedarfsmasken 2
 const DEFAULT_AA = window.matchMedia('(pointer: coarse)').matches ? 2 : 3;   // Proben je Pixel und Richtung
 const INSIDE = 0x80000000;          // Bit 31 = innen; darunter |z| am Ende (24 Bit); außen: Iterationen als 24.8-Festkomma
@@ -2069,9 +2084,21 @@ fn mische(x: u32) -> u32 {
   return h;
 }
 fn hash3(p: vec3u) -> u32 { return mische(p.x ^ mische(p.y ^ mische(p.z))); }
+// Gaußverteilt um die Pixelmitte, σ = P.extra.x, bei 3 σ abgeschnitten. Beim schnellen Verfahren (adapt = 2) kommen die
+// beiden Zufallszahlen nicht aus einem Streuwerk, sondern aus der R2-Folge: aufeinanderfolgende Proben rücken um die
+// Kehrwerte der plastischen Zahl weiter und decken das Pixel darum gleichmäßig ab, statt zu klumpen. Jedes Pixel dreht
+// die Folge um einen eigenen Zufallswert, sonst läge in allen Pixeln dasselbe Muster.
 fn jitter(px: vec2u, seed: u32) -> vec2f {
-  let u1 = (f32(hash3(vec3u(px, 2u * seed)) >> 8u) + 0.5) * (1.0 / 16777216.0);
-  let u2 = f32(hash3(vec3u(px, 2u * seed + 1u)) >> 8u) * (1.0 / 16777216.0);
+  var u1: f32; var u2: f32;
+  if (P.adapt == 2u) {
+    let dreh = vec2f(f32(hash3(vec3u(px, 5u)) >> 8u), f32(hash3(vec3u(px, 9u)) >> 8u)) * (1.0 / 16777216.0);
+    let k = f32(seed);
+    u1 = max(fract(dreh.x + k * 0.7548776662466927), 1.0e-7);
+    u2 = fract(dreh.y + k * 0.5698402909980532);
+  } else {
+    u1 = (f32(hash3(vec3u(px, 2u * seed)) >> 8u) + 0.5) * (1.0 / 16777216.0);
+    u2 = f32(hash3(vec3u(px, 2u * seed + 1u)) >> 8u) * (1.0 / 16777216.0);
+  }
   let r = min(sqrt(-2.0 * log(u1)), 3.0) * P.extra.x;
   return vec2f(r * cos(6.2831853 * u2), r * sin(6.2831853 * u2));
 }
@@ -2105,7 +2132,7 @@ fn fsFast(pos: vec4f) -> vec4u {
 
 // Ausgabe: x = Iterationen (24.8) | Wurzel<<26 bzw. innen-Flag + |z|, y = Abstand zum Rand bzw. innen: log-Konvergenzrate
 @fragment fn fs(@builtin(position) pos0: vec4f) -> @location(0) vec4u {
-  if (P.adapt == 1u && textureLoad(need, vec2i(pos0.xy), 0).x == 0u) { discard; return vec4u(0u, 0u, 0u, 1u); }   // Pixel ist fertig
+  if (P.adapt != 0u && textureLoad(need, vec2i(pos0.xy), 0).x == 0u) { discard; return vec4u(0u, 0u, 0u, 1u); }   // Pixel ist fertig
   var pos = pos0;
   if (P.jit != 0u) { pos = vec4f(pos0.xy + jitter(vec2u(pos0.xy), P.jit), pos0.zw); }
   if (FAST == 1u) { return fsFast(pos); }
@@ -2605,24 +2632,30 @@ const WGSL_COLOR = WGSL_COLOR_LIB + /* wgsl */`
   return vec4f(sum / f32(max(n, 1u)), 1.0);
 }`;
 
-// Adaptive Glättung: neue Zufallsprobe einfärben und aufsummieren, Bedarf nach Standardfehler des Mittelwerts neu bewerten.
-// A = (Toleranz, höchste Probenzahl, kleinste Probenzahl, Modus: 0 Probe hinzufügen, 1 nur Bedarf neu bewerten, 2 zurücksetzen)
+// Adaptive Glättung: neue Probe einfärben und aufsummieren, Bedarf nach Standardfehler des Mittelwerts neu bewerten.
+// A.a = (Toleranz, höchste Probenzahl, kleinste Probenzahl, Modus: 0 Probe hinzufügen, 1 nur Bedarf neu bewerten,
+// 2 zurücksetzen, 3 als fertig markieren), A.b = (schnelles Verfahren, Faktor der Sichtbarkeitsschwelle, 0, 0)
 const WGSL_AAACC = WGSL_COLOR_LIB + /* wgsl */`
 @group(0) @binding(6) var jit: texture_2d<u32>;
-@group(0) @binding(7) var<uniform> A: vec4f;
+struct AAP { a: vec4f, b: vec4f };
+@group(0) @binding(7) var<uniform> A: AAP;
 struct AccOut { @location(0) sum: vec4f, @location(1) cnt: vec4f, @location(2) need: vec4u };
 fn aaNeed(s: vec4f, n: f32) -> bool {
-  if (n >= A.y) { return false; }
-  if (n < A.z) { return true; }
+  if (n >= A.a.y) { return false; }
+  if (n < A.a.z) { return true; }
   let mean = lum(s.xyz) / n;
   let v = max(s.w / n - mean * mean, 0.0);
-  return sqrt(v / n) > A.x;
+  // Schnelles Verfahren: Geordnete Proben decken das Pixel gleichmäßig ab, ihr Fehler fällt darum mit n^-3/4 statt
+  // n^-1/2. Und die Schwelle wächst mit der Streuung im Pixel: Wo innerhalb eines Pixels ohnehin Helligkeiten
+  // aufeinandertreffen, fällt ein Rest an Rauschen nicht auf, während ruhige Flächen die volle Toleranz behalten.
+  if (A.b.x > 0.5) { return sqrt(v) * pow(n, -0.75) > max(A.a.x, A.b.y * A.a.x * sqrt(v)); }
+  return sqrt(v / n) > A.a.x;
 }
 @fragment fn fs(@builtin(position) pos: vec4f) -> AccOut {
   let xy = vec2i(pos.xy);
-  if (A.w > 1.5) { return AccOut(vec4f(0.0), vec4f(0.0), vec4u(select(0u, 1u, A.w < 2.5), 0u, 0u, 1u)); }   // 2 = neu anfangen, 3 = als fertig markieren
+  if (A.a.w > 1.5) { return AccOut(vec4f(0.0), vec4f(0.0), vec4u(select(0u, 1u, A.a.w < 2.5), 0u, 0u, 1u)); }   // 2 = neu anfangen, 3 = als fertig markieren
   var s = textureLoad(accSum, xy, 0); var n = textureLoad(accCnt, xy, 0).x;
-  if (A.w < 0.5 && aaNeed(s, n)) {
+  if (A.a.w < 0.5 && aaNeed(s, n)) {
     let px = textureLoad(jit, xy, 0);
     if (px.x != 0xFFFFFFFFu) { let c = sampleColor(px, xy, 0); let l = lum(c); s = vec4f(s.xyz + c, s.w + l * l); n += 1.0; }
   }
@@ -2835,9 +2868,17 @@ uint mische(uint h) {   // derselbe 32-Bit-Mischer wie im WGSL-Shader, Konstante
   return h;
 }
 uint hash3(uvec3 p) { return mische(p.x ^ mische(p.y ^ mische(p.z))); }
-vec2 jitter(uvec2 px, uint seed) {   // gaußverteilt um die Pixelmitte, σ = uSigma, bei 3 σ abgeschnitten
-  float u1 = (float(hash3(uvec3(px, 2u * seed)) >> 8u) + 0.5) / 16777216.0;
-  float u2 = float(hash3(uvec3(px, 2u * seed + 1u)) >> 8u) / 16777216.0;
+vec2 jitter(uvec2 px, uint seed) {   // gaußverteilt um die Pixelmitte, σ = uSigma, bei 3 σ abgeschnitten; uAdapt = 2: R2-Folge statt Zufall (wie im WGSL-Gegenstück)
+  float u1, u2;
+  if (uAdapt == 2u) {
+    vec2 dreh = vec2(float(hash3(uvec3(px, 5u)) >> 8u), float(hash3(uvec3(px, 9u)) >> 8u)) / 16777216.0;
+    float k = float(seed);
+    u1 = max(fract(dreh.x + k * 0.7548776662466927), 1.0e-7);
+    u2 = fract(dreh.y + k * 0.5698402909980532);
+  } else {
+    u1 = (float(hash3(uvec3(px, 2u * seed)) >> 8u) + 0.5) / 16777216.0;
+    u2 = float(hash3(uvec3(px, 2u * seed + 1u)) >> 8u) / 16777216.0;
+  }
   float r = min(sqrt(-2.0 * log(u1)), 3.0) * uSigma;
   return vec2(r * cos(6.2831853 * u2), r * sin(6.2831853 * u2));
 }
@@ -2943,7 +2984,7 @@ mat2 j2(vec2 q, uint f) {
 }
 void main() {
   vec2 fc = gl_FragCoord.xy;
-  if (uAdapt == 1u && texelFetch(uNeed, ivec2(fc), 0).x == 0u) discard;   // Pixel ist fertig
+  if (uAdapt != 0u && texelFetch(uNeed, ivec2(fc), 0).x == 0u) discard;   // Pixel ist fertig
   if (uJit != 0u) fc += jitter(uvec2(fc), uJit);
   vec2 dp = uDcOffset + fc * uDcScale;
   vec2 dcv = dp;
@@ -3394,13 +3435,14 @@ void main() {
 
 // Adaptive Glättung: Zufallsprobe einfärben und aufsummieren, Bedarf neu bewerten (uAP wie A im WGSL-Gegenstück)
 const GLSL_AAACC = GLSL_COLOR_LIB + `
-uniform usampler2DArray uJit; uniform vec4 uAP;
+uniform usampler2DArray uJit; uniform vec4 uAP; uniform vec4 uAQ;   // uAQ = (schnelles Verfahren, Faktor der Sichtbarkeitsschwelle, 0, 0)
 layout(location = 0) out vec4 oSum; layout(location = 1) out vec4 oCnt; layout(location = 2) out uvec4 oNeed;
 bool aaNeed(vec4 s, float n) {
   if (n >= uAP.y) return false;
   if (n < uAP.z) return true;
   float mean = lum(s.rgb) / n;
   float v = max(s.a / n - mean * mean, 0.0);
+  if (uAQ.x > 0.5) return sqrt(v) * pow(n, -0.75) > max(uAP.x, uAQ.y * uAP.x * sqrt(v));   // geordnete Proben, Schwelle nach Sichtbarkeit (siehe WGSL-Gegenstück)
   return sqrt(v / n) > uAP.x;
 }
 void main() {
@@ -3780,7 +3822,7 @@ class GpuRenderer {
         d.createRenderPipelineAsync({ layout: d.createPipelineLayout({ bindGroupLayouts: [this.bglS] }), vertex: { module: mS, entryPoint: 'vs' },
           fragment: { module: mS, entryPoint: 'fs', targets: [{ format: 'r32uint' }] }, primitive: prim }) ]);
       const U = GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST;
-      this.ubA = d.createBuffer({ size: 16, usage: U }); this.ubS = d.createBuffer({ size: 16, usage: U });
+      this.ubA = d.createBuffer({ size: 32, usage: U }); this.ubS = d.createBuffer({ size: 16, usage: U });
     }
     this.aaDestroy();
     if (W !== this.W || H !== this.H) return;   // inzwischen anders groß: der Aufrufer ruft erneut
@@ -3821,8 +3863,8 @@ class GpuRenderer {
     }
     d.queue.submit([enc.finish()]);
   }
-  aaClear(rects) { this._aaPass(rects, [0, 0, 0, 2]); }                                   // Summen auf null, Bedarf auf 1
-  aaDone(rects) { this._aaPass(rects, [0, 0, 0, 3]); }                                    // Bedarf auf 0: außerhalb der Exportkachel
+  aaClear(rects) { this._aaPass(rects, aaUniform(null, 2)); }                             // Summen auf null, Bedarf auf 1
+  aaDone(rects) { this._aaPass(rects, aaUniform(null, 3)); }                              // Bedarf auf 0: außerhalb der Exportkachel
   async exportColorFromScreen(cp, w, h) {   // Kachel aus den Bildschirmpuffern einfärben (adaptiver Export) und zurücklesen
     this._colorPass(this.exColor.createView(), cp, this.bgC, w, h);
     const enc = this.device.createCommandEncoder();
@@ -3833,11 +3875,11 @@ class GpuRenderer {
     this.exBuf.unmap();
     return img;
   }
-  aaRefresh(cp, ap) { this._writeCP(cp); this._aaPass([{ x: 0, y: 0, w: this.W, h: this.H }], [ap.tol, ap.maxN, ap.minN, 1]); }   // Bedarf nach neuer Toleranz
+  aaRefresh(cp, ap) { this._writeCP(cp); this._aaPass([{ x: 0, y: 0, w: this.W, h: this.H }], aaUniform(ap, 1)); }   // Bedarf nach neuer Toleranz
   aaRefine(rects, p, cp, ap) {   // neue Zufallsprobe rendern (nur Pixel mit Bedarf) und aufsummieren
     this.renderFractal('jit', rects, p);
     this._writeCP(cp);
-    this._aaPass(rects, [ap.tol, ap.maxN, ap.minN, 0]);
+    this._aaPass(rects, aaUniform(ap, 0));
   }
   aaShift(sx, sy, strips) {   // Summen, Zähler und Bedarf mit dem Bild verschieben; freigewordene Streifen zurücksetzen
     const aa = this.aa, d = this.device, w = this.W - Math.abs(sx), h = this.H - Math.abs(sy);
@@ -4079,7 +4121,7 @@ class GlRenderer {
   }
   _colorUniforms(prog) {
     const u = {};
-    for (const n of ['uIter', 'uCdf', 'uA', 'uB', 'uC', 'uD', 'uMisc', 'uAA', 'uMapping', 'uGlowMode', 'uGlowWidth', 'uInterior', 'uHistL', 'uMisc3', 'uPal', 'uShift', 'uPsC', 'uAnchor', 'uComp', 'uAccSum', 'uAccCnt', 'uJit', 'uAP', 'uPalPre', 'uPalFilter', 'uZ2', 'uLeer', 'uQ', 'uPal2']) u[n] = this.gl.getUniformLocation(prog, n);
+    for (const n of ['uIter', 'uCdf', 'uA', 'uB', 'uC', 'uD', 'uMisc', 'uAA', 'uMapping', 'uGlowMode', 'uGlowWidth', 'uInterior', 'uHistL', 'uMisc3', 'uPal', 'uShift', 'uPsC', 'uAnchor', 'uComp', 'uAccSum', 'uAccCnt', 'uJit', 'uAP', 'uAQ', 'uPalPre', 'uPalFilter', 'uZ2', 'uLeer', 'uQ', 'uPal2']) u[n] = this.gl.getUniformLocation(prog, n);
     return u;
   }
   _program(vs, fs) {
@@ -4307,15 +4349,15 @@ class GlRenderer {
     gl.useProgram(this.progA); gl.bindVertexArray(this.vao);
     this._setColorUniforms(u, cp);
     gl.activeTexture(gl.TEXTURE5); gl.bindTexture(gl.TEXTURE_2D_ARRAY, aa.jit.tex); gl.uniform1i(u.uJit, 5);
-    gl.uniform4f(u.uAP, ap[0], ap[1], ap[2], ap[3]);
+    gl.uniform4f(u.uAP, ap[0], ap[1], ap[2], ap[3]); gl.uniform4f(u.uAQ, ap[4], ap[5], ap[6], ap[7]);
     gl.enable(gl.SCISSOR_TEST);
     for (const r of rects) { gl.viewport(r.x, r.y, r.w, r.h); gl.scissor(r.x, r.y, r.w, r.h); gl.drawArrays(gl.TRIANGLES, 0, 3); }
     gl.disable(gl.SCISSOR_TEST);
     for (const r of rects) { const c = { sx: r.x, sy: r.y, dx: r.x, dy: r.y, w: r.w, h: r.h }; this._blit(aa.sum[1], aa.sum[0], c); this._blit(aa.cnt[1], aa.cnt[0], c); }
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
-  aaClear(rects) { this._aaPass(rects, this._cpNull(), [0, 0, 0, 2]); }
-  aaDone(rects) { this._aaPass(rects, this._cpNull(), [0, 0, 0, 3]); }                    // Bedarf auf 0: außerhalb der Exportkachel
+  aaClear(rects) { this._aaPass(rects, this._cpNull(), aaUniform(null, 2)); }
+  aaDone(rects) { this._aaPass(rects, this._cpNull(), aaUniform(null, 3)); }              // Bedarf auf 0: außerhalb der Exportkachel
   _cpNull() { return this._cpZero || (this._cpZero = { a: [0, 0, 0], b: [0, 0, 0], c: [0, 0, 0], d: [0, 0, 0], density: 0, offset: 0, layers: 0, mapping: 0, glowMode: 0, glowWidth: 1, interior: 0, histL: 1, formula: 0, roots: 2 }); }
   exportColorFromScreen(cp, w, h) {   // Kachel aus den Bildschirmpuffern einfärben (adaptiver Export) und zurücklesen
     this._colorPass(this.exColor.fbo, cp, this.full.tex, w, h);
@@ -4323,10 +4365,10 @@ class GlRenderer {
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
     return Promise.resolve(img);
   }
-  aaRefresh(cp, ap) { this._aaPass([{ x: 0, y: 0, w: this.W, h: this.H }], cp, [ap.tol, ap.maxN, ap.minN, 1]); }
+  aaRefresh(cp, ap) { this._aaPass([{ x: 0, y: 0, w: this.W, h: this.H }], cp, aaUniform(ap, 1)); }
   aaRefine(rects, p, cp, ap) {
     this.renderFractal('jit', rects, p);
-    this._aaPass(rects, cp, [ap.tol, ap.maxN, ap.minN, 0]);
+    this._aaPass(rects, cp, aaUniform(ap, 0));
   }
   aaShift(sx, sy, strips) {
     const gl = this.gl, aa = this.aa, w = this.W - Math.abs(sx), h = this.H - Math.abs(sy);
@@ -4528,7 +4570,7 @@ const S = {
     // Familie escape oder accum (Punktwolken, accKind = Index in CLOUDS)
   cloudPrm: [0, 0, 0, 0],
   quality: 1, rendererPref: 'auto',
-  aa: DEFAULT_AA, aaMode: 'grid', aaTol: AA_TOL.def, aaMax: 64, aaSigma: AA_SIGMA.def,   // Glättung: Raster-Stufe, Verfahren (grid | adaptive), Regler des adaptiven Verfahrens
+  aa: DEFAULT_AA, aaMode: 'grid', aaTol: AA_TOL.def, aaMax: 64, aaSigma: AA_SIGMA.def,   // Glättung: Raster-Stufe, Verfahren (grid | adaptive | fast), Regler der adaptiven Verfahren
   palFilter: false, palFilterK: PALK.def,                  // Palette über den Bereich mitteln, den sie innerhalb eines Pixels durchläuft; Faktor auf die Breite
 };
 const views = { mandel: null, julia: null };
@@ -4570,7 +4612,7 @@ try {   // gespeicherte App-Einstellungen nur lesen, wenn die Einwilligung dafü
     const p = localStorage.getItem('fractal.renderer'); if (p) S.rendererPref = p;
     const q = localStorage.getItem('fractal.quality'); if (q) S.quality = parseFloat(q) || 1;
     const a = localStorage.getItem('fractal.aa'); if (a) S.aa = aaSnap(parseInt(a, 10) || DEFAULT_AA);
-    const am = localStorage.getItem('fractal.aamode'); if (am === 'grid' || am === 'adaptive') S.aaMode = am;
+    const am = localStorage.getItem('fractal.aamode'); if (AA_MODI.includes(am)) S.aaMode = am;
     const at = parseFloat(localStorage.getItem('fractal.aatol')); if (at >= AA_TOL.min && at <= AA_TOL.max) S.aaTol = at;
     const ax = parseInt(localStorage.getItem('fractal.aamax'), 10); if (ax >= 8 && ax <= 4096) S.aaMax = aaPosToMax(aaMaxToPos(ax));
     const as = parseFloat(localStorage.getItem('fractal.aasigma')); if (as >= AA_SIGMA.min && as <= AA_SIGMA.max) S.aaSigma = as;
@@ -4920,7 +4962,15 @@ function requestFrame() { if (!rafId) rafId = requestAnimationFrame(frame); }
 // ---- Adaptive Glättung: Zufallsproben je Pixel, bis der Standardfehler der Helligkeit unter der Toleranz liegt.
 // Ebene 0 bleibt das rohe Rasterbild; die Proben leben in Farbsummen des Renderers (siehe aaInit). Ein Durchlauf gibt
 // jedem Pixel mit Bedarf eine Probe, danach zählt der Renderer den Bedarf je Kachel; ohne Bedarf ist das Bild fertig.
-function aaParams() { return { tol: S.aaTol, maxN: S.aaMax, minN: AA_MINN }; }
+function aaParams() {
+  const schnell = S.aaMode === 'fast';
+  // Beim schnellen Verfahren steht die höchste Probenzahl schon durch die Regel fest: Ein Pixel rechnet weiter, solange
+  // sein Fehler über der Toleranz UND über der Sichtbarkeitsschwelle liegt. Die zweite Bedingung (n^-3/4 > Maske · Toleranz)
+  // fällt bei n = (Maske · Toleranz)^(-4/3) weg, ganz gleich, wie stark das Pixel schwankt. Der Deckel des Reglers bleibt die
+  // Obergrenze, aber gerechnet wird nie darüber hinaus – so stimmen Fortschritt, Restzeit und Anzeige.
+  const deckel = schnell ? clamp(Math.ceil(Math.pow(AA_MASKE * S.aaTol, -4 / 3)), AA_MINN_SCHNELL, S.aaMax) : S.aaMax;
+  return { tol: S.aaTol, maxN: deckel, minN: schnell ? AA_MINN_SCHNELL : AA_MINN, schnell: schnell ? 1 : 0, maske: schnell ? AA_MASKE : 0 };
+}
 function colorKey() {   // alles, was die Farbe einer Probe bestimmt: ändert es sich, sind die akkumulierten Farben veraltet
   return JSON.stringify([S.palette, pal2Objekt(), S.customPal && (S.customPal.stops || [S.customPal.a, S.customPal.b, S.customPal.c, S.customPal.d]), S.density, S.offset, S.mapping, S.glowMode, S.glowWidth, S.interior, S.colAnchor, S.comp, S.formula, S.power, S.palFilter, S.palFilterK, cdfVersion]);
 }
@@ -4978,7 +5028,8 @@ function aaRefineStep(maxIter, budget) {   // einen Stapel Kacheln mit je einer 
   }
   let k = 0, work = 0;
   while (aaTileIdx + k < aaTiles.length && (k === 0 || work + aaTiles[aaTileIdx + k].n * maxIter <= budget)) { work += aaTiles[aaTileIdx + k].n * maxIter; k++; }
-  renderer.aaRefine(aaTiles.slice(aaTileIdx, aaTileIdx + k), Object.assign(fractalParams(1, maxIter, 0), { jit: aaRound, adapt: 1, sigma: S.aaSigma }), colorParams(), aaParams());
+  const ap = aaParams();
+  renderer.aaRefine(aaTiles.slice(aaTileIdx, aaTileIdx + k), Object.assign(fractalParams(1, maxIter, 0), { jit: aaRound, adapt: ap.schnell ? 2 : 1, sigma: S.aaSigma }), colorParams(), ap);
   aaTileIdx += k;
   if (aaTileIdx >= aaTiles.length) {   // Durchlauf fertig: Bedarf neu zählen, nicht nach jedem (die Rückgabe kostet eine Synchronisierung)
     aaTiles = null;
@@ -5391,7 +5442,7 @@ function doResize() {
   if (pixels > MAX_PIXELS) scale *= Math.sqrt(MAX_PIXELS / pixels);
   const nW = clamp(Math.round(rect.width * scale), 1, renderer.maxDim);
   const nH = clamp(Math.round(rect.height * scale), 1, renderer.maxDim);
-  const adaptive = S.aaMode === 'adaptive';
+  const adaptive = aaAdaptiv();
   const aa = adaptive ? 1 : aaBest(nW, nH, Math.min(S.aa, aaCap));   // adaptiv: nur Ebene 0 im Raster, die Proben liegen in eigenen Puffern; sonst höchste Stufe im Budget
   if (nW === W && nH === H && aa === aaEff && adaptive === aaBuilt) return;
   W = nW; H = nH; aaEff = aa; layerOff = layerOffsets(aa); aaBuilt = adaptive; aaOn = false;
@@ -5409,8 +5460,8 @@ function doResize() {
 }
 function updateResInfo() {
   const limited = aaEff < S.aa ? t('quality.limited') : '';
-  const adaptive = S.aaMode === 'adaptive';
-  const smooth = adaptive ? (aaOn ? t('quality.smoothing-adaptive-up-samples', aaParams().maxN) : t('quality.smoothing-adaptive-preparing')) : t('quality.smoothing-m-samples', aaEff, limited, fmtZahl(W * H * aaEff * aaEff / 1e6, 1));
+  const adaptive = aaAdaptiv();
+  const smooth = adaptive ? (aaOn ? t(S.aaMode === 'fast' ? 'quality.smoothing-fast-up-samples' : 'quality.smoothing-adaptive-up-samples', aaParams().maxN) : t('quality.smoothing-adaptive-preparing')) : t('quality.smoothing-m-samples', aaEff, limited, fmtZahl(W * H * aaEff * aaEff / 1e6, 1));
   const mb = Math.round((aaBytes(W, H, aaEff) + (adaptive ? W * H * AA_ADAPT_BYTES : 0)) / 1e6);
   $('resInfo').textContent = `Render ${W} × ${H} px · ${smooth} · ${mb} MB`;
   if (typeof syncAaUI === 'function') syncAaUI();
@@ -6921,7 +6972,7 @@ function buildAaOptions() {   // nur Stufen anbieten, die bei aktueller Fläche 
   aaSel.value = String(W ? aaEff : S.aa);   // gezeigt wird die wirksame Stufe, der Wunsch S.aa bleibt darüber erhalten
 }
 function syncAaUI() {
-  const adaptive = S.aaMode === 'adaptive';
+  const adaptive = aaAdaptiv();
   aaModeSel.value = S.aaMode; palFilterEl.checked = S.palFilter; $('palFilterRow').hidden = !S.palFilter || !!FORMULAS[S.formula].seq || lyapModus() !== 0 || (winkelModus() & 1) !== 0 || zweiAktiv() || statModus() !== 0;
   palFilterKEl.value = palKToPos(S.palFilterK); $('palFilterKVal').textContent = fmtZahl(S.palFilterK, 2) + '×';
   for (const b of document.querySelectorAll('#aaPresets button')) {   // passender Preset-Knopf leuchtet
@@ -6933,9 +6984,9 @@ function syncAaUI() {
   $('aaGridRow').hidden = adaptive; $('aaAdaptRow').hidden = !adaptive;
   buildAaOptions();
   if (adaptive) {
-    $('aaVal').textContent = t('panel.adaptive-up-samples-per', aaParams().maxN);
+    $('aaVal').textContent = t(S.aaMode === 'fast' ? 'panel.fast-up-samples-per' : 'panel.adaptive-up-samples-per', aaParams().maxN);
     const done = aaOn && W ? Math.round(100 * (1 - aaActive / (W * H))) : 0;
-    $('aaHint').textContent = W ? t('panel.mb-graphics-memory-px', Math.round((aaBytes(W, H, 1) + W * H * AA_ADAPT_BYTES) / 1e6), W, H, done) : '';
+    $('aaHint').textContent = W ? t('panel.mb-graphics-memory-px', Math.round((aaBytes(W, H, 1) + W * H * AA_ADAPT_BYTES) / 1e6), W, H, done) + (S.aaMode === 'fast' ? t('panel.fast-hint') : '') : '';
     return;
   }
   const eff = W ? aaEff : S.aa, mb = a => Math.round(aaBytes(W, H, a) / 1e6);
@@ -6953,7 +7004,7 @@ aaSel.addEventListener('change', () => {
   syncAaUI();
 });
 aaModeSel.addEventListener('change', () => {   // Verfahren wechseln: Puffer neu anlegen, Bild neu rechnen
-  S.aaMode = aaModeSel.value === 'adaptive' ? 'adaptive' : 'grid';
+  S.aaMode = AA_MODI.includes(aaModeSel.value) ? aaModeSel.value : 'grid';
   lsSet('fractal.aamode', S.aaMode);
   W = 0; doResize(); syncAaUI();
 });
@@ -7078,7 +7129,7 @@ function applyState(obj) {   // Zustand aus einer Datei übernehmen und rendern
   farbenLaden(obj.colors);   // die gespeicherten Werte, falls eine Vorgabe inzwischen anders aussieht oder fehlt
   const x = obj.extra || {};
   if (Number.isFinite(+x.aa)) S.aa = aaSnap(+x.aa);
-  if (x.aaMode === 'grid' || x.aaMode === 'adaptive') S.aaMode = x.aaMode;
+  if (AA_MODI.includes(x.aaMode)) S.aaMode = x.aaMode;
   if (+x.aaTol >= AA_TOL.min && +x.aaTol <= AA_TOL.max) S.aaTol = +x.aaTol;
   if (+x.aaMax >= 8 && +x.aaMax <= 4096) S.aaMax = aaPosToMax(aaMaxToPos(+x.aaMax));
   if (+x.aaSigma >= AA_SIGMA.min && +x.aaSigma <= AA_SIGMA.max) S.aaSigma = +x.aaSigma;
@@ -7130,32 +7181,84 @@ const pngStreamOk = () => typeof CompressionStream === 'function';
 // alle rund 32 MB werden die fertigen Blöcke zu einem Blob zusammengefasst. So liegt nie die ganze Datei als ein
 // zusammenhängender Speicherblock vor, und der Browser darf fertige Teile auslagern: Das trägt Bilder mit mehreren
 // hundert Millionen Pixeln, deren Datei größer ist als ein einzelner Speicherblock sein darf.
+// Packen kostet beim Export ähnlich viel Zeit wie das Rechnen der Kacheln. In einem eigenen Faden läuft beides
+// nebeneinander: Der Hauptfaden reicht den fertigen Streifen nur weiter (der Puffer wechselt den Besitzer, er wird
+// nicht kopiert) und sammelt die gepackten Stücke ein. Gibt der Browser keinen Faden her – aus einer Datei ohne
+// Server lehnen Browser Fäden aus Blob-Adressen ab –, packt wie bisher der Hauptfaden selbst. Gleiche Daten, gleiches
+// Ergebnis, nur an anderer Stelle gerechnet.
+const PACKER_QUELLE = `const cs = new CompressionStream('deflate'), w = cs.writable.getWriter();
+(async () => { const r = cs.readable.getReader(); for (;;) { const { value, done } = await r.read(); if (done) { postMessage({ schluss: 1 }); return; } postMessage({ stueck: value }, [value.buffer]); } })();
+onmessage = async e => {
+  if (e.data.hallo) { postMessage({ hallo: 1 }); return; }
+  if (e.data.schluss) { await w.close(); return; }
+  await w.write(new Uint8Array(e.data.puffer));
+  postMessage({ fertig: 1 });
+};`;
+let packerUrl = null;
+const packerNeu = () => {
+  if (!packerUrl) packerUrl = URL.createObjectURL(new Blob([PACKER_QUELLE], { type: 'text/javascript' }));
+  return new Worker(packerUrl);
+};
+let packerOk = null;   // null: noch nicht geprüft
+async function packerGeht() {   // einmal je Sitzung: meldet sich ein Faden überhaupt?
+  if (packerOk === null) packerOk = await new Promise(res => {
+    let f = null;
+    try { f = packerNeu(); } catch (e) { res(false); return; }
+    const schluss = ok => { try { f.terminate(); } catch (e) { } res(ok); };
+    f.onmessage = () => schluss(true);
+    f.onerror = () => schluss(false);
+    setTimeout(() => schluss(false), 3000);   // Sicherheitsnetz, falls sich der Faden gar nicht meldet
+    f.postMessage({ hallo: 1 });
+  });
+  return packerOk;
+}
 class PngWriter {   // RGBA, 8 Bit, Filter 0 je Zeile
-  constructor(w, h) {
-    this.w = w; this.h = h; this.blobs = []; this.chunks = []; this.chunkBytes = 0;
+  constructor(w, h, faden = false) {   // faden: packen im eigenen Faden (siehe packerGeht)
+    this.w = w; this.h = h; this.blobs = []; this.chunks = []; this.chunkBytes = 0; this.faden = null;
+    if (faden) {
+      this.faden = packerNeu();
+      this.quittungen = [];                    // je laufendem Schreibvorgang einer, in der Reihenfolge der Streifen
+      this.done = new Promise((res, rej) => { this.fertigAuf = res; this.fehlerAuf = rej; });
+      this.done.catch(() => { });   // der Fehler wird in finish() gemeldet, hier nur abgefangen
+      this.faden.onmessage = e => {
+        const d = e.data;
+        if (d.stueck) this.nimm(d.stueck);
+        else if (d.fertig) { const q = this.quittungen.shift(); if (q) q(); }
+        else if (d.schluss) this.fertigAuf();
+      };
+      this.faden.onerror = () => {
+        const fehler = new Error('export.image-could-not-be-2');
+        this.fehlerAuf(fehler);
+        for (const q of this.quittungen.splice(0)) q(fehler);   // wartende Schreibvorgänge brechen mit ab
+      };
+      return;
+    }
     const cs = new CompressionStream('deflate');
     this.writer = cs.writable.getWriter();
     this.done = (async () => {
       const r = cs.readable.getReader();
       for (;;) {
         const { value, done } = await r.read(); if (done) break;
-        this.chunks.push(pngChunk('IDAT', value)); this.chunkBytes += value.length;
-        if (this.chunkBytes >= 32e6) this.flush();
+        this.nimm(value);
       }
     })();
   }
+  nimm(stueck) { this.chunks.push(pngChunk('IDAT', stueck)); this.chunkBytes += stueck.length; if (this.chunkBytes >= 32e6) this.flush(); }
+  verwerfen() { if (this.faden) { this.faden.terminate(); this.faden = null; } }   // Abbruch: der Faden wird nicht mehr gebraucht
   flush() { if (this.chunks.length) { this.blobs.push(new Blob(this.chunks)); this.chunks = []; this.chunkBytes = 0; } }
-  async addRows(rgba, rows) {   // rgba: RGBA-Daten eines Streifens in voller Breite
-    const line = new Uint8Array(1 + this.w * 4);
-    for (let y = 0; y < rows; y++) {
-      line[0] = 0;
-      line.set(rgba.subarray(y * this.w * 4, (y + 1) * this.w * 4), 1);
-      await this.writer.write(line.slice());
-    }
+  addRows(rgba, rows) {   // rgba: RGBA-Daten eines Streifens in voller Breite; je Zeile ein Filterbyte 0 davor
+    const breite = this.w * 4, puffer = new Uint8Array((1 + breite) * rows);
+    for (let y = 0; y < rows; y++) puffer.set(rgba.subarray(y * breite, (y + 1) * breite), y * (1 + breite) + 1);
+    if (!this.faden) return this.writer.write(puffer);   // ein Stück statt tausender Zeilen: derselbe Datenstrom
+    const quittung = new Promise((res, rej) => { this.quittungen.push(f => f ? rej(f) : res()); });
+    this.faden.postMessage({ puffer: puffer.buffer }, [puffer.buffer]);
+    return quittung;
   }
   async finish(text) {   // text: Parameter für den iTXt-Block, direkt vor IEND; die Datei wird dafür nicht zurückgelesen
-    await this.writer.close();
+    if (this.faden) this.faden.postMessage({ schluss: 1 });
+    else await this.writer.close();
     await this.done;
+    if (this.faden) { this.faden.terminate(); this.faden = null; }
     this.flush();
     const ihdr = new Uint8Array(13), dv = new DataView(ihdr.buffer);
     dv.setUint32(0, this.w); dv.setUint32(4, this.h);
@@ -7315,14 +7418,14 @@ let posterUrl = null;
 // Der Export glättet genau wie der Bildschirm: dasselbe Verfahren, dieselben Werte. Eine eigene Wahl im Dialog gäbe
 // es nicht, weil dieselbe Zahl in beiden Welten etwas anderes bedeutet (der Bildschirm hat ein Speicherbudget, der
 // Export rechnet Kachel für Kachel), und weil man sonst etwas anderes bekäme als das, was man beurteilt hat.
-const exportAdaptiv = () => S.aaMode === 'adaptive' && aaOn && !!(renderer && renderer.aa);
+const exportAdaptiv = () => aaAdaptiv() && aaOn && !!(renderer && renderer.aa);
 // Im adaptiven Verfahren ist aaEff immer 1 (im Raster liegt nur Ebene 0). Sind die Puffer noch nicht bereit, wäre ein
 // Export mit aaEff also ganz ohne Glättung; dann lieber ein Raster, das dem Deckel am Bildschirm entspricht.
-const exportRaster = () => (S.aaMode === 'adaptive' ? clamp(Math.round(Math.sqrt(aaParams().maxN)), 2, 16) : (aaEff || S.aa));
+const exportRaster = () => (aaAdaptiv() ? clamp(Math.round(Math.sqrt(aaParams().maxN)), 2, 16) : (aaEff || S.aa));
 function exportGlaettungText() {
   if (exportAdaptiv()) { const p = aaParams(); return t('export.adaptive-as-screen-residual', fmtZahl(p.tol * 100, 1), p.maxN); }
   const a = exportRaster();
-  if (S.aaMode === 'adaptive') return t('export.grid-matching-limit-screen', a);
+  if (aaAdaptiv()) return t('export.grid-matching-limit-screen', a);
   return a <= 1 ? t('export.without-smoothing-as-screen') : t('export.grid-as-screen', a);
 }
 const canvasFits = new Map();
@@ -7546,7 +7649,7 @@ async function renderAdaptiveTile(p, cp, w, h) {
   renderer.aaClear([{ x: 0, y: 0, w, h }]);
   const rects = [{ x: 0, y: 0, w, h }];
   for (let runde = 1; runde <= ap.maxN && !exportCancel; runde++) {
-    renderer.aaRefine(rects, Object.assign({}, p, { jit: runde, adapt: 1, sigma: S.aaSigma }), cp, ap);
+    renderer.aaRefine(rects, Object.assign({}, p, { jit: runde, adapt: ap.schnell ? 2 : 1, sigma: S.aaSigma }), cp, ap);
     if (runde % 8 === 0 || runde === ap.maxN) {                    // seltener zählen: jede Rückgabe kostet eine Synchronisierung
       const c = await renderer.aaStats();
       if (c && c.reduce((a, b) => a + b, 0) === 0) break;
@@ -7588,6 +7691,17 @@ async function saveScreenShot() {   // die Ansicht so speichern, wie sie zu sehe
     posterUpdateInfo();
   }
 }
+// Zwischen zwei Kacheln kurz Platz machen, damit Fortschrittsbalken und Abbrechen ankommen. setTimeout(0) taugt dafür
+// schlecht: In einer Kette von Zeitgebern setzt der Browser die Wartezeit auf 4 ms hoch, und das summiert sich über
+// hunderte Kacheln zu Sekunden. scheduler.yield() gibt die Kontrolle ohne diese Wartezeit ab; sonst tut es eine
+// Nachricht an das eigene Fenster, die ebenso ans Ende der Warteschlange geht.
+const nachgebenKanal = typeof MessageChannel === 'function' ? new MessageChannel() : null;
+if (nachgebenKanal) nachgebenKanal.port2.start();
+function nachgeben() {
+  if (typeof scheduler === 'object' && scheduler && typeof scheduler.yield === 'function') return scheduler.yield();
+  if (nachgebenKanal) return new Promise(r => { nachgebenKanal.port2.onmessage = () => r(); nachgebenKanal.port1.postMessage(0); });
+  return new Promise(r => setTimeout(r, 0));
+}
 async function exportPoster() {
   if (posterIstSchirm()) return saveScreenShot();
   const [Wp, Hp] = posterDims();
@@ -7602,7 +7716,7 @@ async function exportPoster() {
   // Fluchtzeit als PNG: streifenweise schreiben, ohne Bild in voller Größe. Sonst (JPEG) sammelt eine
   // Zeichenfläche das Bild, und dafür gilt die Flächengrenze des Geräts.
   const streamPng = !jpeg && S.family === 'escape' && pngStreamOk();
-  let big = null, lastPut = null;   // zuletzt geschriebenes Eck-Pixel, zur Kontrolle nach dem Rendern
+  let big = null, png = null, lastPut = null;   // zuletzt geschriebenes Eck-Pixel, zur Kontrolle nach dem Rendern
   const notePut = (img, x, y, w, h) => { const i = ((h - 1) * w + (w - 1)) * 4; lastPut = { x: x + w - 1, y: y + h - 1, rgba: [img.data[i], img.data[i + 1], img.data[i + 2], img.data[i + 3]] }; };
   try {
     if (!streamPng && !canvasUsable(Wp, Hp)) {   // lieber gar nichts anbieten als eine halb leere Datei
@@ -7613,7 +7727,6 @@ async function exportPoster() {
     const tscale = Math.min(1, 320 / Wp, 180 / Hp), thumb = $('posterThumb');
     thumb.width = Math.max(1, Math.round(Wp * tscale)); thumb.height = Math.max(1, Math.round(Hp * tscale));
     const tctx = thumb.getContext('2d');
-    let png = null;
     if (!streamPng) { big = document.createElement('canvas'); big.width = Wp; big.height = Hp; }
     const ctx = streamPng ? null : big.getContext('2d', { willReadFrequently: false });
     // Kachelgröße nach gemessenem Durchsatz: rund 250 ms GPU-Zeit je Kachel, höchstens 1024 px Kante
@@ -7634,11 +7747,12 @@ async function exportPoster() {
     computeOrbits(maxIter, Math.hypot(dx, dy) + Math.hypot(cw / 2, ch / 2) + 2 * Math.max(psX, psY)); orbitDirty = true;
     // Beim Streifenschreiben ist die Streifenhöhe so gewählt, dass ein Streifen klein bleibt (rund 4 Mio. Pixel)
     const stripH = streamPng ? clamp(Math.floor(4e6 / Wp), 1, tile) : tile;
-    let strip = null, sctx = null;
+    let streifen = null, strip = null, sctx = null, schreibt = null;   // schreibt: der noch laufende Schreibvorgang des vorigen Streifens
     if (streamPng) {
-      png = new PngWriter(Wp, Hp);
+      png = new PngWriter(Wp, Hp, await packerGeht());
+      streifen = new Uint8ClampedArray(Wp * stripH * 4);   // der Streifen entsteht hier; die Zeichenfläche dient nur dem Vorschaubild
       strip = document.createElement('canvas'); strip.width = Wp; strip.height = stripH;
-      sctx = strip.getContext('2d', { willReadFrequently: true });
+      sctx = strip.getContext('2d');
     }
     const cols = Math.ceil(Wp / tile), rows = Math.ceil(Hp / stripH), total = cols * rows;
     let done = 0;
@@ -7654,21 +7768,24 @@ async function exportPoster() {
         const params = offs.map(([ox, oy]) => Object.assign({}, base, {   // ein Parametersatz je Probenebene
           dcOffset: [(tx + ox - Wp / 2) * psX + dx - shift[0], (yd ? (Hp / 2 - ty - oy) * psY : (Hp / 2 - ty - h + oy) * psY) + dy - shift[1]] }));
         const img = adaptiv ? await renderAdaptiveTile(params[0], cp, w, h) : await renderer.renderExportTile(params, cp, w, h);
-        if (streamPng) sctx.putImageData(img, tx, 0);
+        if (streamPng) for (let y = 0; y < h; y++) streifen.set(img.data.subarray(y * w * 4, (y + 1) * w * 4), (y * Wp + tx) * 4);   // Kachel in den Streifen
         else { ctx.putImageData(img, tx, ty); notePut(img, tx, ty, w, h); }
         done++;
         const pct = 100 * done / total, el = (performance.now() - t0) / 1000, rest = el / done * (total - done);
         $('posterFill').style.width = pct.toFixed(1) + '%';
         posterZustand('export.rendering-tile-about-s', done, total, Math.round(pct), Math.max(1, Math.round(rest)));
-        await new Promise(r => setTimeout(r, 0));
+        await nachgeben();
       }
       if (streamPng && !exportCancel) {   // fertigen Streifen sofort in die Datei schreiben und ins Vorschaubild ziehen
         const sh = Math.min(stripH, Hp - ty);
-        await png.addRows(sctx.getImageData(0, 0, Wp, sh).data, sh);
+        if (schreibt) await schreibt;              // höchstens ein Streifen wartet auf den Packer
+        schreibt = png.addRows(streifen, sh);      // läuft weiter, während die nächsten Kacheln gerechnet werden
+        sctx.putImageData(new ImageData(streifen, Wp, stripH), 0, 0);   // nur für das Vorschaubild
         tctx.drawImage(strip, 0, 0, Wp, sh, 0, Math.round(ty * tscale), thumb.width, Math.max(1, Math.round(sh * tscale)));
       }
     }
     renderer.endExport();
+    if (schreibt) await schreibt;
     if (exportCancel) { posterZustand('export.cancelled'); return; }
     if (lastPut) {   // hat die Zeichenfläche das Bild wirklich aufgenommen? Sonst käme eine halb leere Datei heraus
       const got = ctx.getImageData(lastPut.x, lastPut.y, 1, 1).data;
@@ -7702,6 +7819,7 @@ async function exportPoster() {
     posterZustand('export.error', TEXTE[e.message] ? t(e.message) : (e.message || String(e)));   // eigene Meldungen tragen einen Schlüssel, Browsermeldungen nicht
   } finally {
     exporting = false; exportCancel = false;
+    if (png) png.verwerfen();   // nach Abbruch oder Fehler läuft sonst der Packfaden weiter
     big = null;
     if (adaptiv) { fractalDirty = true; orbitDirty = true; }   // die Bildschirmpuffer trugen zuletzt Exportkacheln
     $('posterStart').disabled = false; posterKnopf.start = 'export.render-again'; posterKnopf.ende = 'editor.close';
