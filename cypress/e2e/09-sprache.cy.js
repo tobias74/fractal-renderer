@@ -20,10 +20,15 @@ describe('Sprache', () => {
     cy.get('#drawerLang').should('have.value', 'en');
   });
 
-  it('Englisch aus der Browsersprache, wenn nichts gespeichert ist', () => {
-    cy.visitApp('', { lang: null, onBeforeLoad: browserLang('en-US') });
-    cy.get('.panel-head .wordmark').should('have.text', 'Subject');
-    cy.get('#siteLangSel').should('have.value', 'en');
+  it('Englisch ist die Vorgabe; Deutsch nur für deutschsprachige Browser', () => {
+    for (const sprache of ['en-US', 'fr-FR', 'es-ES', '']) {   // alles außer Deutsch: Englisch
+      cy.visitApp('', { lang: null, onBeforeLoad: browserLang(sprache) });
+      cy.get('.panel-head .wordmark').should('have.text', 'Subject');
+      cy.get('#siteLangSel').should('have.value', 'en');
+    }
+    cy.visitApp('', { lang: null, onBeforeLoad: browserLang('de-AT') });   // auch österreichisches Deutsch
+    cy.get('.panel-head .wordmark').should('have.text', 'Motiv');
+    cy.get('#siteLangSel').should('have.value', 'de');
   });
 
   it('Umschalten in der Seitenleiste wirkt überall, auch auf Menüeinträge und Hinweise', () => {

@@ -1182,8 +1182,8 @@
 // Texte im Markup tragen ihren Schlüssel als Marke (data-i18n), zeigeTexte() beschriftet sie beim Start und bei jedem Wechsel.
 // Nach dem Wechsel beschriften die Bereiche ihre veränderlichen Texte neu (sprachGewechselt im Bedienfeld). Fehlende
 // Schlüssel sammelt FEHLENDE_TEXTE; ein Test prüft, dass die Liste leer bleibt. Kein Beobachter, kein Timer, kein Nachübersetzen.
-let LANG = 'de';
-try { const l = localStorage.getItem('fractal.lang'); if (l === 'de' || l === 'en') LANG = l; else if (!/^de/i.test(navigator.language || 'de')) LANG = 'en'; } catch (e) { /* egal */ }
+let LANG = /^de/i.test(navigator.language || '') ? 'de' : 'en';   // Englisch ist die Vorgabe; Deutsch nur für deutschsprachige Browser
+try { const l = localStorage.getItem('fractal.lang'); if (l === 'de' || l === 'en') LANG = l; } catch (e) { /* egal */ }   // die eigene Wahl geht vor
 // Jeder Text steht genau einmal hier, unter seinem Schlüssel, in allen Sprachen. Platzhalter {0}, {1} … füllt t().
 const TEXTE = {
   // cloud
@@ -1588,7 +1588,7 @@ const FEHLENDE_TEXTE = new Set();   // Schlüssel ohne Eintrag; ein Test prüft,
 function t(schluessel, ...werte) {   // Text in der gewählten Sprache, Platzhalter {0}, {1} … mit Werten gefüllt
   const eintrag = TEXTE[schluessel];
   if (!eintrag) { FEHLENDE_TEXTE.add(schluessel); return schluessel; }
-  let text = eintrag[LANG] || eintrag.de;
+  let text = eintrag[LANG] || eintrag.en;   // fehlt eine Sprache, gilt Englisch
   for (let i = 0; i < werte.length; i++) text = text.split('{' + i + '}').join(String(werte[i]));
   return text;
 }
