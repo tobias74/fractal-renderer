@@ -131,6 +131,62 @@ describe('Cookie-Einwilligung', () => {
     });
   });
 
+  // Ohne Einwilligung darf nichts im Browser landen — und der Nutzer soll es merken, statt sich zu wundern, warum
+  // sein Schema nach dem Neuladen weg ist.
+  it('ohne Einwilligung: ein eigenes Schema gilt nur für die Sitzung, mit Hinweis, und ist nach dem Neuladen weg', () => {
+    cy.visitApp('', { consent: CONSENT_NONE });
+    cy.revealInDetails('palEdit');
+    cy.get('#palEdit').click();
+    cy.get('#peName').clear().type('Nur heute');
+    cy.get('#peSave').click();
+    cy.get('#state').invoke('text').should('contain', 'Nur für diese Sitzung gemerkt');
+    cy.get('#peState').should('have.text', 'gespeichert');                    // in dieser Sitzung ist es da
+    cy.get('#peClose').click();
+    cy.get('#palette option:selected').invoke('text').should('contain', 'Nur heute');
+    cy.window().then(win => {
+      expect(win.localStorage.getItem('fractal.palettes'), 'nichts abgelegt').to.be.null;
+      expect(win.localStorage.getItem('fractal.palettes2'), 'auch keine zweidimensionalen').to.be.null;
+    });
+    cy.visitApp('', { keep: true, consent: null, lang: null, aa: null });     // ohne Link ist das Schema fort
+    cy.get('#palette optgroup[label="Eigene"]').should('not.exist');
+  });
+
+  it('ohne Einwilligung landet außer der Auswahl selbst und der Sprache nichts im Browser', () => {
+    cy.visitApp('', { consent: CONSENT_NONE, aa: null });
+    cy.pane('qualitaet');
+    cy.pickOption('aaModeSel', 'fast');                    // Verfahren, getippter Wert, Auflösung, Renderer, Zyklus
+    cy.get('#aaTolVal').clear().type('2,5{enter}');
+    cy.get('#aaTolVal').should('have.value', '2,5 %');
+    cy.pickOption('quality', '0.5');
+    cy.get('#palFilter').check({ force: true });
+    cy.pane('technik');
+    cy.pickOption('cycleSel', '0');
+    cy.pickOption('blaSel', '0');
+    cy.window().then(win => {
+      const fremd = Object.keys(win.localStorage).filter(k => k.startsWith('fractal.') && k !== 'fractal.consent' && k !== 'fractal.lang');
+      expect(fremd, 'nichts abgelegt außer Auswahl und Sprache').to.deep.eq([]);
+    });
+    cy.get('#aaModeSel').should('have.value', 'fast');     // in dieser Sitzung gilt alles ganz normal
+    cy.get('#cycleSel').should('have.value', '0');
+  });
+
+  it('wird die Einwilligung später erteilt, wandern die bis dahin gewählten Einstellungen in den Browser', () => {
+    cy.visitApp('', { consent: CONSENT_NONE, aa: null });
+    cy.pane('technik');
+    cy.pickOption('cycleSel', '0');
+    cy.window().then(win => expect(win.localStorage.getItem('fractal.cycle'), 'noch nichts abgelegt').to.be.null);
+    cy.get('#siteCookies').click();
+    cy.get('#consentSettingsCb').check();
+    cy.get('#consentSave').click();
+    cy.get('#consent').should('not.be.visible');
+    cy.window().then(win => {
+      expect(win.localStorage.getItem('fractal.cycle'), 'die laufende Wahl wird nachgetragen').to.eq('0');
+      expect(win.localStorage.getItem('fractal.aamode'), 'und der Rest der Technik auch').to.not.be.null;
+    });
+    cy.visitApp('', { keep: true, consent: null, lang: null, aa: null });
+    cy.get('#cycleSel').should('have.value', '0');
+  });
+
   it('ältere Einwilligungen (v1) gelten nicht mehr und werden neu abgefragt', () => {
     cy.visitApp('', { consent: { v: 1, marketing: true }, wait: false });
     cy.get('#consent').should('be.visible');

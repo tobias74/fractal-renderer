@@ -213,4 +213,94 @@ describe('Dateien: Parameter und Bilder speichern und wieder öffnen', () => {
     cy.get('#fileOpen').click();
     cy.get('@pick').should('have.been.called');
   });
+
+  // Ein Poster entsteht anders als die Bildschirmansicht: Die Datei wird streifenweise geschrieben, ohne je ein Bild in
+  // voller Größe anzulegen, und die Parameter kommen beim Schreiben mit hinein statt nachträglich. Dieser Weg braucht
+  // seinen eigenen Test, sonst deckt ihn keiner ab.
+  it('Poster: die streifenweise geschriebene Datei trägt die Parameter und stellt die Ansicht wieder her', () => {
+    cy.pickOption('power', 6);
+    cy.expectHash('p', '6');
+    cy.get('#save').click();
+    cy.setRange('posterRes', 1);                               // kleinste Stufe über dem Bildschirm: schnell gerechnet
+    cy.get('#posterResVal').invoke('text').should('match', /\d+ × \d+ px/);
+    cy.get('#posterStart').click();
+    cy.get('#posterState', { timeout: 120000 }).invoke('text').should('match', /^(Fertig|Gespeichert)/);
+    cy.get('#posterDl').should('not.have.attr', 'hidden');
+    cy.get('#posterDl').invoke('attr', 'download').should('match', /^poster-mandel-\d+x\d+-.*\.png$/);
+    cy.get('#posterDl').click();
+    cy.task('waitForDownload', { pattern: '^poster-mandel-.*\\.png$' }).then(files => {
+      expect(files, 'Poster im Download-Ordner').to.have.length.greaterThan(0);
+      cy.readFile(files[0], null).then(buf => {
+        expect(buf.slice(0, 8).toString('hex'), 'PNG-Signatur').to.eq('89504e470d0a1a0a');
+        expect(buf.readUInt32BE(16), 'Breite laut IHDR').to.be.greaterThan(0);
+      });
+      cy.task('pngParams', { file: files[0] }).then(text => {
+        expect(text, 'iTXt-Chunk im streifenweise geschriebenen PNG').to.be.a('string');
+        expect(JSON.parse(text).params).to.contain('p=6');
+      });
+      cy.get('#posterCancel').click();
+      cy.rerender(() => cy.pickOption('power', 2));
+      cy.get('#fileInput').selectFile(files[0], { force: true });
+      cy.waitRender();
+      cy.get('#power').should('have.value', '6');
+    });
+  });
+
+  it('JPEG: auch das kleinere Format trägt die Parameter und lässt sich wieder öffnen', () => {
+    cy.pickOption('power', 3);
+    cy.get('#save').click();
+    cy.pickOption('posterFmt', 'jpg');
+    cy.setRange('posterRes', 1);
+    cy.get('#posterStart').click();
+    cy.get('#posterState', { timeout: 120000 }).invoke('text').should('match', /^(Fertig|Gespeichert)/);
+    cy.get('#posterDl').invoke('attr', 'download').should('match', /\.jpg$/);
+    cy.get('#posterDl').click();
+    cy.task('waitForDownload', { pattern: '^poster-mandel-.*\\.jpg$' }).then(files => {
+      expect(files, 'JPEG im Download-Ordner').to.have.length.greaterThan(0);
+      cy.readFile(files[0], null).then(buf => expect(buf.slice(0, 2).toString('hex'), 'JPEG-Signatur').to.eq('ffd8'));
+      cy.get('#posterCancel').click();
+      cy.rerender(() => cy.pickOption('power', 5));
+      cy.get('#fileInput').selectFile(files[0], { force: true });
+      cy.waitRender();
+      cy.get('#power').should('have.value', '3');
+    });
+  });
+
+  it('ein Bild ohne Parameter und eine beschädigte Datei werden abgelehnt, der Zustand bleibt', () => {
+    // 1 × 1 px PNG ohne unseren Textblock, erzeugt im Fenster: ein ganz normales Bild von woanders
+    cy.window().then(win => new Cypress.Promise(res => {
+      const c = win.document.createElement('canvas'); c.width = c.height = 1;
+      c.getContext('2d').fillRect(0, 0, 1, 1);
+      c.toBlob(b => b.arrayBuffer().then(a => res(Cypress.Buffer.from(new Uint8Array(a)))), 'image/png');
+    })).then(png => {
+      cy.get('#fileInput').selectFile({ contents: png, fileName: 'fremdes-bild.png', mimeType: 'image/png' }, { force: true });
+      cy.get('#state').invoke('text').should('contain', 'keine Fraktal-Parameter');
+    });
+    cy.get('#power').should('have.value', '2');
+    // PNG-Signatur, danach Unsinn: darf nicht durchschlagen
+    const kaputt = Cypress.Buffer.concat([Cypress.Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), Cypress.Buffer.from('völlig kaputt, kein gültiger Block')]);
+    cy.get('#fileInput').selectFile({ contents: kaputt, fileName: 'halb.png', mimeType: 'image/png' }, { force: true });
+    cy.get('#state').invoke('text').should('match', /keine Fraktal-Parameter|konnte nicht/);
+    cy.get('#family').should('have.value', 'mandel');
+    cy.expectHash('re', re => expect(parseFloat(re)).to.be.closeTo(DEFAULT_RE, 1e-9));
+  });
+
+  it('die Technik-Einstellungen fahren in der Datei mit: Verfahren und getippte Werte kommen zurück', () => {
+    cy.pane('qualitaet');
+    cy.pickOption('aaModeSel', 'fast');
+    cy.get('#aaTolVal').clear().type('2,5{enter}');             // Wert tippen statt schieben
+    cy.get('#aaTolVal').should('have.value', '2,5 %');
+    cy.get('#paramsSave').click();
+    cy.task('waitForDownload', { pattern: '^fraktal-mandel-.*\\.json$' }).then(files => {
+      cy.readFile(files[0]).then(json => {
+        expect(json.extra.aaMode, 'Verfahren in der Datei').to.eq('fast');
+        expect(json.extra.aaTol, 'getippte Toleranz in der Datei').to.be.closeTo(0.025, 0.0005);
+      });
+      cy.pickOption('aaModeSel', 'grid');
+      cy.get('#fileInput').selectFile(files[0], { force: true });
+      cy.waitRender();
+      cy.get('#aaModeSel').should('have.value', 'fast');
+      cy.get('#aaTolVal').should('have.value', '2,5 %');
+    });
+  });
 });

@@ -6406,17 +6406,17 @@ function loadEigene2() {   // eigene zweidimensionale Schemata, nur mit Einwilli
   if (!storeAllowed()) return;
   try { const j = JSON.parse(localStorage.getItem('fractal.palettes2') || '[]'); if (Array.isArray(j)) eigene2 = j.filter(validPal2).map(p => Object.assign({ id: 'q' + Math.random().toString(36).slice(2, 8) }, p)); } catch (e) { eigene2 = []; }
 }
-function saveEigene2() {
-  if (!storeAllowed()) { notify('panel.kept-this-session-only'); return; }
-  try { localStorage.setItem('fractal.palettes2', JSON.stringify(eigene2)); } catch (e) { notify('panel.cannot-save-this-browser'); }
+function saveEigene2() {   // liefert false, wenn nichts im Browser landet: dann darf der Aufrufer nicht „gespeichert“ melden
+  if (!storeAllowed()) { notify('panel.kept-this-session-only'); return false; }
+  try { localStorage.setItem('fractal.palettes2', JSON.stringify(eigene2)); return true; } catch (e) { notify('panel.cannot-save-this-browser'); return false; }
 }
 function loadCustomPalettes() {
   if (!storeAllowed()) return;   // ohne Einwilligung auch nichts lesen
   try { const j = JSON.parse(localStorage.getItem('fractal.palettes') || '[]'); if (Array.isArray(j)) customPalettes = j.filter(validPal).map(p => Object.assign({ id: 'p' + Math.random().toString(36).slice(2, 8), cyclic: true }, p)); } catch (e) { customPalettes = []; }
 }
-function saveCustomPalettes() {
-  if (!storeAllowed()) { notify('panel.kept-this-session-only'); return; }
-  try { localStorage.setItem('fractal.palettes', JSON.stringify(customPalettes)); } catch (e) { notify('panel.cannot-save-this-browser'); }
+function saveCustomPalettes() {   // wie saveEigene2: false, wenn die Einwilligung fehlt oder der Browser nicht mitmacht
+  if (!storeAllowed()) { notify('panel.kept-this-session-only'); return false; }
+  try { localStorage.setItem('fractal.palettes', JSON.stringify(customPalettes)); return true; } catch (e) { notify('panel.cannot-save-this-browser'); return false; }
 }
 const palSel = $('palette');
 let palListe = '';   // welche Art die Liste gerade zeigt: '1' gewöhnliche, '2' zweidimensionale Paletten
@@ -6612,7 +6612,9 @@ function peStore(asNew) {
   if (asNew || peDraft.id === 'link') peDraft.id = 'p' + Date.now().toString(36);
   const copy = JSON.parse(JSON.stringify(peDraft)), i = customPalettes.findIndex(p => p.id === copy.id);
   if (i >= 0) customPalettes[i] = copy; else customPalettes.push(copy);
-  saveCustomPalettes(); S.customPal = peDraft; peStart = JSON.stringify(peDraft); buildPalSelect(); peRender(); notify('panel.colour-scheme-saved');
+  const abgelegt = saveCustomPalettes();
+  S.customPal = peDraft; peStart = JSON.stringify(peDraft); buildPalSelect(); peRender();
+  if (abgelegt) notify('panel.colour-scheme-saved');   // sonst steht dort der Hinweis, dass es nur die Sitzung überdauert
 }
 $('palEdit').addEventListener('click', () => {
   if (zweiAktiv()) { if ($('pal2Ed').hidden) p2eOpen(); else p2eShow(false); return; }   // zweidimensionale Palette: ihr eigener Editor
@@ -6814,7 +6816,9 @@ function p2eStore(asNew) {
   if (asNew || p2Draft.id === 'link') p2Draft.id = 'q' + Date.now().toString(36);
   const copy = JSON.parse(JSON.stringify(p2Draft)), i = eigene2.findIndex(p => p.id === copy.id);
   if (i >= 0) eigene2[i] = copy; else eigene2.push(copy);
-  saveEigene2(); p2Start = JSON.stringify(p2Draft); p2eChanged(); buildPalSelect(); p2eRender(); notify('panel.colour-scheme-saved');
+  const abgelegt = saveEigene2();
+  p2Start = JSON.stringify(p2Draft); p2eChanged(); buildPalSelect(); p2eRender();
+  if (abgelegt) notify('panel.colour-scheme-saved');
 }
 $('p2eName').addEventListener('input', () => { p2eChanged(); buildPalSelect(); });
 $('p2eSave').addEventListener('click', () => p2eStore(false));
