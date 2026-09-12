@@ -5,6 +5,7 @@ const { defineConfig } = require('cypress');
 const fs = require('fs');
 const path = require('path');
 const { pngStats, pngDiff } = require('./cypress/support/png.js');
+const { pruefeI18n } = require('./tools/i18n-pruefen.js');
 
 module.exports = defineConfig({
   e2e: {
@@ -29,6 +30,8 @@ module.exports = defineConfig({
         return launchOptions;
       });
       on('task', {
+        // Übersetzung ohne Browser prüfen: Marken, Schlüssel, tote Einträge, Platzhalter (tools/i18n-pruefen.js)
+        i18nPruefen() { return pruefeI18n(); },
         // Helligkeits-Statistik eines Bildbereichs (Anteile 0..1 der Bildbreite/-höhe) eines Screenshots
         pngStats({ file, region }) { return pngStats(fs.readFileSync(file), region); },
         // Mittlere Abweichung zweier Screenshots im Bereich

@@ -52,6 +52,60 @@ describe('Sprache', () => {
     cy.get('#state').invoke('text').should('match', /M points/);   // Statuszeile der Punktwolke auf Englisch
   });
 
+  it('Wörterbuch: jede Marke und jeder Schlüssel hat einen Eintrag, keine Karteileichen, gleiche Platzhalter', () => {
+    cy.task('i18nPruefen').then(e => {
+      expect(e.fehler, 'Fehler in der Übersetzung').to.deep.eq([]);
+      expect(e.eintraege, 'Einträge im Wörterbuch').to.be.greaterThan(300);
+      expect(e.marken, 'Marken im Markup').to.be.greaterThan(150);
+    });
+  });
+
+  it('zur Laufzeit fehlt kein Schlüssel, auch nicht in Editoren, Dialogen und Unterseiten', () => {
+    cy.visitApp('mode=mandel&map=15&p2=field-lines', { lang: 'en' });
+    cy.revealInDetails('palEdit');
+    cy.get('#palEdit').click();                       // Editor der zweidimensionalen Paletten
+    cy.get('#pal2Ed').should('not.have.attr', 'hidden');
+    cy.rerender(() => cy.pickOption('mapping', 13));   // andere Färbung, andere Hinweise
+    cy.pickOption('aaModeSel', 'adaptive');           // adaptive Glättung: eigene Hinweise
+    cy.get('#save').click();                          // Speichern-Dialog
+    cy.get('#poster').should('not.have.attr', 'hidden');
+    cy.get('#posterCancel').click();
+    cy.get('#burger').click(); cy.get('#drawerClose').click();
+    cy.window().then(win => expect(win.__i18n().fehlende, 'Schlüssel ohne Eintrag').to.deep.eq([]));
+  });
+
+  it('Umschalten zur Laufzeit ergibt dieselbe Seite wie frisches Laden', () => {
+    const inventar = () => cy.window().then(win => {
+      const norm = s => s.replace(/\s+/g, ' ').trim().replace(/[0-9][0-9.,]*/g, '#');
+      const out = [], w = win.document.createTreeWalker(win.document.body, NodeFilter.SHOW_TEXT);
+      for (let n = w.nextNode(); n; n = w.nextNode()) {
+        const p = n.parentElement; if (!p || /^(SCRIPT|STYLE)$/.test(p.tagName)) continue;
+        const v = norm(n.nodeValue); if (v) out.push(v);
+      }
+      for (const el of win.document.body.querySelectorAll('[aria-label],[placeholder],[title],optgroup[label]'))
+        for (const a of ['aria-label', 'placeholder', 'title', 'label']) if (el.hasAttribute(a)) out.push('@' + a + ': ' + norm(el.getAttribute(a)));
+      return out.sort().join('\n');
+    });
+    cy.visitApp('mode=mandel', { lang: 'de' });
+    cy.waitRender(/Fertig/);
+    cy.pickOption('siteLangSel', 'en');
+    cy.waitRender(/Done/);
+    inventar().then(umgeschaltet => {
+      cy.visitApp('mode=mandel', { lang: 'en' });
+      cy.waitRender(/Done/);
+      inventar().then(frisch => expect(umgeschaltet, 'Umschalten wie frisch geladen').to.eq(frisch));
+    });
+  });
+
+  it('Zahlen folgen der Sprache: Komma auf Deutsch, Punkt auf Englisch', () => {
+    cy.visitApp('mode=mandel&den=0.04', { lang: 'de' });
+    cy.get('#densVal').should('have.text', '0,040');
+    cy.get('#zoomRead').should('contain.text', '1,0×');
+    cy.visitApp('mode=mandel&den=0.04', { lang: 'en' });
+    cy.get('#densVal').should('have.text', '0.040');
+    cy.get('#zoomRead').should('contain.text', '1.0×');
+  });
+
   it('Rechtstexte liegen in beiden Sprachen vor', () => {
     cy.visitApp('page=datenschutz', { lang: 'en' });
     cy.get('#pageTitle').should('have.text', 'Privacy policy');
