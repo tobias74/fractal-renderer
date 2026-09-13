@@ -3,16 +3,19 @@ import { IMAGE_REGION, CONSENT_NONE } from '../support/commands';
 describe('Farbe und Farbschema-Editor', () => {
   beforeEach(() => cy.visitApp());
 
-  it('19 Paletten in den Gruppen Hell und Dunkel, jede Nummer genau einmal', () => {
+  it('21 Paletten in den Gruppen Hell und Dunkel, jede Nummer genau einmal', () => {
     cy.get('#palette optgroup').then($g => expect([...$g].map(g => g.label)).to.deep.eq(['Hell', 'Dunkel']));
     cy.get('#palette option').then($o => {
       const werte = [...$o].map(o => +o.value).sort((a, b) => a - b);
-      expect(werte, 'Nummern 0 bis 18, keine doppelt').to.deep.eq([...Array(19).keys()]);
+      expect(werte, 'Nummern 0 bis 20, keine doppelt').to.deep.eq([...Array(21).keys()]);
     });
     cy.get('#palette option[value="0"]').should('have.text', 'Klassisch');   // Nummer 0 und Standard
     cy.get('#palette').should('have.value', '0');
     cy.rerender(() => cy.pickOption('palette', 18));
     cy.expectHash('pal', 'silver');
+    cy.get('#palette optgroup[label="Hell"] option[value="19"]').should('have.text', 'Salbei');   // neu, hell, am Ende der Gruppe
+    cy.rerender(() => cy.pickOption('palette', 19));
+    cy.expectHash('pal', 'sage');
   });
 
   it('Paletten aus Stützstellen laufen über die Farbtabelle', () => {
@@ -69,7 +72,7 @@ describe('Farbe und Farbschema-Editor', () => {
   });
 
   it('Verläufe Relief, Doppelt logarithmisch und Logarithmisch + Relief: Adresse, Neurender, andere Bilder', () => {
-    cy.get('#mapping option').should('have.length', 22);
+    cy.get('#mapping option').should('have.length', 32);   // 26 einwertige (mit Kurve, Ursprungsnähe, Gesamtdrehung, Periodengebiete) plus fünf feste Paare und das eigene Paar
     cy.rerender(() => cy.pickOption('mapping', 5));
     cy.expectHash('map', '5');
     cy.rerender(() => cy.pickOption('mapping', 7));
@@ -163,7 +166,7 @@ describe('Farbe und Farbschema-Editor', () => {
       }
       cy.wait(400);
       cy.shotStats(name + '-vorher', MID).then(a => {
-        cy.setRange('density', 440);   // Dichte 0,04 → 0,23: moderater Schritt, der Regler reicht jetzt bis 100
+        cy.get('#densVal').clear().type('0,23{enter}');   // Dichte 0,04 → 0,23, getippt statt geschoben: vom Maßstab des Reglers unabhängig
         cy.expectHash('den', v => expect(parseFloat(v)).to.be.greaterThan(0.1));
         cy.wait(400);
         cy.shotStats(name + '-nachher', MID).then(b => {
@@ -339,7 +342,8 @@ describe('Farbe und Farbschema-Editor', () => {
     cy.get('#peName').clear().type('Fluechtig');
     cy.get('#peSaveRow').should('have.attr', 'hidden');
     cy.get('#peSave').should('not.be.visible');
-    cy.get('#peNoStore').should('be.visible').and('contain.text', 'Kein Speichern');
+    cy.get('#peNoStore').scrollIntoView().should('be.visible').and('contain.text', 'Kein Speichern');   // der Editor ist lang: erst ins Bild rollen
+    cy.get('#palEd p.hint[data-i18n="editor.changes-apply-image-immediately"]').should('not.have.attr', 'hidden');   // der Hinweis auf die Cookie-Einstellungen bleibt ohne Einwilligung
     cy.expectHash('cp', v => expect(v).to.contain('Fluechtig'));
     cy.get('#palette option:selected').invoke('text').should('contain', 'Fluechtig');
     cy.window().then(win => expect(win.localStorage.getItem('fractal.palettes')).to.be.null);
@@ -507,6 +511,28 @@ describe('Zweidimensionale Paletten', () => {
     cy.window().then(win => expect(JSON.parse(win.localStorage.getItem('fractal.palettes2'))).to.have.length(0));
   });
 
+  it('Editor „Aus Verläufen“: je Achse ein Verlaufsstreifen mit Marken; ziehen verschiebt die Stützstelle, Klick wählt die Zeile', () => {
+    cy.visitApp('mode=mandel&map=15&p2=e&cp2=' + encodeURIComponent('Probe2~v~linien,6,4,0.070,0.850,0,0~1;0.000:ff2020,0.400:2020ff~-'));   // eigenes Schema aus dem Link
+    editor();
+    cy.get('#p2eMehr').then($d => { $d[0].open = true; });                        // die Stützstellen stehen unter „Erweitert“
+    cy.get('.pe2-st[data-v="a"] .pe2-streifen').scrollIntoView().should('be.visible');   // der Verlauf der Achse als Streifen (tief im Bedienfeld: erst ins Bild rollen)
+    cy.get('.pe2-st[data-v="a"] .pe-marke').should('have.length', 2);              // je Stützstelle eine Marke darunter
+    cy.get('.pe2-st[data-v="a"] .pe-stop').should('have.length', 2);               // die Liste bleibt
+    cy.get('.pe2-st[data-v="a"] .pe-marken').then($b => {                           // die zweite Marke von 40 % auf 70 % ziehen
+      const r = $b[0].getBoundingClientRect(), m = $b.find('.pe-marke').eq(1);
+      cy.wrap(m).trigger('pointerdown', { clientX: r.left + 0.4 * r.width, clientY: r.top + 6, pointerId: 1, button: 0, isPrimary: true, force: true })
+        .trigger('pointermove', { clientX: r.left + 0.7 * r.width, clientY: r.top + 6, pointerId: 1, force: true })
+        .trigger('pointerup', { clientX: r.left + 0.7 * r.width, clientY: r.top + 6, pointerId: 1, force: true });
+    });
+    cy.get('.pe2-st[data-v="a"] .pe-stop').eq(1).find('input[type=range]').invoke('val').then(v => expect(+v, 'Regler folgt der Marke').to.be.within(690, 710));
+    cy.get('.pe2-st[data-v="a"] .pe-stop').eq(1).find('input.pos').invoke('val').should('match', /^(69|70|71)[.,]\d$/);
+    cy.expectHash('cp2', v => expect(v, 'gezogene Stelle im Link').to.match(/0\.(69|70|71)\d:2020ff/));
+    cy.get('.pe2-st[data-v="a"] .pe-marke').eq(0).trigger('pointerdown', { pointerId: 2, button: 0, isPrimary: true, force: true }).trigger('pointerup', { pointerId: 2, force: true });   // Klick: Zeile gewählt
+    cy.get('.pe2-st[data-v="a"] .pe-stop').eq(0).should('have.class', 'on');
+    cy.get('.pe2-st[data-v="a"] .pe-stop').eq(0).find('input[type=range]').invoke('val', 250).trigger('input');   // der Regler rückt die Marke mit
+    cy.get('.pe2-st[data-v="a"] .pe-marke').eq(0).should('have.attr', 'style').and('contain', 'left: 25%');
+  });
+
   it('Editor „Quilez für zwei Werte“: Kopie von Pastell färbt gleich, Regler je Quadrant, Zurücksetzen', () => {
     cy.visitApp('mode=mandel&map=14&re=0&im=0&z=0.75&it=255');
     cy.shotStats('q2-vorher').then(a => {
@@ -531,6 +557,9 @@ describe('Zweidimensionale Paletten', () => {
 
 describe('Färbungen nach Bahnstatistik', () => {
   const anders = (a, b, text) => cy.task('pngDiff', { a: a.file, b: b.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, text).to.be.greaterThan(5));
+  const gleich = (a, b, text) => cy.task('pngDiff', { a: a.file, b: b.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, text).to.be.lessThan(0.5));
+  const gruppen = () => cy.get('#palette optgroup').then($g => [...$g].map(g => g.label));
+  const art = a => { cy.revealInDetails('palArt'); cy.get('#palArt button[data-art="' + a + '"]').click(); };
 
   it('sechs Färbungen: eigenes Bild, Adresse, keine Randlinien; Innen und zweidimensionale Paletten je nach Färbung', () => {
     cy.visitApp();
@@ -549,5 +578,578 @@ describe('Färbungen nach Bahnstatistik', () => {
     cy.rerender(() => cy.pickOption('formula', 11));                 // Newton/Nova färbt nach Wurzeln
     cy.get('#mapping optgroup[label="Bahnmittel"]').should('have.prop', 'hidden', true);
     cy.get('#mapping').should('have.value', '2');
+  });
+
+  // Die Bahnstatistik malt seidige Schleier, die Fluchtzeit malt Ringe. Beides in einem Bild geht nur, wenn die Färbung
+  // zwei Werte liefert und eine zweidimensionale Palette sie beide bekommt. Die einwertigen Verfahren bleiben daneben.
+  // Das n in sin(n·arg z) war fest 5. Als Regler ändert es die Feinheit der Strähnen; die Vorgabe 5 lässt jedes bestehende
+  // Bild unverändert. Die Zeile gibt es nur, wo das Streifenmittel rechnet (19 und 22), im Link steht sp nur abseits der Vorgabe.
+  it('Streifen: Regler nur beim Streifenmittel, Vorgabe 5, ein anderer Wert ändert das Bild und steht im Link', () => {
+    cy.visitApp('mode=mandel&re=-0.7462586155&im=0.1111580353&z=5.6e4&it=400');
+    cy.get('#streifenRow').should('have.attr', 'hidden');                 // logarithmisch: keine Streifen
+    cy.rerender(() => cy.pickOption('mapping', 19));
+    cy.get('#streifenRow').should('not.have.attr', 'hidden');
+    cy.get('#streifenVal').should('have.value', '5');
+    cy.get('#streifen').should('have.value', '5');
+    cy.expectHash('sp', null);                                             // Vorgabe: nichts im Link
+    cy.shotStats('streifen-5').then(fuenf => {
+      cy.get('#streifenVal').clear().type('9{enter}');                   // getippt, wie überall
+      cy.waitRender();
+      cy.get('#streifen').should('have.value', '9');
+      cy.expectHash('sp', '9');
+      cy.shotStats('streifen-9').then(neun => anders(fuenf, neun, 'neun Streifen sehen anders aus als fünf'));
+    });
+    cy.rerender(() => cy.pickOption('mapping', 22));                      // mit Fluchtzeit: dieselbe Statistik, Regler bleibt
+    cy.get('#streifenRow').should('not.have.attr', 'hidden');
+    cy.get('#streifenVal').should('have.value', '9');
+    cy.rerender(() => cy.pickOption('mapping', 20));                      // Dreiecksmittel kennt keine Streifen
+    cy.get('#streifenRow').should('have.attr', 'hidden');
+    cy.expectHash('sp', null);
+  });
+  it('Vorlauf und Gewichtung: Regler nur bei der Bahnstatistik, Vorgabe 0, andere Werte ändern das Bild und stehen im Link', () => {
+    cy.visitApp('mode=mandel&re=-0.7462586155&im=0.1111580353&z=5.6e4&it=400');
+    cy.get('#vorlaufRow').should('have.attr', 'hidden');                  // logarithmisch: keine Bahnstatistik
+    cy.get('#gewichtRow').should('have.attr', 'hidden');
+    cy.rerender(() => cy.pickOption('mapping', 17));                     // Kreuzfalle: Vorlauf ja, Gewichtung nein (kein Mittel)
+    cy.get('#vorlaufRow').should('not.have.attr', 'hidden');
+    cy.get('#gewichtRow').should('have.attr', 'hidden');
+    cy.rerender(() => cy.pickOption('mapping', 19));                     // Streifenmittel: beide
+    cy.get('#vorlaufRow').should('not.have.attr', 'hidden');
+    cy.get('#gewichtRow').should('not.have.attr', 'hidden');
+    cy.get('#vorlaufVal').should('have.value', '0');
+    cy.get('#gewichtVal').invoke('val').should('match', /^0[.,]00$/);
+    cy.expectHash('sk', null);                                            // Vorgaben: nichts im Link
+    cy.expectHash('sw', null);
+    cy.shotStats('bahn-vorgabe').then(vorgabe => {
+      cy.get('#gewichtVal').clear().type('1{enter}');                    // spätere Schritte zählen mehr
+      cy.waitRender();
+      cy.get('#gewicht').should('have.value', '1');
+      cy.expectHash('sw', '1');
+      cy.shotStats('bahn-gewicht-1').then(g1 => {
+        anders(vorgabe, g1, 'Gewichtung 1 sieht anders aus als das gewöhnliche Mittel');
+        cy.get('#gewichtVal').clear().type('0{enter}');
+        cy.waitRender();
+        cy.expectHash('sw', null);
+        cy.get('#vorlaufVal').clear().type('60{enter}');                 // die ersten 60 Schritte zählen nicht (20 änderte das Bild nur schwach)
+        cy.waitRender();
+        cy.get('#vorlauf').should('have.value', '60');
+        cy.expectHash('sk', '60');
+        cy.shotStats('bahn-vorlauf-60').then(v60 => anders(vorgabe, v60, 'Vorlauf 60 sieht anders aus als ohne'));
+      });
+    });
+    cy.rerender(() => cy.pickOption('mapping', 2));                      // zurück zur Fluchtzeit: beide Zeilen weg, nichts im Link
+    cy.get('#vorlaufRow').should('have.attr', 'hidden');
+    cy.get('#gewichtRow').should('have.attr', 'hidden');
+    cy.expectHash('sk', null);
+  });
+  it('Ursprungsnähe: allein (24) wie eine Falle, innen wie außen; als Paar mit dem Streifenmittel (25) zweidimensional mit Streifen und Gewichtung', () => {
+    cy.visitApp('mode=mandel&re=-0.7462586155&im=0.1111580353&z=5.6e4&it=400');
+    cy.shotStats('ursprung-log').then(log => {
+      cy.rerender(() => cy.pickOption('mapping', 24));
+      cy.expectHash('map', '24');
+      cy.get('#palArt').should('have.attr', 'hidden');                 // ein Wert: keine zweidimensionale Palette
+      cy.get('#streifenRow').should('have.attr', 'hidden');
+      cy.get('#gewichtRow').should('have.attr', 'hidden');
+      cy.get('#vorlaufRow').should('not.have.attr', 'hidden');          // der Vorlauf gilt für jede Bahnstatistik
+      cy.get('#interior').parent().should('have.attr', 'hidden');       // färbt innen wie außen, wie die Kreuzfalle
+      cy.shotStats('ursprung-24').then(u => {
+        anders(log, u, 'Ursprungsnähe sieht anders aus als logarithmisch');
+        cy.rerender(() => cy.pickOption('mapping', 25));
+        cy.expectHash('map', '25');
+        cy.get('#palArt').should('not.have.attr', 'hidden');            // zwei Werte: Umschalter da, Vorgabe zweidimensional „Salbei mit Saum“
+        cy.get('#palArt [data-art="2"]').should('have.class', 'on');
+        cy.get('#palette').find('option:selected').should('have.text', 'Salbei mit Saum');
+        cy.get('#streifenRow').should('not.have.attr', 'hidden');
+        cy.get('#gewichtRow').should('not.have.attr', 'hidden');
+        cy.get('#abzugRow').should('not.have.attr', 'hidden');          // Fluchtzeit-Abzug nur hier
+        cy.get('#abzugVal').invoke('val').should('match', /^0[.,]00$/);
+        cy.expectHash('sn', null);
+        cy.shotStats('ursprung-25').then(p => {
+          anders(u, p, 'das Paar sieht anders aus als die Ursprungsnähe allein');
+          cy.get('#abzugVal').clear().type('0,3{enter}');               // reine Farbstufe: kein Neurechnen
+          cy.get('#abzug').should('have.value', '0.3');
+          cy.expectHash('sn', '0.3');
+          cy.wait(400);
+          cy.shotStats('ursprung-25-abzug').then(q => anders(p, q, 'der Fluchtzeit-Abzug ändert das Bild'));
+        });
+        cy.rerender(() => cy.pickOption('mapping', 19));
+        cy.get('#abzugRow').should('have.attr', 'hidden');
+        cy.expectHash('sn', null);
+        cy.rerender(() => cy.pickOption('mapping', 26));                // Gesamtdrehung allein: wie das Streifenmittel, aber ohne Streifen
+        cy.expectHash('map', '26');
+        cy.get('#palArt').should('have.attr', 'hidden');
+        cy.get('#streifenRow').should('have.attr', 'hidden');
+        cy.get('#gewichtRow').should('not.have.attr', 'hidden');
+        cy.shotStats('drehung-26').then(d => {
+          anders(u, d, 'Gesamtdrehung sieht anders aus als die Ursprungsnähe');
+          cy.rerender(() => cy.pickOption('mapping', 27));              // Paar mit dem Streifenmittel: Streifen, Gewichtung, Abzug, Vorgabe „Salbei mit Höfen“
+          cy.expectHash('map', '27');
+          cy.get('#palArt [data-art="2"]').should('have.class', 'on');
+          cy.get('#palette').find('option:selected').should('have.text', 'Salbei mit Höfen');
+          cy.get('#streifenRow').should('not.have.attr', 'hidden');
+          cy.get('#abzugRow').should('not.have.attr', 'hidden');
+          cy.expectHash('sn', '0.3');                                    // der Abzug von vorhin gilt hier weiter
+          cy.shotStats('drehung-27').then(e => {
+            anders(d, e, 'das Paar sieht anders aus als die Drehung allein');
+            cy.get('#abzugVal').clear().type('2{enter}');                // Bereich bis 2
+            cy.get('#abzug').should('have.value', '2');
+            cy.expectHash('sn', '2');
+            cy.revealInDetails('palEdit');                              // die Vorgabe nutzt das neue Muster „Verlauf über Verlauf“
+            cy.get('#palEdit').click();
+            cy.get('#p2eMuster').should('have.value', 'ueberlagern');
+            cy.get('#p2eMuster option').should('have.length', 8);   // mit „Zonen über Verlauf“
+            cy.get('#p2eMusterText').invoke('text').should('match', /Mittelgrau/);
+            cy.get('#p2eReset').click();
+          });
+        });
+      });
+    });
+  });
+  it('Textur: eine Bahnstatistik als Helligkeit über der Fluchtzeit-Färbung — Vorgabe keine, Regler und Link, nur wo der Kanal frei ist', () => {
+    cy.visitApp('mode=mandel&re=-0.7462586155&im=0.1111580353&z=5.6e4&it=400');
+    cy.get('#texturRow').should('not.have.attr', 'hidden');
+    cy.get('#textur').should('have.value', '0');
+    cy.get('#texStaerkeRow').should('have.attr', 'hidden');
+    cy.expectHash('tx', null);
+    cy.shotStats('textur-ohne').then(ohne => {
+      cy.rerender(() => cy.pickOption('textur', 1));                    // Streifenmittel als Textur
+      cy.expectHash('tx', '1');
+      cy.get('#texStaerkeRow').should('not.have.attr', 'hidden');
+      cy.get('#texKontrastRow').should('not.have.attr', 'hidden');
+      cy.get('#texMitteRow').should('not.have.attr', 'hidden');
+      cy.get('#streifenRow').should('not.have.attr', 'hidden');           // die Regler der Statistik gelten mit
+      cy.get('#gewichtRow').should('not.have.attr', 'hidden');
+      cy.get('#glowMode').parent().should('have.attr', 'hidden');          // Randlinien brauchen den Kanal, den die Textur belegt
+      cy.get('#texStaerkeVal').invoke('val').should('match', /^0[.,]70$/);
+      cy.shotStats('textur-streifen').then(mit => {
+        anders(ohne, mit, 'die Textur ändert das Bild');
+        cy.get('#texStaerkeVal').clear().type('0,2{enter}');               // reine Farbstufe
+        cy.get('#texStaerke').should('have.value', '0.2');
+        cy.expectHash('ts', '0.2');
+        cy.wait(400);
+        cy.shotStats('textur-schwach').then(schwach => anders(mit, schwach, 'weniger Stärke, anderes Bild'));
+        cy.rerender(() => cy.pickOption('textur', 0));                    // aus: wieder das alte Bild
+        cy.expectHash('tx', null);
+        cy.get('#glowMode').parent().should('not.have.attr', 'hidden');
+        cy.shotStats('textur-wieder-ohne').then(zurueck => gleich(ohne, zurueck, 'ohne Textur wieder das alte Bild'));
+        cy.rerender(() => cy.pickOption('textur', 6));                    // Strahlen: der Fluchtwinkel als Textur, Streifen-Regler gilt, keine Gewichtung
+        cy.expectHash('tx', '6');
+        cy.get('#streifenRow').should('not.have.attr', 'hidden');
+        cy.get('#gewichtRow').should('have.attr', 'hidden');
+        cy.shotStats('textur-strahlen').then(st => anders(ohne, st, 'Strahlen ändern das Bild'));
+        cy.rerender(() => cy.pickOption('textur', 8));                    // Periodengebiete: Schritt der größten Nähe als Treppe
+        cy.expectHash('tx', '8');
+        cy.shotStats('textur-perioden').then(pe => cy.task('pngDiff', { a: ohne.file, b: pe.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, 'Periodengebiete ändern das Bild (bei Zoom 1 nur wenige Gebiete)').to.be.greaterThan(2)));
+        cy.rerender(() => cy.pickOption('textur', 0));
+      });
+    });
+    cy.rerender(() => cy.pickOption('mapping', 19));                     // Färbung nach Bahnstatistik: die Textur bleibt möglich (im dritten Kanal)
+    cy.get('#texturRow').should('not.have.attr', 'hidden');
+    cy.rerender(() => cy.pickOption('mapping', 4));                      // Relief braucht den Kanal selbst
+    cy.get('#texturRow').should('have.attr', 'hidden');
+  });
+  it('Textur über einer Statistik-Färbung: Streifenmittel (19) und das Paar (27) mit Textur, Link, ohne Textur wieder das alte Bild', () => {
+    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&map=19');
+    cy.get('#texturRow').should('not.have.attr', 'hidden');
+    cy.shotStats('statistik-ohne-textur').then(ohne => {
+      cy.rerender(() => cy.pickOption('textur', 3));                    // Gesamtdrehung als Textur über dem Streifenmittel
+      cy.expectHash('tx', '3');
+      cy.get('#texStaerkeRow').should('not.have.attr', 'hidden');
+      cy.shotStats('statistik-mit-textur').then(mit => {
+        anders(ohne, mit, 'die Textur ändert das Bild der Statistik-Färbung');
+        cy.rerender(() => cy.pickOption('textur2', 1));                 // gestapelt: die zweite Textur obendrauf
+        cy.expectHash('t2', '1');
+        cy.shotStats('statistik-zwei-texturen').then(zwei => anders(mit, zwei, 'die zweite Textur ändert das Bild'));
+        cy.rerender(() => cy.pickOption('textur2', 0));
+        cy.rerender(() => cy.pickOption('textur', 0));
+        cy.expectHash('tx', null);
+        cy.shotStats('statistik-wieder-ohne').then(zurueck => gleich(ohne, zurueck, 'ohne Textur wieder das alte Bild'));
+      });
+    });
+    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&map=27&tx=1&ts=0.8');   // das Paar mit Textur aus dem Link
+    cy.get('#texturRow').should('not.have.attr', 'hidden');
+    cy.get('#textur').should('have.value', '1');
+    cy.shotStats('paar-mit-textur').then(mit => {
+      cy.rerender(() => cy.pickOption('textur', 0));
+      cy.shotStats('paar-ohne-textur').then(ohne => anders(ohne, mit, 'die Textur ändert auch das Paar'));
+    });
+  });
+  it('Farben der Textur: Vorgabe Weiß und Schwarz wie bisher, andere Farben tönen, im Link nur abseits der Vorgabe', () => {
+    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&tx=1&ts=0.8');
+    cy.get('#texFarbenRow').should('not.have.attr', 'hidden');
+    cy.get('#texHell').should('have.value', '#ffffff');
+    cy.get('#texDunkel').should('have.value', '#000000');
+    cy.expectHash('tc', null);
+    cy.shotStats('texfarben-vorgabe').then(vorgabe => {
+      cy.revealInDetails('texHell');                                       // die Farbwähler stehen tief im Bedienfeld
+      cy.get('#texHell').scrollIntoView().invoke('val', '#8060ff').trigger('input', { force: true });   // helle Seite lila: die Textur tönt statt aufzuhellen
+      cy.expectHash('tc', '8060ff');
+      cy.expectHash('td', null);
+      cy.wait(500);
+      cy.shotStats('texfarben-lila').then(lila => {
+        anders(vorgabe, lila, 'eine bunte helle Farbe ändert das Bild');
+        cy.get('#texDunkel').scrollIntoView().invoke('val', '#c02020').trigger('input', { force: true });
+        cy.expectHash('td', 'c02020');                                     // dunkle Seite kräftig rot: deutlich sichtbar
+        cy.wait(500);
+        cy.shotStats('texfarben-dunkel').then(dunkel => anders(lila, dunkel, 'die dunkle Farbe ändert das Bild'));
+        cy.get('#texHell').scrollIntoView().invoke('val', '#ffffff').trigger('input', { force: true });
+        cy.get('#texDunkel').scrollIntoView().invoke('val', '#000000').trigger('input', { force: true });
+        cy.expectHash('tc', null);
+        cy.wait(500);
+        cy.shotStats('texfarben-zurueck').then(zurueck => gleich(vorgabe, zurueck, 'Weiß und Schwarz: wieder das alte Bild'));
+      });
+    });
+    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&tx=1&t2=3&tc=8060ff&t2c=ffe080&t2d=102030');   // Farben beider Texturen aus dem Link
+    cy.get('#texHell').should('have.value', '#8060ff');
+    cy.get('#tex2Hell').should('have.value', '#ffe080');
+    cy.get('#tex2Dunkel').should('have.value', '#102030');
+    cy.get('#tex2FarbenRow').should('not.have.attr', 'hidden');
+  });
+  it('Texturstapel: bis zu vier Texturen, Pfeile und Ziehen ändern die Reihenfolge, × nimmt eine heraus, der Link trägt alle Plätze', () => {
+    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&tx=1&ts=0.8&t2=3&t3=5&t3c=ff8040');
+    cy.get('#textur3Row').should('not.have.attr', 'hidden');              // Platz 3 aus dem Link, Platz 4 als freier Platz dahinter
+    cy.get('#textur4Row').should('not.have.attr', 'hidden');
+    cy.get('#tex4StaerkeRow').should('have.attr', 'hidden');
+    cy.get('#textur3').should('have.value', '5');
+    cy.get('#tex3Hell').should('have.value', '#ff8040');
+    cy.shotStats('stapel3-vorher').then(drei => {
+      cy.rerender(() => cy.pickOption('textur4', 6));                    // vierter Platz: Strahlen
+      cy.expectHash('t4', '6');
+      cy.shotStats('stapel4').then(vier => anders(drei, vier, 'die vierte Textur ändert das Bild'));
+      cy.rerender(() => cy.pickOption('textur4', 0));
+      cy.expectHash('t4', null);
+      cy.shotStats('stapel3-wieder').then(z => gleich(drei, z, 'ohne die vierte wieder das Bild mit dreien'));
+    });
+    cy.revealInDetails('texturRow');
+    cy.get('#texturRow .tex-ab').click({ force: true });                    // Platz 1 nach unten: die Streifen wandern samt Stärke auf Platz 2
+    cy.expectHash('tx', '3'); cy.expectHash('t2', '1'); cy.expectHash('t2s', '0.8'); cy.expectHash('t3', '5');
+    cy.get('#textur2Row .tex-weg').click({ force: true });                  // Platz 2 heraus: Platz 3 rückt auf
+    cy.expectHash('t2', '5'); cy.expectHash('t2c', 'ff8040'); cy.expectHash('t3', null);
+    cy.get('#textur2Row .tex-griff').then($g => {                           // Ziehen am Griff: Platz 2 auf die Höhe von Platz 1
+      const r1 = Cypress.$('#texturRow')[0].getBoundingClientRect(), rg = $g[0].getBoundingClientRect();
+      cy.wrap($g).trigger('pointerdown', { clientX: rg.left + 5, clientY: rg.top + 5, pointerId: 7, isPrimary: true, button: 0, force: true })
+        .trigger('pointermove', { clientX: rg.left + 5, clientY: r1.top + r1.height / 2, pointerId: 7, force: true })
+        .trigger('pointerup', { clientX: rg.left + 5, clientY: r1.top + r1.height / 2, pointerId: 7, force: true });
+    });
+    cy.expectHash('tx', '5'); cy.expectHash('tc', 'ff8040'); cy.expectHash('t2', '3');
+    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&map=27&tx=1&t2=3&t3=5&t4=2&ts=0.8');   // vier Texturen über einer Statistik-Färbung (Kanäle z und w)
+    cy.get('#textur4').should('have.value', '2');
+    cy.waitRender();
+    cy.get('#state').should('contain.text', 'Fertig');
+  });
+  it('Texturkarten: Schalter je Textur (aus = wie keine, Einstellungen bleiben, im Link ta=0), Ein- und Ausklappen mit Kurzangabe', () => {
+    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&tx=1&ts=0.8');
+    cy.get('#texKarte1').should('not.have.attr', 'hidden');
+    cy.get('#texAn').should('be.checked');
+    cy.shotStats('karte-an').then(an => {
+      cy.rerender(() => cy.get('#texAn').uncheck({ force: true }));        // aus: der Platz wirkt nicht mehr
+      cy.expectHash('ta', '0'); cy.expectHash('tx', '1'); cy.expectHash('ts', '0.8');   // die Einstellungen bleiben im Link
+      cy.get('#texKarte1').should('have.class', 'aus');
+      cy.shotStats('karte-aus').then(aus => {
+        anders(an, aus, 'ausgeschaltet färbt anders');
+        cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400');
+        cy.shotStats('karte-ohne').then(ohne => gleich(aus, ohne, 'ausgeschaltet ist wie keine Textur'));
+      });
+    });
+    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&tx=1&ts=0.8&ta=0&t2=3');   // aus dem Link: Platz 1 aus, Platz 2 an
+    cy.get('#texAn').should('not.be.checked'); cy.get('#tex2An').should('be.checked');
+    cy.get('#texKarte1').should('have.class', 'aus'); cy.get('#texKarte2').should('not.have.class', 'aus');
+    cy.rerender(() => cy.get('#texAn').check({ force: true }));
+    cy.expectHash('ta', null);
+    cy.get('#texturRow .tex-klapp').click({ force: true });                 // einklappen: nur die Kopfzeile mit Kurzangabe
+    cy.get('#texStaerkeRow').should('have.attr', 'hidden');
+    cy.get('#textur').should('have.attr', 'hidden');
+    cy.get('#texturRow .tex-kurz').invoke('text').should('match', /Streifenmittel · 0[.,]80/);
+    cy.get('#texturRow .tex-klapp').click({ force: true });                 // ausklappen
+    cy.get('#texStaerkeRow').should('not.have.attr', 'hidden');
+    cy.get('#texturRow .tex-kurz').should('have.text', '');
+  });
+  it('Kurve: Übertragungskurve über den Häufigkeiten — Gerade als Vorgabe, gezogener Punkt ändert das Bild, Punkte im Link', () => {
+    cy.visitApp('mode=mandel&re=-0.7462586155&im=0.1111580353&z=5.6e4&it=400');
+    cy.get('#kurveRow').should('have.attr', 'hidden');
+    cy.rerender(() => cy.pickOption('mapping', 28));
+    cy.expectHash('map', '28');
+    cy.get('#kurveRow').should('not.have.attr', 'hidden');
+    cy.expectHash('kv', null);                                            // Gerade: nichts im Link
+    cy.wait(600);                                                          // der Durchlauf über die Häufigkeiten
+    cy.shotStats('kurve-gerade').then(gerade => {
+      cy.get('#kurveBild').then($c => {                                    // Punkt in der Mitte setzen und nach oben ziehen
+        const r = $c[0].getBoundingClientRect();
+        const x = r.left + r.width / 2, y0 = r.top + r.height / 2, y1 = r.top + r.height * 0.15;
+        cy.wrap($c).trigger('pointerdown', { clientX: x, clientY: y0, pointerId: 1, button: 0, isPrimary: true, force: true })
+          .trigger('pointermove', { clientX: x, clientY: y1, pointerId: 1, force: true })
+          .trigger('pointerup', { clientX: x, clientY: y1, pointerId: 1, force: true });
+      });
+      cy.expectHash('kv', v => { const p = v.split(','); expect(p.length, 'drei Punkte').to.eq(3); expect(parseFloat(p[1].split(':')[1]), 'Mittelpunkt oben').to.be.greaterThan(0.7); });
+      cy.wait(400);
+      cy.shotStats('kurve-gezogen').then(gezogen => {
+        anders(gerade, gezogen, 'die gezogene Kurve ändert das Bild');
+        cy.get('#kurveGerade').click();
+        cy.expectHash('kv', null);
+        cy.wait(400);
+        cy.shotStats('kurve-wieder-gerade').then(zurueck => gleich(gerade, zurueck, 'Gerade: wieder wie vorher'));
+      });
+    });
+    cy.visitApp('mode=mandel&re=-0.7462586155&im=0.1111580353&z=5.6e4&it=400&map=28&kv=0:0,0.5:0.9,1:1');   // Punkte kommen aus dem Link zurück
+    cy.get('#mapping').should('have.value', '28');
+    cy.expectHash('kv', '0:0,0.5:0.9,1:1');
+    cy.waitRender(); cy.wait(600);
+    cy.revealInDetails('kurveAusgleich');
+    cy.get('#kurveAusgleich').click();                                   // aus den Häufigkeiten: Punkte an den Achteln der Verteilung, steigend in x und y
+    cy.expectHash('kv', v => {
+      const p = v.split(',').map(z => z.split(':').map(Number));
+      expect(p.length, 'mehr als die Gerade').to.be.greaterThan(3);
+      for (let i = 1; i < p.length; i++) { expect(p[i][0], 'x steigt').to.be.greaterThan(p[i - 1][0]); expect(p[i][1], 'y steigt').to.be.greaterThan(p[i - 1][1]); }
+    });
+    cy.get('#kurveGerade').click();                                      // Achse auf die Ansicht spannen: die Gerade färbt dann anders, ohne Häkchen wieder wie vorher
+    cy.expectHash('kv', null);
+    cy.wait(400);
+    cy.shotStats('kurve-ungespannt').then(a => {
+      cy.get('#kurveSpann').check();
+      cy.expectHash('ks', '1');
+      cy.wait(400);
+      cy.shotStats('kurve-gespannt').then(b => {
+        anders(a, b, 'die gespannte Achse färbt anders');
+        cy.get('#kurveSpann').uncheck();
+        cy.expectHash('ks', null);
+        cy.wait(400);
+        cy.shotStats('kurve-ungespannt-2').then(c => gleich(a, c, 'ohne Häkchen wieder wie vorher'));
+      });
+    });
+    cy.rerender(() => cy.pickOption('mapping', 2));                      // andere Färbung: Editor weg, Kurve nicht im Link
+    cy.get('#kurveRow').should('have.attr', 'hidden');
+    cy.expectHash('kv', null);
+  });
+  it('Gestapelte Texturen: eine zweite Textur über der ersten, eigene Regler, Link, ohne zweite wieder wie mit einer', () => {
+    cy.visitApp('mode=mandel&re=-0.7462586155&im=0.1111580353&z=5.6e4&it=400&tx=1&ts=0.8');
+    cy.get('#textur2Row').should('not.have.attr', 'hidden');                // die zweite Textur steht unter der ersten
+    cy.get('#textur2').should('have.value', '0');
+    cy.get('#tex2StaerkeRow').should('have.attr', 'hidden');
+    cy.expectHash('t2', null);
+    cy.waitRender();
+    cy.shotStats('stapel-eine').then(eine => {
+      cy.rerender(() => cy.pickOption('textur2', 6));                     // Strahlen über dem Streifenmittel
+      cy.expectHash('t2', '6');
+      cy.get('#tex2StaerkeRow').should('not.have.attr', 'hidden');
+      cy.get('#streifenRow').should('not.have.attr', 'hidden');
+      cy.shotStats('stapel-zwei').then(zwei => {
+        anders(eine, zwei, 'die zweite Textur ändert das Bild');
+        cy.get('#tex2StaerkeVal').clear().type('0,3{enter}');              // eigene Stärke, reine Farbstufe
+        cy.get('#tex2Staerke').should('have.value', '0.3');
+        cy.expectHash('t2s', '0.3');
+        cy.wait(400);
+        cy.shotStats('stapel-schwach').then(schwach => anders(zwei, schwach, 'weniger Stärke der zweiten Textur, anderes Bild'));
+        cy.rerender(() => cy.pickOption('textur2', 0));                   // ohne zweite: wieder wie mit einer
+        cy.expectHash('t2', null);
+        cy.get('#tex2StaerkeRow').should('have.attr', 'hidden');
+        cy.shotStats('stapel-wieder-eine').then(zurueck => gleich(eine, zurueck, 'ohne zweite Textur wieder das Bild mit einer'));
+      });
+    });
+    cy.rerender(() => cy.pickOption('textur', 0));                        // ohne erste gibt es auch keine zweite
+    cy.get('#textur2Row').should('have.attr', 'hidden');
+  });
+  it('Gesamtdrehung und Fluchtzeit (30): Paar mit Abzug und Vorgabe „Salbei nach Fluchtzeit“, anderes Bild als 27 und 26, Textur obendrauf', () => {
+    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&map=27');
+    cy.shotStats('drehzeit-27').then(paar => {
+      cy.rerender(() => cy.pickOption('mapping', 30));
+      cy.expectHash('map', '30');
+      cy.get('#palArt [data-art="2"]').should('have.class', 'on');
+      cy.get('#palette').find('option:selected').should('have.text', 'Salbei nach Fluchtzeit');
+      cy.get('#abzugRow').should('not.have.attr', 'hidden');            // der Fluchtzeit-Abzug gilt auch hier
+      cy.get('#streifenRow').should('have.attr', 'hidden');              // keine Streifen: die zweite Achse ist die Fluchtzeit
+      cy.get('#gewichtRow').should('not.have.attr', 'hidden');
+      cy.get('#texturRow').should('not.have.attr', 'hidden');
+      cy.shotStats('drehzeit-30').then(dz => {
+        anders(paar, dz, 'das Paar mit der Fluchtzeit sieht anders aus als das mit dem Streifenmittel');
+        cy.get('#abzugVal').clear().type('2{enter}');
+        cy.expectHash('sn', '2');
+        cy.wait(600);                                                      // der Abzug färbt nur neu ein: den nächsten Frame abwarten
+        cy.shotStats('drehzeit-30-abzug').then(ab => {
+          anders(dz, ab, 'der Abzug ändert das Bild');
+          cy.rerender(() => cy.pickOption('textur', 1));                // Streifen als Textur obendrauf (dritter Kanal)
+          cy.expectHash('tx', '1');
+          cy.shotStats('drehzeit-30-textur').then(tx => anders(ab, tx, 'die Textur ändert das Bild'));
+          cy.rerender(() => cy.pickOption('textur', 0));
+        });
+      });
+    });
+    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&map=30&sn=1.5');   // aus dem Link
+    cy.get('#mapping').should('have.value', '30');
+    cy.get('#abzug').should('have.value', '1.5');
+  });
+  it('Eigenes Paar (31): Voreinstellungen füllen die Achsen, jede Änderung macht daraus ein eigenes Paar, Link pa/pb, wie 22 in der Vorgabe', () => {
+    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&map=22&ca=off');   // ohne Farbanker: kein Ankerlesen, das zwischen den Bildern landen könnte
+    cy.get('#paarRow').should('not.have.attr', 'hidden');                 // die festen Paare zeigen ihre Achsen
+    cy.get('#paarA').should('have.value', '1'); cy.get('#paarB').should('have.value', '2');   // 22: Fluchtzeit und Streifenmittel
+    cy.get('#paarFaktorBVal').invoke('val').should('match', /^30[.,]00$/);
+    cy.shotStats('paar-22').then(p22 => {
+      cy.rerender(() => cy.pickOption('mapping', 31));                   // das eigene Paar startet wie 22
+      cy.expectHash('map', '31'); cy.expectHash('pa', '1:1:0:0'); cy.expectHash('pb', '2:30:0:0');
+      cy.shotStats('paar-31').then(p31 => gleich(p22, p31, 'das eigene Paar färbt in der Vorgabe wie 22'));
+    });
+    cy.rerender(() => cy.pickOption('mapping', 27));                     // eine Voreinstellung: Drehung mit Abzug, Streifenmittel
+    cy.get('#paarA').should('have.value', '4'); cy.get('#paarAbzugA').should('have.value', '2'); cy.get('#paarB').should('have.value', '2');
+    cy.get('#abzugRow').should('not.have.attr', 'hidden');
+    cy.shotStats('paar-27').then(p27 => {
+      cy.rerender(() => cy.pickOption('paarB', 1));                      // zweite Achse auf die Fluchtzeit: daraus wird das eigene Paar
+      cy.get('#mapping').should('have.value', '31');
+      cy.expectHash('map', '31'); cy.expectHash('pa', '4:30:2:0'); cy.expectHash('pb', '1:30:0:0');
+      cy.shotStats('paar-eigen').then(pe => anders(p27, pe, 'die andere Achse ändert das Bild'));
+      cy.get('#paarFaktorBVal').clear().type('0.15{enter}');             // Faktor getippt
+      cy.expectHash('pb', '1:0.15:0:0');
+      cy.get('#paarKlemmeA').check({ force: true });
+      cy.expectHash('pa', '4:30:2:1');
+    });
+    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&map=31&pa=5:5:1:1&pb=2:30:0:0&sn=1');   // aus dem Link: wie 25
+    cy.get('#paarA').should('have.value', '5'); cy.get('#paarKlemmeA').should('be.checked'); cy.get('#paarAbzugA').should('have.value', '1');
+    cy.waitRender();
+    cy.get('#state').should('contain.text', 'Fertig');
+  });
+  it('Periodengebiete (29): der Schritt der größten Nähe zum Ursprung, innen wie außen, eigenes Bild aus Gebieten', () => {
+    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400');
+    cy.shotStats('perioden-log').then(log => {
+      cy.rerender(() => cy.pickOption('mapping', 29));
+      cy.expectHash('map', '29');
+      cy.get('#interior').parent().should('have.attr', 'hidden');         // färbt innen wie außen
+      cy.get('#texturRow').should('not.have.attr', 'hidden');              // auch über einer Statistik-Färbung gibt es die Textur (dritter Kanal)
+      cy.shotStats('perioden-29').then(p => anders(log, p, 'Periodengebiete sehen anders aus als logarithmisch'));
+    });
+  });
+  it('Farbanker beim Bahnmittel: nur auf Wunsch, ohne Bildsprung beim Setzen und Lösen, nach anderen Streifen am selben Punkt neu geankert', () => {
+    cy.visitApp('mode=mandel&re=-0.7462586155&im=0.1111580353&z=5.6e4&it=400&map=19&ca=off');
+    cy.revealInDetails('colAnchor');
+    cy.get('#colAnchor').parent().should('not.have.attr', 'hidden');   // neu: der Anker gilt auch fürs Bahnmittel …
+    cy.get('#colAnchor').should('not.be.checked');                      // … aber nie von selbst: ohne Häkchen alles wie bisher
+    cy.expectHash('sa', null);
+    cy.waitRender();
+    let sa1 = null, off1 = null;
+    cy.shotStats('bahnanker-ohne').then(ohne => {
+      cy.get('#stage canvas').click(704, 180, { altKey: true });       // Alt+Klick ins Feld: Anker an diesem Punkt
+      cy.expectHash('sa', v => expect(parseFloat(v)).to.be.within(0, 1));
+      cy.revealInDetails('colAnchor');
+      cy.get('#colAnchor').should('be.checked');
+      cy.location('hash').then(h => { const p = new URLSearchParams(h.slice(1)); sa1 = p.get('sa'); off1 = p.get('off'); });
+      cy.wait(400);
+      cy.shotStats('bahnanker-mit').then(mit => gleich(ohne, mit, 'das Setzen des Ankers ändert das Bild nicht'));
+    });
+    cy.get('#streifenVal').clear().type('9{enter}');                    // andere Streifen: am selben Punkt neu geankert, der Versatz bleibt
+    cy.waitRender();
+    cy.expectHash('sp', '9');
+    cy.expectHash('sa', v => { expect(parseFloat(v)).to.be.within(0, 1); expect(v, 'Anker neu gemessen').not.to.eq(sa1); });
+    cy.expectHash('off', v => expect(v, 'Versatz unverändert').to.eq(off1));
+    cy.wait(400);
+    cy.shotStats('bahnanker-neun').then(neun => {
+      cy.revealInDetails('colAnchor');
+      cy.get('#colAnchor').uncheck();                                   // Lösen: das Bild bleibt in diesem Moment, der Versatz gleicht aus
+      cy.expectHash('sa', null);
+      cy.expectHash('off', v => expect(v, 'Versatz nachgeführt').not.to.eq(off1));
+      cy.wait(400);
+      cy.shotStats('bahnanker-geloest').then(los => gleich(neun, los, 'das Lösen des Ankers ändert das Bild nicht'));
+    });
+  });
+  it('Bahnmittel mit Fluchtzeit: zwei Werte statt einem, das einwertige Verfahren bleibt daneben bestehen', () => {
+    cy.visitApp('mode=mandel&re=-0.7462586155&im=0.1111580353&z=5.6e4&it=600');
+    cy.rerender(() => cy.pickOption('mapping', 19));                 // Streifenmittel wie bisher: ein Wert, kein Umschalter
+    cy.get('#palArt').should('have.attr', 'hidden');
+    cy.expectHash('map', '19');
+    cy.shotStats('bahn-einwertig').then(ein => {
+      cy.rerender(() => cy.pickOption('mapping', 22));               // dieselbe Statistik, aber als Paar mit der Fluchtzeit
+      cy.expectHash('map', '22');
+      cy.get('#palArt').should('not.have.attr', 'hidden');
+      cy.get('#palArt [data-art="2"]').should('have.class', 'on');   // Vorgabe ist hier die zweidimensionale Palette
+      gruppen().should('deep.eq', ['Vorgaben']);
+      cy.shotStats('bahn-zweiwertig').then(zwei => anders(ein, zwei, 'Paar mit der Fluchtzeit sieht anders aus als das Mittel allein'));
+      cy.rerender(() => art(1));                                     // auf die gewöhnliche Palette und zurück
+      cy.expectHash('p2', 'n');
+      cy.rerender(() => cy.pickOption('mapping', 19));
+      cy.get('#palArt').should('have.attr', 'hidden');
+      cy.shotStats('bahn-einwertig-2').then(zurueck => gleich(ein, zurueck, 'das einwertige Verfahren ist unverändert'));
+    });
+  });
+});
+
+describe('Farbe: Editor-Ergänzungen, Dichte anpassen, Innenfarbe, Gestuft', () => {
+  const anders = (a, b, text) => cy.task('pngDiff', { a: a.file, b: b.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, text).to.be.greaterThan(5));
+  const gleich = (a, b, text) => cy.task('pngDiff', { a: a.file, b: b.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, text).to.be.lessThan(0.5));
+
+  it('Farbschema-Editor: Position tippen, gleichmäßig verteilen, Übergänge in OKLab, Häufigkeiten unter der Vorschau', () => {
+    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&cp=' + encodeURIComponent('Probe~1~0.000:ff2020,0.400:2020ff'));   // zwei kräftige Farben: RGB und OKLab mischen sichtbar anders
+    cy.revealInDetails('palEdit');
+    cy.get('#palEdit').click();
+    cy.get('#peStops input.pos').should('have.length', 2);                 // je Stützstelle ein getipptes Feld (Prozent)
+    cy.get('#peHist').should('be.visible');                                  // Häufigkeit je Palettenstelle unter der Vorschau
+    cy.get('#palEd p.hint[data-i18n="editor.changes-apply-image-immediately"]').should('have.attr', 'hidden');   // mit Einwilligung erübrigt sich der Hinweis auf die Cookie-Einstellungen
+    cy.get('#peMarken .pe-marke').should('have.length', 2);                 // je Stützstelle eine Marke unter der Vorschau
+    cy.get('#peMarken').then($b => {                                         // die zweite Marke von 40 % auf 70 % ziehen
+      const r = $b[0].getBoundingClientRect(), m = $b.find('.pe-marke').eq(1);
+      cy.wrap(m).trigger('pointerdown', { clientX: r.left + 0.4 * r.width, clientY: r.top + 6, pointerId: 1, button: 0, isPrimary: true, force: true })
+        .trigger('pointermove', { clientX: r.left + 0.7 * r.width, clientY: r.top + 6, pointerId: 1, force: true })
+        .trigger('pointerup', { clientX: r.left + 0.7 * r.width, clientY: r.top + 6, pointerId: 1, force: true });
+    });
+    cy.get('#peStops .pe-stop').eq(1).find('input[type=range]').invoke('val').then(v => expect(+v, 'Regler folgt der Marke').to.be.within(690, 710));
+    cy.expectHash('cp', v => expect(v, 'gezogene Stelle im Link').to.match(/0\.(69|70|71)\d:/));
+    cy.get('#peMarken .pe-marke').eq(0).trigger('pointerdown', { pointerId: 2, button: 0, isPrimary: true, force: true }).trigger('pointerup', { pointerId: 2, force: true });   // Klick: Zeile gewählt
+    cy.get('#peStops .pe-stop').eq(0).should('have.class', 'on');
+    cy.get('#peStops .pe-stop').eq(1).find('input.pos').clear().type('30{enter}');
+    cy.get('#peStops .pe-stop').eq(1).find('input[type=range]').should('have.value', '300');
+    cy.expectHash('cp', v => expect(v, 'getippte Stelle im Link').to.contain('0.300:'));
+    cy.get('#peSpread').click();                                             // zyklisch: zwei gleiche Abstände über den Umlauf, also 0 und 50 %
+    cy.get('#peStops .pe-stop').eq(1).find('input[type=range]').should('have.value', '500');
+    cy.get('#peStops .pe-stop').eq(1).find('input.pos').invoke('val').should('match', /^50[.,]0$/);
+    cy.waitRender();
+    cy.shotStats('editor-rgb').then(rgb => {
+      cy.get('#peRaum').check();                                             // Übergänge in OKLab: im Link „~o“, anderes Bild
+      cy.expectHash('cp', v => expect(v.endsWith('~o'), 'OKLab im Link').to.eq(true));
+      cy.wait(400);
+      cy.shotStats('editor-oklab').then(ok => anders(rgb, ok, 'OKLab mischt anders als RGB'));
+      cy.get('#peRaum').uncheck();
+      cy.expectHash('cp', v => expect(v.endsWith('~o'), 'wieder RGB').to.eq(false));
+      cy.wait(400);
+      cy.shotStats('editor-rgb-2').then(zurueck => gleich(rgb, zurueck, 'RGB wie vorher'));
+    });
+    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&cp=' + encodeURIComponent('Probe~1~0.000:ff2020,0.500:2020ff~o'));   // aus dem Link zurück
+    cy.revealInDetails('palEdit');
+    cy.get('#palEdit').click();
+    cy.get('#peRaum').should('be.checked');
+  });
+
+  it('Farbdichte „Anpassen“, Innen „Eigene Farbe“ mit Farbwähler und „Gestuft“: Link und Bild', () => {
+    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&ca=off');
+    cy.revealInDetails('densAuto');
+    cy.get('#densAuto').click();                                             // die mittleren 80 % der Werte füllen einen Durchlauf
+    cy.expectHash('den', v => expect(parseFloat(v), 'Dichte angepasst').not.to.eq(0.04));
+    cy.get('#innenFarbe').should('have.attr', 'hidden');                    // Farbwähler nur bei „Eigene Farbe“
+    cy.waitRender();
+    cy.shotStats('innen-schwarz').then(schwarz => {
+      cy.rerender(() => cy.pickOption('interior', 4));
+      cy.expectHash('in', '4');
+      cy.get('#innenFarbe').should('not.have.attr', 'hidden');
+      cy.get('#innenFarbe').invoke('val', '#ff0000').trigger('input');
+      cy.expectHash('ic', 'ff0000');
+      cy.wait(400);
+      cy.shotStats('innen-rot').then(rot => anders(schwarz, rot, 'die eigene Innenfarbe färbt das Innere'));
+    });
+    cy.rerender(() => cy.pickOption('interior', 0));
+    cy.expectHash('ic', null);                                               // ohne „Eigene Farbe“ steht die Farbe nicht im Link
+    cy.get('#gestuft').parent().should('not.have.attr', 'hidden');
+    cy.shotStats('stetig').then(stetig => {
+      cy.revealInDetails('gestuft');
+      cy.get('#gestuft').check();                                            // ganze Iterationen: Bänder
+      cy.expectHash('st', '1');
+      cy.wait(400);
+      cy.shotStats('gestuft').then(bander => anders(stetig, bander, 'gestuft zeigt Bänder'));
+      cy.revealInDetails('gestuft');
+      cy.get('#gestuft').uncheck();
+      cy.expectHash('st', null);
+    });
+    cy.rerender(() => cy.pickOption('mapping', 19));                       // Bahnstatistik: weder Anpassen noch Gestuft
+    cy.get('#densAuto').should('have.attr', 'hidden');
+    cy.get('#gestuft').parent().should('have.attr', 'hidden');
+  });
+
+  it('Anordnung: Abhängigkeiten laufen nur nach unten (Anker vor Dichte, Wandern vor Versatz, Automatik vor Iterationen, Textur vor ihren Reglern)', () => {
+    cy.visitApp();
+    const vor = (a, b) => cy.window().then(w => { const A = w.document.getElementById(a), B = w.document.getElementById(b); expect(A.compareDocumentPosition(B) & 4, a + ' steht vor ' + b).to.eq(4); });
+    vor('colAnchor', 'density'); vor('animate', 'offset'); vor('iterAuto', 'iterRange'); vor('textur', 'streifen'); vor('textur', 'gewicht'); vor('textur', 'glowMode'); vor('interior', 'innenFarbe'); vor('mapping', 'gestuft');
   });
 });

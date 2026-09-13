@@ -61,11 +61,12 @@ describe('Bedienfeld: Schublade und Bereichsleiste am PC', () => {
   });
 
   // Seit die Werte Eingabefelder sind, brauchen die Gruppen Luft: Der Farbbereich ist damit bei 720 px Fensterhöhe
-  // etwas höher als das Bedienfeld und rollt ein Stück. Weit darüber hinaus darf kein Bereich wachsen.
+  // etwas höher als das Bedienfeld und rollt ein Stück; mit Textur-Auswahl und „Gestuft“ zwei Zeilen mehr (gewollt: lieber
+  // rollen als enger stellen). Weit darüber hinaus darf kein Bereich wachsen.
   it('kein Bereich läuft weit über das Bedienfeld hinaus', () => {
     for (const p of ['motiv', 'farbe', 'qualitaet', 'technik']) {
       cy.get('#rail button[data-pane="' + p + '"]').click();
-      cy.get('#panelBody').should($b => expect($b[0].scrollHeight, p + ' passt').to.be.at.most($b[0].clientHeight + 80));
+      cy.get('#panelBody').should($b => expect($b[0].scrollHeight, p + ' passt').to.be.at.most($b[0].clientHeight + 180));
     }
   });
 
@@ -136,7 +137,7 @@ describe('Bedienfeld am Handy', () => {
     cy.get('#family').should('have.value', 'julia');
     cy.get('#famChips button.on').should('have.attr', 'data-value', 'julia');
     cy.get('#tabFarbe').click();
-    cy.get('#palStrip button').should('have.length', 19);
+    cy.get('#palStrip button').should('have.length', 21);   // 21 Vorgaben, darunter Salbei und Salbei, gedeckt
     cy.get('#palStrip button[data-value="7"]').click();
     cy.get('#palette').should('have.value', '7');
     cy.expectHash('pal', 'deep-sea');

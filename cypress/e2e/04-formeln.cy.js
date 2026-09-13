@@ -3,6 +3,7 @@ const FORMULAS = [
   ['Mandelbrot', true], ['Burning Ship', true, 'flip'], ['Tricorn', true], ['Celtic', true], ['Buffalo', true, 'flip'],
   ['Perpendicular Burning Ship', true, 'flip'], ['Perpendicular Mandelbrot', true], ['Phoenix', false, 'param'], ['Lambda', false],
   ['Sinus', false], ['Exponential', false], ['Newton / Nova', false, 'param'], ['Magnet 1', false], ['Lyapunov', false, 'seq'],
+  ['z^p + c', false, 'param'],
 ];
 
 import { DEFAULT_RE } from '../support/commands';
@@ -10,7 +11,31 @@ import { DEFAULT_RE } from '../support/commands';
 describe('Formelfamilie', () => {
   beforeEach(() => cy.visitApp());
 
-  it('listet alle 14 Formeln in der richtigen Reihenfolge', () => {
+  it('Fluchtgrenze: Form und Radius stehen im Link, ändern das Bild und fehlen bei Lyapunov und Newton/Nova', () => {
+    cy.rowShown('fluchtRow', true);
+    cy.get('#fluchtForm').should('have.value', '0');
+    cy.get('#fluchtRadiusVal').should('have.value', 'Vorgabe');
+    cy.expectHash('ff', null); cy.expectHash('fr', null);
+    cy.get('#state').invoke('text').should('match', /Fertig/);
+    cy.screenshot('flucht-vorgabe', { capture: 'viewport', overwrite: true });
+    cy.get('#fluchtRadiusVal').clear().type('2{enter}');                    // kleiner Radius: die Grenze zeichnet sich in die Bänder
+    cy.get('#fluchtRadius').should('have.value', '1');
+    cy.expectHash('fr', '2');
+    cy.get('#state').invoke('text').should('match', /Fertig/);
+    cy.screenshot('flucht-radius-2', { capture: 'viewport', overwrite: true });
+    cy.task('pngDiff', { a: 'cypress/screenshots/04-formeln.cy.js/flucht-vorgabe.png', b: 'cypress/screenshots/04-formeln.cy.js/flucht-radius-2.png', region: { x0: 0.05, y0: 0.1, x1: 0.6, y1: 0.9 } }).then(d => expect(d.meanDiff, 'Radius 2 sieht anders aus').to.be.greaterThan(2));
+    cy.rerender(() => cy.pickOption('fluchtForm', 1));                     // Quadrat
+    cy.expectHash('ff', '1');
+    cy.get('#fluchtRadiusVal').clear().type('0{enter}');                    // 0: zurück zur Vorgabe
+    cy.expectHash('fr', null);
+    cy.get('#fluchtRadiusVal').should('have.value', 'Vorgabe');
+    cy.rerender(() => cy.pickOption('formula', 13));                       // Lyapunov: keine Fluchtgrenze
+    cy.rowShown('fluchtRow', false);
+    cy.rerender(() => cy.pickOption('formula', 11));                       // Newton/Nova ebenso
+    cy.rowShown('fluchtRow', false);
+  });
+
+  it('listet alle 15 Formeln in der richtigen Reihenfolge', () => {
     cy.get('#formula option').should('have.length', FORMULAS.length).each(($o, i) => expect($o.text()).to.contain(FORMULAS[i][0]));
   });
 

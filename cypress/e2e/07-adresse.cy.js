@@ -53,8 +53,8 @@ describe('Zustand in der Adresse', () => {
     cy.visitApp('mode=quatsch&z=abc&p=99&pal=-3&f=77&den=1e9');
     cy.get('#family').should('have.value', 'mandel');
     cy.get('#power').should('have.value', '8');
-    cy.get('#palette').should('have.value', 'z:1');                  // Lyapunov: die klassischen Farben (Gold und Blau) als Vorgabe
-    cy.get('#formula').should('have.value', '13');
+    cy.get('#palette').should('have.value', '0');                    // f=77 fällt auf die letzte Formel (z^p + c, reell): gewöhnliche Palette als Vorgabe
+    cy.get('#formula').should('have.value', '14');
     cy.get('#zoomRead').should('have.text', 'Zoom 1,0×');
     cy.expectHash('re', re => expect(parseFloat(re)).to.be.closeTo(DEFAULT_RE, 1e-9));
     cy.get('#state').invoke('text').should('match', /Fertig/);
