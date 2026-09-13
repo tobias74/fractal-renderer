@@ -879,7 +879,7 @@
           <div class="lbl wertzeile"><label for="paarFaktorA" data-i18n-title="colour.pair-factor-title" data-i18n="colour.pair-factor"></label><input class="val mono wert" id="paarFaktorAVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
           <input id="paarFaktorA" type="range" min="0" max="1000" step="1" value="500">
           <div class="paar-zeile">
-            <select id="paarAbzugA" data-i18n-title="colour.pair-deduction-title">
+            <select id="paarAbzugA" data-i18n-aria-label="colour.pair-deduction" data-i18n-title="colour.pair-deduction-title">
               <option value="0" data-i18n="colour.pair-deduction-none"></option>
               <option value="1" data-i18n="colour.pair-deduction-log"></option>
               <option value="2" data-i18n="colour.pair-deduction-log10"></option>
@@ -902,7 +902,7 @@
           <div class="lbl wertzeile"><label for="paarFaktorB" data-i18n-title="colour.pair-factor-title" data-i18n="colour.pair-factor"></label><input class="val mono wert" id="paarFaktorBVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
           <input id="paarFaktorB" type="range" min="0" max="1000" step="1" value="500">
           <div class="paar-zeile">
-            <select id="paarAbzugB" data-i18n-title="colour.pair-deduction-title">
+            <select id="paarAbzugB" data-i18n-aria-label="colour.pair-deduction" data-i18n-title="colour.pair-deduction-title">
               <option value="0" data-i18n="colour.pair-deduction-none"></option>
               <option value="1" data-i18n="colour.pair-deduction-log"></option>
               <option value="2" data-i18n="colour.pair-deduction-log10"></option>
@@ -1717,6 +1717,7 @@ const TEXTE = {
   'colour.pair-second-axis-title': { de: 'Der Wert der zweiten Achse; der Farbversatz wirkt auf sie.', en: 'The value on the second axis; the colour offset acts on it.' },
   'colour.pair-factor': { de: 'Faktor', en: 'Factor' },
   'colour.pair-factor-title': { de: 'Dehnt den Wert vor der Farbdichte: 30 für Mittel und Drehung, 1 für die Fluchtzeit, 5 für die Ursprungsnähe (Voreinstellungen).', en: 'Stretches the value before the colour density: 30 for averages and turning, 1 for escape time, 5 for closest approach (presets).' },
+  'colour.pair-deduction': { de: 'Fluchtzeit-Abzug', en: 'Escape-time deduction' },
   'colour.pair-deduction-title': { de: 'Fluchtzeit-Abzug: zieht β mal eine Funktion der Iterationszahl ab, damit lange Bahnen nach unten rücken (β ist der Regler darunter).', en: 'Escape-time deduction: subtracts β times a function of the iteration count so long orbits move down (β is the slider below).' },
   'colour.pair-deduction-none': { de: 'kein Fluchtzeit-Abzug', en: 'no escape-time deduction' },
   'colour.pair-deduction-log': { de: 'abzüglich β · log₂ N', en: 'minus β · log₂ N' },

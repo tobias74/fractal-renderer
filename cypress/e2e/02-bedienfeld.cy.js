@@ -19,7 +19,7 @@ describe('Bedienfeld: Schublade und Bereichsleiste am PC', () => {
       expect(r.right, 'Leiste am rechten Rand').to.eq(1280);
       expect(r.width, 'Breite der Leiste').to.eq(RAIL);
     });
-    cy.get('#rail button[data-pane]').should('have.length', 4);
+    cy.get('#rail button[data-pane]').should('have.length', 5);   // Motiv, Farbe, Palette, Qualität, Technik
     cy.get('#rail button[data-pane="motiv"]').should('have.class', 'on');
     cy.get('#panelTab').should('be.visible').and('have.attr', 'aria-expanded', 'true');
     cy.get('#burger').then($b => { const b = $b[0].getBoundingClientRect(); expect(b.top).to.be.closeTo(14, 1); expect(b.left, 'Menü-Knopf links').to.be.closeTo(14, 1); });
@@ -103,7 +103,7 @@ describe('Bedienfeld am Handy', () => {
       expect(r.bottom, 'unten bündig').to.be.closeTo(812, 1);
       expect(r.width).to.eq(375);
     });
-    cy.get('#tabbar button:visible').should('have.length', 5);
+    cy.get('#tabbar button:visible').should('have.length', 6);   // Motiv, Farbe, Palette, Qualität, Speichern, Mehr
     cy.get('#mStatus').click();
     cy.get('#mInfo').should('be.visible').and('contain.text', 'Tiefe');
   });
@@ -136,7 +136,7 @@ describe('Bedienfeld am Handy', () => {
     cy.get('#famChips button[data-value="julia"]').click();
     cy.get('#family').should('have.value', 'julia');
     cy.get('#famChips button.on').should('have.attr', 'data-value', 'julia');
-    cy.get('#tabFarbe').click();
+    cy.get('#tabPalette').click();   // die Farbfelder wohnen im Bereich „Palette“
     cy.get('#palStrip button').should('have.length', 21);   // 21 Vorgaben, darunter Salbei und Salbei, gedeckt
     cy.get('#palStrip button[data-value="7"]').click();
     cy.get('#palette').should('have.value', '7');
@@ -154,10 +154,11 @@ describe('Bedienfeld am Handy', () => {
   });
 
   it('beim Ziehen eines Reglers bleibt nur dieser stehen', () => {
-    cy.get('#tabFarbe').click();
+    cy.get('#tabPalette').click();   // Dichte und Versatz stehen im Bereich „Palette“
     cy.get('#density').trigger('pointerdown').invoke('val', 600).trigger('input');
     cy.get('body').should('have.class', 'regler-aktiv');
     cy.get('#density').should('have.css', 'visibility', 'visible');
+    cy.get('#offset').should('have.css', 'visibility', 'hidden');   // der Nachbar im selben Bereich verschwindet
     cy.get('#glowWidth').should('have.css', 'visibility', 'hidden');
     cy.window().trigger('pointerup');
     cy.get('body').should('not.have.class', 'regler-aktiv');

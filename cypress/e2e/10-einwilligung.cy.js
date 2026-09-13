@@ -139,7 +139,7 @@ describe('Cookie-Einwilligung', () => {
     cy.get('#palEdit').click();
     cy.get('#peName').clear().type('Nur heute');
     cy.get('#peSaveRow').should('have.attr', 'hidden');
-    cy.get('#peNoStore').should('be.visible').and('contain.text', 'Kein Speichern');
+    cy.get('#peNoStore').scrollIntoView().should('be.visible').and('contain.text', 'Kein Speichern');   // der Editor ist länger als das Bedienfeld hoch
     cy.get('#palette option:selected').invoke('text').should('contain', 'Nur heute');   // im Bild gilt es trotzdem
     cy.window().then(win => {
       expect(win.localStorage.getItem('fractal.palettes'), 'nichts abgelegt').to.be.null;
