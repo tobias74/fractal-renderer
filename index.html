@@ -228,7 +228,7 @@
   .modal-card img { max-width: 100%; max-height: 68vh; border-radius: 6px; display: block; margin: 0 auto; }
   .modal-card .btns { display: flex; gap: 8px; }
   .pal-ed { display: flex; flex-direction: column; gap: 9px; }
-  .grid2 > div[hidden] + div, .grid2 > div:has(+ div[hidden]) { grid-column: 1 / -1; }   /* bleibt eine Zelle allein (z. B. „Ebene“ ohne „Potenz d“), nimmt sie die ganze Breite */
+  .grid2.paare > div[hidden] + div, .grid2.paare > div:has(+ div[hidden]) { grid-column: 1 / -1; }   /* im Formel-Raster: bleibt eine Zelle allein (z. B. „Ebene“ ohne „Potenz d“), nimmt sie die ganze Breite */
   .pal-ed canvas { width: 100%; height: 28px; border-radius: 6px; border: 1px solid var(--line); display: block; }
   .pal-ed canvas.pe-hist { height: 40px; background: rgba(255, 255, 255, .03); }   /* Häufigkeit je Palettenstelle, unter den Marken */
   /* Marken der Stützstellen unter der Vorschau: Dreieck in der Farbe der Stelle, ziehbar; die gewählte leuchtet */
@@ -239,9 +239,41 @@
   .pe-stop.on { background: rgba(255, 255, 255, .06); border-radius: 6px; }
   .wertzeile .klein { margin-left: auto; margin-right: 8px; padding: 2px 8px; font-size: 12px; line-height: 1.4; }
   .innen-farbe { width: 100%; height: 30px; margin-top: 6px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; cursor: pointer; }
-  .tex-farben { display: flex; gap: 10px; margin-top: 4px; }   /* Farben einer Textur: hell und dunkel nebeneinander */
-  /* Texturstapel: je Platz eine Karte; im Kopf Klappknopf, Name, Kurzangabe (eingeklappt), Schalter, Griff zum Ziehen, Pfeile, × */
-  .tex-karte { display: flex; flex-direction: column; gap: 8px; padding: 7px 9px 9px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255, 255, 255, .025); }
+  /* Texturstapel: je Platz ein Eintrag mit linker Leitlinie statt Kasten; Kopfzeile [Griff][Klapp] Name · Art · Stärke … [Schalter][▲][▼][×] */
+  .tex-farben { display: flex; gap: 12px; align-items: center; }
+  .tex-farben-titel { color: var(--muted); font-size: 12px; letter-spacing: .02em; margin-right: auto; }
+  .tex-farben label { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12.5px; cursor: pointer; }
+  .tex-farben input[type=color] { width: 34px; height: 22px; padding: 0; border: 1px solid var(--line); border-radius: 5px; background: none; cursor: pointer; }
+  .grid2 > .tex-titel, .grid2 > .stat-titel, .grid2 > .tex-karte, .grid2 > #paarRow, .grid2 > #texLive { grid-column: 1 / -1; }   /* im zweispaltigen Raster über die volle Breite */
+  .tex-titel { margin-top: 6px; }   /* Abschnitt „Texturen“: etwas Luft über dem Stapel */
+  .stat-titel { margin-top: 12px; }   /* Abschnitt „Bahnstatistik“ (Streifen, Vorlauf, Gewichtung): Luft nach dem Stapel */
+  .tex-karte { display: flex; flex-direction: column; gap: 9px; padding: 2px 0 6px 10px; border-left: 2px solid var(--line); }
+  .tex-karte.tex-leer { border-left-color: transparent; padding-bottom: 0; }
+  .tex-karte.aus > :not(.tex-slot), .tex-karte.aus select, .tex-karte.aus .tex-kurz, .tex-karte.aus > .tex-slot > .lbl > label { opacity: .45; }   /* ausgeschaltet: gedämpft, Schalter und Knöpfe bleiben klar */
+  .tex-karte.tex-platz { opacity: .25; border-left-color: var(--accent); }   /* die Lücke: der gezogene Eintrag bleibt an Ort und Stelle, nur blass */
+  .tex-karte.tex-schiebt { transition: transform 160ms ease; will-change: transform; }   /* die anderen rücken per transform aus dem Weg */
+  .tex-karte.tex-flieger { position: fixed; left: 0; top: 0; z-index: 60; margin: 0; padding: 6px 10px 8px; pointer-events: none; border-left: 2px solid var(--accent); border-radius: 0 8px 8px 0; background: #171a22; box-shadow: 0 12px 30px rgba(0, 0, 0, .55); opacity: .97; will-change: transform; }   /* das Abbild am Zeiger */
+  body.tex-ziehen, body.tex-ziehen * { cursor: grabbing !important; user-select: none; }
+  .tex-griff:active { cursor: grabbing; }
+  .sr-nur { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .tex-slot { display: flex; flex-direction: column; gap: 7px; }
+  .tex-kopf { align-items: center; gap: 6px; min-height: 26px; }
+  .tex-kopf label { flex: 0 0 auto; white-space: nowrap; }
+  .tex-kurz { flex: 1; min-width: 0; color: var(--text); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tex-kurz .tex-wert { color: var(--faint); font-family: var(--font-mono); font-size: 11.5px; margin-left: 6px; }
+  .tex-kopf button { width: 22px; height: 22px; padding: 0; border: none; border-radius: 5px; background: none; color: var(--muted); font: 11px var(--font-ui); cursor: pointer; }
+  .tex-kopf button:hover, .tex-kopf button:focus-visible { color: var(--text); background: rgba(255, 255, 255, .08); outline: none; }
+  .tex-griff { cursor: grab; touch-action: none; letter-spacing: -2px; margin-left: -4px; }
+  .tex-klapp { font-size: 12px; }
+  .tex-knoepfe { display: flex; gap: 2px; align-items: center; }
+  .tex-schalter { position: relative; width: 30px; height: 18px; display: inline-block; cursor: pointer; margin-right: 4px; }
+  .tex-schalter input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .tex-schalter span { position: absolute; inset: 0; border-radius: 9px; background: rgba(255, 255, 255, .14); transition: background .15s; }
+  .tex-schalter span::after { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--muted); transition: transform .15s, background .15s; }
+  .tex-schalter input:checked + span { background: var(--accent); }
+  .tex-schalter input:checked + span::after { transform: translateX(12px); background: #10221e; }
+  .tex-schalter input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+  select.tex-neu { color: var(--muted); border-style: dashed; background: transparent; }   /* der nächste freie Platz: „＋ Textur hinzufügen“ */
   /* Paar aus zwei Bahnwerten: je Achse ein Block mit Wert, Faktor, Abzug und Klemme */
   #paarRow { display: flex; flex-direction: column; gap: 6px; }
   .paar-achse { display: flex; flex-direction: column; gap: 7px; padding: 7px 9px 9px; border: 1px dashed var(--line); border-radius: 8px; }
@@ -688,7 +720,7 @@
     <section class="row" id="formulaRow">
       <h2 class="sec-title"><label for="formula" data-i18n="subject.formula"></label><span class="val" id="formulaNote"></span></h2>
       <select id="formula"></select>
-      <div class="grid2">
+      <div class="grid2 paare">   <!-- Potenz d und Ebene: bleibt eine Zelle allein, nimmt sie die ganze Breite -->
         <div><div class="lbl"><label for="power" data-i18n="subject.power-d"></label></div>
           <select id="power">
             <option value="2">2</option>
@@ -812,6 +844,7 @@
           <option value="29" data-i18n="colour.period-domains"></option>
         </optgroup>
       </select>
+      <p class="hint" id="mappingText"></p>   <!-- ein Satz zur gewählten Färbung -->
       <div id="compRow" hidden>
         <div class="lbl wertzeile"><label for="comp" data-i18n="colour.compression"></label><span class="val-zusatz" id="compNote"></span><input class="val mono wert" id="compVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="comp" type="range" min="0" max="1000" value="333">
@@ -829,158 +862,6 @@
       <div id="lyGrenzeRow" hidden>
         <div class="lbl wertzeile"><label for="lyGrenze" data-i18n-title="colour.how-far-an-orbit" data-i18n="colour.boundary"></label><input class="val mono wert" id="lyGrenzeVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="lyGrenze" type="range" min="0" max="1000" value="0">
-      </div>
-      <div class="tex-karte" id="texKarte1" hidden>
-        <div id="texturRow" class="tex-slot" data-slot="1">
-          <div class="lbl tex-kopf"><button type="button" class="tex-klapp" data-i18n-title="colour.texture-collapse" data-i18n-aria-label="colour.texture-collapse">▾</button><label for="textur" data-i18n-title="colour.texture-title" data-i18n="colour.texture"></label><span class="tex-kurz mono"></span><span class="tex-knoepfe"><label class="tex-schalter" data-i18n-title="colour.texture-on"><input type="checkbox" id="texAn" checked data-i18n-aria-label="colour.texture-on"><span></span></label><button type="button" class="tex-griff" data-i18n-title="colour.texture-drag" data-i18n-aria-label="colour.texture-drag">⋮⋮</button><button type="button" class="tex-auf" data-i18n-title="colour.texture-up" data-i18n-aria-label="colour.texture-up">▲</button><button type="button" class="tex-ab" data-i18n-title="colour.texture-down" data-i18n-aria-label="colour.texture-down">▼</button><button type="button" class="tex-weg" data-i18n-title="colour.texture-remove" data-i18n-aria-label="colour.texture-remove">×</button></span></div>
-          <select id="textur">
-            <option value="0" data-i18n="colour.texture-none"></option>
-            <option value="1" data-i18n="colour.stripe-average"></option>
-            <option value="2" data-i18n="colour.texture-triangle"></option>
-            <option value="3" data-i18n="colour.total-turning"></option>
-            <option value="4" data-i18n="colour.texture-cross"></option>
-            <option value="5" data-i18n="colour.closest-to-origin"></option>
-            <option value="6" data-i18n="colour.texture-rays"></option>
-            <option value="7" data-i18n="colour.texture-whirl"></option>
-            <option value="8" data-i18n="colour.period-domains"></option>
-          </select>
-        </div>
-        <div id="texStaerkeRow" hidden>
-          <div class="lbl wertzeile"><label for="texStaerke" data-i18n-title="colour.strength-title" data-i18n="colour.strength"></label><input class="val mono wert" id="texStaerkeVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
-          <input id="texStaerke" type="range" min="0" max="1" step="0.01" value="0.7">
-        </div>
-        <div id="texKontrastRow" hidden>
-          <div class="lbl wertzeile"><label for="texKontrast" data-i18n-title="colour.contrast-title" data-i18n="colour.contrast"></label><input class="val mono wert" id="texKontrastVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
-          <input id="texKontrast" type="range" min="0.1" max="8" step="0.1" value="1">
-        </div>
-        <div id="texMitteRow" hidden>
-          <div class="lbl wertzeile"><label for="texMitte" data-i18n-title="colour.texture-middle-title" data-i18n="colour.texture-middle"></label><input class="val mono wert" id="texMitteVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
-          <input id="texMitte" type="range" min="0" max="1" step="0.01" value="0.5">
-        </div>
-        <div id="texFarbenRow" hidden>
-          <div class="lbl"><span data-i18n-title="colour.texture-colours-title" data-i18n="colour.texture-colours"></span></div>
-          <div class="tex-farben">
-            <label><input type="color" id="texHell" value="#ffffff"> <span data-i18n="colour.texture-light"></span></label>
-            <label><input type="color" id="texDunkel" value="#000000"> <span data-i18n="colour.texture-dark"></span></label>
-          </div>
-        </div>
-      </div>
-      <div class="tex-karte" id="texKarte2" hidden>
-        <div id="textur2Row" class="tex-slot" data-slot="2">
-          <div class="lbl tex-kopf"><button type="button" class="tex-klapp" data-i18n-title="colour.texture-collapse" data-i18n-aria-label="colour.texture-collapse">▾</button><label for="textur2" data-i18n-title="colour.texture2-title" data-i18n="colour.texture2"></label><span class="tex-kurz mono"></span><span class="tex-knoepfe"><label class="tex-schalter" data-i18n-title="colour.texture-on"><input type="checkbox" id="tex2An" checked data-i18n-aria-label="colour.texture-on"><span></span></label><button type="button" class="tex-griff" data-i18n-title="colour.texture-drag" data-i18n-aria-label="colour.texture-drag">⋮⋮</button><button type="button" class="tex-auf" data-i18n-title="colour.texture-up" data-i18n-aria-label="colour.texture-up">▲</button><button type="button" class="tex-ab" data-i18n-title="colour.texture-down" data-i18n-aria-label="colour.texture-down">▼</button><button type="button" class="tex-weg" data-i18n-title="colour.texture-remove" data-i18n-aria-label="colour.texture-remove">×</button></span></div>
-          <select id="textur2">
-            <option value="0" data-i18n="colour.texture-none"></option>
-            <option value="1" data-i18n="colour.stripe-average"></option>
-            <option value="2" data-i18n="colour.texture-triangle"></option>
-            <option value="3" data-i18n="colour.total-turning"></option>
-            <option value="4" data-i18n="colour.texture-cross"></option>
-            <option value="5" data-i18n="colour.closest-to-origin"></option>
-            <option value="6" data-i18n="colour.texture-rays"></option>
-            <option value="7" data-i18n="colour.texture-whirl"></option>
-            <option value="8" data-i18n="colour.period-domains"></option>
-          </select>
-        </div>
-        <div id="tex2StaerkeRow" hidden>
-          <div class="lbl wertzeile"><label for="tex2Staerke" data-i18n-title="colour.strength-title" data-i18n="colour.strength"></label><input class="val mono wert" id="tex2StaerkeVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
-          <input id="tex2Staerke" type="range" min="0" max="1" step="0.01" value="0.7">
-        </div>
-        <div id="tex2KontrastRow" hidden>
-          <div class="lbl wertzeile"><label for="tex2Kontrast" data-i18n-title="colour.contrast-title" data-i18n="colour.contrast"></label><input class="val mono wert" id="tex2KontrastVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
-          <input id="tex2Kontrast" type="range" min="0.1" max="8" step="0.1" value="1">
-        </div>
-        <div id="tex2MitteRow" hidden>
-          <div class="lbl wertzeile"><label for="tex2Mitte" data-i18n-title="colour.texture-middle-title" data-i18n="colour.texture-middle"></label><input class="val mono wert" id="tex2MitteVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
-          <input id="tex2Mitte" type="range" min="0" max="1" step="0.01" value="0.5">
-        </div>
-        <div id="tex2FarbenRow" hidden>
-          <div class="lbl"><span data-i18n-title="colour.texture-colours-title" data-i18n="colour.texture-colours"></span></div>
-          <div class="tex-farben">
-            <label><input type="color" id="tex2Hell" value="#ffffff"> <span data-i18n="colour.texture-light"></span></label>
-            <label><input type="color" id="tex2Dunkel" value="#000000"> <span data-i18n="colour.texture-dark"></span></label>
-          </div>
-        </div>
-      </div>
-      <div class="tex-karte" id="texKarte3" hidden>
-        <div id="textur3Row" class="tex-slot" data-slot="3">
-          <div class="lbl tex-kopf"><button type="button" class="tex-klapp" data-i18n-title="colour.texture-collapse" data-i18n-aria-label="colour.texture-collapse">▾</button><label for="textur3" data-i18n-title="colour.texture-n-title" data-i18n="colour.texture3"></label><span class="tex-kurz mono"></span><span class="tex-knoepfe"><label class="tex-schalter" data-i18n-title="colour.texture-on"><input type="checkbox" id="tex3An" checked data-i18n-aria-label="colour.texture-on"><span></span></label><button type="button" class="tex-griff" data-i18n-title="colour.texture-drag" data-i18n-aria-label="colour.texture-drag">⋮⋮</button><button type="button" class="tex-auf" data-i18n-title="colour.texture-up" data-i18n-aria-label="colour.texture-up">▲</button><button type="button" class="tex-ab" data-i18n-title="colour.texture-down" data-i18n-aria-label="colour.texture-down">▼</button><button type="button" class="tex-weg" data-i18n-title="colour.texture-remove" data-i18n-aria-label="colour.texture-remove">×</button></span></div>
-          <select id="textur3">
-            <option value="0" data-i18n="colour.texture-none"></option>
-            <option value="1" data-i18n="colour.stripe-average"></option>
-            <option value="2" data-i18n="colour.texture-triangle"></option>
-            <option value="3" data-i18n="colour.total-turning"></option>
-            <option value="4" data-i18n="colour.texture-cross"></option>
-            <option value="5" data-i18n="colour.closest-to-origin"></option>
-            <option value="6" data-i18n="colour.texture-rays"></option>
-            <option value="7" data-i18n="colour.texture-whirl"></option>
-            <option value="8" data-i18n="colour.period-domains"></option>
-          </select>
-        </div>
-        <div id="tex3StaerkeRow" hidden>
-          <div class="lbl wertzeile"><label for="tex3Staerke" data-i18n-title="colour.strength-title" data-i18n="colour.strength"></label><input class="val mono wert" id="tex3StaerkeVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
-          <input id="tex3Staerke" type="range" min="0" max="1" step="0.01" value="0.7">
-        </div>
-        <div id="tex3KontrastRow" hidden>
-          <div class="lbl wertzeile"><label for="tex3Kontrast" data-i18n-title="colour.contrast-title" data-i18n="colour.contrast"></label><input class="val mono wert" id="tex3KontrastVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
-          <input id="tex3Kontrast" type="range" min="0.1" max="8" step="0.1" value="1">
-        </div>
-        <div id="tex3MitteRow" hidden>
-          <div class="lbl wertzeile"><label for="tex3Mitte" data-i18n-title="colour.texture-middle-title" data-i18n="colour.texture-middle"></label><input class="val mono wert" id="tex3MitteVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
-          <input id="tex3Mitte" type="range" min="0" max="1" step="0.01" value="0.5">
-        </div>
-        <div id="tex3FarbenRow" hidden>
-          <div class="lbl"><span data-i18n-title="colour.texture-colours-title" data-i18n="colour.texture-colours"></span></div>
-          <div class="tex-farben">
-            <label><input type="color" id="tex3Hell" value="#ffffff"> <span data-i18n="colour.texture-light"></span></label>
-            <label><input type="color" id="tex3Dunkel" value="#000000"> <span data-i18n="colour.texture-dark"></span></label>
-          </div>
-        </div>
-      </div>
-      <div class="tex-karte" id="texKarte4" hidden>
-        <div id="textur4Row" class="tex-slot" data-slot="4">
-          <div class="lbl tex-kopf"><button type="button" class="tex-klapp" data-i18n-title="colour.texture-collapse" data-i18n-aria-label="colour.texture-collapse">▾</button><label for="textur4" data-i18n-title="colour.texture-n-title" data-i18n="colour.texture4"></label><span class="tex-kurz mono"></span><span class="tex-knoepfe"><label class="tex-schalter" data-i18n-title="colour.texture-on"><input type="checkbox" id="tex4An" checked data-i18n-aria-label="colour.texture-on"><span></span></label><button type="button" class="tex-griff" data-i18n-title="colour.texture-drag" data-i18n-aria-label="colour.texture-drag">⋮⋮</button><button type="button" class="tex-auf" data-i18n-title="colour.texture-up" data-i18n-aria-label="colour.texture-up">▲</button><button type="button" class="tex-ab" data-i18n-title="colour.texture-down" data-i18n-aria-label="colour.texture-down">▼</button><button type="button" class="tex-weg" data-i18n-title="colour.texture-remove" data-i18n-aria-label="colour.texture-remove">×</button></span></div>
-          <select id="textur4">
-            <option value="0" data-i18n="colour.texture-none"></option>
-            <option value="1" data-i18n="colour.stripe-average"></option>
-            <option value="2" data-i18n="colour.texture-triangle"></option>
-            <option value="3" data-i18n="colour.total-turning"></option>
-            <option value="4" data-i18n="colour.texture-cross"></option>
-            <option value="5" data-i18n="colour.closest-to-origin"></option>
-            <option value="6" data-i18n="colour.texture-rays"></option>
-            <option value="7" data-i18n="colour.texture-whirl"></option>
-            <option value="8" data-i18n="colour.period-domains"></option>
-          </select>
-        </div>
-        <div id="tex4StaerkeRow" hidden>
-          <div class="lbl wertzeile"><label for="tex4Staerke" data-i18n-title="colour.strength-title" data-i18n="colour.strength"></label><input class="val mono wert" id="tex4StaerkeVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
-          <input id="tex4Staerke" type="range" min="0" max="1" step="0.01" value="0.7">
-        </div>
-        <div id="tex4KontrastRow" hidden>
-          <div class="lbl wertzeile"><label for="tex4Kontrast" data-i18n-title="colour.contrast-title" data-i18n="colour.contrast"></label><input class="val mono wert" id="tex4KontrastVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
-          <input id="tex4Kontrast" type="range" min="0.1" max="8" step="0.1" value="1">
-        </div>
-        <div id="tex4MitteRow" hidden>
-          <div class="lbl wertzeile"><label for="tex4Mitte" data-i18n-title="colour.texture-middle-title" data-i18n="colour.texture-middle"></label><input class="val mono wert" id="tex4MitteVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
-          <input id="tex4Mitte" type="range" min="0" max="1" step="0.01" value="0.5">
-        </div>
-        <div id="tex4FarbenRow" hidden>
-          <div class="lbl"><span data-i18n-title="colour.texture-colours-title" data-i18n="colour.texture-colours"></span></div>
-          <div class="tex-farben">
-            <label><input type="color" id="tex4Hell" value="#ffffff"> <span data-i18n="colour.texture-light"></span></label>
-            <label><input type="color" id="tex4Dunkel" value="#000000"> <span data-i18n="colour.texture-dark"></span></label>
-          </div>
-        </div>
-      </div>
-      <div id="streifenRow" hidden>
-        <div class="lbl wertzeile"><label for="streifen" data-i18n-title="colour.stripes-title" data-i18n="colour.stripes"></label><input class="val mono wert" id="streifenVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
-        <input id="streifen" type="range" min="1" max="16" step="1" value="5">
-      </div>
-      <div id="vorlaufRow" hidden>
-        <div class="lbl wertzeile"><label for="vorlauf" data-i18n-title="colour.skip-title" data-i18n="colour.skip"></label><input class="val mono wert" id="vorlaufVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
-        <input id="vorlauf" type="range" min="0" max="1000" step="1" value="0">
-      </div>
-      <div id="gewichtRow" hidden>
-        <div class="lbl wertzeile"><label for="gewicht" data-i18n-title="colour.weighting-title" data-i18n="colour.weighting"></label><input class="val mono wert" id="gewichtVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
-        <input id="gewicht" type="range" min="0" max="4" step="0.1" value="0">
       </div>
       <div id="paarRow" hidden>
         <div class="paar-achse">
@@ -1035,6 +916,181 @@
         <input id="abzug" type="range" min="0" max="2" step="0.01" value="0">
       </div>
       <div class="grid2">
+      <h2 class="sec-title tex-titel" id="texTitel" data-i18n="colour.textures" hidden></h2>
+      <div class="tex-karte" id="texKarte1" hidden>
+        <div id="texturRow" class="tex-slot" data-slot="1">
+          <div class="lbl tex-kopf">
+            <button type="button" class="tex-griff" data-i18n-title="colour.texture-drag" data-i18n-aria-label="colour.texture-drag">⋮⋮</button>
+            <button type="button" class="tex-klapp" data-i18n-title="colour.texture-collapse" data-i18n-aria-label="colour.texture-collapse">▾</button>
+            <label for="textur" data-i18n-title="colour.texture-title" data-i18n="colour.texture"></label><span class="tex-kurz"></span>
+            <span class="tex-knoepfe"><label class="tex-schalter" data-i18n-title="colour.texture-on"><input type="checkbox" id="texAn" checked data-i18n-aria-label="colour.texture-on"><span></span></label><button type="button" class="tex-weg" data-i18n-title="colour.texture-remove" data-i18n-aria-label="colour.texture-remove">×</button></span>
+          </div>
+          <select id="textur">
+            <option value="0" data-i18n="colour.texture-none"></option>
+            <option value="1" data-i18n="colour.stripe-average"></option>
+            <option value="2" data-i18n="colour.texture-triangle"></option>
+            <option value="3" data-i18n="colour.total-turning"></option>
+            <option value="4" data-i18n="colour.texture-cross"></option>
+            <option value="5" data-i18n="colour.closest-to-origin"></option>
+            <option value="6" data-i18n="colour.texture-rays"></option>
+            <option value="7" data-i18n="colour.texture-whirl"></option>
+            <option value="8" data-i18n="colour.period-domains"></option>
+          </select>
+        </div>
+        <div id="texStaerkeRow" hidden>
+          <div class="lbl wertzeile"><label for="texStaerke" data-i18n-title="colour.strength-title" data-i18n="colour.strength"></label><input class="val mono wert" id="texStaerkeVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+          <input id="texStaerke" type="range" min="0" max="1" step="0.01" value="0.7">
+        </div>
+        <div id="texKontrastRow" hidden>
+          <div class="lbl wertzeile"><label for="texKontrast" data-i18n-title="colour.contrast-title" data-i18n="colour.contrast"></label><input class="val mono wert" id="texKontrastVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+          <input id="texKontrast" type="range" min="0.1" max="8" step="0.1" value="1">
+        </div>
+        <div id="texMitteRow" hidden>
+          <div class="lbl wertzeile"><label for="texMitte" data-i18n-title="colour.texture-middle-title" data-i18n="colour.texture-middle"></label><input class="val mono wert" id="texMitteVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+          <input id="texMitte" type="range" min="0" max="1" step="0.01" value="0.5">
+        </div>
+        <div id="texFarbenRow" hidden>
+          <div class="tex-farben">
+            <span class="tex-farben-titel" data-i18n-title="colour.texture-colours-title" data-i18n="colour.texture-colours"></span>
+            <label><input type="color" id="texHell" value="#ffffff"> <span data-i18n="colour.texture-light"></span></label>
+            <label><input type="color" id="texDunkel" value="#000000"> <span data-i18n="colour.texture-dark"></span></label>
+          </div>
+        </div>
+      </div>
+      <div class="tex-karte" id="texKarte2" hidden>
+        <div id="textur2Row" class="tex-slot" data-slot="2">
+          <div class="lbl tex-kopf">
+            <button type="button" class="tex-griff" data-i18n-title="colour.texture-drag" data-i18n-aria-label="colour.texture-drag">⋮⋮</button>
+            <button type="button" class="tex-klapp" data-i18n-title="colour.texture-collapse" data-i18n-aria-label="colour.texture-collapse">▾</button>
+            <label for="textur2" data-i18n-title="colour.texture2-title" data-i18n="colour.texture2"></label><span class="tex-kurz"></span>
+            <span class="tex-knoepfe"><label class="tex-schalter" data-i18n-title="colour.texture-on"><input type="checkbox" id="tex2An" checked data-i18n-aria-label="colour.texture-on"><span></span></label><button type="button" class="tex-weg" data-i18n-title="colour.texture-remove" data-i18n-aria-label="colour.texture-remove">×</button></span>
+          </div>
+          <select id="textur2">
+            <option value="0" data-i18n="colour.texture-none"></option>
+            <option value="1" data-i18n="colour.stripe-average"></option>
+            <option value="2" data-i18n="colour.texture-triangle"></option>
+            <option value="3" data-i18n="colour.total-turning"></option>
+            <option value="4" data-i18n="colour.texture-cross"></option>
+            <option value="5" data-i18n="colour.closest-to-origin"></option>
+            <option value="6" data-i18n="colour.texture-rays"></option>
+            <option value="7" data-i18n="colour.texture-whirl"></option>
+            <option value="8" data-i18n="colour.period-domains"></option>
+          </select>
+        </div>
+        <div id="tex2StaerkeRow" hidden>
+          <div class="lbl wertzeile"><label for="tex2Staerke" data-i18n-title="colour.strength-title" data-i18n="colour.strength"></label><input class="val mono wert" id="tex2StaerkeVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+          <input id="tex2Staerke" type="range" min="0" max="1" step="0.01" value="0.7">
+        </div>
+        <div id="tex2KontrastRow" hidden>
+          <div class="lbl wertzeile"><label for="tex2Kontrast" data-i18n-title="colour.contrast-title" data-i18n="colour.contrast"></label><input class="val mono wert" id="tex2KontrastVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+          <input id="tex2Kontrast" type="range" min="0.1" max="8" step="0.1" value="1">
+        </div>
+        <div id="tex2MitteRow" hidden>
+          <div class="lbl wertzeile"><label for="tex2Mitte" data-i18n-title="colour.texture-middle-title" data-i18n="colour.texture-middle"></label><input class="val mono wert" id="tex2MitteVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+          <input id="tex2Mitte" type="range" min="0" max="1" step="0.01" value="0.5">
+        </div>
+        <div id="tex2FarbenRow" hidden>
+          <div class="tex-farben">
+            <span class="tex-farben-titel" data-i18n-title="colour.texture-colours-title" data-i18n="colour.texture-colours"></span>
+            <label><input type="color" id="tex2Hell" value="#ffffff"> <span data-i18n="colour.texture-light"></span></label>
+            <label><input type="color" id="tex2Dunkel" value="#000000"> <span data-i18n="colour.texture-dark"></span></label>
+          </div>
+        </div>
+      </div>
+      <div class="tex-karte" id="texKarte3" hidden>
+        <div id="textur3Row" class="tex-slot" data-slot="3">
+          <div class="lbl tex-kopf">
+            <button type="button" class="tex-griff" data-i18n-title="colour.texture-drag" data-i18n-aria-label="colour.texture-drag">⋮⋮</button>
+            <button type="button" class="tex-klapp" data-i18n-title="colour.texture-collapse" data-i18n-aria-label="colour.texture-collapse">▾</button>
+            <label for="textur3" data-i18n-title="colour.texture-n-title" data-i18n="colour.texture3"></label><span class="tex-kurz"></span>
+            <span class="tex-knoepfe"><label class="tex-schalter" data-i18n-title="colour.texture-on"><input type="checkbox" id="tex3An" checked data-i18n-aria-label="colour.texture-on"><span></span></label><button type="button" class="tex-weg" data-i18n-title="colour.texture-remove" data-i18n-aria-label="colour.texture-remove">×</button></span>
+          </div>
+          <select id="textur3">
+            <option value="0" data-i18n="colour.texture-none"></option>
+            <option value="1" data-i18n="colour.stripe-average"></option>
+            <option value="2" data-i18n="colour.texture-triangle"></option>
+            <option value="3" data-i18n="colour.total-turning"></option>
+            <option value="4" data-i18n="colour.texture-cross"></option>
+            <option value="5" data-i18n="colour.closest-to-origin"></option>
+            <option value="6" data-i18n="colour.texture-rays"></option>
+            <option value="7" data-i18n="colour.texture-whirl"></option>
+            <option value="8" data-i18n="colour.period-domains"></option>
+          </select>
+        </div>
+        <div id="tex3StaerkeRow" hidden>
+          <div class="lbl wertzeile"><label for="tex3Staerke" data-i18n-title="colour.strength-title" data-i18n="colour.strength"></label><input class="val mono wert" id="tex3StaerkeVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+          <input id="tex3Staerke" type="range" min="0" max="1" step="0.01" value="0.7">
+        </div>
+        <div id="tex3KontrastRow" hidden>
+          <div class="lbl wertzeile"><label for="tex3Kontrast" data-i18n-title="colour.contrast-title" data-i18n="colour.contrast"></label><input class="val mono wert" id="tex3KontrastVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+          <input id="tex3Kontrast" type="range" min="0.1" max="8" step="0.1" value="1">
+        </div>
+        <div id="tex3MitteRow" hidden>
+          <div class="lbl wertzeile"><label for="tex3Mitte" data-i18n-title="colour.texture-middle-title" data-i18n="colour.texture-middle"></label><input class="val mono wert" id="tex3MitteVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+          <input id="tex3Mitte" type="range" min="0" max="1" step="0.01" value="0.5">
+        </div>
+        <div id="tex3FarbenRow" hidden>
+          <div class="tex-farben">
+            <span class="tex-farben-titel" data-i18n-title="colour.texture-colours-title" data-i18n="colour.texture-colours"></span>
+            <label><input type="color" id="tex3Hell" value="#ffffff"> <span data-i18n="colour.texture-light"></span></label>
+            <label><input type="color" id="tex3Dunkel" value="#000000"> <span data-i18n="colour.texture-dark"></span></label>
+          </div>
+        </div>
+      </div>
+      <div class="tex-karte" id="texKarte4" hidden>
+        <div id="textur4Row" class="tex-slot" data-slot="4">
+          <div class="lbl tex-kopf">
+            <button type="button" class="tex-griff" data-i18n-title="colour.texture-drag" data-i18n-aria-label="colour.texture-drag">⋮⋮</button>
+            <button type="button" class="tex-klapp" data-i18n-title="colour.texture-collapse" data-i18n-aria-label="colour.texture-collapse">▾</button>
+            <label for="textur4" data-i18n-title="colour.texture-n-title" data-i18n="colour.texture4"></label><span class="tex-kurz"></span>
+            <span class="tex-knoepfe"><label class="tex-schalter" data-i18n-title="colour.texture-on"><input type="checkbox" id="tex4An" checked data-i18n-aria-label="colour.texture-on"><span></span></label><button type="button" class="tex-weg" data-i18n-title="colour.texture-remove" data-i18n-aria-label="colour.texture-remove">×</button></span>
+          </div>
+          <select id="textur4">
+            <option value="0" data-i18n="colour.texture-none"></option>
+            <option value="1" data-i18n="colour.stripe-average"></option>
+            <option value="2" data-i18n="colour.texture-triangle"></option>
+            <option value="3" data-i18n="colour.total-turning"></option>
+            <option value="4" data-i18n="colour.texture-cross"></option>
+            <option value="5" data-i18n="colour.closest-to-origin"></option>
+            <option value="6" data-i18n="colour.texture-rays"></option>
+            <option value="7" data-i18n="colour.texture-whirl"></option>
+            <option value="8" data-i18n="colour.period-domains"></option>
+          </select>
+        </div>
+        <div id="tex4StaerkeRow" hidden>
+          <div class="lbl wertzeile"><label for="tex4Staerke" data-i18n-title="colour.strength-title" data-i18n="colour.strength"></label><input class="val mono wert" id="tex4StaerkeVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+          <input id="tex4Staerke" type="range" min="0" max="1" step="0.01" value="0.7">
+        </div>
+        <div id="tex4KontrastRow" hidden>
+          <div class="lbl wertzeile"><label for="tex4Kontrast" data-i18n-title="colour.contrast-title" data-i18n="colour.contrast"></label><input class="val mono wert" id="tex4KontrastVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+          <input id="tex4Kontrast" type="range" min="0.1" max="8" step="0.1" value="1">
+        </div>
+        <div id="tex4MitteRow" hidden>
+          <div class="lbl wertzeile"><label for="tex4Mitte" data-i18n-title="colour.texture-middle-title" data-i18n="colour.texture-middle"></label><input class="val mono wert" id="tex4MitteVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+          <input id="tex4Mitte" type="range" min="0" max="1" step="0.01" value="0.5">
+        </div>
+        <div id="tex4FarbenRow" hidden>
+          <div class="tex-farben">
+            <span class="tex-farben-titel" data-i18n-title="colour.texture-colours-title" data-i18n="colour.texture-colours"></span>
+            <label><input type="color" id="tex4Hell" value="#ffffff"> <span data-i18n="colour.texture-light"></span></label>
+            <label><input type="color" id="tex4Dunkel" value="#000000"> <span data-i18n="colour.texture-dark"></span></label>
+          </div>
+        </div>
+      </div>
+      <div id="texLive" class="sr-nur" aria-live="polite"></div>
+      <h2 class="sec-title stat-titel" id="statTitel" data-i18n="colour.orbit-statistics" hidden></h2>
+      <div id="streifenRow" hidden>
+        <div class="lbl wertzeile"><label for="streifen" data-i18n-title="colour.stripes-title" data-i18n="colour.stripes"></label><input class="val mono wert" id="streifenVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+        <input id="streifen" type="range" min="1" max="16" step="1" value="5">
+      </div>
+      <div id="vorlaufRow" hidden>
+        <div class="lbl wertzeile"><label for="vorlauf" data-i18n-title="colour.skip-title" data-i18n="colour.skip"></label><input class="val mono wert" id="vorlaufVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+        <input id="vorlauf" type="range" min="0" max="1000" step="1" value="0">
+      </div>
+      <div id="gewichtRow" hidden>
+        <div class="lbl wertzeile"><label for="gewicht" data-i18n-title="colour.weighting-title" data-i18n="colour.weighting"></label><input class="val mono wert" id="gewichtVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+        <input id="gewicht" type="range" min="0" max="4" step="0.1" value="0">
+      </div>
         <div><div class="lbl"><label for="glowMode" data-i18n="colour.edge-lines"></label></div>
           <select id="glowMode">
             <option value="0" data-i18n="colour.off"></option>
@@ -1055,6 +1111,10 @@
       <label class="chk" data-i18n-title="colour.stepped-title"><input id="gestuft" type="checkbox"> <span data-i18n="colour.stepped"></span></label>
     </section>
 
+    </div>
+
+    <div class="pane" id="pane-palette" hidden>   <!-- Palette: welche Farben an welche Stelle kommen; die Werte dazu liefert der Reiter „Farbe“ -->
+      <h2 class="pane-title" data-i18n="pane.palette"></h2>
     <section class="row" id="palRow">     <!-- Palette: welche Farben; Art (wo die Färbung zwei Werte liefert), Liste, Editor, Dichte, Versatz -->
       <h2 class="sec-title"><label for="palette" data-i18n="colour.colour-palette"></label></h2>
       <div class="seg" id="palArt" role="group" data-i18n-aria-label="colour.kind-colour-palette" hidden>
@@ -1266,6 +1326,7 @@
 <nav class="rail" id="rail" data-i18n-aria-label="panel.areas">
   <button type="button" id="railMotiv" data-pane="motiv" class="on" data-i18n-title="misc.subject" data-i18n-aria-label="misc.subject"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.6 A6.4 6.4 0 1 0 8 14.4 A3.2 3.2 0 1 1 8 8 A3.2 3.2 0 1 0 8 1.6Z"/></svg></button>
   <button type="button" id="railFarbe" data-pane="farbe" data-i18n-title="colour.colour" data-i18n-aria-label="colour.colour"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.2"/><path d="M8 1.8v12.4M2.4 5.4h11.2M2.4 10.6h11.2"/></svg></button>
+  <button type="button" id="railPalette" data-pane="palette" data-i18n-title="pane.palette" data-i18n-aria-label="pane.palette"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.8a6.2 6.2 0 1 0 0 12.4c1.1 0 1.6-.7 1.3-1.6-.3-.9.2-1.6 1.2-1.6h1.3a2.4 2.4 0 0 0 2.4-2.4A6.6 6.6 0 0 0 8 1.8z"/><circle cx="5" cy="6.2" r=".9"/><circle cx="8.2" cy="4.4" r=".9"/><circle cx="11.2" cy="6.2" r=".9"/><circle cx="5.2" cy="9.6" r=".9"/></svg></button>
   <button type="button" id="railQualitaet" data-pane="qualitaet" data-i18n-title="quality.quality" data-i18n-aria-label="quality.quality"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 13.5V6M6.2 13.5V3.5M9.8 13.5V8.5M13.5 13.5V5"/></svg></button>
   <button type="button" id="railTechnik" data-pane="technik" data-i18n-title="technical.technical" data-i18n-aria-label="technical.technical"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="2.3"/><path d="M8 1.8v2M8 12.2v2M1.8 8h2M12.2 8h2M3.6 3.6l1.4 1.4M11 11l1.4 1.4M12.4 3.6 11 5M5 11l-1.4 1.4"/></svg></button>
   <button type="button" id="panelTab" class="rail-gap" data-i18n-title="misc.show-or-hide-panel" data-i18n-aria-label="misc.show-or-hide-panel" aria-expanded="true" aria-controls="panelBody">
@@ -1297,6 +1358,7 @@
 <nav class="tabbar" id="tabbar" data-i18n-aria-label="panel.areas">
   <button type="button" id="tabMotiv" data-tab="motiv"><span class="ico"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.6 A6.4 6.4 0 1 0 8 14.4 A3.2 3.2 0 1 1 8 8 A3.2 3.2 0 1 0 8 1.6Z"/></svg></span><span data-i18n="misc.subject"></span></button>
   <button type="button" id="tabFarbe" data-tab="farbe"><span class="ico"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.2"/><path d="M8 1.8v12.4M2.4 5.4h11.2M2.4 10.6h11.2"/></svg></span><span data-i18n="colour.colour"></span></button>
+  <button type="button" id="tabPalette" data-tab="palette"><span class="ico"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.8a6.2 6.2 0 1 0 0 12.4c1.1 0 1.6-.7 1.3-1.6-.3-.9.2-1.6 1.2-1.6h1.3a2.4 2.4 0 0 0 2.4-2.4A6.6 6.6 0 0 0 8 1.8z"/><circle cx="5" cy="6.2" r=".9"/><circle cx="8.2" cy="4.4" r=".9"/><circle cx="11.2" cy="6.2" r=".9"/><circle cx="5.2" cy="9.6" r=".9"/></svg></span><span data-i18n="pane.palette"></span></button>
   <button type="button" id="tabQualitaet" data-tab="qualitaet"><span class="ico"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 13.5V6M6.2 13.5V3.5M9.8 13.5V8.5M13.5 13.5V5"/></svg></span><span data-i18n="quality.quality"></span></button>
   <button type="button" id="tabSave" class="tab-save"><span class="ico"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.3 2.5h7.5l2.7 2.7v7.5a.8.8 0 0 1-.8.8H3.3a.8.8 0 0 1-.8-.8V3.3a.8.8 0 0 1 .8-.8z"/><path d="M5 13.5V9.6c0-.3.2-.5.5-.5h5c.3 0 .5.2.5.5v3.9M5.2 2.5v2.6c0 .3.2.5.5.5h4"/></svg></span><span data-i18n="editor.save"></span></button>
   <button type="button" id="tabMehr" data-tab="technik"><span class="ico"><svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="3.2" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="12.8" cy="8" r="1.3"/></svg></span><span data-i18n="status.more"></span></button>
@@ -1516,10 +1578,45 @@ const TEXTE = {
   'colour.weighting-title': { de: 'Spätere Schritte der Bahn zählen mehr: Gewicht = Schrittnummer hoch p. 0: alle gleich (das gewöhnliche Mittel), 1: linear, 2: quadratisch. Nachbarn unterscheiden sich erst spät in ihren Bahnen; so treten Schleier und Finger hervor.', en: 'Later steps of the orbit count more: weight = step number to the power p. 0: all equal (the plain mean), 1: linear, 2: quadratic. Neighbours differ only late in their orbits; this brings out veils and fingers.' },
   'colour.boundary': { de: 'Grenze', en: 'Boundary' },
   'colour.colour': { de: 'Farbe', en: 'Colour' },
+  'pane.palette': { de: 'Palette', en: 'Palette' },
   'colour.colour-density': { de: 'Farbdichte', en: 'Colour density' },
   'colour.colour-offset': { de: 'Farbversatz', en: 'Colour offset' },
   'colour.colour-palette': { de: 'Farbpalette', en: 'Colour palette' },
   'colour.colouring-by': { de: 'Färbung nach', en: 'Colouring by' },
+  'mapping.text.0': { de: 'Die Iterationszahl direkt: gleichmäßige Bänder, bei großen Zahlen schnell dicht.', en: 'The iteration count as it is: even bands, quickly dense at large counts.' },
+  'mapping.text.1': { de: 'Wurzel der Iterationszahl: dehnt kleine Werte, staucht große.', en: 'Square root of the iteration count: stretches small values, compresses large ones.' },
+  'mapping.text.2': { de: 'Logarithmus der Iterationszahl, die übliche Wahl: jede Verdopplung ein gleich großer Schritt.', en: 'Logarithm of the iteration count, the usual choice: every doubling one equal step.' },
+  'mapping.text.3': { de: 'Verteilung der Werte in der Ansicht: jede Farbe bekommt gleich viele Punkte.', en: 'Distribution of the values in the view: every colour gets the same number of points.' },
+  'mapping.text.4': { de: 'Abstand zum Rand der Menge als Relief, mit Licht von oben.', en: 'Distance to the boundary of the set as a relief, lit from above.' },
+  'mapping.text.5': { de: 'Zweifacher Logarithmus: noch flacher bei großen Zahlen.', en: 'Double logarithm: flatter still at large counts.' },
+  'mapping.text.6': { de: 'Logarithmische Bänder, vom Abstandsrelief beleuchtet.', en: 'Logarithmic bands, lit by the distance relief.' },
+  'mapping.text.7': { de: 'Dreifacher Logarithmus.', en: 'Triple logarithm.' },
+  'mapping.text.8': { de: 'Vierfacher Logarithmus.', en: 'Quadruple logarithm.' },
+  'mapping.text.9': { de: 'Fünffacher Logarithmus.', en: 'Quintuple logarithm.' },
+  'mapping.text.10': { de: 'Sechsfacher Logarithmus.', en: 'Sextuple logarithm.' },
+  'mapping.text.11': { de: 'Stauchung mit Regler: stufenlos zwischen linear und logarithmisch.', en: 'Compression with a slider: continuously between linear and logarithmic.' },
+  'mapping.text.12': { de: 'Stauchung mit Regler, vom Abstandsrelief beleuchtet.', en: 'Compression with a slider, lit by the distance relief.' },
+  'mapping.text.13': { de: 'Lyapunov-Exponent: wie stark benachbarte Bahnen auseinanderlaufen.', en: 'Lyapunov exponent: how strongly neighbouring orbits diverge.' },
+  'mapping.text.14': { de: 'Lyapunov-Exponent getrennt nach Real- und Imaginärteil.', en: 'Lyapunov exponent split into real and imaginary part.' },
+  'mapping.text.15': { de: 'Der Winkel, unter dem die Bahn die Fluchtgrenze verlässt, dazu die Fluchtzeit.', en: 'The angle at which the orbit leaves the escape boundary, plus the escape time.' },
+  'mapping.text.16': { de: 'Komplexer Lyapunov-Exponent: Betrag und mittlere Drehung.', en: 'Complex Lyapunov exponent: magnitude and mean turning.' },
+  'mapping.text.17': { de: 'Kleinster Abstand der Bahn zu den Achsen (Bahnfalle Kreuz), innen wie außen.', en: 'Closest approach of the orbit to the axes (cross trap), inside and out.' },
+  'mapping.text.18': { de: 'Kreuzfalle je Achse: zwei Werte für die zweidimensionale Palette.', en: 'Cross trap per axis: two values for the two-dimensional palette.' },
+  'mapping.text.19': { de: 'Mittel eines Streifenmusters über die Bahn: feine Strähnen (Streifen, Vorlauf, Gewichtung).', en: 'Average of a stripe pattern along the orbit: fine strands (stripes, skip, weighting).' },
+  'mapping.text.20': { de: 'Mittel der Dreiecksungleichung über die Bahn: weiche Wolken.', en: 'Average of the triangle inequality along the orbit: soft clouds.' },
+  'mapping.text.21': { de: 'Wie oft Real- und Imaginärteil das Vorzeichen wechseln.', en: 'How often real and imaginary part change sign.' },
+  'mapping.text.22': { de: 'Paar: Fluchtzeit auf der ersten, Streifenmittel auf der zweiten Achse.', en: 'Pair: escape time on the first axis, stripe average on the second.' },
+  'mapping.text.23': { de: 'Paar: Fluchtzeit auf der ersten, Dreiecksmittel auf der zweiten Achse.', en: 'Pair: escape time on the first axis, triangle average on the second.' },
+  'mapping.text.24': { de: 'Kleinster Betrag der Bahn: hell nahe den Urbildern des Ursprungs, innen wie außen.', en: 'Smallest magnitude of the orbit: bright near the preimages of the origin, inside and out.' },
+  'mapping.text.25': { de: 'Paar: Ursprungsnähe mit Fluchtzeit-Abzug auf der ersten, Streifenmittel auf der zweiten Achse.', en: 'Pair: closest approach with escape-time deduction on the first axis, stripe average on the second.' },
+  'mapping.text.26': { de: 'Mittlere Winkeländerung je Schritt: ruhige Bahnen unten, drehende oben in der Palette.', en: 'Mean angle change per step: calm orbits low, turning ones high in the palette.' },
+  'mapping.text.27': { de: 'Paar: Gesamtdrehung mit Fluchtzeit-Abzug auf der ersten, Streifenmittel auf der zweiten Achse.', en: 'Pair: total turning with escape-time deduction on the first axis, stripe average on the second.' },
+  'mapping.text.28': { de: 'Übertragungskurve über den Häufigkeiten: du ziehst die Punkte selbst.', en: 'Transfer curve over the frequencies: you drag the points yourself.' },
+  'mapping.text.29': { de: 'Schritt der größten Nähe zum Ursprung: Gebiete gleicher Periode, innen wie außen.', en: 'Step of closest approach to the origin: domains of equal period, inside and out.' },
+  'mapping.text.30': { de: 'Paar: Gesamtdrehung mit Fluchtzeit-Abzug auf der ersten, Fluchtzeit auf der zweiten Achse.', en: 'Pair: total turning with escape-time deduction on the first axis, escape time on the second.' },
+  'mapping.text.31': { de: 'Eigenes Paar: zwei Bahnwerte nach Wahl, je mit Faktor, Abzug und Klemme.', en: 'Custom pair: two orbit values of your choice, each with factor, deduction and clamp.' },
+  'colour.textures': { de: 'Texturen', en: 'Textures' },
+  'colour.orbit-statistics': { de: 'Bahnstatistik', en: 'Orbit statistics' },
   'colour.complex-lyapunov-exponent': { de: 'Komplexer Lyapunov-Exponent', en: 'Complex Lyapunov exponent' },
   'colour.compression': { de: 'Stauchung', en: 'Compression' },
   'colour.compression-relief': { de: 'Stauchung + Relief', en: 'Compression + relief' },
@@ -1601,12 +1698,12 @@ const TEXTE = {
   'colour.texture3': { de: 'Dritte Textur', en: 'Third texture' },
   'colour.texture4': { de: 'Vierte Textur', en: 'Fourth texture' },
   'colour.texture-n-title': { de: 'Legt sich über die Texturen darüber, mit eigenen Reglern und Farben. Der Stapel wirkt von oben nach unten; Pfeile und Griff ändern die Reihenfolge, × nimmt die Textur heraus.', en: 'Lies over the textures above it, with its own controls and colours. The stack applies top to bottom; arrows and the handle change the order, × removes the texture.' },
-  'colour.texture-up': { de: 'Nach oben: diese Textur wird früher angewandt', en: 'Move up: this texture is applied earlier' },
-  'colour.texture-down': { de: 'Nach unten: diese Textur wird später angewandt', en: 'Move down: this texture is applied later' },
   'colour.texture-remove': { de: 'Diese Textur aus dem Stapel nehmen; die darunter rücken auf', en: 'Remove this texture from the stack; those below move up' },
-  'colour.texture-drag': { de: 'Ziehen, um die Reihenfolge im Stapel zu ändern', en: 'Drag to change the order in the stack' },
+  'colour.texture-drag': { de: 'Ziehen, um die Reihenfolge im Stapel zu ändern (Tastatur: Pfeil auf und ab)', en: 'Drag to change the order in the stack (keyboard: arrow up and down)' },
   'colour.texture-on': { de: 'Textur an oder aus; die Einstellungen bleiben erhalten', en: 'Texture on or off; the settings are kept' },
-  'colour.texture-collapse': { de: 'Karte ein- oder ausklappen', en: 'Collapse or expand the card' },
+  'colour.texture-collapse': { de: 'Regler ein- oder ausklappen', en: 'Collapse or expand the controls' },
+  'colour.texture-add': { de: '＋ Textur hinzufügen', en: '＋ Add texture' },
+  'colour.texture-moved': { de: 'Textur jetzt an Platz {0} von {1}', en: 'Texture now at position {0} of {1}' },
   'colour.texture2-title': { de: 'Legt sich über die erste Textur, mit eigener Stärke, Kontrast und Mitte. Streifen, Gewichtung und Vorlauf gelten für beide.', en: 'Lies over the first texture with its own strength, contrast and middle. Stripes, weighting and skip apply to both.' },
   'colour.texture-whirl': { de: 'Wirbel (Winkel und Fluchtzeit)', en: 'Whirl (angle and escape time)' },
   'colour.total-turning': { de: 'Gesamtdrehung', en: 'Total turning' },
@@ -2087,6 +2184,7 @@ const aaPosToTol = p => AA_TOL.min * Math.pow(AA_TOL.max / AA_TOL.min, Math.min(
 const aaMaxToPos = n => Math.min(9, Math.max(0, Math.round(Math.log2(n / 8))));
 const aaPosToMax = p => 8 * Math.pow(2, Math.min(9, Math.max(0, p)));
 const MAP_MAX = 31;   // höchste Nummer einer Färbung (siehe Liste „Färbung nach“)
+const MAPPING_TEXT = { 0: 'mapping.text.0', 1: 'mapping.text.1', 2: 'mapping.text.2', 3: 'mapping.text.3', 4: 'mapping.text.4', 5: 'mapping.text.5', 6: 'mapping.text.6', 7: 'mapping.text.7', 8: 'mapping.text.8', 9: 'mapping.text.9', 10: 'mapping.text.10', 11: 'mapping.text.11', 12: 'mapping.text.12', 13: 'mapping.text.13', 14: 'mapping.text.14', 15: 'mapping.text.15', 16: 'mapping.text.16', 17: 'mapping.text.17', 18: 'mapping.text.18', 19: 'mapping.text.19', 20: 'mapping.text.20', 21: 'mapping.text.21', 22: 'mapping.text.22', 23: 'mapping.text.23', 24: 'mapping.text.24', 25: 'mapping.text.25', 26: 'mapping.text.26', 27: 'mapping.text.27', 28: 'mapping.text.28', 29: 'mapping.text.29', 30: 'mapping.text.30', 31: 'mapping.text.31' };   // ein Satz je Färbung, unter der Auswahl
 // Paare: Färbungen aus zwei Bahnwerten. Je Achse ein Wert (PAAR_WERTE), ein Faktor, wahlweise ein Fluchtzeit-Abzug (0 keiner,
 // 1 β·log₂(N+1), 2 β·0,1·(log₂(N+1) − 10)), bei 0 geklemmt, mit Farbanker (Fluchtzeit: Farbanker der Fluchtzeit; Mittel: der des
 // Bahnmittels). 22, 23, 25, 27 und 30 sind Voreinstellungen dieses einen Mechanismus, 31 das eigene Paar (S.paar).
@@ -7165,7 +7263,7 @@ if (!consent) showConsent(); else if (consent.marketing) loadMarketingPixels();
 //  Bedienfeld
 // ============================================================
 // Bereiche: die Leiste am rechten Rand zeigt immer genau einen; die Statuszeile bleibt darunter sichtbar
-const PANES = [['motiv', 'misc.subject'], ['farbe', 'colour.colour'], ['qualitaet', 'quality.quality'], ['technik', 'technical.technical']];
+const PANES = [['motiv', 'misc.subject'], ['farbe', 'colour.colour'], ['palette', 'pane.palette'], ['qualitaet', 'quality.quality'], ['technik', 'technical.technical']];
 const mobileNarrow = () => window.matchMedia('(max-width: 640px)').matches;   // Handy: Reiter unten statt Leiste rechts
 let curPane = 'motiv';
 function setPane(name, open = true) {
@@ -7298,6 +7396,7 @@ function syncFarbUI() {   // Bereich Farbe: was je nach Familie, Formel und Fär
   const acc = S.family === 'accum', lyap = S.family === 'escape' && !!FORMULAS[S.formula].seq, verlauf = acc || lyap;
   const lyF = lyapModus(), winkel = (winkelModus() & 1) !== 0, p2 = pal2Objekt(), zwei = !!p2;
   const stF = statModus(), statF = statFaerbung(), ohneRand = verlauf || lyF !== 0 || winkel || statF || texturAktiv(), ohneInnen = verlauf || lyF !== 0 || statUeberall(), ohneVersatz = lyap && zwei && pal2Achse(p2)[0] > 0;
+  $('mappingText').textContent = t(MAPPING_TEXT[S.mapping] || 'mapping.text.2'); $('mappingText').hidden = verlauf;   // ein Satz zur Färbung
   $('palette').parentElement.hidden = false; $('palEdit').hidden = false;
   $('palArt').hidden = !quelle2();   // Umschalter nur, wo die Färbung zwei Werte liefert
   for (const b of $('palArt').querySelectorAll('button')) { const on = (b.dataset.art === '2') === zwei; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); }
@@ -7321,13 +7420,20 @@ function syncFarbUI() {   // Bereich Farbe: was je nach Familie, Formel und Fär
   $('vorlaufRow').hidden = !statIrgend();    // Vorlauf bei jeder Bahnstatistik
   syncPaar();   // Paar: Achsen, Faktoren, Abzüge (bei Voreinstellungen gefüllt, beim eigenen Paar frei)
   $('gewichtRow').hidden = !(statMittel() || arten.some(a => a >= 1 && a <= 3));   // Gewichtung nur bei den Mitteln
+  $('statTitel').hidden = $('streifenRow').hidden && $('vorlaufRow').hidden && $('gewichtRow').hidden;   // Überschrift nur, wenn darunter etwas steht
   const belegtBis = texturBelegt();   // Stapel: Platz 1 überall, wo eine Textur möglich ist; dahinter die belegten Plätze (auch ausgeschaltete) und ein freier
+  $('texTitel').hidden = !texturMoeglich() || belegtBis === 0;   // Überschrift des Abschnitts: erst, wenn der Stapel etwas enthält (leer reicht die Zeile „Textur hinzufügen“)
   for (let n = 1; n <= TEX_SLOTS; n++) {
     const e = texElemente(n), sl = texSlot(n), zeigen = n === 1 ? texturMoeglich() : (texturMoeglich() && belegtBis > 0 && n <= belegtBis + 1), belegt = sl.art !== 0, zu = belegt && !!texZu[n];
+    const leer = zeigen && !belegt;   // ein freier Platz (auch der erste): nur eine schlanke Zeile „Textur hinzufügen“
     e.karte.hidden = !zeigen; e.row.hidden = !zeigen; for (const r of e.reihen) r.hidden = !(zeigen && belegt && !zu);
-    e.sel.hidden = zu; e.kurz.textContent = zu ? t(TEXTUR_NAMEN[sl.art] || 'colour.texture-none') + ' · ' + fmtZahl(sl.staerke, 2) : ''; e.klapp.textContent = zu ? '▸' : '▾'; e.klapp.hidden = !belegt;
+    e.karte.classList.toggle('tex-leer', leer); e.sel.classList.toggle('tex-neu', leer); e.sel.options[0].textContent = t(leer ? 'colour.texture-add' : 'colour.texture-none'); if (e.sel._sync) e.sel._sync();
+    e.row.querySelector('.tex-kopf').hidden = leer;
+    e.sel.hidden = zu;
+    e.kurz.replaceChildren(); if (belegt) { e.kurz.append(t(TEXTUR_NAMEN[sl.art])); if (zu) { const w = document.createElement('span'); w.className = 'tex-wert'; w.textContent = fmtZahl(sl.staerke, 2); e.kurz.append(w); } }
+    e.klapp.textContent = zu ? '▸' : '▾'; e.klapp.hidden = !belegt; e.label.hidden = belegt; e.kurz.title = belegt ? e.label.title : '';   // belegt: die Art steht im Kopf, der Platzname entfällt (die Reihenfolge wechselt beim Ziehen)
     e.an.parentElement.hidden = !belegt; e.karte.classList.toggle('aus', belegt && !sl.an);
-    e.auf.hidden = n === 1 || !belegt; e.ab.hidden = n >= belegtBis || !belegt; e.weg.hidden = !belegt; e.griff.hidden = belegtBis < 2 || !belegt;
+    e.weg.hidden = !belegt; e.griff.hidden = belegtBis < 2 || !belegt;
   }
   $('kurveRow').hidden = S.mapping !== 28 || verlauf || lyap; if (!$('kurveRow').hidden) zeichneKurve();   // Übertragungskurve nur bei der Färbung „Kurve“
   $('abzugRow').hidden = !paarAbzug();   // Fluchtzeit-Abzug nur, wo eine Achse des Paars ihn nutzt
@@ -8380,7 +8486,7 @@ $('abzug').addEventListener('input', () => setzeAbzug(+$('abzug').value));
 function texElemente(n) {   // die Bedienelemente eines Platzes im Stapel
   const p = n === 1 ? 'tex' : 'tex' + n, row = $(n === 1 ? 'texturRow' : 'textur' + n + 'Row');
   return { karte: $('texKarte' + n), row, sel: $(n === 1 ? 'textur' : 'textur' + n), staerke: $(p + 'Staerke'), staerkeVal: $(p + 'StaerkeVal'), kontrast: $(p + 'Kontrast'), kontrastVal: $(p + 'KontrastVal'), mitte: $(p + 'Mitte'), mitteVal: $(p + 'MitteVal'), hell: $(p + 'Hell'), dunkel: $(p + 'Dunkel'), an: $(p + 'An'),
-    reihen: [p + 'StaerkeRow', p + 'KontrastRow', p + 'MitteRow', p + 'FarbenRow'].map(id => $(id)), griff: row.querySelector('.tex-griff'), auf: row.querySelector('.tex-auf'), ab: row.querySelector('.tex-ab'), weg: row.querySelector('.tex-weg'), klapp: row.querySelector('.tex-klapp'), kurz: row.querySelector('.tex-kurz') };
+    reihen: [p + 'StaerkeRow', p + 'KontrastRow', p + 'MitteRow', p + 'FarbenRow'].map(id => $(id)), label: row.querySelector('.tex-kopf > label'), griff: row.querySelector('.tex-griff'), weg: row.querySelector('.tex-weg'), klapp: row.querySelector('.tex-klapp'), kurz: row.querySelector('.tex-kurz') };
 }
 const texZu = {};   // eingeklappte Karten (nur Anzeige, nicht im Link)
 function syncTextur() {
@@ -8439,18 +8545,86 @@ function texVerschieben(von, nach) {   // Platz von an Platz nach (1-basiert), d
   const a = texStapelLesen(), [t] = a.splice(von - 1, 1); a.splice(nach - 1, 0, t); texStapelSchreiben(a);
 }
 function texEntfernen(n) { const a = texStapelLesen(); a.splice(n - 1, 1); a.push(Object.assign({}, TEXTUR_LEER)); texStapelSchreiben(a); }   // die darunter rücken auf
-let texZieh = null;   // Ziehen am Griff: { n, ziel }
+// Sortieren durch Ziehen am Griff (Maus, Stift und Finger gleich), nach den Regeln guter Sortierlisten:
+// – erst ab 5 px Bewegung beginnt das Ziehen (ein Klick bleibt ein Klick), der Zeiger wird erfasst;
+// – der Eintrag bleibt als blasse Lücke stehen, ein Abbild folgt dem Zeiger (transform, ohne Layoutarbeit);
+// – der Zielplatz kommt aus den beim Start gemessenen Lagen (stabil, kein Hin- und Herspringen), die anderen Einträge
+//   rücken per transform mit Übergang aus dem Weg — das DOM wird während des Ziehens nicht umgebaut;
+// – nahe am Rand rollt das Bedienfeld mit; Loslassen übernimmt die Reihenfolge, Escape und Abbruch stellen alles zurück.
+let texZieh = null;
+function texKarten() { return [1, 2, 3, 4].map(m => texElemente(m).karte); }
+function texLive(text) { const l = $('texLive'); if (l) { l.textContent = ''; setTimeout(() => { l.textContent = text; }, 30); } }   // Ansage für Vorleser
 function texGriff(griff, n) {
-  griff.addEventListener('pointerdown', e => { e.preventDefault(); texZieh = { n, ziel: n }; try { griff.setPointerCapture(e.pointerId); } catch (err) { /* egal */ } texElemente(n).karte.classList.add('tex-zieht'); });
-  griff.addEventListener('pointermove', e => {   // der Platz, dessen Kopf dem Zeiger am nächsten liegt, wird das Ziel
-    if (!texZieh || texZieh.n !== n) return;
-    let best = n, abstand = 1e9;
-    for (let m = 1; m <= TEX_SLOTS; m++) { const r = texElemente(m).karte; if (r.hidden) continue; const rc = r.getBoundingClientRect(), d = Math.abs(e.clientY - (rc.top + rc.height / 2)); if (d < abstand) { abstand = d; best = m; } }
-    if (best !== texZieh.ziel) { texZieh.ziel = best; for (let m = 1; m <= TEX_SLOTS; m++) texElemente(m).karte.classList.toggle('tex-ziel', m === best && m !== n); }
+  griff.addEventListener('pointerdown', e => {
+    if (e.button !== 0 || texZieh) return;
+    e.preventDefault();
+    const karte = texElemente(n).karte;
+    let sc = karte.parentElement; while (sc && sc !== document.body && !/(auto|scroll)/.test(getComputedStyle(sc).overflowY)) sc = sc.parentElement;   // rollender Behälter
+    texZieh = { n, karte, griff, sc, x0: e.clientX, y0: e.clientY, aktiv: false, id: e.pointerId };
+    try { griff.setPointerCapture(e.pointerId); } catch (err) { /* egal */ }
   });
-  const los = () => { if (!texZieh || texZieh.n !== n) return; const ziel = texZieh.ziel; texZieh = null; for (let m = 1; m <= TEX_SLOTS; m++) texElemente(m).karte.classList.remove('tex-ziel', 'tex-zieht'); if (ziel !== n) texVerschieben(n, ziel); };
-  griff.addEventListener('pointerup', los); griff.addEventListener('pointercancel', los);
+  griff.addEventListener('pointermove', e => {
+    const z = texZieh; if (!z || z.n !== n) return;
+    if (!z.aktiv) { if (Math.hypot(e.clientX - z.x0, e.clientY - z.y0) < 5) return; texZiehStart(z, e); }
+    z.px = e.clientX; z.py = e.clientY;
+    if (!z.raf) z.raf = requestAnimationFrame(() => { z.raf = 0; texZiehSchritt(z); });
+  });
+  griff.addEventListener('pointerup', () => { const z = texZieh; if (z && z.n === n) texZiehEnde(z, true); });
+  griff.addEventListener('pointercancel', () => { const z = texZieh; if (z && z.n === n) texZiehEnde(z, false); });
+  griff.addEventListener('keydown', e => {   // Tastatur: Pfeil auf und ab verschieben um einen Platz, mit Ansage
+    const d = e.key === 'ArrowUp' ? -1 : e.key === 'ArrowDown' ? 1 : 0; if (!d) return;
+    e.preventDefault(); const ziel = n + d; if (ziel < 1 || ziel > texturBelegt()) return;
+    texVerschieben(n, ziel); texLive(t('colour.texture-moved', ziel, texturBelegt())); const g2 = texElemente(ziel).griff; if (g2) g2.focus();
+  });
 }
+function texZiehStart(z, e) {   // Lagen messen (im Inhalt des rollenden Behälters, damit Mitrollen sie nicht entwertet), Abbild anlegen
+  const scTop = z.sc ? z.sc.scrollTop : 0, scRect = z.sc ? z.sc.getBoundingClientRect() : { top: 0 };
+  z.lage = y => y - scRect.top + scTop;   // Bildschirm-y → Inhalts-y
+  z.eintraege = texKarten().filter(k => !k.hidden && !k.classList.contains('tex-leer')).map(k => { const r = k.getBoundingClientRect(); return { n: +k.id.slice(8), k, top: z.lage(r.top), h: r.height }; });
+  z.von = z.eintraege.findIndex(x => x.k === z.karte); z.zu = z.von;
+  const r = z.karte.getBoundingClientRect(); z.dx = e.clientX - r.left; z.dy = e.clientY - r.top; z.h = r.height;
+  z.luecke = z.eintraege.length > 1 ? Math.max(0, z.eintraege[1].top - z.eintraege[0].top - z.eintraege[0].h) : 0;   // Abstand zwischen zwei Einträgen
+  const f = z.karte.cloneNode(true); f.classList.add('tex-flieger'); f.classList.remove('tex-platz'); f.removeAttribute('id');
+  for (const el of f.querySelectorAll('[id]')) el.removeAttribute('id');
+  f.style.width = r.width + 'px'; f.style.transform = 'translate3d(' + r.left + 'px,' + r.top + 'px,0)';
+  document.body.append(f); z.flieger = f;
+  z.karte.classList.add('tex-platz'); document.body.classList.add('tex-ziehen');
+  for (const x of z.eintraege) if (x.k !== z.karte) x.k.classList.add('tex-schiebt');
+  z.aktiv = true; z.px = e.clientX; z.py = e.clientY;
+}
+function texZiehSchritt(z) {   // Abbild nachführen, Zielplatz bestimmen, die anderen aus dem Weg rücken, am Rand mitrollen
+  if (!z.aktiv) return;
+  if (z.sc) {   // Mitrollen: nahe am oberen oder unteren Rand des Behälters
+    const r = z.sc.getBoundingClientRect(), rand = 28, schritt = 8;
+    if (z.py < r.top + rand && z.sc.scrollTop > 0) { z.sc.scrollTop -= schritt; z.raf = requestAnimationFrame(() => { z.raf = 0; texZiehSchritt(z); }); }
+    else if (z.py > r.bottom - rand && z.sc.scrollTop + z.sc.clientHeight < z.sc.scrollHeight) { z.sc.scrollTop += schritt; z.raf = requestAnimationFrame(() => { z.raf = 0; texZiehSchritt(z); }); }
+  }
+  z.flieger.style.transform = 'translate3d(' + (z.px - z.dx) + 'px,' + (z.py - z.dy) + 'px,0)';
+  const zeiger = z.lage(z.py);   // der Zeiger im Inhalt: wo er die Mitte eines anderen Eintrags überquert, wechselt der Platz (auch bei hohen Einträgen sofort spürbar)
+  let zu = 0; for (const [i, x] of z.eintraege.entries()) if (i !== z.von && x.top + x.h / 2 < zeiger) zu++;   // so viele andere liegen über dem Zeiger
+  if (zu !== z.zu) {
+    z.zu = zu; const versatz = z.h + z.luecke;
+    for (const [i, x] of z.eintraege.entries()) {
+      if (i === z.von) continue;
+      let dy = 0; if (z.von < zu && i > z.von && i <= zu) dy = -versatz; else if (zu < z.von && i >= zu && i < z.von) dy = versatz;
+      x.k.style.transform = dy ? 'translateY(' + dy + 'px)' : '';
+    }
+  }
+}
+function texZiehEnde(z, uebernehmen) {
+  texZieh = null; if (z.raf) cancelAnimationFrame(z.raf);
+  try { z.griff.releasePointerCapture(z.id); } catch (err) { /* egal */ }
+  if (!z.aktiv) return;   // nur ein Klick
+  document.body.classList.remove('tex-ziehen'); z.flieger.remove(); z.karte.classList.remove('tex-platz');
+  for (const x of z.eintraege) { x.k.classList.remove('tex-schiebt'); x.k.style.transform = ''; }   // ohne Übergang zurück: die neue Reihenfolge erscheint sofort
+  if (uebernehmen && z.zu !== z.von) {
+    const folge = z.eintraege.map(x => x.n); const [m] = folge.splice(z.von, 1); folge.splice(z.zu, 0, m);   // neue Reihenfolge der belegten Plätze
+    const rest = [1, 2, 3, 4].filter(m2 => !folge.includes(m2));   // leere Plätze dahinter
+    texStapelSchreiben(folge.concat(rest).map(m2 => texSlot(m2)));
+    texLive(t('colour.texture-moved', z.zu + 1, z.eintraege.length));
+  }
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && texZieh) texZiehEnde(texZieh, false); });
 for (let n = 1; n <= TEX_SLOTS; n++) {
   const k = texKeys(n), e = texElemente(n);
   e.sel.addEventListener('change', () => { S[k.art] = clamp(parseInt(e.sel.value, 10) || 0, 0, 8); syncFarbUI(); scheduleHash(); viewChanged(); });   // andere Statistik: neu rechnen, sie entsteht beim Iterieren
@@ -8458,8 +8632,6 @@ for (let n = 1; n <= TEX_SLOTS; n++) {
   e.kontrast.addEventListener('input', () => texSetzer(n, 'kontrast', TEXTUR.kontrast)(+e.kontrast.value));
   e.mitte.addEventListener('input', () => texSetzer(n, 'mitte', TEXTUR.mitte)(+e.mitte.value));
   for (const f of ['hell', 'dunkel']) e[f].addEventListener('input', () => { S[k[f]] = e[f].value; colorDirty = true; scheduleHash(); requestFrame(); });   // Farben: nur Farbe, kein Neurechnen
-  e.auf.addEventListener('click', () => texVerschieben(n, n - 1));
-  e.ab.addEventListener('click', () => texVerschieben(n, n + 1));
   e.weg.addEventListener('click', () => texEntfernen(n));
   e.an.addEventListener('change', () => { S[k.an] = e.an.checked; syncFarbUI(); scheduleHash(); viewChanged(); });   // an/aus: der Platz zählt nicht mehr mit, neu rechnen
   e.klapp.addEventListener('click', () => { texZu[n] = !texZu[n]; syncFarbUI(); });

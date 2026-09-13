@@ -265,7 +265,7 @@ describe('Farbe und Farbschema-Editor', () => {
     cy.get('#palEdit').should('have.attr', 'aria-expanded', 'false').click();
     cy.get('#palEd').should('be.visible');
     cy.get('#palEdit').should('have.attr', 'aria-expanded', 'true');
-    cy.get('#pane-farbe').should('not.have.attr', 'hidden');   // der Editor sitzt im Bedienfeld, nicht in einem Dialog über dem Bild
+    cy.get('#pane-palette').should('not.have.attr', 'hidden');   // der Editor sitzt im Bedienfeld (Reiter „Palette“), nicht in einem Dialog über dem Bild
     cy.get('#palEd').should($e => expect($e[0].closest('.modal'), 'kein Dialog').to.eq(null));
     cy.get('#stage canvas').should('be.visible');
     cy.get('#peStops > *').its('length').should('be.greaterThan', 1).then(n0 => {
@@ -821,17 +821,24 @@ describe('Färbungen nach Bahnstatistik', () => {
       cy.shotStats('stapel3-wieder').then(z => gleich(drei, z, 'ohne die vierte wieder das Bild mit dreien'));
     });
     cy.revealInDetails('texturRow');
-    cy.get('#texturRow .tex-ab').click({ force: true });                    // Platz 1 nach unten: die Streifen wandern samt Stärke auf Platz 2
+    cy.get('#texturRow .tex-griff').focus().trigger('keydown', { key: 'ArrowDown', force: true });   // Tastatur: Platz 1 nach unten, die Streifen wandern samt Stärke auf Platz 2
     cy.expectHash('tx', '3'); cy.expectHash('t2', '1'); cy.expectHash('t2s', '0.8'); cy.expectHash('t3', '5');
     cy.get('#textur2Row .tex-weg').click({ force: true });                  // Platz 2 heraus: Platz 3 rückt auf
     cy.expectHash('t2', '5'); cy.expectHash('t2c', 'ff8040'); cy.expectHash('t3', null);
-    cy.get('#textur2Row .tex-griff').then($g => {                           // Ziehen am Griff: Platz 2 auf die Höhe von Platz 1
-      const r1 = Cypress.$('#texturRow')[0].getBoundingClientRect(), rg = $g[0].getBoundingClientRect();
-      cy.wrap($g).trigger('pointerdown', { clientX: rg.left + 5, clientY: rg.top + 5, pointerId: 7, isPrimary: true, button: 0, force: true })
-        .trigger('pointermove', { clientX: rg.left + 5, clientY: r1.top + r1.height / 2, pointerId: 7, force: true })
-        .trigger('pointerup', { clientX: rg.left + 5, clientY: r1.top + r1.height / 2, pointerId: 7, force: true });
+    cy.get('#textur2Row .tex-griff').then($g => {                           // Ziehen am Griff: Platz 2 über die Mitte von Platz 1 — der Platzhalter rückt schon beim Ziehen
+      const r1 = Cypress.$('#texKarte1')[0].getBoundingClientRect(), rg = $g[0].getBoundingClientRect();
+      cy.wrap($g).trigger('pointerdown', { clientX: rg.left + 5, clientY: rg.top + 5, pointerId: 7, pointerType: 'mouse', isPrimary: true, button: 0, force: true })
+        .trigger('pointermove', { clientX: rg.left + 5, clientY: r1.top + 2, pointerId: 7, pointerType: 'mouse', force: true });
+      cy.get('.tex-flieger').should('exist');                                // das Abbild am Zeiger
+      cy.get('#texKarte2').should('have.class', 'tex-platz');               // der gezogene Eintrag bleibt als Lücke stehen
+      cy.get('#texKarte1').should('have.attr', 'style').and('contain', 'translateY(');   // der obere rückt schon beim Ziehen nach unten
+      cy.wrap($g).trigger('pointerup', { clientX: rg.left + 5, clientY: r1.top + 2, pointerId: 7, pointerType: 'mouse', force: true });
     });
+    cy.get('.tex-flieger').should('not.exist');
+    cy.get('#texKarte1').should($k => expect($k[0].style.transform, 'keine Verschiebung mehr').to.eq(''));   // der Zustand ist umsortiert
     cy.expectHash('tx', '5'); cy.expectHash('tc', 'ff8040'); cy.expectHash('t2', '3');
+    cy.get('#texturRow .tex-kurz').should('contain.text', 'Ursprungsnähe');
+    cy.get('#texturRow .tex-kopf > label').should('have.attr', 'hidden');   // belegt: kein Platzname im Kopf, nur die Art
     cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&map=27&tx=1&t2=3&t3=5&t4=2&ts=0.8');   // vier Texturen über einer Statistik-Färbung (Kanäle z und w)
     cy.get('#textur4').should('have.value', '2');
     cy.waitRender();
@@ -859,10 +866,10 @@ describe('Färbungen nach Bahnstatistik', () => {
     cy.get('#texturRow .tex-klapp').click({ force: true });                 // einklappen: nur die Kopfzeile mit Kurzangabe
     cy.get('#texStaerkeRow').should('have.attr', 'hidden');
     cy.get('#textur').should('have.attr', 'hidden');
-    cy.get('#texturRow .tex-kurz').invoke('text').should('match', /Streifenmittel · 0[.,]80/);
+    cy.get('#texturRow .tex-kurz').invoke('text').should('match', /^Streifenmittel0[.,]80$/);   // eingeklappt: Art und Stärke
     cy.get('#texturRow .tex-klapp').click({ force: true });                 // ausklappen
     cy.get('#texStaerkeRow').should('not.have.attr', 'hidden');
-    cy.get('#texturRow .tex-kurz').should('have.text', '');
+    cy.get('#texturRow .tex-kurz').should('have.text', 'Streifenmittel');   // ausgeklappt: nur die Art im Kopf
   });
   it('Kurve: Übertragungskurve über den Häufigkeiten — Gerade als Vorgabe, gezogener Punkt ändert das Bild, Punkte im Link', () => {
     cy.visitApp('mode=mandel&re=-0.7462586155&im=0.1111580353&z=5.6e4&it=400');
@@ -1032,7 +1039,8 @@ describe('Färbungen nach Bahnstatistik', () => {
       cy.wait(400);
       cy.shotStats('bahnanker-mit').then(mit => gleich(ohne, mit, 'das Setzen des Ankers ändert das Bild nicht'));
     });
-    cy.get('#streifenVal').clear().type('9{enter}');                    // andere Streifen: am selben Punkt neu geankert, der Versatz bleibt
+    cy.revealInDetails('streifenVal');                                   // die Streifen stehen im Reiter „Farbe“, der Anker im Reiter „Palette“
+    cy.get('#streifenVal').scrollIntoView().clear().type('9{enter}');   // andere Streifen: am selben Punkt neu geankert, der Versatz bleibt
     cy.waitRender();
     cy.expectHash('sp', '9');
     cy.expectHash('sa', v => { expect(parseFloat(v)).to.be.within(0, 1); expect(v, 'Anker neu gemessen').not.to.eq(sa1); });

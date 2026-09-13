@@ -64,7 +64,7 @@ describe('Bedienfeld: Schublade und Bereichsleiste am PC', () => {
   // etwas höher als das Bedienfeld und rollt ein Stück; mit Textur-Auswahl und „Gestuft“ zwei Zeilen mehr (gewollt: lieber
   // rollen als enger stellen). Weit darüber hinaus darf kein Bereich wachsen.
   it('kein Bereich läuft weit über das Bedienfeld hinaus', () => {
-    for (const p of ['motiv', 'farbe', 'qualitaet', 'technik']) {
+    for (const p of ['motiv', 'farbe', 'palette', 'qualitaet', 'technik']) {
       cy.get('#rail button[data-pane="' + p + '"]').click();
       cy.get('#panelBody').should($b => expect($b[0].scrollHeight, p + ' passt').to.be.at.most($b[0].clientHeight + 180));
     }
