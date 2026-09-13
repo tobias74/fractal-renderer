@@ -4484,11 +4484,14 @@ float itlog(float x, int times) {
   for (int i = 0; i < times; i++) x = log2(x + 1.0);
   return x;
 }
+// Nenner, die nur von Uniforms abhängen, rechnet jedes main() einmal (gItlogDen, gBoxDen), aus demselben Grund wie gAnchorV
+float gItlogDen = 1.0, gBoxDen = 1.0;
 float boxcox(float nu) {
   float p = uComp;
   if (abs(p) < 1.0e-3) return 50.0 * log2(nu + 1.0) / log2(51.0);
-  return 50.0 * (pow(nu + 1.0, p) - 1.0) / (pow(51.0, p) - 1.0);
+  return 50.0 * (pow(nu + 1.0, p) - 1.0) / gBoxDen;
 }
+int itlogK() { return uMapping == 5 ? 2 : (uMapping == 7 ? 3 : (uMapping == 8 ? 4 : (uMapping == 9 ? 5 : 6))); }
 float mapNu(float nu) {
   if (uMapping == 3 || uMapping == 28) {   // wie im WGSL-Shader
     float x = clamp(log2(nu + 1.0) / uHistL, 0.0, 0.999) * 511.0;
@@ -4500,13 +4503,14 @@ float mapNu(float nu) {
   if (uMapping == 11 || uMapping == 12) return boxcox(nu);
   if (uMapping == 1) return sqrt(nu * 50.0);
   if (uMapping == 2 || uMapping == 6 || uMapping >= 13) return 50.0 * log2(nu + 1.0) / log2(51.0);   // 13, 14: Lyapunov
-  if (uMapping == 5 || uMapping >= 7) {
-    int k = uMapping == 5 ? 2 : (uMapping == 7 ? 3 : (uMapping == 8 ? 4 : (uMapping == 9 ? 5 : 6)));
-    return 50.0 * itlog(nu, k) / itlog(50.0, k);
-  }
+  if (uMapping == 5 || uMapping >= 7) return 50.0 * itlog(nu, itlogK()) / gItlogDen;
   return nu;
 }
 float anchorV() { return uAnchor < 0.0 ? 0.0 : mapNu(uAnchor); }
+// Der Anker hängt nur von Uniforms ab: jedes main() rechnet ihn einmal in gAnchorV, alle Stellen lesen ihn von dort. Sonst
+// kopierte der HLSL-Übersetzer hinter WebGL (ANGLE, FXC) mapNu an jede Stelle, und das Farbprogramm brauchte beim Erstbesuch
+// über 20 Sekunden zum Übersetzen. Das Ergebnis ist dasselbe, nur einmal statt vierzigmal gerechnet.
+float gAnchorV = 0.0;
 float ankerS() { return max(uStatAnker, 0.0); }   // Farbanker des Bahnmittels wie im WGSL-Shader
 float texturWert(uvec4 px) {   // wie im WGSL-Shader
   int art = int(uTex.x); float y = uintBitsToFloat(px.y);
@@ -4522,7 +4526,7 @@ vec3 texturMit(vec3 col, float v, vec4 p, vec3 hell, vec3 dunkel) {   // Textur 
 }
 float paarAchse(uint wert, float roh, float nu, float faktor, uint abzug, uint flags) {   // wie im WGSL-Shader
   float w = roh;
-  if (wert == 1u) w = mapNu(nu) - ((flags & 1u) != 0u ? anchorV() : 0.0);
+  if (wert == 1u) w = mapNu(nu) - ((flags & 1u) != 0u ? gAnchorV : 0.0);
   else if ((wert == 2u || wert == 3u) && (flags & 1u) != 0u) w = w - ankerS();
   if (abzug == 1u) w = w - uAbzug * log2(nu + 1.0); else if (abzug == 2u) w = w - uAbzug * 0.1 * (log2(nu + 1.0) - 10.0);
   if ((flags & 2u) != 0u) w = max(w, 0.0);
@@ -4541,7 +4545,7 @@ vec2 tAt(ivec2 xy, int k, ivec2 dims) {   // Palettenparameter des Texels ohne V
   if (xy.x < 0 || xy.y < 0 || xy.x >= dims.x || xy.y >= dims.y) return vec2(0.0);
   uvec4 q = texelFetch(uIter, ivec3(xy, k), 0);
   if (q.x == 0xFFFFFFFFu || (q.x & 0x80000000u) != 0u) return vec2(0.0);
-  return vec2((mapNu(float(q.x & 0x03FFFFFFu) / 256.0) - anchorV()) * uMisc.x, 1.0);
+  return vec2((mapNu(float(q.x & 0x03FFFFFFu) / 256.0) - gAnchorV) * uMisc.x, 1.0);
 }
 float palWidth(ivec2 xy, int k) {   // Breite des Palettenbereichs je Pixel: je Achse die kleinere der beiden Nachbarsteigungen
   ivec2 dims = textureSize(uIter, 0).xy;
@@ -4631,11 +4635,11 @@ vec3 sampleColor(uvec4 px, ivec2 xy, int k) {   // Farbe einer Probe; k = Ebene,
   } else if (int(uMisc3.x) == 11) {
     uint root = (u >> 26u) & 7u;
     float nu = float(u & 0x03FFFFFFu) / 256.0;
-    if (zwei) col = farbe2(vec2(1.0), vec2((mapNu(nu) - anchorV()) * uMisc.x, float(root) / max(uMisc3.y, 1.0)), false);
-    else col = pal(float(root) / max(uMisc3.y, 1.0) + (mapNu(nu) - anchorV()) * uMisc.x + uMisc.y);   // wie im WGSL-Shader
+    if (zwei) col = farbe2(vec2(1.0), vec2((mapNu(nu) - gAnchorV) * uMisc.x, float(root) / max(uMisc3.y, 1.0)), false);
+    else col = pal(float(root) / max(uMisc3.y, 1.0) + (mapNu(nu) - gAnchorV) * uMisc.x + uMisc.y);   // wie im WGSL-Shader
   } else if (uMapping == 15) {
     float nu = float(u & 0x03FFFFFFu) / 256.0, th = uintBitsToFloat(px.y);
-    vec2 p = vec2((mapNu(nu) - anchorV()) * uMisc.x, th);
+    vec2 p = vec2((mapNu(nu) - gAnchorV) * uMisc.x, th);
     col = zwei ? farbe2(vec2(1.0, th), p, false) : pal(p.x + p.y + uMisc.y);
   } else if (uPaar.x > 0.5) {   // Paar aus zwei Bahnwerten wie im WGSL-Shader
     float nu = float(u & 0x03FFFFFFu) / 256.0; vec2 v2 = unpackHalf2x16(px.y); float voll = uintBitsToFloat(px.y);
@@ -4650,7 +4654,7 @@ vec3 sampleColor(uvec4 px, ivec2 xy, int k) {   // Farbe einer Probe; k = Ebene,
     else {
       float nu0 = float(u & 0x03FFFFFFu) / 256.0;
       float v = mapNu(uInnen.w > 0.5 ? floor(nu0) : nu0);
-      float t = (v - anchorV()) * uMisc.x + uMisc.y;
+      float t = (v - gAnchorV) * uMisc.x + uMisc.y;
       col = uPalFilter > 0.0 ? palAvg(t, palWidth(xy, k) * uPalFilter) : pal(t);
       if (uMapping == 6 || uMapping == 12) col = reliefLight(xy, k, uintBitsToFloat(px.y), col);
       if (uTex2.z > 0.5) { if (uTex2.z > 1.5) col = texturStapel(col, px.y, px.z); else col = textur(col, texturWert(px)); }
@@ -4671,15 +4675,19 @@ void main() {
   ivec2 xy = ivec2(gl_FragCoord.xy) - ivec2(uShift);
   ivec2 dims = textureSize(uIter, 0).xy;
   if (xy.x < 0 || xy.y < 0 || xy.x >= dims.x || xy.y >= dims.y) { outColor = vec4(0.043, 0.051, 0.071, 1.0); return; }
-  if (uAA == 0) {   // adaptiv: Mitte aus Ebene 0 plus akkumulierte Zufallsproben
-    vec3 c0 = sampleColor(texelFetch(uIter, ivec3(xy, 0), 0), xy, 0);
-    vec4 s = texelFetch(uAccSum, xy, 0); float n = texelFetch(uAccCnt, xy, 0).x;
-    outColor = vec4((c0 + s.rgb) / (1.0 + n), 1.0); return;
-  }
+  gItlogDen = itlog(50.0, itlogK()); gBoxDen = pow(51.0, uComp) - 1.0; gAnchorV = anchorV();
+  // Eine einzige Aufrufstelle von sampleColor für beide Wege (der Übersetzer kopiert die ganze Färbung an jede Stelle):
+  // adaptiv (uAA = 0) liest nur die Mitte aus Ebene 0, ungeprüft wie bisher, und mittelt sie mit den Zufallsproben;
+  // Raster liest die uAA Ebenen und lässt ungerechnete Proben aus.
+  bool adaptiv = uAA == 0;
   vec3 sum = vec3(0.0); int n = 0;
-  for (int k = 0; k < uAA; k++) {
+  for (int k = 0; k < (adaptiv ? 1 : uAA); k++) {
     uvec4 px = texelFetch(uIter, ivec3(xy, k), 0);
-    if (px.x != 0xFFFFFFFFu) { n++; sum += sampleColor(px, xy, k); }
+    if (adaptiv || px.x != 0xFFFFFFFFu) { n++; sum += sampleColor(px, xy, k); }
+  }
+  if (adaptiv) {   // Mitte aus Ebene 0 plus akkumulierte Zufallsproben
+    vec4 s = texelFetch(uAccSum, xy, 0); float na = texelFetch(uAccCnt, xy, 0).x;
+    outColor = vec4((sum + s.rgb) / (1.0 + na), 1.0); return;
   }
   outColor = vec4(sum / float(max(n, 1)), 1.0);
 }`;
@@ -4699,6 +4707,7 @@ bool aaNeed(vec4 s, float n) {
 void main() {
   ivec2 xy = ivec2(gl_FragCoord.xy);
   if (uAP.w > 1.5) { oSum = vec4(0.0); oCnt = vec4(0.0); oNeed = uvec4(uAP.w < 2.5 ? 1u : 0u, 0u, 0u, 1u); return; }   // 2 = neu anfangen, 3 = als fertig markieren
+  gItlogDen = itlog(50.0, itlogK()); gBoxDen = pow(51.0, uComp) - 1.0; gAnchorV = anchorV();
   vec4 s = texelFetch(uAccSum, xy, 0); float n = texelFetch(uAccCnt, xy, 0).x;
   if (uAP.w < 0.5 && aaNeed(s, n)) {
     uvec4 px = texelFetch(uJit, ivec3(xy, 0), 0);
@@ -4935,6 +4944,7 @@ class GpuRenderer {
     const key = formula + '|' + (de ? 1 : 0) + '|' + (ni ? 1 : 0) + '|' + (cyc ? 1 : 0) + '|' + (bla ? 1 : 0) + '|' + pw + '|' + (fast ? 1 : 0) + '|' + lyap + '|' + winkel + '|' + stat + (tex1 ? '|' + stat2 + '|' + tex1 + '|' + tex2 : '') + (form ? '|F' + form : '') + (texz ? '|Z' + stat3 : '') + (fmt === 'rgba32uint' ? '|A' : '') + (stat4 || stat5 || tex3 || tex4 || stat6 ? '|S' + stat4 + '|' + stat5 + '|' + tex3 + '|' + tex4 + '|' + stat6 : '') + (stat2 && !tex1 ? '|s2' + stat2 : '') + (paar ? '|P' + paarA + '|' + paarB + '|' + paarVoll : '');
     let pl = this.pipeCache.get(key);
     if (!pl) {
+      this.pipeNeu = true;   // die erste Vorlage damit wartet auf das Übersetzen: die Renderschleife wertet ihre Zeit nicht als Durchsatz
       pl = this.device.createRenderPipeline({
         layout: this.layoutF,
         vertex: { module: this.modF, entryPoint: 'vs' },
@@ -5378,6 +5388,7 @@ class GlRenderer {
     const key = formula + '|' + (de ? 1 : 0) + '|' + (ni ? 1 : 0) + '|' + (cyc ? 1 : 0) + '|' + (bla ? 1 : 0) + '|' + pw + '|' + (fast ? 1 : 0) + '|' + lyap + '|' + winkel + '|' + stat + (tex1 ? '|' + stat2 + '|' + tex1 + '|' + tex2 : '') + (form ? '|F' + form : '') + (texz ? '|Z' + stat3 : '') + (stat4 || stat5 || tex3 || tex4 || stat6 ? '|S' + stat4 + '|' + stat5 + '|' + tex3 + '|' + tex4 + '|' + stat6 : '') + (stat2 && !tex1 ? '|s2' + stat2 : '') + (paar ? '|P' + paarA + '|' + paarB + '|' + paarVoll : '');
     let v = this.progCache.get(key);
     if (!v) {
+      this.pipeNeu = true;   // wie beim WebGPU-Renderer: der erste Durchlauf mit einem neuen Programm zählt nicht als Durchsatz
       const src = GLSL_FRACTAL.replace('#version 300 es\n', '#version 300 es\n#define FORMULA ' + formula + 'u\n#define NEED_DE ' + (de ? 1 : 0) + '\n#define NEED_INT ' + (ni ? 1 : 0) + '\n#define CYCLE ' + (cyc ? 1 : 0) + '\n#define BLA ' + (bla ? 1 : 0) + '\n#define POWER ' + pw + 'u\n#define FAST ' + (fast ? 1 : 0) + '\n#define LYAP ' + lyap + '\n#define WINKEL ' + winkel + '\n#define STAT ' + stat + '\n#define STAT2 ' + stat2 + '\n#define TEX1 ' + tex1 + 'u\n#define TEX2 ' + tex2 + 'u\n#define FORM ' + form + 'u\n#define TEXZ ' + texz + '\n#define STAT3 ' + stat3 + '\n#define STAT4 ' + stat4 + '\n#define STAT5 ' + stat5 + '\n#define TEX3 ' + tex3 + 'u\n#define TEX4 ' + tex4 + 'u\n#define STAT6 ' + stat6 + '\n#define PAAR ' + paar + '\n#define PAARA ' + paarA + 'u\n#define PAARB ' + paarB + 'u\n#define PAARVOLL ' + paarVoll + '\n');
       const prog = this._program(GLSL_VS, src), u = {};
       for (const n of ['uOrbit', 'uDcScale', 'uDcOffset', 'uMaxIter', 'uLenA', 'uBaseB', 'uLenB', 'uJulia', 'uTexW', 'uPs', 'uInvert', 'uPRef', 'uCRef', 'uZRef', 'uParam', 'uFlip', 'uSeqBits', 'uSeqLen', 'uBlaR', 'uBlaAB', 'uBlaR4', 'uBlaN', 'uBlaMisc', 'uNeed', 'uJit', 'uAdapt', 'uSigma', 'uLyGrenze', 'uStreifen', 'uVorlauf', 'uGewicht', 'uFluchtRadius'])
@@ -6102,11 +6113,16 @@ function formatPruefen() {   // Textur über einer Statistik-Färbung braucht de
   try { renderer.resize(W, H, aaEff * aaEff); } catch (e) { aaOom(aaEff, e); return; }
   if (aaBuilt) aaSetup();
 }
+let letzteAenderung = -1e9;   // wann viewChanged zuletzt lief: unterscheidet eine einzelne Änderung von einer Folge (Regler)
 function viewChanged() {
   formatPruefen();
   orbitDirty = true; fractalDirty = true; accDirty = true; peHistPlan();
   pendingSX = pendingSY = 0; panDirty = false; panCarryX = panCarryY = 0; zoomDirty = false; zoomPending = null;
-  interactUntil = performance.now() + 150;
+  // Kacheln laufen erst, wenn Ruhe ist: Bei einer Folge von Änderungen (Regler, Tastenwiederholung) wie bisher 150 ms nach der
+  // letzten, eine einzelne Änderung (Auswahl, getippter Wert, Link) rechnet sofort – sonst wartete jedes schwere Bild 150 ms.
+  const jetzt = performance.now();
+  interactUntil = jetzt - letzteAenderung < 150 ? jetzt + 150 : jetzt;
+  letzteAenderung = jetzt;
   scheduleHash();
   if (cropActive) syncCropBox();
   requestFrame();
@@ -6678,7 +6694,11 @@ function frame(now) {
     renderer.whenDone().then(() => {
       if (renderer !== myRenderer) return;
       const ms = Math.max(0.5, performance.now() - gpuT0);
-      throughput = clamp(throughput * 0.4 + (lastWork / ms) * 0.6, 1e5, 2e9);
+      // Enthielt die Zeit das Übersetzen einer neuen Pipeline, sagt sie nichts über den Durchsatz: ein einziger solcher Wert
+      // drückte die Schätzung auf ein Zehntel, die Stapel wurden winzig, und winzige Stapel messen nur noch den Aufwand je Aufruf –
+      // die Schätzung erholte sich dann kaum noch (Neurender in 250 ms statt 20 ms).
+      if (myRenderer.pipeNeu) myRenderer.pipeNeu = false;
+      else throughput = clamp(throughput * 0.4 + (lastWork / ms) * 0.6, 1e5, 2e9);
       gpuBusy = false;
       if (!fractalDirty) {
         if (renderMs < 0 && (phase === 'idle' || tileIdx >= tilesL0)) renderMs = performance.now() - renderT0;   // Ebene 0 fertig
