@@ -878,6 +878,49 @@ describe('Färbungen nach Bahnstatistik', () => {
     cy.get('#texStaerkeRow').should('not.have.attr', 'hidden');
     cy.get('#texturRow .tex-kurz').should('have.text', 'Streifenmittel');   // ausgeklappt: nur die Art im Kopf
   });
+  it('Texturarten 9 bis 19: Bänder, Randnähe, Kanten, Glätten, Krümmung, Gitter-, Ring- und Punktfalle, Weglänge, Schwerpunkt, Vorzeichenwechsel färben, auch gestapelt und mit WebGL 2; eigene Regler je Art im Link (tq)', () => {
+    const B = 'mode=mandel&re=-0.9&im=0.6&z=1&it=400';
+    const deutlich = (a, b, text) => cy.task('pngDiff', { a: a.file, b: b.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, text).to.be.greaterThan(1.5));   // leiser als „anders“: manche Arten zeichnen fein
+    cy.visitApp(B);
+    cy.get('#textur option').should('have.length', 20);   // Keine und 19 Arten
+    cy.get('#textur4 option').should('have.length', 20);
+    cy.shotStats('arten-ohne').then(ohne => {
+      for (const art of [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]) {
+        cy.visitApp(B + '&tx=' + art + '&ts=0.8');
+        cy.get('#textur').should('have.value', String(art));
+        cy.expectHash('tx', String(art));
+        cy.get('#texturRow .tex-kurz').invoke('text').should('not.be.empty');
+        cy.shotStats('art-' + art).then(mit => deutlich(ohne, mit, 'Art ' + art + ' färbt'));
+      }
+      cy.visitApp(B + '&tx=15&ts=0.8&tq=0.5');   // Ringfalle mit eigenem Regler: der Radius kommt aus dem Link, steht im Feld und im Regler
+      cy.get('#texWerteRow').should('not.have.attr', 'hidden');
+      cy.get('#texW1_0').should('have.value', '0.5'); cy.get('#texW1_0Val').should('have.value', '0,50');
+      cy.get('label[for="texW1_0"]').should('have.text', 'Radius');
+      cy.expectHash('tq', '0.5');
+      cy.shotStats('ring-05').then(r05 => {
+        cy.revealInDetails('texW1_0Val');
+        cy.rerender(() => cy.get('#texW1_0Val').scrollIntoView().clear().type('1{enter}'));   // getippt: Vorgabe 1, der Schlüssel verschwindet, das Bild ändert sich
+        cy.expectHash('tq', null);
+        cy.get('#texW1_0').should('have.value', '1');
+        cy.shotStats('ring-1').then(r1 => deutlich(r05, r1, 'der Radius der Ringfalle verändert das Bild'));
+      });
+      cy.visitApp(B + '&tx=1&ts=0.8&t2=19&t2q=0.3:-0.2');   // Punktfalle auf Platz 2 mit zwei Reglern; Platz 1 (Streifenmittel) hat keine
+      cy.get('#texWerteRow').should('have.attr', 'hidden'); cy.get('#tex2WerteRow').should('not.have.attr', 'hidden');
+      cy.get('#texW2_0').should('have.value', '0.3'); cy.get('#texW2_1').should('have.value', '-0.2');
+      cy.expectHash('t2q', '0.3:-0.2');
+      cy.get('#tex2Werte input[type=range]').should('have.length', 2);
+      cy.pickOption('textur', '19');   // andere Art auf Platz 1: ihre Regler mit Vorgaben, nichts im Link
+      cy.get('#texWerteRow').should('not.have.attr', 'hidden'); cy.get('#texW1_0').should('have.value', '0');
+      cy.expectHash('tq', null);
+      cy.waitRender();
+      cy.visitApp(B + '&map=19&tx=12&t2=13&t3=14&t4=11');   // vier neue Arten gestapelt über einer Statistik-Färbung (Kanäle z und w)
+      cy.get('#textur4').should('have.value', '11');
+      cy.shotStats('arten-stapel').then(mit => deutlich(ohne, mit, 'der Stapel aus neuen Arten färbt'));
+      cy.visitApp(B + '&tx=10&ts=0.8&t2=11', { storage: { 'fractal.renderer': 'webgl' } });   // Randnähe und Kanten mit WebGL 2 (GLSL-Weg)
+      cy.get('#badge').should('have.text', 'WebGL 2');
+      cy.shotStats('arten-webgl').then(mit => deutlich(ohne, mit, 'WebGL 2: Randnähe und Kanten färben'));
+    });
+  });
   it('Kurve: Übertragungskurve über den Häufigkeiten — Gerade als Vorgabe, gezogener Punkt ändert das Bild, Punkte im Link', () => {
     cy.visitApp('mode=mandel&re=-0.7462586155&im=0.1111580353&z=5.6e4&it=400');
     cy.get('#kurveRow').should('have.attr', 'hidden');
