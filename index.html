@@ -3277,7 +3277,7 @@ fn fsFast(pos: vec4f) -> vec4u {
     }
   } else if (PAAR != 0u) {   // Paar ohne Texturen: beide Achsen im y-Kanal (nur außen; innen läuft der gewöhnliche Weg weiter)
     if (escaped) { return vec4u(u32(max(nu, 0.0) * 256.0) | (root << 26u), paarY(paarWert(PAARA, stAus(st, stN, dot(z, z), bail, stMin), z), paarWert(PAARB, stAus2(st2, stN2, dot(z, z), bail, stMin2), z)), 0u, 1u); }
-  } else if (TEX1 != 0u) {   // gestapelte Texturen: außen beide Werte als 16-Bit-Hälften; innen läuft der gewöhnliche Weg weiter
+  } else if ((TEX1 | TEX2 | TEX3 | TEX4) != 0u) {   // gestapelte Texturen (irgendein Platz wirksam, Platz 1 darf ausgeschaltet sein): außen beide Werte als 16-Bit-Hälften; innen läuft der gewöhnliche Weg weiter
     if (escaped) { return vec4u(u32(max(nu, 0.0) * 256.0) | (root << 26u), pack2x16unorm(vec2f(texWert(TEX1, stAus(st, stN, dot(z, z), bail, stMin), z, nu), texWert(TEX2, stAus2(st2, stN2, dot(z, z), bail, stMin2), z, nu))), pack2x16unorm(vec2f(texWert(TEX3, stAus3(st3, stN3, dot(z, z), bail, stMin3), z, nu), texWert(TEX4, stAus4(st4, stN4, dot(z, z), bail, stMin4), z, nu))), 1u); }   // Plätze 3 und 4 im z-Kanal
   } else if (STAT != 0u && (escaped || STAT == 1u || STAT == 2u || STAT == 5u || STAT == 7u || STAT == 10u)) {   // Bahnstatistik im zweiten Kanal; Streifen- und Dreiecksmittel nur außen
     let xl = select(0x80000000u | u32(min(length(z), 2.0) * 16777216.0), u32(max(nu, 0.0) * 256.0) | (root << 26u), escaped);
@@ -4432,7 +4432,7 @@ void main() {
     }
   } else if (PAAR != 0) {   // Paar ohne Texturen wie im WGSL-Shader
     if (escaped) { outIter = uvec4(uint(max(nu, 0.0) * 256.0) | (root << 26u), paarY(paarWert(PAARA, stAus(st, stN, dot(z, z), bail, stMin), z), paarWert(PAARB, stAus2(st2, stN2, dot(z, z), bail, stMin2), z)), 0u, 1u); return; }
-  } else if (TEX1 != 0u) {   // gestapelte Texturen wie im WGSL-Shader
+  } else if ((TEX1 | TEX2 | TEX3 | TEX4) != 0u) {   // gestapelte Texturen wie im WGSL-Shader (irgendein Platz wirksam)
     if (escaped) { outIter = uvec4(uint(max(nu, 0.0) * 256.0) | (root << 26u), packUnorm2x16(vec2(texWert(TEX1, stAus(st, stN, dot(z, z), bail, stMin), z, nu), texWert(TEX2, stAus2(st2, stN2, dot(z, z), bail, stMin2), z, nu))), packUnorm2x16(vec2(texWert(TEX3, stAus3(st3, stN3, dot(z, z), bail, stMin3), z, nu), texWert(TEX4, stAus4(st4, stN4, dot(z, z), bail, stMin4), z, nu))), 1u); return; }   // Plätze 3 und 4 im z-Kanal
   } else if (STAT != 0 && (escaped || STAT == 1 || STAT == 2 || STAT == 5 || STAT == 7 || STAT == 10)) {   // wie im WGSL-Shader
     outIter = uvec4(escaped ? (uint(max(nu, 0.0) * 256.0) | (root << 26u)) : (0x80000000u | uint(min(length(z), 2.0) * 16777216.0)), stAus(st, stN, dot(z, z), bail, stMin), 0u, 1u);
@@ -4941,7 +4941,7 @@ class GpuRenderer {
   }
   _pipeVariant(formula, de, ni, cyc, bla, pw, fast, lyap = 0, winkel = 0, stat = 0, stat2 = 0, tex1 = 0, tex2 = 0, form = 0, texz = 0, stat3 = 0, stat4 = 0, stat5 = 0, tex3 = 0, tex4 = 0, stat6 = 0, paar = 0, paarA = 0, paarB = 0, paarVoll = 0) {   // eine Pipeline je Formel, Ableitungsbedarf, Zykluserkennung, BLA, Potenz, schlankem Kern, Lyapunov-Färbung und Winkel (Override-Konstanten)
     const fmt = this.iterFormat || 'rg32uint';
-    const key = formula + '|' + (de ? 1 : 0) + '|' + (ni ? 1 : 0) + '|' + (cyc ? 1 : 0) + '|' + (bla ? 1 : 0) + '|' + pw + '|' + (fast ? 1 : 0) + '|' + lyap + '|' + winkel + '|' + stat + (tex1 ? '|' + stat2 + '|' + tex1 + '|' + tex2 : '') + (form ? '|F' + form : '') + (texz ? '|Z' + stat3 : '') + (fmt === 'rgba32uint' ? '|A' : '') + (stat4 || stat5 || tex3 || tex4 || stat6 ? '|S' + stat4 + '|' + stat5 + '|' + tex3 + '|' + tex4 + '|' + stat6 : '') + (stat2 && !tex1 ? '|s2' + stat2 : '') + (paar ? '|P' + paarA + '|' + paarB + '|' + paarVoll : '');
+    const key = formula + '|' + (de ? 1 : 0) + '|' + (ni ? 1 : 0) + '|' + (cyc ? 1 : 0) + '|' + (bla ? 1 : 0) + '|' + pw + '|' + (fast ? 1 : 0) + '|' + lyap + '|' + winkel + '|' + stat + (tex1 || tex2 ? '|' + stat2 + '|' + tex1 + '|' + tex2 : '') + (form ? '|F' + form : '') + (texz ? '|Z' + stat3 : '') + (fmt === 'rgba32uint' ? '|A' : '') + (stat4 || stat5 || tex3 || tex4 || stat6 ? '|S' + stat4 + '|' + stat5 + '|' + tex3 + '|' + tex4 + '|' + stat6 : '') + (stat2 && !tex1 && !tex2 ? '|s2' + stat2 : '') + (paar ? '|P' + paarA + '|' + paarB + '|' + paarVoll : '');
     let pl = this.pipeCache.get(key);
     if (!pl) {
       this.pipeNeu = true;   // die erste Vorlage damit wartet auf das Übersetzen: die Renderschleife wertet ihre Zeit nicht als Durchsatz
@@ -5385,7 +5385,7 @@ class GlRenderer {
     canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); if (this.onLost) this.onLost({ message: 'WebGL-Kontext verloren' }); });
   }
   _progVariant(formula, de, ni, cyc, bla, pw, fast = (formula === 0 && !de && !ni && !cyc && !bla && pw === 2), lyap = 0, winkel = 0, stat = 0, stat2 = 0, tex1 = 0, tex2 = 0, form = 0, texz = 0, stat3 = 0, stat4 = 0, stat5 = 0, tex3 = 0, tex4 = 0, stat6 = 0, paar = 0, paarA = 0, paarB = 0, paarVoll = 0) {   // ein Programm je Variante (#define)
-    const key = formula + '|' + (de ? 1 : 0) + '|' + (ni ? 1 : 0) + '|' + (cyc ? 1 : 0) + '|' + (bla ? 1 : 0) + '|' + pw + '|' + (fast ? 1 : 0) + '|' + lyap + '|' + winkel + '|' + stat + (tex1 ? '|' + stat2 + '|' + tex1 + '|' + tex2 : '') + (form ? '|F' + form : '') + (texz ? '|Z' + stat3 : '') + (stat4 || stat5 || tex3 || tex4 || stat6 ? '|S' + stat4 + '|' + stat5 + '|' + tex3 + '|' + tex4 + '|' + stat6 : '') + (stat2 && !tex1 ? '|s2' + stat2 : '') + (paar ? '|P' + paarA + '|' + paarB + '|' + paarVoll : '');
+    const key = formula + '|' + (de ? 1 : 0) + '|' + (ni ? 1 : 0) + '|' + (cyc ? 1 : 0) + '|' + (bla ? 1 : 0) + '|' + pw + '|' + (fast ? 1 : 0) + '|' + lyap + '|' + winkel + '|' + stat + (tex1 || tex2 ? '|' + stat2 + '|' + tex1 + '|' + tex2 : '') + (form ? '|F' + form : '') + (texz ? '|Z' + stat3 : '') + (stat4 || stat5 || tex3 || tex4 || stat6 ? '|S' + stat4 + '|' + stat5 + '|' + tex3 + '|' + tex4 + '|' + stat6 : '') + (stat2 && !tex1 && !tex2 ? '|s2' + stat2 : '') + (paar ? '|P' + paarA + '|' + paarB + '|' + paarVoll : '');
     let v = this.progCache.get(key);
     if (!v) {
       this.pipeNeu = true;   // wie beim WebGPU-Renderer: der erste Durchlauf mit einem neuen Programm zählt nicht als Durchsatz

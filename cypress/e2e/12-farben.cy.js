@@ -858,9 +858,16 @@ describe('Färbungen nach Bahnstatistik', () => {
         cy.shotStats('karte-ohne').then(ohne => gleich(aus, ohne, 'ausgeschaltet ist wie keine Textur'));
       });
     });
-    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&tx=1&ts=0.8&ta=0&t2=3');   // aus dem Link: Platz 1 aus, Platz 2 an
+    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&tx=1&ts=0.8&ta=0&t2=1&t2s=0.8');   // aus dem Link: Platz 1 aus, Platz 2 an
     cy.get('#texAn').should('not.be.checked'); cy.get('#tex2An').should('be.checked');
     cy.get('#texKarte1').should('have.class', 'aus'); cy.get('#texKarte2').should('not.have.class', 'aus');
+    cy.shotStats('platz1-aus-platz2-an').then(zwei => {   // Platz 2 wirkt allein, genau wie dieselbe Textur auf Platz 1 (Platz 1 aus darf den Stapel nicht abschalten)
+      cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&tx=1&ts=0.8');
+      cy.shotStats('nur-platz1').then(nur => gleich(zwei, nur, 'Platz 2 allein färbt wie dieselbe Textur auf Platz 1'));
+      cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400');
+      cy.shotStats('ohne-textur-2').then(ohne => anders(zwei, ohne, 'Platz 2 wirkt, obwohl Platz 1 aus ist'));
+      cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&tx=1&ts=0.8&ta=0&t2=1&t2s=0.8');
+    });
     cy.rerender(() => cy.get('#texAn').check({ force: true }));
     cy.expectHash('ta', null);
     cy.get('#texturRow .tex-klapp').click({ force: true });                 // einklappen: nur die Kopfzeile mit Kurzangabe
