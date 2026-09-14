@@ -1267,4 +1267,23 @@ describe('Texturmasken: berechnete Auswahl je Platz', () => {
       cy.shotStats('tmid-alles').then(alles => diff(ohne, alles).then(d => expect(d.meanDiff, 'Maske über alles = ohne Maske').to.be.lessThan(0.5)));
     });
   });
+
+describe('Paar-Wert Streifenphase (Sammler 18)', () => {
+  const B = 'mode=mandel&re=-0.9&im=0.6&z=1&it=400';
+  const diff = (a, b) => cy.task('pngDiff', { a: a.file, b: b.file, region: IMAGE_REGION });
+  it('steht in beiden Achsenlisten, geht in den Link und färbt anders als das Streifenmittel', () => {
+    cy.visitApp(B + '&map=31&pa=4:30:2:0&pb=2:30:0:0');
+    cy.pane('farbe');
+    cy.get('#paarA option[value="9"]').should('exist'); cy.get('#paarB option[value="9"]').should('exist');
+    cy.shotStats('phase-streifen').then(streifen => {
+      cy.pickOption('paarB', '9');
+      cy.expectHash('pb', v => expect(v).to.match(/^9:/));
+      cy.waitRender();
+      cy.shotStats('phase-phase').then(phase => diff(streifen, phase).then(d => expect(d.meanDiff, 'die Phase färbt anders als das Mittel').to.be.greaterThan(5)));
+    });
+    cy.visitApp(B + '&map=31&pa=9:12:0:0&pb=1:1:0:0');   // Phase als erste Achse, aus dem Link
+    cy.pane('farbe');
+    cy.get('#paarA').should('have.value', '9');
+  });
+});
 });

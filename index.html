@@ -911,6 +911,7 @@
             <option value="6" data-i18n="colour.texture-cross"></option>
             <option value="7" data-i18n="colour.period-domains"></option>
             <option value="8" data-i18n="colour.escape-angle"></option>
+            <option value="9" data-i18n="colour.stripe-phase"></option>
           </select>
           <div class="lbl wertzeile"><label for="paarFaktorA" data-i18n-title="colour.pair-factor-title" data-i18n="colour.pair-factor"></label><input class="val mono wert" id="paarFaktorAVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
           <input id="paarFaktorA" type="range" min="0" max="1000" step="1" value="500">
@@ -934,6 +935,7 @@
             <option value="6" data-i18n="colour.texture-cross"></option>
             <option value="7" data-i18n="colour.period-domains"></option>
             <option value="8" data-i18n="colour.escape-angle"></option>
+            <option value="9" data-i18n="colour.stripe-phase"></option>
           </select>
           <div class="lbl wertzeile"><label for="paarFaktorB" data-i18n-title="colour.pair-factor-title" data-i18n="colour.pair-factor"></label><input class="val mono wert" id="paarFaktorBVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
           <input id="paarFaktorB" type="range" min="0" max="1000" step="1" value="500">
@@ -1810,6 +1812,7 @@ const TEXTE = {
   'colour.edge-lines': { de: 'Randlinien', en: 'Edge lines' },
   'colour.edge-width': { de: 'Randbreite', en: 'Edge width' },
   'colour.edit-colour-scheme': { de: 'Farbschema bearbeiten …', en: 'Edit colour scheme …' },
+  'colour.stripe-phase': { de: 'Streifenphase', en: 'Stripe phase' },
   'colour.escape-angle': { de: 'Fluchtwinkel', en: 'Escape angle' },
   'colour.gradient': { de: 'Verlauf', en: 'Gradient' },
   'colour.histogram': { de: 'Histogramm', en: 'Histogram' },
@@ -2562,9 +2565,9 @@ const MAPPING_TEXT = { 0: 'mapping.text.0', 1: 'mapping.text.1', 2: 'mapping.tex
 // Paare: Färbungen aus zwei Bahnwerten. Je Achse ein Wert (PAAR_WERTE), ein Faktor, wahlweise ein Fluchtzeit-Abzug (0 keiner,
 // 1 β·log₂(N+1), 2 β·0,1·(log₂(N+1) − 10)), bei 0 geklemmt, mit Farbanker (Fluchtzeit: Farbanker der Fluchtzeit; Mittel: der des
 // Bahnmittels). 22, 23, 25, 27 und 30 sind Voreinstellungen dieses einen Mechanismus, 31 das eigene Paar (S.paar).
-const PAAR_WERTE = ['', 'fluchtzeit', 'streifen', 'dreieck', 'drehung', 'ursprung', 'kreuz', 'perioden', 'winkel'];
-const PAAR_STAT = [0, 0, 3, 4, 8, 7, 1, 10, 0];   // Sammler des Shaders je Wert (0: keiner — Fluchtzeit und Fluchtwinkel brauchen keinen)
-const PAAR_NAMEN = ['', 'colour.escape-time-value', 'colour.stripe-average', 'colour.texture-triangle', 'colour.total-turning', 'colour.closest-to-origin', 'colour.texture-cross', 'colour.period-domains', 'colour.escape-angle'];
+const PAAR_WERTE = ['', 'fluchtzeit', 'streifen', 'dreieck', 'drehung', 'ursprung', 'kreuz', 'perioden', 'winkel', 'phase'];   // 9 Streifenphase
+const PAAR_STAT = [0, 0, 3, 4, 8, 7, 1, 10, 0, 18];   // Sammler des Shaders je Wert (0: keiner — Fluchtzeit und Fluchtwinkel brauchen keinen)
+const PAAR_NAMEN = ['', 'colour.escape-time-value', 'colour.stripe-average', 'colour.texture-triangle', 'colour.total-turning', 'colour.closest-to-origin', 'colour.texture-cross', 'colour.period-domains', 'colour.escape-angle', 'colour.stripe-phase'];
 const PAARE = {
   22: { a: { wert: 1, faktor: 1, abzug: 0, klemme: false, anker: true }, b: { wert: 2, faktor: 30, abzug: 0, klemme: false, anker: true } },
   23: { a: { wert: 1, faktor: 1, abzug: 0, klemme: false, anker: true }, b: { wert: 3, faktor: 37.5, abzug: 0, klemme: false, anker: true } },
@@ -3082,7 +3085,7 @@ override BLA: u32 = 0u;          // bilineare Näherung: Iterationsblöcke über
 override POWER: u32 = 2u;        // Potenz d: bei 2 entfällt die Horner-Schleife
 override FAST: u32 = 1u;         // schlanker Kern wie in der Urfassung (Mandelbrot z²+c ohne Ableitung, Zyklus, Näherung)
 override LYAP: u32 = 0u;         // Färbung nach Lyapunov-Exponent: 1 = echter Exponent, 2 = nach Re und Im (sonst fällt der Code weg)
-override STAT: u32 = 0u;         // Bahnstatistik: 1 Kreuzfalle, 2 Kreuzfalle je Achse, 3 Streifenmittel, 4 Dreiecksmittel, 5 Vorzeichenwechsel
+override STAT: u32 = 0u;         // Bahnstatistik: 1 Kreuzfalle, 2 Kreuzfalle je Achse, 3 Streifenmittel, 4 Dreiecksmittel, 5 Vorzeichenwechsel, … 18 Streifenphase
 override STAT2: u32 = 0u;        // zweite Bahnstatistik beim Stapeln von Texturen
 override TEX1: u32 = 0u;         // Arten der gestapelten Texturen (TEX1 ≠ 0: Stapel — beide Werte normiert als 16-Bit-Hälften im y-Kanal)
 override TEX2: u32 = 0u;
@@ -3173,6 +3176,7 @@ fn stNimm2(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f,
   if (STAT2 == 10u) { let r2 = dot(z, z); if (r2 < *mn) { *mn = r2; s.w = f32(i); } *st = s; *n += 1u; return; }   // Periodengebiete: der Schritt der größten Nähe zum Ursprung
   if (STAT2 == 11u) { s.x += w * exp(-length(z) / tp.x); s.z += w; *st = s; *n += 1u; return; }   // Exponentielles Glätten: gewichtetes Mittel von e^−|z|
   if (STAT2 == 12u) { let d1 = z - zv; let d0 = zv - s.zw; if (dot(d0, d0) > 0.0 && dot(d1, d1) > 0.0) { s.x += w * abs(atan2(d0.x * d1.y - d0.y * d1.x, dot(d0, d1))) * (1.0 / 3.1415927); s.y += w; } s.z = zv.x; s.w = zv.y; *st = s; *n += 1u; return; }   // Krümmungsmittel: Winkel zwischen den Schritten (zw = der vorletzte Punkt)
+  if (STAT2 == 18u) { let a = P.extra.z * atan2(z.y, z.x); s.x += w * cos(a); s.y += w * sin(a); s.z += w; s.w = a; *mn = w; *st = s; *n += 1u; return; }   // Streifenphase: Mittelvektor des Streifenwinkels; w = letzter Winkel, mn = letztes Gewicht (Glättung)
   if (STAT2 == 13u) { *mn = min(*mn, length(z / tp.x - round(z / tp.x)) * tp.x); *n += 1u; return; }   // Gitterfalle: kleinster Abstand zu einer Gaußschen Ganzzahl
   if (STAT2 == 14u) { *mn = min(*mn, abs(length(z) - tp.x)); *n += 1u; return; }   // Ringfalle: kleinster Abstand zum Einheitskreis
   if (STAT2 == 15u) { s.x += w * (1.0 - exp(-length(z - zv) / tp.x)); s.z += w; *st = s; *n += 1u; return; }   // Weglänge: gewichtetes Mittel der gedämpften Schrittlängen
@@ -3206,6 +3210,7 @@ fn stAus2(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT2 == 12u) { return bitcast<u32>(select(st.x / st.y, 0.0, st.y == 0.0)); }   // Krümmungsmittel
   if (STAT2 == 13u) { return bitcast<u32>(clamp(sqrt(2.0 * min(mn / tp.x, 0.5)), 0.0, 1.0)); }   // Gitterfalle: 0 am Gitterpunkt, 1 bei ½
   if (STAT2 == 14u) { return bitcast<u32>(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Ringfalle: logarithmisch, 0 bei e^−6.7
+  if (STAT2 == 18u) { let f = select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
   if (STAT2 == 16u) { return bitcast<u32>(select(atan2(st.y, st.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Schwerpunkt: sein Winkel in Umläufen
   if (STAT2 == 17u) { return bitcast<u32>(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Punktfalle: logarithmisch wie die Ursprungsnähe
   if (STAT2 == 2u) { return pack2x16float(clamp(log(max(st.xy, vec2f(1.0e-30))), vec2f(-6.0e4), vec2f(6.0e4))); }   // log-Abstände
@@ -3228,6 +3233,7 @@ fn stNimm3(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f,
   if (STAT3 == 10u) { let r2 = dot(z, z); if (r2 < *mn) { *mn = r2; s.w = f32(i); } *st = s; *n += 1u; return; }   // Periodengebiete: der Schritt der größten Nähe zum Ursprung
   if (STAT3 == 11u) { s.x += w * exp(-length(z) / tp.x); s.z += w; *st = s; *n += 1u; return; }   // Exponentielles Glätten: gewichtetes Mittel von e^−|z|
   if (STAT3 == 12u) { let d1 = z - zv; let d0 = zv - s.zw; if (dot(d0, d0) > 0.0 && dot(d1, d1) > 0.0) { s.x += w * abs(atan2(d0.x * d1.y - d0.y * d1.x, dot(d0, d1))) * (1.0 / 3.1415927); s.y += w; } s.z = zv.x; s.w = zv.y; *st = s; *n += 1u; return; }   // Krümmungsmittel: Winkel zwischen den Schritten (zw = der vorletzte Punkt)
+  if (STAT3 == 18u) { let a = P.extra.z * atan2(z.y, z.x); s.x += w * cos(a); s.y += w * sin(a); s.z += w; s.w = a; *mn = w; *st = s; *n += 1u; return; }   // Streifenphase: Mittelvektor des Streifenwinkels; w = letzter Winkel, mn = letztes Gewicht (Glättung)
   if (STAT3 == 13u) { *mn = min(*mn, length(z / tp.x - round(z / tp.x)) * tp.x); *n += 1u; return; }   // Gitterfalle: kleinster Abstand zu einer Gaußschen Ganzzahl
   if (STAT3 == 14u) { *mn = min(*mn, abs(length(z) - tp.x)); *n += 1u; return; }   // Ringfalle: kleinster Abstand zum Einheitskreis
   if (STAT3 == 15u) { s.x += w * (1.0 - exp(-length(z - zv) / tp.x)); s.z += w; *st = s; *n += 1u; return; }   // Weglänge: gewichtetes Mittel der gedämpften Schrittlängen
@@ -3261,6 +3267,7 @@ fn stAus3(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT3 == 12u) { return bitcast<u32>(select(st.x / st.y, 0.0, st.y == 0.0)); }   // Krümmungsmittel
   if (STAT3 == 13u) { return bitcast<u32>(clamp(sqrt(2.0 * min(mn / tp.x, 0.5)), 0.0, 1.0)); }   // Gitterfalle: 0 am Gitterpunkt, 1 bei ½
   if (STAT3 == 14u) { return bitcast<u32>(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Ringfalle: logarithmisch, 0 bei e^−6.7
+  if (STAT3 == 18u) { let f = select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
   if (STAT3 == 16u) { return bitcast<u32>(select(atan2(st.y, st.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Schwerpunkt: sein Winkel in Umläufen
   if (STAT3 == 17u) { return bitcast<u32>(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Punktfalle: logarithmisch wie die Ursprungsnähe
   if (STAT3 == 2u) { return pack2x16float(clamp(log(max(st.xy, vec2f(1.0e-30))), vec2f(-6.0e4), vec2f(6.0e4))); }   // log-Abstände
@@ -3283,6 +3290,7 @@ fn stNimm4(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f,
   if (STAT4 == 10u) { let r2 = dot(z, z); if (r2 < *mn) { *mn = r2; s.w = f32(i); } *st = s; *n += 1u; return; }   // Periodengebiete: der Schritt der größten Nähe zum Ursprung
   if (STAT4 == 11u) { s.x += w * exp(-length(z) / tp.x); s.z += w; *st = s; *n += 1u; return; }   // Exponentielles Glätten: gewichtetes Mittel von e^−|z|
   if (STAT4 == 12u) { let d1 = z - zv; let d0 = zv - s.zw; if (dot(d0, d0) > 0.0 && dot(d1, d1) > 0.0) { s.x += w * abs(atan2(d0.x * d1.y - d0.y * d1.x, dot(d0, d1))) * (1.0 / 3.1415927); s.y += w; } s.z = zv.x; s.w = zv.y; *st = s; *n += 1u; return; }   // Krümmungsmittel: Winkel zwischen den Schritten (zw = der vorletzte Punkt)
+  if (STAT4 == 18u) { let a = P.extra.z * atan2(z.y, z.x); s.x += w * cos(a); s.y += w * sin(a); s.z += w; s.w = a; *mn = w; *st = s; *n += 1u; return; }   // Streifenphase: Mittelvektor des Streifenwinkels; w = letzter Winkel, mn = letztes Gewicht (Glättung)
   if (STAT4 == 13u) { *mn = min(*mn, length(z / tp.x - round(z / tp.x)) * tp.x); *n += 1u; return; }   // Gitterfalle: kleinster Abstand zu einer Gaußschen Ganzzahl
   if (STAT4 == 14u) { *mn = min(*mn, abs(length(z) - tp.x)); *n += 1u; return; }   // Ringfalle: kleinster Abstand zum Einheitskreis
   if (STAT4 == 15u) { s.x += w * (1.0 - exp(-length(z - zv) / tp.x)); s.z += w; *st = s; *n += 1u; return; }   // Weglänge: gewichtetes Mittel der gedämpften Schrittlängen
@@ -3316,6 +3324,7 @@ fn stAus4(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT4 == 12u) { return bitcast<u32>(select(st.x / st.y, 0.0, st.y == 0.0)); }   // Krümmungsmittel
   if (STAT4 == 13u) { return bitcast<u32>(clamp(sqrt(2.0 * min(mn / tp.x, 0.5)), 0.0, 1.0)); }   // Gitterfalle: 0 am Gitterpunkt, 1 bei ½
   if (STAT4 == 14u) { return bitcast<u32>(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Ringfalle: logarithmisch, 0 bei e^−6.7
+  if (STAT4 == 18u) { let f = select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
   if (STAT4 == 16u) { return bitcast<u32>(select(atan2(st.y, st.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Schwerpunkt: sein Winkel in Umläufen
   if (STAT4 == 17u) { return bitcast<u32>(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Punktfalle: logarithmisch wie die Ursprungsnähe
   if (STAT4 == 2u) { return pack2x16float(clamp(log(max(st.xy, vec2f(1.0e-30))), vec2f(-6.0e4), vec2f(6.0e4))); }   // log-Abstände
@@ -3338,6 +3347,7 @@ fn stNimm5(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f,
   if (STAT5 == 10u) { let r2 = dot(z, z); if (r2 < *mn) { *mn = r2; s.w = f32(i); } *st = s; *n += 1u; return; }   // Periodengebiete: der Schritt der größten Nähe zum Ursprung
   if (STAT5 == 11u) { s.x += w * exp(-length(z) / tp.x); s.z += w; *st = s; *n += 1u; return; }   // Exponentielles Glätten: gewichtetes Mittel von e^−|z|
   if (STAT5 == 12u) { let d1 = z - zv; let d0 = zv - s.zw; if (dot(d0, d0) > 0.0 && dot(d1, d1) > 0.0) { s.x += w * abs(atan2(d0.x * d1.y - d0.y * d1.x, dot(d0, d1))) * (1.0 / 3.1415927); s.y += w; } s.z = zv.x; s.w = zv.y; *st = s; *n += 1u; return; }   // Krümmungsmittel: Winkel zwischen den Schritten (zw = der vorletzte Punkt)
+  if (STAT5 == 18u) { let a = P.extra.z * atan2(z.y, z.x); s.x += w * cos(a); s.y += w * sin(a); s.z += w; s.w = a; *mn = w; *st = s; *n += 1u; return; }   // Streifenphase: Mittelvektor des Streifenwinkels; w = letzter Winkel, mn = letztes Gewicht (Glättung)
   if (STAT5 == 13u) { *mn = min(*mn, length(z / tp.x - round(z / tp.x)) * tp.x); *n += 1u; return; }   // Gitterfalle: kleinster Abstand zu einer Gaußschen Ganzzahl
   if (STAT5 == 14u) { *mn = min(*mn, abs(length(z) - tp.x)); *n += 1u; return; }   // Ringfalle: kleinster Abstand zum Einheitskreis
   if (STAT5 == 15u) { s.x += w * (1.0 - exp(-length(z - zv) / tp.x)); s.z += w; *st = s; *n += 1u; return; }   // Weglänge: gewichtetes Mittel der gedämpften Schrittlängen
@@ -3371,6 +3381,7 @@ fn stAus5(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT5 == 12u) { return bitcast<u32>(select(st.x / st.y, 0.0, st.y == 0.0)); }   // Krümmungsmittel
   if (STAT5 == 13u) { return bitcast<u32>(clamp(sqrt(2.0 * min(mn / tp.x, 0.5)), 0.0, 1.0)); }   // Gitterfalle: 0 am Gitterpunkt, 1 bei ½
   if (STAT5 == 14u) { return bitcast<u32>(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Ringfalle: logarithmisch, 0 bei e^−6.7
+  if (STAT5 == 18u) { let f = select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
   if (STAT5 == 16u) { return bitcast<u32>(select(atan2(st.y, st.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Schwerpunkt: sein Winkel in Umläufen
   if (STAT5 == 17u) { return bitcast<u32>(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Punktfalle: logarithmisch wie die Ursprungsnähe
   if (STAT5 == 2u) { return pack2x16float(clamp(log(max(st.xy, vec2f(1.0e-30))), vec2f(-6.0e4), vec2f(6.0e4))); }   // log-Abstände
@@ -3393,6 +3404,7 @@ fn stNimm6(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f,
   if (STAT6 == 10u) { let r2 = dot(z, z); if (r2 < *mn) { *mn = r2; s.w = f32(i); } *st = s; *n += 1u; return; }   // Periodengebiete: der Schritt der größten Nähe zum Ursprung
   if (STAT6 == 11u) { s.x += w * exp(-length(z) / tp.x); s.z += w; *st = s; *n += 1u; return; }   // Exponentielles Glätten: gewichtetes Mittel von e^−|z|
   if (STAT6 == 12u) { let d1 = z - zv; let d0 = zv - s.zw; if (dot(d0, d0) > 0.0 && dot(d1, d1) > 0.0) { s.x += w * abs(atan2(d0.x * d1.y - d0.y * d1.x, dot(d0, d1))) * (1.0 / 3.1415927); s.y += w; } s.z = zv.x; s.w = zv.y; *st = s; *n += 1u; return; }   // Krümmungsmittel: Winkel zwischen den Schritten (zw = der vorletzte Punkt)
+  if (STAT6 == 18u) { let a = P.extra.z * atan2(z.y, z.x); s.x += w * cos(a); s.y += w * sin(a); s.z += w; s.w = a; *mn = w; *st = s; *n += 1u; return; }   // Streifenphase: Mittelvektor des Streifenwinkels; w = letzter Winkel, mn = letztes Gewicht (Glättung)
   if (STAT6 == 13u) { *mn = min(*mn, length(z / tp.x - round(z / tp.x)) * tp.x); *n += 1u; return; }   // Gitterfalle: kleinster Abstand zu einer Gaußschen Ganzzahl
   if (STAT6 == 14u) { *mn = min(*mn, abs(length(z) - tp.x)); *n += 1u; return; }   // Ringfalle: kleinster Abstand zum Einheitskreis
   if (STAT6 == 15u) { s.x += w * (1.0 - exp(-length(z - zv) / tp.x)); s.z += w; *st = s; *n += 1u; return; }   // Weglänge: gewichtetes Mittel der gedämpften Schrittlängen
@@ -3426,6 +3438,7 @@ fn stAus6(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT6 == 12u) { return bitcast<u32>(select(st.x / st.y, 0.0, st.y == 0.0)); }   // Krümmungsmittel
   if (STAT6 == 13u) { return bitcast<u32>(clamp(sqrt(2.0 * min(mn / tp.x, 0.5)), 0.0, 1.0)); }   // Gitterfalle: 0 am Gitterpunkt, 1 bei ½
   if (STAT6 == 14u) { return bitcast<u32>(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Ringfalle: logarithmisch, 0 bei e^−6.7
+  if (STAT6 == 18u) { let f = select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
   if (STAT6 == 16u) { return bitcast<u32>(select(atan2(st.y, st.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Schwerpunkt: sein Winkel in Umläufen
   if (STAT6 == 17u) { return bitcast<u32>(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Punktfalle: logarithmisch wie die Ursprungsnähe
   if (STAT6 == 2u) { return pack2x16float(clamp(log(max(st.xy, vec2f(1.0e-30))), vec2f(-6.0e4), vec2f(6.0e4))); }   // log-Abstände
@@ -3443,7 +3456,7 @@ fn stAus6(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
 // Periodengebiete der Schritt, Fluchtwinkel in Umläufen; die Fluchtzeit (1) kommt aus dem ersten Kanal und liefert hier 0
 fn paarWert(kind: u32, roh: u32, z: vec2f) -> f32 {
   let y = bitcast<f32>(roh);
-  if (kind == 2u || kind == 3u || kind == 4u || kind == 7u) { return y; }
+  if (kind == 2u || kind == 3u || kind == 4u || kind == 7u || kind == 9u) { return y; }   // 9: Streifenphase (0 … 1)
   if (kind == 5u) { return -log(max(y, 1.0e-30)); }
   if (kind == 6u) { return log(max(y, 1.0e-30)); }
   if (kind == 8u) { return atan2(z.y, z.x) * (1.0 / 6.2831853); }
@@ -3475,6 +3488,7 @@ fn stNimm(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f, 
   if (STAT == 10u) { let r2 = dot(z, z); if (r2 < *mn) { *mn = r2; s.w = f32(i); } *st = s; *n += 1u; return; }   // Periodengebiete: der Schritt der größten Nähe zum Ursprung
   if (STAT == 11u) { s.x += w * exp(-length(z) / tp.x); s.z += w; *st = s; *n += 1u; return; }   // Exponentielles Glätten: gewichtetes Mittel von e^−|z|
   if (STAT == 12u) { let d1 = z - zv; let d0 = zv - s.zw; if (dot(d0, d0) > 0.0 && dot(d1, d1) > 0.0) { s.x += w * abs(atan2(d0.x * d1.y - d0.y * d1.x, dot(d0, d1))) * (1.0 / 3.1415927); s.y += w; } s.z = zv.x; s.w = zv.y; *st = s; *n += 1u; return; }   // Krümmungsmittel: Winkel zwischen den Schritten (zw = der vorletzte Punkt)
+  if (STAT == 18u) { let a = P.extra.z * atan2(z.y, z.x); s.x += w * cos(a); s.y += w * sin(a); s.z += w; s.w = a; *mn = w; *st = s; *n += 1u; return; }   // Streifenphase: Mittelvektor des Streifenwinkels; w = letzter Winkel, mn = letztes Gewicht (Glättung)
   if (STAT == 13u) { *mn = min(*mn, length(z / tp.x - round(z / tp.x)) * tp.x); *n += 1u; return; }   // Gitterfalle: kleinster Abstand zu einer Gaußschen Ganzzahl
   if (STAT == 14u) { *mn = min(*mn, abs(length(z) - tp.x)); *n += 1u; return; }   // Ringfalle: kleinster Abstand zum Einheitskreis
   if (STAT == 15u) { s.x += w * (1.0 - exp(-length(z - zv) / tp.x)); s.z += w; *st = s; *n += 1u; return; }   // Weglänge: gewichtetes Mittel der gedämpften Schrittlängen
@@ -3508,6 +3522,7 @@ fn stAus(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   /
   if (STAT == 12u) { return bitcast<u32>(select(st.x / st.y, 0.0, st.y == 0.0)); }   // Krümmungsmittel
   if (STAT == 13u) { return bitcast<u32>(clamp(sqrt(2.0 * min(mn / tp.x, 0.5)), 0.0, 1.0)); }   // Gitterfalle: 0 am Gitterpunkt, 1 bei ½
   if (STAT == 14u) { return bitcast<u32>(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Ringfalle: logarithmisch, 0 bei e^−6.7
+  if (STAT == 18u) { let f = select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
   if (STAT == 16u) { return bitcast<u32>(select(atan2(st.y, st.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Schwerpunkt: sein Winkel in Umläufen
   if (STAT == 17u) { return bitcast<u32>(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Punktfalle: logarithmisch wie die Ursprungsnähe
   if (STAT == 2u) { return pack2x16float(clamp(log(max(st.xy, vec2f(1.0e-30))), vec2f(-6.0e4), vec2f(6.0e4))); }   // log-Abstände
@@ -3658,7 +3673,7 @@ fn fsFast(pos: vec4f) -> vec4u {
   var escaped = false; var nu = 0.0; var dist = 0.0; var root = 0u;
   var i = 0u;
   var ly = vec4f(1.0, 0.0, 1.0, 0.0); var lyN = 0u; var lyDrin = true;   // Färbung nach Lyapunov-Exponent (LYAP ≠ 0)
-  let bailStd = select(select(1.0e4, max(1.0e4, 2.0 * P.extra.y * P.extra.y), LYAP == 2u), 1.0e10, STAT == 3u || STAT == 4u || STAT == 6u || STAT == 8u || STAT == 9u || STAT2 == 3u || STAT2 == 4u || STAT2 == 8u || STAT3 == 3u || STAT3 == 4u || STAT3 == 8u || STAT4 == 3u || STAT4 == 4u || STAT4 == 8u || STAT5 == 3u || STAT5 == 4u || STAT5 == 8u || STAT6 == 3u || STAT6 == 4u || STAT6 == 8u);   // nach Re und Im: erst hinter der Ecke des Quadrats aufhören; Streifen- und Dreiecksmittel: großer Radius, glatter
+  let bailStd = select(select(1.0e4, max(1.0e4, 2.0 * P.extra.y * P.extra.y), LYAP == 2u), 1.0e10, STAT == 3u || STAT == 4u || STAT == 6u || STAT == 8u || STAT == 9u || STAT2 == 3u || STAT2 == 4u || STAT2 == 8u || STAT3 == 3u || STAT3 == 4u || STAT3 == 8u || STAT4 == 3u || STAT4 == 4u || STAT4 == 8u || STAT5 == 3u || STAT5 == 4u || STAT5 == 8u || STAT6 == 3u || STAT6 == 4u || STAT6 == 8u || STAT == 18u || STAT2 == 18u || STAT3 == 18u || STAT4 == 18u || STAT5 == 18u || STAT6 == 18u);   // nach Re und Im: erst hinter der Ecke des Quadrats aufhören; Streifen- und Dreiecksmittel: großer Radius, glatter
   let bail = select(bailStd, P.extra2.y * P.extra2.y, P.extra2.y > 0.0);   // eigener Fluchtradius, sonst die Vorgabe
   let lp = select(log2(f32(pw)), log2(max(P.param, 1.01)), FORMULA == 14u);   // Glättung der Iterationszahl: log₂ der Potenz, bei z^p + c die reelle
   var st = select(vec4f(0.0), vec4f(1.0e30, 1.0e30, 0.0, 0.0), STAT <= 2u); var stN = 0u; var zAlt = vec2f(0.0); var stMin = select(1.0e30, 0.0, STAT == 9u);   // Bahnstatistik (STAT ≠ 0), stMin = Ursprungsnähe, bei 9 die Drehsumme
@@ -4765,6 +4780,7 @@ void stNimm2(inout vec4 st, inout uint n, vec2 z, vec2 zv, vec2 cc, bool nimm, f
   if (STAT2 == 10) { float r2 = dot(z, z); if (r2 < mn) { mn = r2; st.w = float(i); } n++; return; }
   if (STAT2 == 11) { st.x += w * exp(-length(z) / tp.x); st.z += w; n++; return; }
   if (STAT2 == 12) { vec2 d1 = z - zv, d0 = zv - st.zw; if (dot(d0, d0) > 0.0 && dot(d1, d1) > 0.0) { st.x += w * abs(atan(d0.x * d1.y - d0.y * d1.x, dot(d0, d1))) / 3.1415927; st.y += w; } st.z = zv.x; st.w = zv.y; n++; return; }
+  if (STAT2 == 18) { float a = uStreifen * atan(z.y, z.x); st.x += w * cos(a); st.y += w * sin(a); st.z += w; st.w = a; mn = w; n++; return; }   // Streifenphase wie im WGSL-Shader
   if (STAT2 == 13) { mn = min(mn, length(z / tp.x - round(z / tp.x)) * tp.x); n++; return; }
   if (STAT2 == 14) { mn = min(mn, abs(length(z) - tp.x)); n++; return; }
   if (STAT2 == 15) { st.x += w * (1.0 - exp(-length(z - zv) / tp.x)); st.z += w; n++; return; }
@@ -4794,6 +4810,7 @@ uint stAus2(vec4 st, uint n, float r2, float bail, float mn, vec4 tp) {
   if (STAT2 == 12) return floatBitsToUint(st.y == 0.0 ? 0.0 : st.x / st.y);
   if (STAT2 == 13) return floatBitsToUint(clamp(sqrt(2.0 * min(mn / tp.x, 0.5)), 0.0, 1.0));
   if (STAT2 == 14) return floatBitsToUint(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0));
+  if (STAT2 == 18) { float f = n >= 2u ? clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0) : 1.0; vec2 v = st.xy - (1.0 - f) * mn * vec2(cos(st.w), sin(st.w)); return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(v.y, v.x) / 6.2831853 + 0.5); }
   if (STAT2 == 16) return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(st.y, st.x) / 6.2831853 + 0.5);
   if (STAT2 == 17) return floatBitsToUint(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0));
   if (STAT2 == 2) return packHalf2x16(clamp(log(max(st.xy, vec2(1.0e-30))), vec2(-6.0e4), vec2(6.0e4)));
@@ -4811,6 +4828,7 @@ void stNimm3(inout vec4 st, inout uint n, vec2 z, vec2 zv, vec2 cc, bool nimm, f
   if (STAT3 == 10) { float r2 = dot(z, z); if (r2 < mn) { mn = r2; st.w = float(i); } n++; return; }
   if (STAT3 == 11) { st.x += w * exp(-length(z) / tp.x); st.z += w; n++; return; }
   if (STAT3 == 12) { vec2 d1 = z - zv, d0 = zv - st.zw; if (dot(d0, d0) > 0.0 && dot(d1, d1) > 0.0) { st.x += w * abs(atan(d0.x * d1.y - d0.y * d1.x, dot(d0, d1))) / 3.1415927; st.y += w; } st.z = zv.x; st.w = zv.y; n++; return; }
+  if (STAT3 == 18) { float a = uStreifen * atan(z.y, z.x); st.x += w * cos(a); st.y += w * sin(a); st.z += w; st.w = a; mn = w; n++; return; }   // Streifenphase wie im WGSL-Shader
   if (STAT3 == 13) { mn = min(mn, length(z / tp.x - round(z / tp.x)) * tp.x); n++; return; }
   if (STAT3 == 14) { mn = min(mn, abs(length(z) - tp.x)); n++; return; }
   if (STAT3 == 15) { st.x += w * (1.0 - exp(-length(z - zv) / tp.x)); st.z += w; n++; return; }
@@ -4840,6 +4858,7 @@ uint stAus3(vec4 st, uint n, float r2, float bail, float mn, vec4 tp) {
   if (STAT3 == 12) return floatBitsToUint(st.y == 0.0 ? 0.0 : st.x / st.y);
   if (STAT3 == 13) return floatBitsToUint(clamp(sqrt(2.0 * min(mn / tp.x, 0.5)), 0.0, 1.0));
   if (STAT3 == 14) return floatBitsToUint(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0));
+  if (STAT3 == 18) { float f = n >= 2u ? clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0) : 1.0; vec2 v = st.xy - (1.0 - f) * mn * vec2(cos(st.w), sin(st.w)); return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(v.y, v.x) / 6.2831853 + 0.5); }
   if (STAT3 == 16) return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(st.y, st.x) / 6.2831853 + 0.5);
   if (STAT3 == 17) return floatBitsToUint(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0));
   if (STAT3 == 2) return packHalf2x16(clamp(log(max(st.xy, vec2(1.0e-30))), vec2(-6.0e4), vec2(6.0e4)));
@@ -4857,6 +4876,7 @@ void stNimm4(inout vec4 st, inout uint n, vec2 z, vec2 zv, vec2 cc, bool nimm, f
   if (STAT4 == 10) { float r2 = dot(z, z); if (r2 < mn) { mn = r2; st.w = float(i); } n++; return; }
   if (STAT4 == 11) { st.x += w * exp(-length(z) / tp.x); st.z += w; n++; return; }
   if (STAT4 == 12) { vec2 d1 = z - zv, d0 = zv - st.zw; if (dot(d0, d0) > 0.0 && dot(d1, d1) > 0.0) { st.x += w * abs(atan(d0.x * d1.y - d0.y * d1.x, dot(d0, d1))) / 3.1415927; st.y += w; } st.z = zv.x; st.w = zv.y; n++; return; }
+  if (STAT4 == 18) { float a = uStreifen * atan(z.y, z.x); st.x += w * cos(a); st.y += w * sin(a); st.z += w; st.w = a; mn = w; n++; return; }   // Streifenphase wie im WGSL-Shader
   if (STAT4 == 13) { mn = min(mn, length(z / tp.x - round(z / tp.x)) * tp.x); n++; return; }
   if (STAT4 == 14) { mn = min(mn, abs(length(z) - tp.x)); n++; return; }
   if (STAT4 == 15) { st.x += w * (1.0 - exp(-length(z - zv) / tp.x)); st.z += w; n++; return; }
@@ -4886,6 +4906,7 @@ uint stAus4(vec4 st, uint n, float r2, float bail, float mn, vec4 tp) {
   if (STAT4 == 12) return floatBitsToUint(st.y == 0.0 ? 0.0 : st.x / st.y);
   if (STAT4 == 13) return floatBitsToUint(clamp(sqrt(2.0 * min(mn / tp.x, 0.5)), 0.0, 1.0));
   if (STAT4 == 14) return floatBitsToUint(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0));
+  if (STAT4 == 18) { float f = n >= 2u ? clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0) : 1.0; vec2 v = st.xy - (1.0 - f) * mn * vec2(cos(st.w), sin(st.w)); return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(v.y, v.x) / 6.2831853 + 0.5); }
   if (STAT4 == 16) return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(st.y, st.x) / 6.2831853 + 0.5);
   if (STAT4 == 17) return floatBitsToUint(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0));
   if (STAT4 == 2) return packHalf2x16(clamp(log(max(st.xy, vec2(1.0e-30))), vec2(-6.0e4), vec2(6.0e4)));
@@ -4903,6 +4924,7 @@ void stNimm5(inout vec4 st, inout uint n, vec2 z, vec2 zv, vec2 cc, bool nimm, f
   if (STAT5 == 10) { float r2 = dot(z, z); if (r2 < mn) { mn = r2; st.w = float(i); } n++; return; }
   if (STAT5 == 11) { st.x += w * exp(-length(z) / tp.x); st.z += w; n++; return; }
   if (STAT5 == 12) { vec2 d1 = z - zv, d0 = zv - st.zw; if (dot(d0, d0) > 0.0 && dot(d1, d1) > 0.0) { st.x += w * abs(atan(d0.x * d1.y - d0.y * d1.x, dot(d0, d1))) / 3.1415927; st.y += w; } st.z = zv.x; st.w = zv.y; n++; return; }
+  if (STAT5 == 18) { float a = uStreifen * atan(z.y, z.x); st.x += w * cos(a); st.y += w * sin(a); st.z += w; st.w = a; mn = w; n++; return; }   // Streifenphase wie im WGSL-Shader
   if (STAT5 == 13) { mn = min(mn, length(z / tp.x - round(z / tp.x)) * tp.x); n++; return; }
   if (STAT5 == 14) { mn = min(mn, abs(length(z) - tp.x)); n++; return; }
   if (STAT5 == 15) { st.x += w * (1.0 - exp(-length(z - zv) / tp.x)); st.z += w; n++; return; }
@@ -4932,6 +4954,7 @@ uint stAus5(vec4 st, uint n, float r2, float bail, float mn, vec4 tp) {
   if (STAT5 == 12) return floatBitsToUint(st.y == 0.0 ? 0.0 : st.x / st.y);
   if (STAT5 == 13) return floatBitsToUint(clamp(sqrt(2.0 * min(mn / tp.x, 0.5)), 0.0, 1.0));
   if (STAT5 == 14) return floatBitsToUint(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0));
+  if (STAT5 == 18) { float f = n >= 2u ? clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0) : 1.0; vec2 v = st.xy - (1.0 - f) * mn * vec2(cos(st.w), sin(st.w)); return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(v.y, v.x) / 6.2831853 + 0.5); }
   if (STAT5 == 16) return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(st.y, st.x) / 6.2831853 + 0.5);
   if (STAT5 == 17) return floatBitsToUint(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0));
   if (STAT5 == 2) return packHalf2x16(clamp(log(max(st.xy, vec2(1.0e-30))), vec2(-6.0e4), vec2(6.0e4)));
@@ -4949,6 +4972,7 @@ void stNimm6(inout vec4 st, inout uint n, vec2 z, vec2 zv, vec2 cc, bool nimm, f
   if (STAT6 == 10) { float r2 = dot(z, z); if (r2 < mn) { mn = r2; st.w = float(i); } n++; return; }
   if (STAT6 == 11) { st.x += w * exp(-length(z) / tp.x); st.z += w; n++; return; }
   if (STAT6 == 12) { vec2 d1 = z - zv, d0 = zv - st.zw; if (dot(d0, d0) > 0.0 && dot(d1, d1) > 0.0) { st.x += w * abs(atan(d0.x * d1.y - d0.y * d1.x, dot(d0, d1))) / 3.1415927; st.y += w; } st.z = zv.x; st.w = zv.y; n++; return; }
+  if (STAT6 == 18) { float a = uStreifen * atan(z.y, z.x); st.x += w * cos(a); st.y += w * sin(a); st.z += w; st.w = a; mn = w; n++; return; }   // Streifenphase wie im WGSL-Shader
   if (STAT6 == 13) { mn = min(mn, length(z / tp.x - round(z / tp.x)) * tp.x); n++; return; }
   if (STAT6 == 14) { mn = min(mn, abs(length(z) - tp.x)); n++; return; }
   if (STAT6 == 15) { st.x += w * (1.0 - exp(-length(z - zv) / tp.x)); st.z += w; n++; return; }
@@ -4978,6 +5002,7 @@ uint stAus6(vec4 st, uint n, float r2, float bail, float mn, vec4 tp) {
   if (STAT6 == 12) return floatBitsToUint(st.y == 0.0 ? 0.0 : st.x / st.y);
   if (STAT6 == 13) return floatBitsToUint(clamp(sqrt(2.0 * min(mn / tp.x, 0.5)), 0.0, 1.0));
   if (STAT6 == 14) return floatBitsToUint(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0));
+  if (STAT6 == 18) { float f = n >= 2u ? clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0) : 1.0; vec2 v = st.xy - (1.0 - f) * mn * vec2(cos(st.w), sin(st.w)); return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(v.y, v.x) / 6.2831853 + 0.5); }
   if (STAT6 == 16) return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(st.y, st.x) / 6.2831853 + 0.5);
   if (STAT6 == 17) return floatBitsToUint(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0));
   if (STAT6 == 2) return packHalf2x16(clamp(log(max(st.xy, vec2(1.0e-30))), vec2(-6.0e4), vec2(6.0e4)));
@@ -4990,7 +5015,7 @@ uint stAus6(vec4 st, uint n, float r2, float bail, float mn, vec4 tp) {
 }
 float paarWert(uint kind, uint roh, vec2 z) {   // wie im WGSL-Shader
   float y = uintBitsToFloat(roh);
-  if (kind == 2u || kind == 3u || kind == 4u || kind == 7u) return y;
+  if (kind == 2u || kind == 3u || kind == 4u || kind == 7u || kind == 9u) return y;
   if (kind == 5u) return -log(max(y, 1.0e-30));
   if (kind == 6u) return log(max(y, 1.0e-30));
   if (kind == 8u) return atan(z.y, z.x) * (1.0 / 6.2831853);
@@ -5019,6 +5044,7 @@ void stNimm(inout vec4 st, inout uint n, vec2 z, vec2 zv, vec2 cc, bool nimm, fl
   if (STAT == 10) { float r2 = dot(z, z); if (r2 < mn) { mn = r2; st.w = float(i); } n++; return; }
   if (STAT == 11) { st.x += w * exp(-length(z) / tp.x); st.z += w; n++; return; }
   if (STAT == 12) { vec2 d1 = z - zv, d0 = zv - st.zw; if (dot(d0, d0) > 0.0 && dot(d1, d1) > 0.0) { st.x += w * abs(atan(d0.x * d1.y - d0.y * d1.x, dot(d0, d1))) / 3.1415927; st.y += w; } st.z = zv.x; st.w = zv.y; n++; return; }
+  if (STAT == 18) { float a = uStreifen * atan(z.y, z.x); st.x += w * cos(a); st.y += w * sin(a); st.z += w; st.w = a; mn = w; n++; return; }   // Streifenphase wie im WGSL-Shader
   if (STAT == 13) { mn = min(mn, length(z / tp.x - round(z / tp.x)) * tp.x); n++; return; }
   if (STAT == 14) { mn = min(mn, abs(length(z) - tp.x)); n++; return; }
   if (STAT == 15) { st.x += w * (1.0 - exp(-length(z - zv) / tp.x)); st.z += w; n++; return; }
@@ -5048,6 +5074,7 @@ uint stAus(vec4 st, uint n, float r2, float bail, float mn, vec4 tp) {
   if (STAT == 12) return floatBitsToUint(st.y == 0.0 ? 0.0 : st.x / st.y);
   if (STAT == 13) return floatBitsToUint(clamp(sqrt(2.0 * min(mn / tp.x, 0.5)), 0.0, 1.0));
   if (STAT == 14) return floatBitsToUint(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0));
+  if (STAT == 18) { float f = n >= 2u ? clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0) : 1.0; vec2 v = st.xy - (1.0 - f) * mn * vec2(cos(st.w), sin(st.w)); return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(v.y, v.x) / 6.2831853 + 0.5); }
   if (STAT == 16) return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(st.y, st.x) / 6.2831853 + 0.5);
   if (STAT == 17) return floatBitsToUint(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0));
   if (STAT == 2) return packHalf2x16(clamp(log(max(st.xy, vec2(1.0e-30))), vec2(-6.0e4), vec2(6.0e4)));
@@ -5123,7 +5150,7 @@ void main() {
   bool escaped = false; float nu = 0.0; float dist = 0.0; uint root = 0u;
   uint i = 0u;
   vec4 ly = vec4(1.0, 0.0, 1.0, 0.0); uint lyN = 0u; bool lyDrin = true;   // Färbung nach Lyapunov-Exponent (LYAP ≠ 0)
-  float bailStd = (STAT == 3 || STAT == 4 || STAT == 6 || STAT == 8 || STAT == 9 || STAT2 == 3 || STAT2 == 4 || STAT2 == 8 || STAT3 == 3 || STAT3 == 4 || STAT3 == 8 || STAT4 == 3 || STAT4 == 4 || STAT4 == 8 || STAT5 == 3 || STAT5 == 4 || STAT5 == 8 || STAT6 == 3 || STAT6 == 4 || STAT6 == 8) ? 1.0e10 : LYAP == 2 ? max(1.0e4, 2.0 * uLyGrenze * uLyGrenze) : 1.0e4;   // wie im WGSL-Shader
+  float bailStd = (STAT == 3 || STAT == 4 || STAT == 6 || STAT == 8 || STAT == 9 || STAT2 == 3 || STAT2 == 4 || STAT2 == 8 || STAT3 == 3 || STAT3 == 4 || STAT3 == 8 || STAT4 == 3 || STAT4 == 4 || STAT4 == 8 || STAT5 == 3 || STAT5 == 4 || STAT5 == 8 || STAT6 == 3 || STAT6 == 4 || STAT6 == 8 || STAT == 18 || STAT2 == 18 || STAT3 == 18 || STAT4 == 18 || STAT5 == 18 || STAT6 == 18) ? 1.0e10 : LYAP == 2 ? max(1.0e4, 2.0 * uLyGrenze * uLyGrenze) : 1.0e4;   // wie im WGSL-Shader
   float bail = uFluchtRadius > 0.0 ? uFluchtRadius * uFluchtRadius : bailStd;
   float lp = FORMULA == 14u ? log2(max(uParam, 1.01)) : log2(float(pw));
   vec4 st = STAT <= 2 ? vec4(1.0e30, 1.0e30, 0.0, 0.0) : vec4(0.0); uint stN = 0u; vec2 zAlt = vec2(0.0); float stMin = STAT == 9 ? 0.0 : 1.0e30;   // Bahnstatistik (STAT ≠ 0), stMin = Ursprungsnähe, bei 9 die Drehsumme
@@ -8319,7 +8346,7 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
   for (const [k, ach] of [['pa', 'a'], ['pb', 'b']]) {
     const t = (h.get(k) || '').split(':'); if (t.length < 2) continue;
     const w = parseInt(t[0], 10), f = parseFloat(t[1]), ab = parseInt(t[2], 10);
-    if (w >= 1 && w <= 8) S.paar[ach].wert = w; if (Number.isFinite(f) && f > 0) S.paar[ach].faktor = clamp(f, 0.001, 1000); S.paar[ach].abzug = ab === 1 || ab === 2 ? ab : 0; S.paar[ach].klemme = t[3] === '1';
+    if (w >= 1 && w < PAAR_WERTE.length) S.paar[ach].wert = w; if (Number.isFinite(f) && f > 0) S.paar[ach].faktor = clamp(f, 0.001, 1000); S.paar[ach].abzug = ab === 1 || ab === 2 ? ab : 0; S.paar[ach].klemme = t[3] === '1';
     S.paar[ach].anker = S.paar[ach].wert <= 3;   // Anker bei Fluchtzeit und Mitteln
   }
   const lg = parseFloat(h.get('lg')); S.lyGrenze = Number.isFinite(lg) ? clamp(lg, 0, 1e9) : 2;   // wie LY_GRENZE (die steht erst weiter unten)
