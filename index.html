@@ -9994,7 +9994,7 @@ function setzePaar(ach, feld, v, neuRechnen) {
   if (neuRechnen) viewChanged(); else { colorDirty = true; requestFrame(); }
 }
 for (const [ach, K] of [['a', 'A'], ['b', 'B']]) {
-  $('paar' + K).addEventListener('change', () => setzePaar(ach, 'wert', clamp(parseInt($('paar' + K).value, 10) || 1, 1, 8), true));   // anderer Wert: andere Sammler, neu rechnen
+  $('paar' + K).addEventListener('change', () => setzePaar(ach, 'wert', clamp(parseInt($('paar' + K).value, 10) || 1, 1, PAAR_WERTE.length - 1), true));   // anderer Wert: andere Sammler, neu rechnen
   $('paarFaktor' + K).addEventListener('input', () => setzePaar(ach, 'faktor', +posZuFaktor(+$('paarFaktor' + K).value).toFixed(3), false));
   $('paarAbzug' + K).addEventListener('change', () => setzePaar(ach, 'abzug', clamp(parseInt($('paarAbzug' + K).value, 10) || 0, 0, 2), false));
   $('paarKlemme' + K).addEventListener('change', () => setzePaar(ach, 'klemme', $('paarKlemme' + K).checked, false));

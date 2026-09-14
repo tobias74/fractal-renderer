@@ -1268,6 +1268,8 @@ describe('Texturmasken: berechnete Auswahl je Platz', () => {
     });
   });
 
+});
+
 describe('Paar-Wert Streifenphase (Sammler 18)', () => {
   const B = 'mode=mandel&re=-0.9&im=0.6&z=1&it=400';
   const diff = (a, b) => cy.task('pngDiff', { a: a.file, b: b.file, region: IMAGE_REGION });
@@ -1285,5 +1287,4 @@ describe('Paar-Wert Streifenphase (Sammler 18)', () => {
     cy.pane('farbe');
     cy.get('#paarA').should('have.value', '9');
   });
-});
 });
