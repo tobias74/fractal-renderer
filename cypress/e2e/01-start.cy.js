@@ -42,10 +42,10 @@ describe('Start und Grundzustand', () => {
   it('zeigt die Bedienhinweise und alle Abschnitte des Bedienfelds', () => {
     cy.visitApp();
     for (const id of ['formula', 'iterRow', 'colorRow', 'aaRow']) cy.rowShown(id, true);
-    cy.get('#rail button[data-pane]').should('have.length', 5);   // Motiv, Farbe, Palette, Qualität, Technik
+    cy.get('#rail button[data-pane]').should('have.length', 6);   // Motiv, Farbe, Palette, Qualität, Nachbearbeitung, Technik
     cy.get('#pane-motiv').should('not.have.attr', 'hidden');
     cy.get('#pane-farbe').should('have.attr', 'hidden');
-    cy.get('#toolbar button').should('have.length', 5);   // Speichern deckt Bildschirm und Druck ab
+    cy.get('#toolbar button').should('have.length', 6);   // Speichern deckt Bildschirm und Druck ab; dazu Link, Datei öffnen, Bilddatei prüfen, Parameter speichern, Zurücksetzen
     for (const id of ['accRow', 'cloudRow']) cy.rowShown(id, false);
     cy.get('#panel .panel-foot #state').should('be.visible');
     cy.get('#pane-technik').should('have.attr', 'hidden');

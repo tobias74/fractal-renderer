@@ -70,6 +70,68 @@ describe('Dateien: Parameter und Bilder speichern und wieder öffnen', () => {
     });
   });
 
+  it('Metadaten nach Wahl: ohne Häkchen kein Textblock im PNG, mit Auswahl nur die gewählten Angaben', () => {
+    cy.get('#save').click();
+    cy.get('#posterMeta').should('be.visible');
+    for (const id of ['metaParams', 'metaColors', 'metaTech']) cy.get('#' + id).uncheck({ force: true });
+    cy.get('#posterStart').click();
+    cy.get('#modal', { timeout: 60000 }).should('be.visible'); cy.get('#dl').click(); cy.get('#closeModal').click();
+    cy.task('waitForDownload', { pattern: '^fraktal-mandel-.*\\.png$' }).then(files => {
+      cy.task('pngParams', { file: files[0] }).then(text => expect(text, 'kein Block „FractalRenderer“').to.be.null);
+      cy.readFile(files[0], null).then(buf => expect(buf.indexOf(Buffer.from('FractalRenderer')), 'auch das Schlüsselwort steht nirgends').to.eq(-1));
+    });
+    cy.task('clearDownloads');
+    cy.get('#save').click();
+    cy.get('#metaParams').check({ force: true });   // nur die Parameter, ohne Farben und Technik
+    cy.get('#posterStart').click();
+    cy.get('#modal', { timeout: 60000 }).should('be.visible'); cy.get('#dl').click(); cy.get('#closeModal').click();
+    cy.task('waitForDownload', { pattern: '^fraktal-mandel-.*\\.png$' }).then(files => {
+      cy.task('pngParams', { file: files[0] }).then(text => {
+        const j = JSON.parse(text);
+        expect(j, 'nur die gewählten Angaben').to.have.all.keys('params');
+        expect(j.params).to.contain('mode=mandel');
+      });
+      cy.rerender(() => cy.pickOption('power', 3));
+      cy.get('#fileInput').selectFile(files[0], { force: true });   // ohne den Namen der App öffnet die Datei trotzdem: die Parameter zählen
+      cy.waitRender();
+      cy.get('#power').should('have.value', '2');
+    });
+  });
+
+  it('„Bilddatei prüfen“ zeigt die Angaben dieser App und die weiteren Blöcke, ohne etwas zu ändern, und übernimmt die Ansicht auf Wunsch', () => {
+    cy.pickOption('power', 5);
+    cy.get('#save').click();
+    cy.get('#posterMeta').should('be.visible');
+    for (const id of ['metaParams', 'metaColors', 'metaTech']) cy.get('#' + id).check({ force: true });
+    cy.get('#posterStart').click();
+    cy.get('#modal', { timeout: 60000 }).should('be.visible'); cy.get('#dl').click(); cy.get('#closeModal').click();
+    cy.task('waitForDownload', { pattern: '^fraktal-mandel-.*\\.png$' }).then(files => {
+      cy.rerender(() => cy.pickOption('power', 2));
+      cy.get('#metaInput').selectFile(files[0], { force: true });
+      cy.get('#metaDlg').should('be.visible');
+      cy.get('#metaBericht').should('contain.text', 'PNG').and('contain.text', 'p=5').and('contain.text', 'Klassisch').and('contain.text', 'aaMode');
+      cy.get('#metaBericht').should('contain.text', 'sRGB').and('contain.text', 'vom Browser gesetzt');   // die App legt nichts anderes an; der Browser schreibt sein Farbraum-Kennzeichen
+      cy.get('#metaDlg .hint').last().should('contain.text', 'entfernt keine Metadaten');
+      cy.get('#power').should('have.value', '2');   // Prüfen ändert nichts
+      cy.get('#metaApply').click();
+      cy.waitRender();
+      cy.get('#metaDlg').should('not.be.visible');
+      cy.get('#power').should('have.value', '5');
+    });
+    cy.get('#paramsSave').click();   // eine JSON-Datei zeigt der Leser ebenso
+    cy.task('waitForDownload', { pattern: '^fraktal-mandel-.*\\.json$' }).then(files => {
+      cy.get('#metaInput').selectFile(files[0], { force: true });
+      cy.get('#metaBericht').should('contain.text', 'Textdatei').and('contain.text', 'p=5');
+      cy.get('#metaClose').click();
+    });
+    // fremdes PNG (1 × 1 Pixel) mit einem tEXt-Block „Comment“ = „hallo“; die Prüfsummen sind Platzhalter, der Leser prüft sie nicht
+    cy.writeFile('cypress/downloads/fremd.png', Buffer.from('89504e470d0a1a0a' + '0000000d49484452000000010000000108060000001f15c4d0' + '0000000d74455874436f6d6d656e740068616c6c6f00000000' + '00000010494441547801010500faff000000000000000000000100000000' + '0000000049454e44ae426082', 'hex'), null);
+    cy.get('#metaInput').selectFile('cypress/downloads/fremd.png', { force: true });
+    cy.get('#metaBericht').should('contain.text', 'Keine Angaben dieser App').and('contain.text', 'tEXt „Comment“').and('contain.text', 'hallo');
+    cy.get('#metaApply').should('have.attr', 'hidden');
+    cy.get('#metaClose').click();
+  });
+
   it('„Parameter speichern“ legt eine JSON-Datei ab, die sich über „Datei öffnen“ wieder laden lässt', () => {
     cy.pickOption('power', 4);
     cy.expectHash('p', '4');
@@ -158,7 +220,7 @@ describe('Dateien: Parameter und Bilder speichern und wieder öffnen', () => {
       cy.task('pngParams', { file: files[0] }).then(text => {
         expect(text, 'iTXt-Chunk „FractalRenderer“').to.be.a('string');
         const j = JSON.parse(text);
-        expect(j.app).to.eq('Fraktal-Renderer');
+        expect(j).to.have.all.keys('params', 'extra', 'colors');
         expect(j.params).to.contain('p=5');
         expect(j.colors.palette, 'die Palette mit allen Werten im Bild').to.deep.include({ name: 'Klassisch', preset: 'classic', a: [0.5, 0.5, 0.5] });
       });

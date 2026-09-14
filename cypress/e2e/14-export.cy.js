@@ -104,6 +104,36 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
     cy.get('#posterCancel').click();
   });
 
+  it('Metadaten: jede Angabe hat ihr Häkchen, der genaue Text ist zu sehen, die Wahl bleibt im Browser', () => {
+    cy.get('#save').click();
+    cy.get('#posterMeta').should('be.visible');
+    for (const id of ['metaParams', 'metaColors', 'metaTech']) cy.get('#' + id).should('be.checked');
+    cy.get('#metaApp, #metaDate, #metaUrl, #metaNone, #metaAll, #posterMetaKurz').should('not.exist');   // kein Name, kein Datum, kein Link, keine Sammelknöpfe
+    cy.get('#posterMeta').should('be.visible');   // immer offen
+    cy.get('#metaText').invoke('val').should('match', /^\{\n  "params"/);   // eingerückt, lesbar, ohne Klapper sichtbar
+    cy.get('#metaText').invoke('val').then(text => {   // genau der Text, der in die Datei kommt
+      const j = JSON.parse(text);
+      expect(j, 'Angaben').to.have.all.keys('params', 'extra', 'colors');
+      expect(j).to.not.have.any.keys('app', 'version', 'saved', 'url');
+    });
+    cy.get('#metaWo').should('contain.text', 'iTXt');
+    cy.pickOption('posterFmt', 'jpg');
+    cy.get('#metaWo').should('contain.text', 'Kommentar');
+    cy.get('#metaColors').uncheck({ force: true });
+    cy.get('#metaText').invoke('val').then(text => expect(JSON.parse(text), 'ohne Farben').to.have.all.keys('params', 'extra'));
+    cy.get('#metaParams').uncheck({ force: true }); cy.get('#metaTech').uncheck({ force: true });   // nichts mehr angehakt
+    cy.get('#metaText').invoke('val').should('contain', 'keinen Textblock');
+    cy.get('#metaParams').check({ force: true });
+    cy.window().then(win => expect(JSON.parse(win.localStorage.getItem('fractal.meta')), 'die Wahl im Browser').to.deep.eq({ params: true, colors: false, tech: false }));
+    for (const id of ['metaColors', 'metaTech']) cy.get('#' + id).check({ force: true });
+    for (const id of ['metaParams', 'metaColors', 'metaTech']) cy.get('#' + id).should('be.checked');
+    cy.get('#posterCancel').click();
+    cy.visitApp('', { keep: true });   // beim nächsten Besuch gilt die Wahl weiter
+    cy.get('#save').click();
+    for (const id of ['metaParams', 'metaColors', 'metaTech']) cy.get('#' + id).should('be.checked');
+    cy.get('#posterCancel').click();
+  });
+
   it('speichert die Bildschirmansicht aus demselben Dialog, ohne neu zu rendern', () => {
     // Speichern und Drucken sind eine Sache: ein Knopf, ein Dialog, die Bildschirmauflösung ist die erste Stufe.
     cy.get('#save').click();

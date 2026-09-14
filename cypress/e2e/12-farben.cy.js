@@ -1211,3 +1211,60 @@ describe('Farbe: Editor-Ergänzungen, Dichte anpassen, Innenfarbe, Gestuft', () 
     vor('colAnchor', 'density'); vor('animate', 'offset'); vor('iterAuto', 'iterRange'); vor('textur', 'streifen'); vor('textur', 'gewicht'); vor('textur', 'glowMode'); vor('interior', 'innenFarbe'); vor('mapping', 'gestuft');
   });
 });
+
+describe('Texturmasken: berechnete Auswahl je Platz', () => {
+  const B = 'mode=mandel&re=-0.9&im=0.6&z=1&it=400&map=19&tx=1&ts=0.4';
+  const diff = (a, b) => cy.task('pngDiff', { a: a.file, b: b.file, region: IMAGE_REGION });
+
+  it('Iterationsbereich begrenzt die Textur; Umkehren, Schalter, Zeigen, Regler mit Wertfeld, Link', () => {
+    cy.visitApp(B);
+    cy.shotStats('tm-ohne').then(ohne => {
+      cy.visitApp(B + '&tu=m3,1,0,0.25,0,20');   // umgekehrt: die Textur nur, wo die Fluchtzeit über 20 liegt (bei Zoom 1 ein schmaler Saum)
+      cy.pane('farbe');
+      cy.get('#texM1_art').should('have.value', '3'); cy.get('#texM1_1').should('have.value', '20'); cy.get('#texM1_8').should('have.value', '0.25');
+      cy.get('#texM1_inv').should('be.checked'); cy.get('#texM1_an').should('be.checked');
+      cy.shotStats('tm-inv').then(inv => {
+        diff(ohne, inv).then(d => expect(d.meanDiff, 'die Maske nimmt die Textur fast überall weg').to.be.greaterThan(3));
+        cy.get('#texM1_an').uncheck({ force: true });   // Maske aus: wie ohne Maske, die Einstellungen bleiben
+        cy.expectHash('tu', 'm3,3,0,0.25,0,20');
+        cy.waitRender();
+        cy.shotStats('tm-aus').then(aus => diff(ohne, aus).then(d => expect(d.meanDiff, 'Maske aus = ohne Maske').to.be.lessThan(0.5)));
+        cy.get('#texM1_an').check({ force: true });
+        cy.get('#texM1_inv').uncheck({ force: true });   // nicht umgekehrt: die Textur fast überall
+        cy.expectHash('tu', 'm3,0,0,0.25,0,20');
+        cy.waitRender();
+        cy.shotStats('tm-iter').then(it => diff(inv, it).then(d => expect(d.meanDiff, 'umgekehrt: anders').to.be.greaterThan(3)));
+        cy.get('#texM1_zeig').check({ force: true });   // die Maske als Grau
+        cy.expectHash('tu', 'm3,0,1,0.25,0,20');
+        cy.waitRender();
+        cy.shotStats('tm-zeig').then(z => { expect(z.mean, 'weiß, wo die Fluchtzeit unter 20 liegt').to.be.greaterThan(120); diff(inv, z).then(d => expect(d.meanDiff, 'die Maske statt des Bildes').to.be.greaterThan(20)); });   // (der Rand der Menge liefert mit Glättung viele Graustufen, darum keine Farbzählung)
+        cy.get('#texM1_1').invoke('val', 60).trigger('input');   // Schieber: das Wertfeld folgt, der Link auch
+        cy.get('#texM1_1Val').should('have.value', '60');
+        cy.expectHash('tu', 'm3,0,1,0.25,0,60');
+        cy.pickOption('texM1_art', '0');   // keine Maske: das Feld verschwindet aus dem Link
+        cy.location('hash').should(h => expect(decodeURIComponent(h)).to.not.contain('&tu='));
+      });
+    });
+  });
+
+  it('Texturmasken mit WebGL 2: die Maske wirkt, aus ist wie ohne, die Fassung steht binnen 25 s; auf WebGPU ist die Maske über alles die Identität', () => {
+    const gl = { storage: { 'fractal.renderer': 'webgl' } };
+    cy.visitApp(B, gl);
+    cy.get('#badge').should('have.text', 'WebGL 2');
+    cy.shotStats('tmgl-ohne').then(ohne => {
+      cy.visitApp(B + '&tu=m3,1,0,0.25,0,20', gl);
+      cy.get('#state', { timeout: 25000 }).should('not.contain.text', 'übersetzt');
+      cy.waitRender();
+      cy.shotStats('tmgl-inv').then(inv => diff(ohne, inv).then(d => expect(d.meanDiff, 'die Maske nimmt die Textur weg').to.be.greaterThan(3)));
+      cy.visitApp(B + '&tu=m3,3,0,0.25,0,20', gl);   // Maske aus
+      cy.get('#state', { timeout: 25000 }).should('not.contain.text', 'übersetzt');
+      cy.waitRender();
+      cy.shotStats('tmgl-aus').then(aus => diff(ohne, aus).then(d => expect(d.meanDiff, 'Maske aus = ohne Maske').to.be.lessThan(0.5)));
+    });
+    cy.visitApp(B);
+    cy.shotStats('tmid-ohne').then(ohne => {
+      cy.visitApp(B + '&tu=m3,0,0,0,0,5000');   // Iterationen 0 … 5000 mit hartem Rand: überall 1
+      cy.shotStats('tmid-alles').then(alles => diff(ohne, alles).then(d => expect(d.meanDiff, 'Maske über alles = ohne Maske').to.be.lessThan(0.5)));
+    });
+  });
+});
