@@ -264,6 +264,9 @@
   .tex-karte.tex-leer .nach-eigen::before { display: none; }
   .tex-karte .tex-kopf { margin: 0 -10px 0 -12px; padding: 6px 8px 6px 6px; min-height: 30px; background: rgba(255, 255, 255, .055); border-top: 1px solid var(--line-strong); border-radius: 8px 8px 0 0; }
   .tex-karte .tex-kopf .tex-kurz { font-weight: 600; color: var(--text); }
+  .tex-kopf > select, .tex-kopf > .menu-btn { flex: 1; min-width: 0; height: 26px; margin: 0; }   /* die Art steht in der Kopfzeile, nicht doppelt darunter */
+  .tex-kopf > select + .menu-btn { font-weight: 600; }
+  .tex-kopf > .menu-btn span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }   /* lange Namen kürzen statt umbrechen */
   .nach-kurve { display: flex; flex-direction: column; gap: 6px; }
   .nach-kurve-bild { width: 100%; height: auto; border: 1px solid var(--line); border-radius: 6px; background: rgba(255, 255, 255, .03); touch-action: none; cursor: crosshair; display: block; }
   .nach-kurve .ghost.klein { align-self: flex-start; }
@@ -9762,10 +9765,13 @@ function syncFarbUI() {   // Bereich Farbe: was je nach Familie, Formel und Fär
     }
     if (zielW !== TEX_ZIEL_VOR) e.reihen[3].hidden = true;   // auf einer Achse zieht der Wert nicht zu hellen und dunklen Farben
     texMaskeZeigen(n, e, zeigen && belegt && !zu && zielW === TEX_ZIEL_VOR);   // Maske des Platzes (auf einer Achse wirkt der Wert überall)
-    e.karte.classList.toggle('tex-leer', leer); e.sel.classList.toggle('tex-neu', leer); e.sel.options[0].textContent = t(leer ? 'colour.texture-add' : 'colour.texture-none'); if (e.sel._sync) e.sel._sync();
+    e.karte.classList.toggle('tex-leer', leer); e.sel.classList.toggle('tex-neu', leer); e.sel.options[0].textContent = t(leer ? 'colour.texture-add' : 'colour.texture-none');
+    e.sel.value = String(sl.art); if (e.sel._sync) e.sel._sync();   // die Auswahl trägt den Namen im Kopf: sie muss dem Zustand folgen, auch nach dem Umsortieren
+    texAuswahlUmziehen(e, belegt);   // belegt: die Art steht in der Kopfzeile; leer: die Zeile „Textur hinzufügen“ steht für sich
     e.row.querySelector('.tex-kopf').hidden = leer;
-    e.sel.hidden = zu;
-    e.kurz.replaceChildren(); if (belegt) { e.kurz.append(t(TEXTUR_NAMEN[sl.art])); if (zu) { const w = document.createElement('span'); w.className = 'tex-wert'; w.textContent = fmtZahl(sl.staerke, 2); e.kurz.append(w); } }
+    e.sel.hidden = zu && !belegt;   // zugeklappt trägt die Auswahl den Namen, sie bleibt stehen
+    e.kurz.replaceChildren(); e.kurz.hidden = belegt && !zu;   // die Art steht bei belegten Plätzen in der Auswahl
+    if (belegt && zu) { const w = document.createElement('span'); w.className = 'tex-wert'; w.textContent = fmtZahl(sl.staerke, 2); e.kurz.append(w); }
     e.klapp.textContent = zu ? '▸' : '▾'; e.klapp.hidden = !belegt; e.label.hidden = belegt; e.kurz.title = belegt ? e.label.title : '';   // belegt: die Art steht im Kopf, der Platzname entfällt (die Reihenfolge wechselt beim Ziehen)
     e.an.parentElement.hidden = !belegt; e.karte.classList.toggle('aus', belegt && !sl.an);
     e.weg.hidden = !belegt; e.griff.hidden = belegtBis < 2 || !belegt;
@@ -10877,6 +10883,14 @@ $('gewicht').addEventListener('input', () => setzeGewicht(+$('gewicht').value));
 function syncAbzug() { $('abzug').value = String(S.abzug); $('abzugVal').value = fmtZahl(S.abzug, 2); }
 const setzeAbzug = v => { S.abzug = clamp(Math.round(v * 100) / 100, ABZUG.min, ABZUG.max); syncAbzug(); colorDirty = true; scheduleHash(); requestFrame(); };   // nur Farbe: kein Neurechnen
 $('abzug').addEventListener('input', () => setzeAbzug(+$('abzug').value));
+function texAuswahlUmziehen(e, inDenKopf) {   // die Auswahl der Art (samt Menüknopf) sitzt bei belegten Plätzen in der Kopfzeile
+  const kopf = e.row.querySelector('.tex-kopf'), knoepfe = kopf.querySelector('.tex-knoepfe'), btn = e.sel.nextElementSibling;
+  const menue = btn && btn.classList.contains('menu-btn') ? btn : null;
+  const drin = e.sel.parentElement === kopf;
+  if (inDenKopf === drin) return;
+  if (inDenKopf) { kopf.insertBefore(e.sel, e.kurz); if (menue) kopf.insertBefore(menue, e.kurz); }   // vor die Kurzangabe: erst die Art, dann (eingeklappt) die Stärke
+  else { kopf.after(e.sel); if (menue) e.sel.after(menue); }
+}
 function texElemente(n) {   // die Bedienelemente eines Platzes im Stapel
   const p = n === 1 ? 'tex' : 'tex' + n, row = $(n === 1 ? 'texturRow' : 'textur' + n + 'Row');
   return { karte: $('texKarte' + n), row, werteRow: $(p + 'WerteRow'), werte: $(p + 'Werte'), sel: $(n === 1 ? 'textur' : 'textur' + n), staerke: $(p + 'Staerke'), staerkeVal: $(p + 'StaerkeVal'), kontrast: $(p + 'Kontrast'), kontrastVal: $(p + 'KontrastVal'), mitte: $(p + 'Mitte'), mitteVal: $(p + 'MitteVal'), hell: $(p + 'Hell'), dunkel: $(p + 'Dunkel'), an: $(p + 'An'),

@@ -842,7 +842,7 @@ describe('Färbungen nach Bahnstatistik', () => {
     cy.get('.tex-flieger').should('not.exist');
     cy.get('#texKarte1').should($k => expect($k[0].style.transform, 'keine Verschiebung mehr').to.eq(''));   // der Zustand ist umsortiert
     cy.expectHash('tx', '5'); cy.expectHash('tc', 'ff8040'); cy.expectHash('t2', '3');
-    cy.get('#texturRow .tex-kurz').should('contain.text', 'Ursprungsnähe');
+    cy.get('#texturRow .tex-kopf .menu-btn').should('contain.text', 'Ursprungsnähe');   // die Art steht als Auswahl im Kopf
     cy.get('#texturRow .tex-kopf > label').should('have.attr', 'hidden');   // belegt: kein Platzname im Kopf, nur die Art
     cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&map=31&pa=4:30:2:0&pb=2:30:0:0&tx=1&t2=3&t3=5&t4=2&ts=0.8');   // vier Texturen über einer Statistik-Färbung (Kanäle z und w)
     cy.get('#textur4').should('have.value', '2');
@@ -877,11 +877,11 @@ describe('Färbungen nach Bahnstatistik', () => {
     cy.expectHash('ta', null);
     cy.get('#texturRow .tex-klapp').click({ force: true });                 // einklappen: nur die Kopfzeile mit Kurzangabe
     cy.get('#texStaerkeRow').should('have.attr', 'hidden');
-    cy.get('#textur').should('have.attr', 'hidden');
-    cy.get('#texturRow .tex-kurz').invoke('text').should('match', /^Streifenmittel0[.,]80$/);   // eingeklappt: Art und Stärke
+    cy.get('#texturRow .tex-kopf .menu-btn').should('contain.text', 'Streifenmittel');   // eingeklappt bleibt die Art im Kopf stehen
+    cy.get('#texturRow .tex-kurz').invoke('text').should('match', /^0[.,]80$/);         // daneben nur noch die Stärke
     cy.get('#texturRow .tex-klapp').click({ force: true });                 // ausklappen
     cy.get('#texStaerkeRow').should('not.have.attr', 'hidden');
-    cy.get('#texturRow .tex-kurz').should('have.text', 'Streifenmittel');   // ausgeklappt: nur die Art im Kopf
+    cy.get('#texturRow .tex-kurz').should('have.attr', 'hidden');           // ausgeklappt: die Stärke steht in ihrer Zeile, der Kopf trägt nur die Art
   });
   it('Texturarten 9 bis 19: Bänder, Randnähe, Kanten, Glätten, Krümmung, Gitter-, Ring- und Punktfalle, Weglänge, Schwerpunkt, Vorzeichenwechsel färben, auch gestapelt und mit WebGL 2; eigene Regler je Art im Link (tq)', () => {
     const B = 'mode=mandel&re=-0.9&im=0.6&z=1&it=400';
@@ -894,7 +894,7 @@ describe('Färbungen nach Bahnstatistik', () => {
         cy.visitApp(B + '&tx=' + art + '&ts=0.8');
         cy.get('#textur').should('have.value', String(art));
         cy.expectHash('tx', String(art));
-        cy.get('#texturRow .tex-kurz').invoke('text').should('not.be.empty');
+        cy.get('#texturRow .tex-kopf .menu-btn').invoke('text').should('not.be.empty');
         cy.shotStats('art-' + art).then(mit => deutlich(ohne, mit, 'Art ' + art + ' färbt'));
       }
       cy.visitApp(B + '&tx=15&ts=0.8&tq=0.5');   // Ringfalle mit eigenem Regler: der Radius kommt aus dem Link, steht im Feld und im Regler
