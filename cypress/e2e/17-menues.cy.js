@@ -36,14 +36,14 @@ describe('Menüs je Variante', () => {
   });
 
   it('Potenz d nur bei den z^d-Formeln und bei Newton/Nova', () => {
-    for (const [f, an] of [[0, true], [1, true], [6, true], [7, false], [8, false], [9, false], [10, false], [11, true], [12, false], [13, false]]) {
+    for (const [f, an] of [[0, true], [1, true], [6, true], [7, false], [8, false], [9, false], [10, false], [11, true], [12, false], [13, false], [23, true]]) {
       formel(f);
       sichtbar('#power', an);
     }
   });
 
   it('Näherung nur bei z^d + c, Zykluserkennung nicht bei Newton/Nova und Lyapunov', () => {
-    for (const [f, bla, zyklus] of [[0, true, true], [1, false, true], [7, false, true], [11, false, false], [13, false, false]]) {
+    for (const [f, bla, zyklus] of [[0, true, true], [1, false, true], [7, false, true], [11, false, false], [13, false, false], [23, false, false]]) {
       formel(f);
       sichtbar('#blaSel', bla);
       sichtbar('#cycleSel', zyklus);

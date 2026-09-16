@@ -72,7 +72,7 @@ describe('Farbe und Farbschema-Editor', () => {
   });
 
   it('Verläufe Relief, Doppelt logarithmisch und Logarithmisch + Relief: Adresse, Neurender, andere Bilder', () => {
-    cy.get('#mapping option').should('have.length', 32);   // 26 einwertige (mit Kurve, Ursprungsnähe, Gesamtdrehung, Periodengebiete) plus fünf feste Paare und das eigene Paar
+    cy.get('#mapping option').should('have.length', 35);   // 29 einwertige (mit Kurve, Ursprungsnähe, Gesamtdrehung, Periodengebiete, Spiralfalle, logmap, äußerer Winkel) plus fünf feste Paare und das eigene Paar
     cy.rerender(() => cy.pickOption('mapping', 5));
     cy.expectHash('map', '5');
     cy.rerender(() => cy.pickOption('mapping', 7));
@@ -882,8 +882,8 @@ describe('Färbungen nach Bahnstatistik', () => {
     const B = 'mode=mandel&re=-0.9&im=0.6&z=1&it=400';
     const deutlich = (a, b, text) => cy.task('pngDiff', { a: a.file, b: b.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, text).to.be.greaterThan(1.5));   // leiser als „anders“: manche Arten zeichnen fein
     cy.visitApp(B);
-    cy.get('#textur option').should('have.length', 20);   // Keine und 19 Arten
-    cy.get('#textur4 option').should('have.length', 20);
+    cy.get('#textur option').should('have.length', 22);   // Keine und 21 Arten (mit der Karte)
+    cy.get('#textur4 option').should('have.length', 22);
     cy.shotStats('arten-ohne').then(ohne => {
       for (const art of [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]) {
         cy.visitApp(B + '&tx=' + art + '&ts=0.8');
@@ -903,6 +903,16 @@ describe('Färbungen nach Bahnstatistik', () => {
         cy.expectHash('tq', null);
         cy.get('#texW1_0').should('have.value', '1');
         cy.shotStats('ring-1').then(r1 => deutlich(r05, r1, 'der Radius der Ringfalle verändert das Bild'));
+      });
+      cy.visitApp(B + '&tx=15&ts=0.8&tq=0.5:0.25');   // konzentrische Ringe: der Ringabstand steht als zweiter Wert im Link, auf 0 entfällt er
+      cy.get('#texW1_1').should('have.value', '0.25');
+      cy.get('label[for="texW1_1"]').should('have.text', 'Ringabstand');
+      cy.expectHash('tq', '0.5:0.25');
+      cy.shotStats('ringe-025').then(ringe => {
+        cy.revealInDetails('texW1_1Val');
+        cy.rerender(() => cy.get('#texW1_1Val').scrollIntoView().clear().type('0{enter}'));
+        cy.expectHash('tq', '0.5');
+        cy.shotStats('ringe-0').then(einer => deutlich(einer, ringe, 'konzentrische Ringe sehen anders aus als der eine Ring'));
       });
       cy.visitApp(B + '&tx=1&ts=0.8&t2=19&t2q=0.3:-0.2');   // Punktfalle auf Platz 2 mit zwei Reglern; Platz 1 (Streifenmittel) hat keine
       cy.get('#texWerteRow').should('have.attr', 'hidden'); cy.get('#tex2WerteRow').should('not.have.attr', 'hidden');
@@ -1286,5 +1296,167 @@ describe('Paar-Wert Streifenphase (Sammler 18)', () => {
     cy.visitApp(B + '&map=31&pa=9:12:0:0&pb=1:1:0:0');   // Phase als erste Achse, aus dem Link
     cy.pane('farbe');
     cy.get('#paarA').should('have.value', '9');
+  });
+});
+
+describe('Spiralfalle, Texturen innen und Fallenverbund', () => {
+  const J = 'mode=julia&jre=-0.390541&jim=0.586788&it=400&re=0&im=0&z=1.2';   // Siegel-Scheibe zum goldenen Schnitt: großes Inneres
+  const B = 'mode=mandel&re=-0.75&im=0.1&z=1.3&it=100';
+  const AUSSEN = { x0: 0.02, y0: 0.1, x1: 0.07, y1: 0.9 };   // linker Rand: sicher außerhalb der Menge
+  const diff = (a, b, region = IMAGE_REGION) => cy.task('pngDiff', { a: a.file, b: b.file, region });
+
+  it('Spiralfalle: Textur 20 mit Reglern im Link (tq), Färbung 32 innen wie außen mit Windung (sd)', () => {
+    cy.visitApp(B + '&tx=20');
+    cy.pane('farbe');
+    cy.get('#textur').should('have.value', '20');
+    cy.shotStats('spirale-tex').then(vorgabe => {
+      cy.visitApp(B + '&tx=20&tq=0.5:0.3:0');
+      cy.expectHash('tq', v => expect(v).to.eq('0.5:0.3:0'));
+      cy.shotStats('spirale-tex2').then(anders => diff(vorgabe, anders).then(d => expect(d.meanDiff, 'Windung und Mitte wirken').to.be.greaterThan(0.5)));
+    });
+    cy.visitApp(J + '&map=32');
+    cy.pane('farbe');
+    cy.get('#mapping').should('have.value', '32');
+    cy.get('#spiraleRow').should('not.have.attr', 'hidden');
+    cy.get('#spirale').should('have.value', '0.2');
+    cy.shotStats('spirale-map').then(vorher => {
+      cy.get('#spiraleVal').clear().type('0.5{enter}');
+      cy.get('#spirale').should('have.value', '0.5');
+      cy.expectHash('sd', v => expect(v).to.eq('0.5'));
+      cy.waitRender();
+      cy.shotStats('spirale-map2').then(anders => diff(vorher, anders).then(d => expect(d.meanDiff, 'die Windung verändert das Bild').to.be.greaterThan(5)));
+    });
+  });
+
+  it('Texturen auch innen: die Punktfalle zeichnet die Siegel-Scheibe, außen bleibt alles gleich; Schalter und Link (ti)', () => {
+    cy.visitApp(J + '&tx=19&ts=0.8');
+    cy.shotStats('innen-ohne').then(ohne => {
+      cy.visitApp(J + '&tx=19&ts=0.8&ti=1');
+      cy.pane('farbe');
+      cy.get('#texOptionen').should('not.have.attr', 'hidden');
+      cy.get('#texInnen').should('be.checked');
+      cy.shotStats('innen-mit').then(mit => {
+        diff(ohne, mit).then(d => expect(d.meanDiff, 'innen färbt die Textur').to.be.greaterThan(5));
+        diff(ohne, mit, AUSSEN).then(d => expect(d.meanDiff, 'außen bleibt gleich').to.be.lessThan(0.5));
+      });
+      cy.get('#texInnen').uncheck({ force: true });
+      cy.expectHash('ti', v => expect(v).to.eq(null));
+      cy.waitRender();
+      cy.shotStats('innen-aus').then(aus => diff(ohne, aus).then(d => expect(d.meanDiff, 'ausgeschaltet wie ohne').to.be.lessThan(0.5)));
+    });
+  });
+
+  it('Texturen auch innen mit WebGL 2: gezeichnetes Inneres, außen unverändert', () => {
+    const gl = { storage: { 'fractal.renderer': 'webgl' } };
+    cy.visitApp(J + '&tx=19&ts=0.8', gl);
+    cy.shotStats('innen-gl-ohne').then(ohne => {
+      cy.visitApp(J + '&tx=19&ts=0.8&ti=1', gl);
+      cy.shotStats('innen-gl-mit').then(mit => {
+        diff(ohne, mit).then(d => expect(d.meanDiff, 'WebGL 2: innen färbt die Textur').to.be.greaterThan(5));
+        diff(ohne, mit, AUSSEN).then(d => expect(d.meanDiff, 'WebGL 2: außen bleibt gleich').to.be.lessThan(0.5));
+      });
+    });
+  });
+
+  it('Fallenverbund: Punkt- und Ringfalle mit weichem Minimum ergeben ein anderes Bild; Regler mit Wertfeld, Link (tv)', () => {
+    cy.visitApp(B + '&tx=19&t2=15&t2s=0.6');
+    cy.pane('farbe');
+    cy.get('#texVerbund').should('have.value', '0');
+    cy.shotStats('verbund-ohne').then(ohne => {
+      cy.get('#texVerbundVal').clear().type('0.5{enter}');
+      cy.get('#texVerbund').should('have.value', '0.5');
+      cy.expectHash('tv', v => expect(v).to.eq('0.5'));
+      cy.waitRender();
+      cy.shotStats('verbund-mit').then(mit => diff(ohne, mit).then(d => expect(d.meanDiff, 'der Verbund verändert das Bild').to.be.greaterThan(5)));
+    });
+    cy.visitApp(B + '&tx=19&tv=0.5');   // eine Falle allein: der Verbund ist ihr eigenes Minimum, der Regler kommt aus dem Link
+    cy.pane('farbe');
+    cy.get('#texVerbund').should('have.value', '0.5');
+    cy.get('#texVerbundVal').should('have.value', '0.5');
+  });
+});
+
+describe('Äußerer Winkel und Karte', () => {
+  const B = 'mode=mandel&re=-0.75&im=0.1&z=1.3&it=500';
+  it('Färbung 34: äußerer Winkel statt Fluchtwinkel, im Link, WebGL 2 wie WebGPU, nur bei z^d + c wählbar', () => {
+    cy.visitApp(B + '&map=15');
+    cy.shotStats('winkel-flucht').then(flucht => {
+      cy.visitApp(B + '&map=34');
+      cy.get('#mapping').should('have.value', '34');
+      cy.expectHash('map', '34');
+      cy.shotStats('winkel-aussen').then(aussen => {
+        cy.task('pngDiff', { a: flucht.file, b: aussen.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, 'der äußere Winkel färbt anders als der Fluchtwinkel').to.be.greaterThan(3));
+        cy.visitApp(B + '&map=34', { storage: { 'fractal.renderer': 'webgl' } });
+        cy.shotStats('winkel-aussen-gl').then(gl => cy.task('pngDiff', { a: aussen.file, b: gl.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, 'WebGL 2 rechnet denselben Winkel').to.be.lessThan(6)));
+      });
+    });
+    cy.visitApp(B);
+    cy.get('#mapping option[value="34"]').should('have.prop', 'hidden', false);
+    cy.rerender(() => cy.pickOption('formula', 1));
+    cy.get('#mapping option[value="34"]').should('have.prop', 'hidden', true);
+  });
+
+  it('Textur 21 Karte: Ringe und Strahlen mit Reglern im Link (tq), ohne Strahlen fehlen Linien', () => {
+    cy.visitApp(B);
+    cy.shotStats('karte-ohne').then(ohne => {
+      cy.visitApp(B + '&tx=21&ts=1');
+      cy.get('#textur').should('have.value', '21');
+      cy.get('label[for="texW1_1"]').should('have.text', 'Strahlen');
+      cy.expectHash('tq', null);
+      cy.shotStats('karte-mit').then(mit => {
+        cy.task('pngDiff', { a: ohne.file, b: mit.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, 'die Karte zeichnet Linien').to.be.greaterThan(1));
+        cy.visitApp(B + '&tx=21&ts=1&tq=1:32:3');   // viele breite Strahlen: der Unterschied ist sicher messbar (acht Strahlen zu 1 Pixel ändern kaum den Mittelwert)
+        cy.expectHash('tq', '1:32:3');
+        cy.shotStats('karte-strahlen').then(strahlen => {
+          cy.visitApp(B + '&tx=21&ts=1&tq=1:0:3');
+          cy.expectHash('tq', '1:0:3');
+          cy.shotStats('karte-ringe').then(ringe => cy.task('pngDiff', { a: strahlen.file, b: ringe.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, 'ohne Strahlen fehlen Linien').to.be.greaterThan(0.3)));
+        });
+      });
+    });
+  });
+});
+
+describe('Logarithmisch ab Iteration (logmap)', () => {
+  const B = 'mode=mandel&re=-0.75&im=0.1&z=1.3&it=1000&map=33';
+  it('Startiteration nur bei logmap, Link lm, ein späterer Start färbt anders, der Farbanker verschiebt nichts', () => {
+    cy.visitApp(B);
+    cy.pane('farbe');
+    cy.get('#logmapRow').should('not.have.attr', 'hidden');
+    cy.expectHash('lm', null);
+    cy.shotStats('logmap-0').then(start0 => {
+      cy.get('#logmapVal').clear().type('20{enter}');
+      cy.expectHash('lm', '20');
+      cy.waitRender();
+      cy.shotStats('logmap-20').then(start20 => cy.task('pngDiff', { a: start0.file, b: start20.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, 'späterer Start färbt anders').to.be.greaterThan(3)));
+    });
+    cy.visitApp(B + '&lm=20&ca=off');
+    cy.shotStats('logmap-ohne-anker').then(ohne => {
+      cy.visitApp(B + '&lm=20&ca=30');
+      cy.shotStats('logmap-mit-anker').then(mit => cy.task('pngDiff', { a: ohne.file, b: mit.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, 'feste Paletteneinträge, der Anker wirkt nicht').to.be.lessThan(0.5)));
+    });
+    cy.visitApp(B.replace('map=33', 'map=2'));
+    cy.pane('farbe');
+    cy.get('#logmapRow').should('have.attr', 'hidden');
+  });
+});
+
+describe('Abklingen der Bahnmittel', () => {
+  const B = 'mode=mandel&re=-0.75&im=0.1&z=1.3&it=2000&map=19';
+  it('Regler nur bei den Mitteln, Link se, das gleitende Mittel färbt anders, ohne Abklingen wie bisher', () => {
+    cy.visitApp(B);
+    cy.pane('farbe');
+    cy.get('#abklingRow').should('not.have.attr', 'hidden');
+    cy.get('#abklingen').should('have.value', '0');
+    cy.expectHash('se', null);
+    cy.shotStats('abkl-0').then(gleich => {
+      cy.get('#abklingenVal').clear().type('0,1{enter}');
+      cy.expectHash('se', '0.1');
+      cy.waitRender();
+      cy.shotStats('abkl-01').then(abk => cy.task('pngDiff', { a: gleich.file, b: abk.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, 'gleitendes Mittel färbt anders').to.be.greaterThan(3)));
+    });
+    cy.visitApp('mode=mandel&re=-0.75&im=0.1&z=1.3&it=200&map=2');
+    cy.pane('farbe');
+    cy.get('#abklingRow').should('have.attr', 'hidden');
   });
 });

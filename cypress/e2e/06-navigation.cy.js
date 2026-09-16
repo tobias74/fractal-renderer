@@ -1,4 +1,4 @@
-import { DEEP_HASH, DEFAULT_RE } from '../support/commands';
+import { DEEP_HASH, DEFAULT_RE, IMAGE_REGION } from '../support/commands';
 
 describe('Navigation im Bild', () => {
   beforeEach(() => cy.visitApp());
@@ -78,5 +78,30 @@ describe('Navigation im Bild', () => {
     cy.get('#depthVal').should('contain.text', '10^26 von 10^26');
     canvas().trigger('wheel', { deltaY: -400, clientX: 800, clientY: 400, deltaMode: 0 });
     cy.expectHash('z', z => expect(parseFloat(z)).to.be.at.most(1.0001e26));
+  });
+
+  it('Drehung der Ansicht: Regler, Wertfeld und Link; 90° dreht das Bild, Ziehen folgt der gedrehten Ansicht, 360° ist 0°', () => {
+    const B = 'mode=mandel&re=-0.75&im=0.1&z=1.3&it=100';
+    cy.visitApp(B);
+    cy.get('#drehRow').should('not.have.attr', 'hidden');
+    cy.get('#dreh').should('have.value', '0'); cy.get('#drehVal').should('have.value', '0');
+    cy.shotStats('dreh-0').then(null_ => {
+      cy.visitApp(B + '&dr=90');
+      cy.get('#dreh').should('have.value', '90'); cy.get('#drehVal').should('have.value', '90');
+      cy.expectHash('dr', v => expect(v).to.eq('90'));
+      cy.shotStats('dreh-90').then(gedreht => cy.task('pngDiff', { a: null_.file, b: gedreht.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, '90° verändert das Bild').to.be.greaterThan(10)));
+    });
+    ptr('pointerdown', 800, 400, { button: 0, buttons: 1 });   // nach rechts ziehen: bei 90° wandert die Mitte in der Ebene nach oben, Re bleibt
+    for (let i = 1; i <= 10; i++) ptr('pointermove', 800 + 12 * i, 400, { buttons: 1 });
+    ptr('pointerup', 920, 400, { button: 0, buttons: 0 });
+    cy.expectHash('re', re => expect(parseFloat(re), 'Re bleibt').to.be.closeTo(-0.75, 1e-6));
+    cy.expectHash('im', im => expect(parseFloat(im), 'Im steigt').to.be.greaterThan(0.1 + 0.01));
+    cy.waitRender();
+    cy.get('#drehVal').clear().type('45{enter}');   // getippt: Wertfeld setzt Regler und Link
+    cy.get('#dreh').should('have.value', '45');
+    cy.expectHash('dr', v => expect(v).to.eq('45'));
+    cy.visitApp(B + '&dr=360');   // 360 aus dem Link ist wieder 0, der Schlüssel verschwindet
+    cy.get('#dreh').should('have.value', '0');
+    cy.expectHash('dr', v => expect(v).to.eq(null));
   });
 });
