@@ -776,6 +776,8 @@
             <option value="3" data-i18n="subject.inverted-mirrored"></option>
           </select></div>
       </div>
+      <details id="motivMehr" class="pe2-mehr">   <!-- selten gebraucht: sonst läuft der Bereich weit über das Bedienfeld hinaus -->
+      <summary data-i18n="subject.more-settings"></summary>
       <div id="abbRow"><div class="lbl"><label for="abbildung" data-i18n-title="subject.mapping-title" data-i18n="subject.mapping"></label></div>
         <select id="abbildung">
           <option value="0" data-i18n="subject.mapping-none"></option>
@@ -810,17 +812,18 @@
         <div class="lbl wertzeile"><label for="dreh" data-i18n-title="subject.rotation-title" data-i18n="subject.rotation"></label><input class="val mono wert" id="drehVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="dreh" type="range" min="-180" max="180" step="1" value="0">
       </div>
+      </details>
       <div id="seqRow" class="lbl" hidden><label for="seq" data-i18n="subject.sequence-b"></label><input id="seq" type="text" maxlength="32" value="AB" spellcheck="false" style="width:56%;text-transform:uppercase"></div>
       <div id="paramRow" hidden>
         <div class="lbl wertzeile"><label for="param" id="paramLabel" data-i18n="subject.parameter"></label><input class="val mono wert" id="paramVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="param" type="range" min="0" max="1000" value="500">
       </div>
       <div id="param2Row" hidden>
-        <div class="lbl wertzeile"><label for="param2a" id="param2aLabel"></label><input class="val mono wert" id="param2aVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+        <div class="lbl wertzeile"><label for="param2a" id="param2aLabel" data-i18n="formula.param-b"></label><input class="val mono wert" id="param2aVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="param2a" type="range" min="0" max="1000" value="500">
-        <div class="lbl wertzeile"><label for="param2b" id="param2bLabel"></label><input class="val mono wert" id="param2bVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+        <div class="lbl wertzeile"><label for="param2b" id="param2bLabel" data-i18n="formula.param-d"></label><input class="val mono wert" id="param2bVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="param2b" type="range" min="0" max="1000" value="500">
-        <div class="lbl wertzeile"><label for="param2c" id="param2cLabel"></label><input class="val mono wert" id="param2cVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+        <div class="lbl wertzeile"><label for="param2c" id="param2cLabel" data-i18n="formula.param-f"></label><input class="val mono wert" id="param2cVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="param2c" type="range" min="0" max="1000" value="500">
         <div class="lbl wertzeile"><label for="zweig" data-i18n-title="formula.branch-title" data-i18n="formula.branch"></label><input class="val mono wert" id="zweigVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="zweig" type="range" min="-4" max="4" step="1" value="0">
@@ -2561,6 +2564,7 @@ const TEXTE = {
   'subject.mapping': { de: 'Ebenenabbildung', en: 'Plane mapping' },
   'subject.mapping-title': { de: 'Bildet die Ebene vor dem Rechnen ab: c = A(p). Das Fraktal erscheint als Bild dieser Abbildung; sie wirkt nach Inversion und Spiegelung. e^z macht aus Winkeln Strahlen und aus Radien Kreise.', en: 'Maps the plane before computing: c = A(p). The fractal appears as the image of this map; it acts after inversion and mirroring. e^z turns angles into rays and radii into circles.' },
   'subject.mapping-none': { de: 'keine', en: 'none' },
+  'subject.more-settings': { de: 'Weitere Einstellungen', en: 'More settings' },
   'subject.mapping-exp': { de: 'e^z', en: 'e^z' },
   'subject.mapping-log': { de: 'ln z', en: 'ln z' },
   'subject.mapping-square': { de: 'z²', en: 'z²' },
@@ -2720,7 +2724,7 @@ const aaPosToTol = p => AA_TOL.min * Math.pow(AA_TOL.max / AA_TOL.min, Math.min(
 const aaMaxToPos = n => Math.min(9, Math.max(0, Math.round(Math.log2(n / 8))));
 const aaPosToMax = p => 8 * Math.pow(2, Math.min(9, Math.max(0, p)));
 const MAP_MAX = 34;   // höchste Nummer einer Färbung (siehe Liste „Färbung nach“)
-const MAPPING_TEXT = { 0: 'mapping.text.0', 1: 'mapping.text.1', 2: 'mapping.text.2', 3: 'mapping.text.3', 4: 'mapping.text.4', 5: 'mapping.text.5', 6: 'mapping.text.6', 7: 'mapping.text.7', 8: 'mapping.text.8', 9: 'mapping.text.9', 10: 'mapping.text.10', 11: 'mapping.text.11', 12: 'mapping.text.12', 13: 'mapping.text.13', 14: 'mapping.text.14', 15: 'mapping.text.15', 16: 'mapping.text.16', 17: 'mapping.text.17', 18: 'mapping.text.18', 19: 'mapping.text.19', 20: 'mapping.text.20', 21: 'mapping.text.21', 22: 'mapping.text.22', 23: 'mapping.text.23', 24: 'mapping.text.24', 25: 'mapping.text.25', 26: 'mapping.text.26', 27: 'mapping.text.27', 28: 'mapping.text.28', 29: 'mapping.text.29', 30: 'mapping.text.30', 31: 'mapping.text.31', 32: 'mapping.text.32', 33: 'mapping.text.33' };   // ein Satz je Färbung, unter der Auswahl
+const MAPPING_TEXT = { 0: 'mapping.text.0', 1: 'mapping.text.1', 2: 'mapping.text.2', 3: 'mapping.text.3', 4: 'mapping.text.4', 5: 'mapping.text.5', 6: 'mapping.text.6', 7: 'mapping.text.7', 8: 'mapping.text.8', 9: 'mapping.text.9', 10: 'mapping.text.10', 11: 'mapping.text.11', 12: 'mapping.text.12', 13: 'mapping.text.13', 14: 'mapping.text.14', 15: 'mapping.text.15', 16: 'mapping.text.16', 17: 'mapping.text.17', 18: 'mapping.text.18', 19: 'mapping.text.19', 20: 'mapping.text.20', 21: 'mapping.text.21', 22: 'mapping.text.22', 23: 'mapping.text.23', 24: 'mapping.text.24', 25: 'mapping.text.25', 26: 'mapping.text.26', 27: 'mapping.text.27', 28: 'mapping.text.28', 29: 'mapping.text.29', 30: 'mapping.text.30', 31: 'mapping.text.31', 32: 'mapping.text.32', 33: 'mapping.text.33', 34: 'mapping.text.34' };   // ein Satz je Färbung, unter der Auswahl
 // Paare: Färbungen aus zwei Bahnwerten. Je Achse ein Wert (PAAR_WERTE), ein Faktor, wahlweise ein Fluchtzeit-Abzug (0 keiner,
 // 1 β·log₂(N+1), 2 β·0,1·(log₂(N+1) − 10)), bei 0 geklemmt, mit Farbanker (Fluchtzeit: Farbanker der Fluchtzeit; Mittel: der des
 // Bahnmittels). 22, 23, 25, 27 und 30 sind Voreinstellungen dieses einen Mechanismus, 31 das eigene Paar (S.paar).

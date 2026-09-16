@@ -21,6 +21,7 @@ describe('Formelfamilie', () => {
     cy.expectHash('ff', null); cy.expectHash('fr', null);
     cy.get('#state').invoke('text').should('match', /Fertig/);
     cy.screenshot('flucht-vorgabe', { capture: 'viewport', overwrite: true });
+    cy.revealInDetails('fluchtRadiusVal');
     cy.get('#fluchtRadiusVal').clear().type('2{enter}');                    // kleiner Radius: die Grenze zeichnet sich in die Bänder
     cy.get('#fluchtRadius').should('have.value', '50');   // Regler ab 1,01 logarithmisch: 2 steht bei 50
     cy.expectHash('fr', '2');
@@ -29,6 +30,7 @@ describe('Formelfamilie', () => {
     cy.task('pngDiff', { a: 'cypress/screenshots/04-formeln.cy.js/flucht-vorgabe.png', b: 'cypress/screenshots/04-formeln.cy.js/flucht-radius-2.png', region: { x0: 0.05, y0: 0.1, x1: 0.6, y1: 0.9 } }).then(d => expect(d.meanDiff, 'Radius 2 sieht anders aus').to.be.greaterThan(2));
     cy.rerender(() => cy.pickOption('fluchtForm', 1));                     // Quadrat
     cy.expectHash('ff', '1');
+    cy.revealInDetails('fluchtRadiusVal');
     cy.get('#fluchtRadiusVal').clear().type('0{enter}');                    // 0: zurück zur Vorgabe
     cy.expectHash('fr', null);
     cy.get('#fluchtRadiusVal').should('have.value', 'Vorgabe');
@@ -121,6 +123,7 @@ describe('Formelfamilie', () => {
       cy.expectHash('ir', '-0.5'); cy.expectHash('ii', '0.2');
       cy.shotStats('inv-mitte').then(mitte => cy.task('pngDiff', { a: ursprung.file, b: mitte.file, region: { x0: 0.05, y0: 0.1, x1: 0.6, y1: 0.9 } }).then(d => expect(d.meanDiff, 'die Mitte verändert das Bild').to.be.greaterThan(5)));
     });
+    cy.revealInDetails('invRe');
     cy.get('#invRe').clear().type('0.3');
     cy.expectHash('ir', '0.3');
     cy.rerender(() => cy.pickOption('invert', '0'));   // ohne Inversion: Zeile weg, Schlüssel weg
@@ -164,6 +167,7 @@ describe('Formelfamilie', () => {
     const B = 'mode=mandel&re=-0.75&im=0.1&z=1.3&it=200';
     cy.visitApp(B + '&fr=2');
     cy.shotStats('fr-2').then(zwei => {
+      cy.revealInDetails('fluchtRadiusVal');
       cy.get('#fluchtRadiusVal').clear().type('1,63{enter}');
       cy.expectHash('fr', '1.63');
       cy.get('#fluchtRadiusVal').invoke('val').should('match', /^1[,.]63$/);

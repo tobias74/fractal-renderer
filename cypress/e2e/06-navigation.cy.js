@@ -97,6 +97,7 @@ describe('Navigation im Bild', () => {
     cy.expectHash('re', re => expect(parseFloat(re), 'Re bleibt').to.be.closeTo(-0.75, 1e-6));
     cy.expectHash('im', im => expect(parseFloat(im), 'Im steigt').to.be.greaterThan(0.1 + 0.01));
     cy.waitRender();
+    cy.revealInDetails('drehVal');
     cy.get('#drehVal').clear().type('45{enter}');   // getippt: Wertfeld setzt Regler und Link
     cy.get('#dreh').should('have.value', '45');
     cy.expectHash('dr', v => expect(v).to.eq('45'));
