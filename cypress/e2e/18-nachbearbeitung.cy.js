@@ -195,6 +195,41 @@ describe('Nachbearbeitung: Einstellungsebenen', () => {
     cy.expectHash('nb', '11:1:1:1;20:1:1:2');
   });
 
+  it('eine andere Maskenart baut nur ihre eigene Karte neu: die Ansicht bleibt stehen', () => {
+    cy.visitApp(B + '&nb=16:1:1:0.5,0;11:1:1:1;20:1:1:2');
+    cy.pane('nach');
+    cy.get('#nachStapel .nach-karte').should('have.length', 3);
+    cy.get('#panelBody').scrollTo(0, 400);
+    cy.get('#nachKarte3').then($k => {
+      $k[0].dataset.marke = 'bleibt';                                   // Markierung am Knoten: überlebt sie, wurde er nicht ersetzt
+      const vor = $k[0].getBoundingClientRect().top;
+      cy.get('#nachM1_art').select('8', { force: true });               // Maske der obersten Karte, weit über dem Sichtfenster
+      cy.waitRender();
+      cy.get('#nachKarte1 .nach-maske .chk').should('exist');           // die oberste Karte hat ihre Maske bekommen
+      cy.get('#nachKarte3').should($n => {
+        expect($n[0].dataset.marke, 'die unveränderte Karte bleibt derselbe Knoten (Scroll-Anker)').to.eq('bleibt');
+        expect($n[0].getBoundingClientRect().top, 'und bleibt an Ort und Stelle').to.be.closeTo(vor, 4);
+      });
+    });
+  });
+
+  it('Das Rückgrat der Karte trennt die Ebene farblich von ihrer Maske', () => {
+    cy.visitApp(B + '&nb=11:1:1:1:m3,0,0,0.25,0,20');
+    cy.pane('nach');
+    cy.window().then(win => {
+      const band = (wahl) => {
+        const el = win.document.querySelector(wahl);
+        expect(el, 'Rahmen ' + wahl).to.exist;
+        const v = win.getComputedStyle(el, '::before');
+        return { farbe: v.backgroundColor, breite: v.width };
+      };
+      const eigen = band('#nachKarte1 .nach-eigen'), maske = band('#nachKarte1 .nach-maske');
+      expect(eigen.breite, 'die Ebene trägt ein Band').to.eq('2px');
+      expect(maske.breite, 'die Maske trägt ein Band').to.eq('2px');
+      expect(maske.farbe, 'die Maske in einem eigenen Ton').to.not.eq(eigen.farbe);
+    });
+  });
+
   it('Maske „Stand nach einer Ebene“: die Ebene darüber wählt aus, ein Verweis nach unten wirkt nicht', () => {
     const SW = B + '&nb=16:1:1:0.5,0';   // Ebene 1: Schwellenwert, das Bild wird schwarzweiß
     cy.visitApp(SW);

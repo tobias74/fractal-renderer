@@ -49,6 +49,38 @@ describe('Zustand in der Adresse', () => {
     });
   });
 
+  it('Rückgängig und Wiederholen: Schritte zurück, wieder vor, auch nach Alles zurücksetzen', () => {
+    cy.visitApp('mode=mandel&re=-0.75&im=0.1&z=1.3&it=200');
+    cy.get('#undo').should('be.disabled');                       // frisch geladen gibt es nichts zurückzunehmen
+    cy.get('#redo').should('be.disabled');
+    cy.rerender(() => cy.pickOption('palette', '4'));
+    cy.expectHash('pal', p => expect(p, 'die Palette steht im Link').to.be.a('string'));   // der Link nennt sie beim Namen
+    cy.get('#undo').should('not.be.disabled');
+    cy.rerender(() => cy.get('#undo').click());
+    cy.get('#palette').should('have.value', '0');
+    cy.get('#redo').should('not.be.disabled');
+    cy.rerender(() => cy.get('#redo').click());
+    cy.get('#palette').should('have.value', '4');
+    cy.rerender(() => cy.get('#reset').click());                 // Alles zurücksetzen ist selbst ein Schritt
+    cy.get('#palette').should('have.value', '0');
+    cy.rerender(() => cy.get('#undo').click());
+    cy.get('#palette').should('have.value', '4');
+    cy.rerender(() => cy.get('#stage canvas').trigger('wheel', { deltaY: -400, clientX: 800, clientY: 400, deltaMode: 0 }));   // auch die Ansicht ist ein Schritt
+    cy.expectHash('z', z => expect(parseFloat(z), 'näher dran').to.be.greaterThan(1.4));
+    cy.rerender(() => cy.get('#undo').click());
+    cy.expectHash('z', z => expect(parseFloat(z), 'zurück zur vorigen Ansicht').to.be.closeTo(1.3, 1e-6));
+  });
+
+  it('Rückgängig nimmt auch technische Werte zurück, die nicht in der Adresse stehen', () => {
+    cy.visitApp('mode=mandel&re=-0.75&im=0.1&z=1.3');
+    cy.rerender(() => cy.pickOption('cycleSel', '1'));   // Zyklenprüfung: ein technischer Wert
+    cy.get('#undo').should('not.be.disabled');
+    cy.rerender(() => cy.get('#undo').click());
+    cy.get('#cycleSel').should('have.value', 'auto');
+    cy.rerender(() => cy.get('#redo').click());
+    cy.get('#cycleSel').should('have.value', '1');
+  });
+
   it('ignoriert Unsinn in der Adresse und bleibt bedienbar', () => {
     cy.visitApp('mode=quatsch&z=abc&p=99&pal=-3&f=77&den=1e9');
     cy.get('#family').should('have.value', 'mandel');

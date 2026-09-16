@@ -13,6 +13,7 @@
     --faint: #6f6e68;
     --accent: #82cbbe;
     --accent-ink: #0b0d12;
+    --maske: #b09ae0;   /* Masken: eigener Ton neben dem Akzent, damit Ebene und Maske auseinanderzuhalten sind */
     --warn: #e2b04c;
     --bad: #e4706a;
     /* nur Systemschriften: die App lädt nichts von fremden Servern */
@@ -134,7 +135,7 @@
 
   /* Wertanzeigen sind Eingabefelder: dieselbe Optik wie die Zahlenfelder bei c und z₀, nur schmaler und rechtsbündig */
   input.wert {
-    flex: none; width: 96px; text-align: right;
+    flex: 0 1 auto; min-width: 56px; width: 96px; text-align: right;   /* in schmalen Zellen (Handy) schrumpft das Feld, statt über den Rand zu stehen */
     background: rgba(255, 255, 255, .05); color: var(--text);
     border: 1px solid var(--line-strong); border-radius: 6px;
     padding: 3px 6px; font: 12px var(--font-mono); font-variant-numeric: tabular-nums;
@@ -187,7 +188,7 @@
     display: flex; gap: 8px; align-items: center;
     color: var(--muted); font-size: 12.5px; cursor: pointer;
   }
-  .chk input { accent-color: var(--accent); margin: 0; width: 15px; height: 15px; }
+  .chk input { flex: none; accent-color: var(--accent); margin: 0; width: 15px; height: 15px; }   /* flex: none: in einer schmalen Beschriftung bliebe es sonst schmal gedrückt */
   .julia-c { display: flex; flex-direction: column; gap: 7px; padding-top: 4px; }
   .julia-c input[type=number] { width: 112px; font: 12.5px var(--font-mono); padding: 4px 7px; text-align: right; }
   .julia-c input::-webkit-outer-spin-button, .julia-c input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -217,9 +218,10 @@
 
 
   .modal {
-    position: fixed; inset: 0; z-index: 10;
+    position: fixed; inset: 0; z-index: 52;   /* über dem Menüknopf (50), unter Einwilligung (55), Schublade (60) und Menüs (70) */
     background: rgba(5, 6, 9, .78);
-    display: flex; justify-content: center; padding: 16px;
+    display: flex; justify-content: center;
+    padding: calc(16px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));   /* am Handy an Kerbe und Home-Leiste vorbei */
     overflow-y: auto; overscroll-behavior: contain;   /* höhere Karten als das Bild bleiben scrollbar */
   }
   #linkText { width: 100%; box-sizing: border-box; font: 12px var(--font-mono); background: rgba(255, 255, 255, .04); color: var(--text); border: 1px solid var(--line-strong); border-radius: 8px; padding: 8px 10px; resize: vertical; word-break: break-all; }
@@ -246,14 +248,20 @@
   .nach-karte.nach-zu > .nach-regler { display: none; }   /* zugeklappt: nur der Kopf */
   .nach-karte .tex-kurz { cursor: pointer; }               /* der Name klappt die Karte */
   .nach-karte .nach-zu { font-size: 12px; }
-  .nach-maske { display: flex; flex-direction: column; gap: 7px; margin-top: 4px; padding-top: 8px; border-top: 1px dashed rgba(255, 255, 255, .14); }   /* Maske der Ebene */
+  .nach-maske { display: flex; flex-direction: column; gap: 7px; margin-top: 4px; padding-top: 8px; border-top: 1px dashed color-mix(in srgb, var(--maske) 38%, transparent); }   /* Maske der Ebene */
   .nach-karte .nach-hinweis { margin: 0; }
   /* Karten der Ebenen und Texturen: die Kopfzeile als Band über die volle Breite, ein leicht aufgehellter Grund über die ganze Karte,
-     dazu ein Rückgrat im Akzentton von der Kopfzeile bis zum letzten Regler – so ist zu sehen, wo eine Ebene beginnt und endet, ohne Rahmen */
-  .tex-karte::before { content: ''; position: absolute; left: 4px; top: 39px; bottom: 10px; width: 2px; border-radius: 2px; background: var(--accent); opacity: .45; pointer-events: none; }
-  .tex-karte.aus::before { background: var(--muted); opacity: .3; }
+     dazu ein Rückgrat von der Kopfzeile bis zum letzten Regler – so ist zu sehen, wo eine Ebene beginnt und endet, ohne Rahmen.
+     Zwei Abschnitte: die Einstellungen der Ebene im Akzentton, ihre Maske im Maskenton. */
+  .nach-eigen { position: relative; display: flex; flex-direction: column; gap: 8px; }
+  .nach-karte .nach-eigen { gap: 7px; }                       /* in den Ebenen stehen die Regler enger beieinander */
+  .nach-maske { position: relative; }
+  .nach-eigen::before, .nach-maske::before { content: ''; position: absolute; left: -8px; top: 0; bottom: 0; width: 2px; border-radius: 2px; background: var(--accent); opacity: .45; pointer-events: none; }
+  .tex-karte > .nach-eigen::before { top: 39px; }              /* in der Texturkarte steht die Kopfzeile mit im Rahmen */
+  .nach-maske::before { background: var(--maske); opacity: .55; }
+  .tex-karte.aus .nach-eigen::before, .tex-karte.aus .nach-maske::before { background: var(--muted); opacity: .3; }
   .tex-karte.tex-leer { background: none; padding-bottom: 0; }   /* der leere Platz im Texturstapel: nur die Auswahl, kein Band */
-  .tex-karte.tex-leer::before { display: none; }
+  .tex-karte.tex-leer .nach-eigen::before { display: none; }
   .tex-karte .tex-kopf { margin: 0 -10px 0 -12px; padding: 6px 8px 6px 6px; min-height: 30px; background: rgba(255, 255, 255, .055); border-top: 1px solid var(--line-strong); border-radius: 8px 8px 0 0; }
   .tex-karte .tex-kopf .tex-kurz { font-weight: 600; color: var(--text); }
   .nach-kurve { display: flex; flex-direction: column; gap: 6px; }
@@ -282,7 +290,7 @@
   .stat-titel { margin-top: 12px; }   /* Abschnitt „Bahnstatistik“ (Streifen, Vorlauf, Gewichtung): Luft nach dem Stapel */
   .tex-karte { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 0 10px 8px 12px; background: rgba(255, 255, 255, .03); border-radius: 8px; }   /* Band, Grund und Rückgrat: siehe die Regeln oben bei .nach-karte */
   .tex-karte.tex-leer { padding-bottom: 0; }
-  .tex-karte.aus > :not(.tex-slot), .tex-karte.aus select, .tex-karte.aus .tex-kurz, .tex-karte.aus > .tex-slot > .lbl > label { opacity: .45; }   /* ausgeschaltet: gedämpft, Schalter und Knöpfe bleiben klar */
+  .tex-karte.aus > :not(.tex-slot):not(.nach-eigen), .tex-karte.aus .nach-eigen > :not(.tex-slot), .tex-karte.aus select, .tex-karte.aus .tex-kurz, .tex-karte.aus > .tex-slot > .lbl > label { opacity: .45; }   /* ausgeschaltet: gedämpft, Schalter und Knöpfe bleiben klar */
   .tex-karte.tex-platz { opacity: .25; }   /* die Lücke: der gezogene Eintrag bleibt an Ort und Stelle, nur blass */
   .tex-karte.tex-schiebt { transition: transform 160ms ease; will-change: transform; }   /* die anderen rücken per transform aus dem Weg */
   .tex-karte.tex-flieger { position: fixed; left: 0; top: 0; z-index: 60; margin: 0; padding: 6px 10px 8px; pointer-events: none; border-left: 2px solid var(--accent); border-radius: 0 8px 8px 0; background: #171a22; box-shadow: 0 12px 30px rgba(0, 0, 0, .55); opacity: .97; will-change: transform; }   /* das Abbild am Zeiger */
@@ -313,7 +321,7 @@
   .paar-zeile { display: flex; gap: 10px; align-items: center; }
   .paar-zeile select { flex: 1; min-width: 0; }
   .paar-zeile .chk { flex: none; }
-  .tex-karte.aus > :not(.tex-slot), .tex-karte.aus select, .tex-karte.aus .tex-kurz { opacity: .45; }   /* ausgeschaltet: gedämpft, Schalter und Knöpfe bleiben klar */
+  .tex-karte.aus > :not(.tex-slot):not(.nach-eigen), .tex-karte.aus .nach-eigen > :not(.tex-slot), .tex-karte.aus select, .tex-karte.aus .tex-kurz { opacity: .45; }   /* ausgeschaltet: gedämpft, Schalter und Knöpfe bleiben klar */
   .tex-kopf { align-items: center; gap: 6px; }
   .tex-kopf label { flex: 0 0 auto; white-space: nowrap; }
   .tex-kurz { flex: 1; min-width: 0; font-size: 11.5px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }   /* eingeklappt: Art und Stärke, nimmt den Rest der Zeile */
@@ -700,6 +708,11 @@
     /* „Mehr“: die Aktionen der Werkzeugleiste, darunter die Technik */
     #mActions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     #mActions button { display: flex; align-items: center; gap: 8px; text-align: left; }
+    #mActions [data-act="reset"] { grid-column: 1 / -1; margin-top: 6px; color: var(--muted); }   /* eigene Zeile, abgesetzt: der Knopf verwirft alles */
+    /* Karten: am Finger sind 22 px zu wenig. Die Optik bleibt, nur die Trefferflächen wachsen. */
+    .tex-kopf { min-height: 40px; }
+    .tex-kopf button { width: 32px; height: 32px; }
+    .tex-schalter input { inset: -9px 0; width: auto; height: auto; }
     #mActions svg { flex: none; color: var(--muted); }
     #techRow .lbl select { flex: none; width: 56%; }   /* bündig untereinander wie im Bereich Qualität */
     #pane-technik .pane-title { display: block; margin: 16px 0 0; font: 600 10.5px var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
@@ -1481,9 +1494,11 @@
     </div>
     <div class="pane" id="pane-technik" hidden>
     <section class="row" id="mActions" data-i18n-aria-label="technical.actions">   <!-- nur am Handy: die Werkzeugleiste des PCs -->
-      <button type="button" class="ghost" data-act="linkOpen"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.6 9.4a2.6 2.6 0 0 0 3.7 0l2.2-2.2a2.6 2.6 0 0 0-3.7-3.7l-.9.9"/><path d="M9.4 6.6a2.6 2.6 0 0 0-3.7 0L3.5 8.8a2.6 2.6 0 0 0 3.7 3.7l.9-.9"/></svg><span data-i18n="technical.link-this-view"></span></button>
+      <button type="button" class="ghost" data-act="undo" disabled><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5L2.5 7 6 10.5"/><path d="M2.5 7h6.5a3.5 3.5 0 0 1 0 7H7"/></svg><span data-i18n="technical.undo"></span></button>
+      <button type="button" class="ghost" data-act="redo" disabled><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3.5L13.5 7 10 10.5"/><path d="M13.5 7H7a3.5 3.5 0 0 0 0 7h2"/></svg><span data-i18n="technical.redo"></span></button>
+      <button type="button" class="ghost" data-act="linkOpen"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.6 9.4a2.6 2.6 0 0 0 3.7 0l2.2-2.2a2.6 2.6 0 0 0-3.7-3.7l-.9.9"/><path d="M9.4 6.6a2.6 2.6 0 0 0-3.7 0L3.5 8.8a2.6 2.6 0 0 0 3.7 3.7l.9-.9"/></svg><span data-i18n="technical.link-short"></span></button>
       <button type="button" class="ghost" data-act="fileOpen"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12.5V4.2c0-.4.3-.7.7-.7h3l1.4 1.6h5.2c.4 0 .7.3.7.7v6.7z"/></svg><span data-i18n="technical.open-file"></span></button>
-      <button type="button" class="ghost" data-act="metaOpen"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2.5h6.5l3 3V9"/><path d="M9.5 2.5v3h3"/><path d="M3 2.5v11h5"/><circle cx="11" cy="11.5" r="2.3"/><path d="M12.7 13.2 14.5 15"/></svg> <span data-i18n="meta.inspect"></span></button>
+      <button type="button" class="ghost" data-act="metaOpen"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2.5h6.5l3 3V9"/><path d="M9.5 2.5v3h3"/><path d="M3 2.5v11h5"/><circle cx="11" cy="11.5" r="2.3"/><path d="M12.7 13.2 14.5 15"/></svg> <span data-i18n="meta.inspect-short"></span></button>
       <button type="button" class="ghost" data-act="paramsSave"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.2 2.6C4.6 2.6 4.9 5.4 4.9 6.3c0 .9-.7 1.7-1.7 1.7 1 0 1.7.8 1.7 1.7 0 .9-.3 3.7 1.3 3.7M9.8 2.6c1.6 0 1.3 2.8 1.3 3.7 0 .9.7 1.7 1.7 1.7-1 0-1.7.8-1.7 1.7 0 .9.3 3.7-1.3 3.7"/></svg><span data-i18n="technical.save-parameters"></span></button>
       <button type="button" class="ghost" data-act="reset"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7M13 2.4V5h-2.6"/></svg><span data-i18n="technical.reset-everything"></span></button>
     </section>
@@ -1543,6 +1558,9 @@
   <button type="button" id="fileOpen" data-i18n-title="technical.open-file" data-i18n-aria-label="technical.open-file"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12.5V4.2c0-.4.3-.7.7-.7h3l1.4 1.6h5.2c.4 0 .7.3.7.7v6.7z"/></svg></button>
   <button type="button" id="metaOpen" data-i18n-title="meta.inspect" data-i18n-aria-label="meta.inspect"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2.5h6.5l3 3V9"/><path d="M9.5 2.5v3h3"/><path d="M3 2.5v11h5"/><circle cx="11" cy="11.5" r="2.3"/><path d="M12.7 13.2 14.5 15"/></svg></button>
   <input type="file" id="metaInput" accept=".png,.jpg,.jpeg,.json,image/png,image/jpeg,application/json" hidden>
+  <span class="sep"></span>
+  <button type="button" id="undo" disabled data-i18n-title="technical.undo" data-i18n-aria-label="technical.undo"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5L2.5 7 6 10.5"/><path d="M2.5 7h6.5a3.5 3.5 0 0 1 0 7H7"/></svg></button>
+  <button type="button" id="redo" disabled data-i18n-title="technical.redo" data-i18n-aria-label="technical.redo"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3.5L13.5 7 10 10.5"/><path d="M13.5 7H7a3.5 3.5 0 0 0 0 7h2"/></svg></button>
   <span class="sep"></span>
   <button type="button" id="reset" data-i18n-title="technical.reset-everything" data-i18n-aria-label="technical.reset-everything"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7M13 2.4V5h-2.6"/></svg></button>
   <input type="file" id="fileInput" accept=".png,.jpg,.jpeg,.json,image/png,image/jpeg,application/json" hidden>
@@ -2145,6 +2163,7 @@ const TEXTE = {
   'meta.readable': { de: 'Jeder, der die Datei hat, kann ihn lesen.', en: 'Anyone who has the file can read it.' },
   'meta.exact': { de: 'Genau so steht es in der Datei', en: 'Exactly what goes into the file' },
   'meta.inspect': { de: 'Bilddatei prüfen: Metadaten lesen', en: 'Inspect an image file: read its metadata' },
+  'meta.inspect-short': { de: 'Metadaten lesen', en: 'Read metadata' },
   'meta.file': { de: 'Datei', en: 'File' },
   'meta.kind': { de: 'Art', en: 'Kind' },
   'meta.text-file': { de: 'Textdatei', en: 'text file' },
@@ -2630,15 +2649,18 @@ const TEXTE = {
   'technical.cycle-detection': { de: 'Zykluserkennung', en: 'Cycle detection' },
   'technical.deep-zoom-by-perturbation': { de: ' Tiefenzoom per Störungstheorie: Referenzbahn in Double-Double auf der CPU, Deltas in fp32 auf der GPU, Rebasing gegen Glitches, bilineare Näherung überspringt Iterationsblöcke.', en: ' Deep zoom by perturbation theory: reference orbit in double-double on the CPU, deltas in fp32 on the GPU, rebasing against glitches, bilinear approximation skips iteration blocks.' },
   'technical.depth': { de: 'Tiefe', en: 'Depth' },
+  'technical.link-short': { de: 'Link zur Ansicht', en: 'Link to view' },
   'technical.link-this-view': { de: 'Link zu dieser Ansicht', en: 'Link to this view' },
   'technical.no-gpu': { de: 'keine GPU', en: 'no GPU' },
   'technical.open-file': { de: 'Datei öffnen', en: 'Open file' },
   'technical.ready': { de: 'Bereit', en: 'Ready' },
+  'technical.redo': { de: 'Wiederholen', en: 'Redo' },
   'technical.renderer': { de: 'Renderer', en: 'Renderer' },
   'technical.reset-everything': { de: 'Alles zurücksetzen', en: 'Reset everything' },
   'technical.save-parameters': { de: 'Parameter speichern', en: 'Save parameters' },
   'technical.starting': { de: 'startet', en: 'starting' },
   'technical.technical': { de: 'Technik', en: 'Technical' },
+  'technical.undo': { de: 'Rückgängig', en: 'Undo' },
   'technical.webgpu-fragment-shader-wgsl': { de: 'WebGPU-Fragment-Shader (WGSL).', en: 'WebGPU fragment shader (WGSL).' },
   'technical.webgpu-is-not-available': { de: 'WebGPU ist in diesem Browser nicht verfügbar. Unter „Technik“ auf Automatisch oder WebGL 2 umstellen.', en: 'WebGPU is not available in this browser. Switch to Automatic or WebGL 2 under “Technical”.' },
   'technical.webgpu-not-usable-hence': { de: 'WebGPU nicht nutzbar, daher WebGL 2.', en: 'WebGPU not usable, hence WebGL 2.' },
@@ -8827,7 +8849,8 @@ function frame(now) {
     } else if (werteWunsch.length && !wertePending && hasImage) {   // Werteprobe, wenn jemand darauf wartet
       runWerteProbe(maxIter); submitted = true;
     } else if (!anchorPending && (anchorProbe || (S.anchorAuto && S.colAnchor === null && ankerVonSelbst())) && hasImage && ankerWirkt()) {   // Anker lesen: auf Wunsch oder als Standard beim ersten Bild
-      anchorProbe = false; runAnchorProbe(maxIter);   // eigene Rückleseschleife, nicht als Bildarbeit zählen (sonst erschiene sie als Glättungszeit)
+      const ankerVonSelber = !anchorProbe;   // ohne ausdrücklichen Wunsch: die App verankert von sich aus
+      anchorProbe = false; runAnchorProbe(maxIter, ankerVonSelber);   // eigene Rückleseschleife, nicht als Bildarbeit zählen (sonst erschiene sie als Glättungszeit)
     }
   }
   if (colorDirty && hasImage) { renderer.present(colorParams()); colorDirty = false; }
@@ -9324,6 +9347,7 @@ function buildParams() {
 function writeHash() {
   const p = buildParams();
   try { history.replaceState(null, '', '#' + p.toString()); } catch (e) { /* in einer Sandbox nicht erlaubt */ }
+  if (typeof undoMerken === 'function') { undoMerken(); }   // jeder festgehaltene Zustand ist ein Schritt für Rückgängig
 }
 const hashView = readHash();
 
@@ -9416,7 +9440,8 @@ try {
 } catch (e) { consent = null; }
 const SETTINGS_KEYS = ['fractal.aa', 'fractal.aamode', 'fractal.aatol', 'fractal.aamax', 'fractal.aasigma', 'fractal.palfilter', 'fractal.palfilterk', 'fractal.cycle', 'fractal.bla', 'fractal.renderer', 'fractal.quality', 'fractal.meta', 'fractal.palettes', 'fractal.palettes2'];
 function storeAllowed() { return !!(consent && consent.settings); }
-function lsSet(key, value) { if (!storeAllowed()) return false; try { localStorage.setItem(key, value); return true; } catch (e) { return false; } }
+function lsSet(key, value) { scheduleHash();   // jede abgelegte Einstellung gehört zum Zustand: die Adresse zieht nach, dabei merkt sich Rückgängig den Schritt
+  if (!storeAllowed()) return false; try { localStorage.setItem(key, value); return true; } catch (e) { return false; } }
 function persistSettings() {   // nach erteilter Einwilligung die aktuellen Einstellungen ablegen
   lsSet('fractal.aa', String(S.aa)); lsSet('fractal.aamode', S.aaMode); lsSet('fractal.aatol', String(S.aaTol)); lsSet('fractal.aamax', String(S.aaMax)); lsSet('fractal.aasigma', String(S.aaSigma)); lsSet('fractal.palfilter', S.palFilter ? '1' : '0'); lsSet('fractal.palfilterk', String(S.palFilterK)); lsSet('fractal.cycle', S.cycle); lsSet('fractal.bla', S.bla);
   lsSet('fractal.renderer', S.rendererPref); lsSet('fractal.quality', String(S.quality)); lsSet('fractal.meta', JSON.stringify(META));
@@ -9498,7 +9523,11 @@ for (const b of document.querySelectorAll('#tabbar [data-tab]')) {
   });
 }
 $('tabSave').addEventListener('click', () => { if (!$('panel').classList.contains('collapsed')) togglePanel(); $('save').click(); });
-for (const b of document.querySelectorAll('#mActions [data-act]')) b.addEventListener('click', () => { togglePanel(); $(b.dataset.act).click(); });   // wie die Werkzeugleiste am PC
+for (const b of document.querySelectorAll('#mActions [data-act]')) b.addEventListener('click', () => {   // wie die Werkzeugleiste am PC
+  const a = b.dataset.act;
+  if (a !== 'undo' && a !== 'redo') togglePanel();   // Schritte zurück und vor gehen mehrfach hintereinander, das Blatt bleibt dafür offen
+  $(a).click();
+});
 window.matchMedia('(max-width: 640px)').addEventListener('change', () => { $('panel').classList.remove('expanded'); setPane(curPane, false); });
 $('panelTab').addEventListener('click', togglePanel);
 $('toggle').addEventListener('click', togglePanel);
@@ -10907,6 +10936,12 @@ function texEntfernen(n) { const a = texStapelLesen(); a.splice(n - 1, 1); a.pus
 // – nahe am Rand rollt das Bedienfeld mit; Loslassen übernimmt die Reihenfolge, Escape und Abbruch stellen alles zurück.
 let texZieh = null;
 function texKarten() { return [1, 2, 3, 4].map(m => texElemente(m).karte); }
+for (const k of texKarten()) {   // Kopf und Regler der Textur in einen Rahmen, damit ihr Band vor der Maske endet
+  const m = k.querySelector(':scope > .nach-maske'); if (!m) continue;
+  const eigen = document.createElement('div'); eigen.className = 'nach-eigen';
+  while (k.firstChild !== m) eigen.append(k.firstChild);
+  k.insertBefore(eigen, m);
+}
 function texLive(text) { const l = $('texLive'); if (l) { l.textContent = ''; setTimeout(() => { l.textContent = text; }, 30); } }   // Ansage für Vorleser
 // Ein Stapelbeschreiber sagt der Sortierung, welche Karten es gibt, welche Nummer eine Karte trägt und wie eine neue Reihenfolge
 // übernommen wird – dieselbe Sortierung trägt den Texturstapel und die Ebenen der Nachbearbeitung.
@@ -11076,12 +11111,18 @@ function nachVerschieben(von, nach) { const a = S.nach; const [e] = a.splice(von
 const NACH_STAPEL = { karten: () => [...document.querySelectorAll('#nachStapel .nach-karte')], nr: k => +k.dataset.i, karte: m => $('nachKarte' + m), griff: m => { const k = $('nachKarte' + m); return k ? k.querySelector('.tex-griff') : null; },
   anzahl: () => S.nach.length, verschieben: nachVerschieben, live: nachLive, textBewegt: 'post.layer-moved',
   uebernehmen: folge => { S.nach = folge.map(m => S.nach[m - 1]); nachAenderung(); nachKartenBauen(); } };
+const kartenSig = e => e.art + (e.m && e.m.art ? 'm' + e.m.art : '') + '|' + LANG;   // andere Art oder Maskenart: andere Regler, also neu bauen
 function nachKartenBauen() {   // neu gebaut bei anderer Zahl, Art, Reihenfolge oder Sprache; sonst nur die Werte
   const box = $('nachStapel'); if (!box) return;
   const wolke = S.family === 'accum';
   $('nachWolke').hidden = !wolke; box.hidden = wolke; $('nachNeuRow').hidden = wolke;
-  const sig = S.nach.map(e => e.art + (e.m && e.m.art ? 'm' + e.m.art : '')).join(',') + '|' + LANG;   // auch die Art der Maske: andere Regler
-  if (box.dataset.sig !== sig) { box.dataset.sig = sig; box.replaceChildren(); S.nach.forEach((e, i) => box.append(nachKarte(i))); }
+  while (box.children.length > S.nach.length) box.lastElementChild.remove();
+  S.nach.forEach((e, i) => {   // nur die geänderte Karte ersetzen: die übrigen Knoten bleiben, damit hält der Browser die Ansicht
+    const sig = kartenSig(e), alt = box.children[i];
+    if (alt && alt.dataset.sig === sig) return;
+    const neu = nachKarte(i); neu.dataset.sig = sig;
+    if (alt) alt.replaceWith(neu); else box.append(neu);
+  });
   S.nach.forEach((e, i) => nachKarteWerte(i));
   const sel = $('nachNeu'); sel.value = '0'; if (sel._sync) sel._sync(); sel.disabled = S.nach.length >= NACH_MAX; $('nachVoll').hidden = S.nach.length < NACH_MAX;
 }
@@ -11145,9 +11186,11 @@ function nachKarte(i) {
   kn.append(sch, weg); kopf.append(griff, zu, name, kn); karte.append(kopf);
   const regler = document.createElement('div'); regler.className = 'nach-regler'; regler.id = 'nachRegler' + (i + 1);
   const hinweis = document.createElement('p'); hinweis.className = 'hint nach-hinweis'; hinweis.hidden = true; hinweis.textContent = t('post.only-one-neighbour'); regler.append(hinweis);
-  regler.append(nachZahlZeile(i, -1, NACH_DECK));
+  const eigen = document.createElement('div'); eigen.className = 'nach-eigen';   // die Regler der Ebene selbst: eigenes Band
+  eigen.append(nachZahlZeile(i, -1, NACH_DECK));
   let slot = 0;
-  for (const r of d.regler) { regler.append(nachReglerElement(i, slot, r)); slot += nachBreite(r); }
+  for (const r of d.regler) { eigen.append(nachReglerElement(i, slot, r)); slot += nachBreite(r); }
+  regler.append(eigen);
   // Maske: Auswahl der Art, dann deren Regler, weicher Rand, umkehren, zeigen
   const mbox = document.createElement('div'); mbox.className = 'nach-maske'; mbox.id = 'nachMaske' + (i + 1);
   const mz = document.createElement('div'); mz.className = 'lbl'; const ml = document.createElement('label'); ml.htmlFor = 'nachM' + (i + 1) + '_art'; ml.textContent = t('mask.mask'); mz.append(ml);
@@ -11472,7 +11515,7 @@ $('colAnchor').addEventListener('change', e => {
   anchorProbe = true; requestFrame();
 });
 ankerBeschriften();
-function runAnchorProbe(maxIter) {
+function runAnchorProbe(maxIter, vonSelbst = false) {
   const sH = Math.max(2, Math.ceil(Math.max(W / 320, H / 320)));
   const hw = Math.ceil(W / sH), hh = Math.ceil(H / sH);
   renderer.renderFractal('preview', [{ x: 0, y: 0, w: hw, h: hh }], fractalParams(sH, maxIter));
@@ -11493,15 +11536,16 @@ function runAnchorProbe(maxIter) {
     } else {    // Häkchen: Median der ganzen Ansicht, dort bleibt die größte Fläche stehen
       for (let i = 0; i < hw * hh; i += 3) nimm(i);
     }
-    if (!nus.length) { S.colAnchor = null; S.statAnker = null; S.anchorAuto = false; ankerOrt = null; $('colAnchor').checked = false; scheduleHash(); notify(at ? 'panel.point-lies-inside-set' : 'panel.view-lies-inside-set'); return; }
+    if (!nus.length) { S.colAnchor = null; S.statAnker = null; S.anchorAuto = false; ankerOrt = null; $('colAnchor').checked = false; scheduleHash(); if (vonSelbst) { undoUebernehmen(); } notify(at ? 'panel.point-lies-inside-set' : 'panel.view-lies-inside-set'); return; }
     nus.sort((a, b) => a - b); mittel.sort((a, b) => a - b);
     if (!mitMittel || statMitZeit()) setAnchor(nus[nus.length >> 1]);   // die Fluchtzeit nur, wo sie die Farbe mitbestimmt
     if (mitMittel) setStatAnker(mittel[mittel.length >> 1], frisch);
     if (at && !frisch) { const [aox, aoy] = ebeneVonPixel((at.x - W / 2) * S.ps, (H / 2 - at.y) * S.ps); ankerOrt = { cx: S.cx, cy: S.cy, ox: aox, oy: aoy }; }   // Punkt in der Ebene merken
     else if (!at) ankerOrt = null;
     $('colAnchor').checked = true;
+    if (vonSelbst) { undoUebernehmen(); }   // von selbst verankert: kein eigener Schritt für Rückgängig
     if (at && !frisch) notify('panel.colour-anchor-set');
-  }).catch(e => { anchorPending = false; S.anchorAuto = false; console.warn('Farbanker:', e); });
+  }).catch(e => { anchorPending = false; S.anchorAuto = false; if (vonSelbst) { undoUebernehmen(); } console.warn('Farbanker:', e); });
 }
 
 const rendSel = $('renderer'); rendSel.value = S.rendererPref;
@@ -11758,6 +11802,57 @@ function syncAllUI() {   // Bedienfeld vollständig an den Zustand angleichen
   syncPalSelect(); applyPalette(); densEl.value = densToPos(S.density); showDens(); $('offset').value = Math.round(S.offset * 1000); $('animate').checked = S.animate;
   mapSel.value = String(S.mapping); $('comp').value = compToPos(S.comp); showComp(); syncLyGrenze(); syncStreifen(); syncVorlauf(); syncGewicht(); syncAbzug(); syncTextur(); syncKurve(); syncFlucht(); syncDreh(); syncSpirale(); syncTexOptionen(); syncInvMitte(); syncAbklingen(); syncLogmap(); ankerBeschriften(); syncGlowUI(); intSel.value = String(S.interior); $('innenFarbe').value = S.innenFarbe; $('gestuft').checked = S.gestuft; syncJuliaUI(); syncZ0UI(); syncFamilyUI(); syncAaUI();
 }
+// ============================================================
+//  Rückgängig und Wiederholen
+// ============================================================
+// Ein Schritt ist ein vollständiger Schnappschuss (Parameter, Farben, technische Werte) als Text. Aufgezeichnet wird er dort,
+// wo der Zustand ohnehin festgehalten wird; zurückgeholt über applyState, denselben Weg wie beim Öffnen einer Datei.
+const UNDO_MAX = 60;   // so viele Schritte hält der Stapel; ältere fallen unten heraus
+let undoStapel = [], redoStapel = [], undoStand = null, undoStandV = null, undoStill = false;
+function undoJetztSchreiben() { clearTimeout(hashTimer); writeHash(); }   // die verzögerte Aufzeichnung sofort nachholen
+function undoStandJetzt() { const o = metaObjekt({ params: true, tech: true, colors: true }); return o ? JSON.stringify(o) : null; }
+const UNDO_ANKER = ['ca', 'sa', 'off'];   // diese drei führt die App beim Verankern von selbst nach
+function undoOhne(text, namen) {   // denselben Stand ohne die genannten Adresswerte, zum Vergleichen
+  try { const o = JSON.parse(text); if (typeof o.params === 'string') { const p = new URLSearchParams(o.params); for (const k of namen) { p.delete(k); } o.params = p.toString(); } return JSON.stringify(o); } catch (e) { return text; }
+}
+function undoVergleich(text) { return S.autoIter ? undoOhne(text, ['it']) : text; }   // die selbst gewählte Iterationszahl hängt an der Ansicht, sie ist kein eigener Schritt
+function undoUebernehmen() {   // die App hat von selbst verankert: der neue Stand gilt, ohne dass daraus ein Schritt wird
+  const jetzt = undoStandJetzt(); if (jetzt === null) { return; }
+  const vergleich = undoVergleich(jetzt);
+  if (vergleich === undoStandV) { undoStand = jetzt; return; }
+  if (undoStandV !== null && undoOhne(vergleich, UNDO_ANKER) !== undoOhne(undoStandV, UNDO_ANKER)) { undoMerken(); return; }   // nebenher kam mehr dazu: doch ein Schritt
+  undoStand = jetzt; undoStandV = vergleich; undoKnoepfe();
+}
+function undoKnoepfe() {
+  const zurueck = undoStapel.length > 0, vor = redoStapel.length > 0;
+  for (const b of [$('undo'), ...document.querySelectorAll('#mActions [data-act="undo"]')]) { if (b) b.disabled = !zurueck; }
+  for (const b of [$('redo'), ...document.querySelectorAll('#mActions [data-act="redo"]')]) { if (b) b.disabled = !vor; }
+}
+function undoMerken() {   // hat sich etwas geändert, wandert der vorige Stand auf den Stapel
+  const jetzt = undoStandJetzt(); if (jetzt === null) { return; }
+  const vergleich = undoVergleich(jetzt);
+  if (vergleich === undoStandV) { undoStand = jetzt; return; }   // nichts Neues oder nur ein abgeleiteter Wert: kein eigener Schritt
+  if (undoStand !== null && !undoStill) { undoStapel.push(undoStand); if (undoStapel.length > UNDO_MAX) { undoStapel.shift(); } redoStapel.length = 0; }
+  undoStand = jetzt; undoStandV = vergleich; undoKnoepfe();
+}
+function undoAnwenden(text) {
+  undoStill = true;
+  try { applyState(JSON.parse(text)); } catch (e) { /* unlesbarer Schnappschuss: der Stand bleibt, wie er ist */ }
+  undoJetztSchreiben();   // der wiederhergestellte Stand steht damit fest
+  undoStill = false; undoStand = undoStandJetzt(); undoStandV = undoStand === null ? null : undoVergleich(undoStand); undoKnoepfe();
+}
+function undoZurueck() { undoJetztSchreiben(); if (!undoStapel.length) { return; } const ziel = undoStapel.pop(); if (undoStand !== null) { redoStapel.push(undoStand); } undoAnwenden(ziel); }
+function undoVor() { undoJetztSchreiben(); if (!redoStapel.length) { return; } const ziel = redoStapel.pop(); if (undoStand !== null) { undoStapel.push(undoStand); } undoAnwenden(ziel); }
+$('undo').addEventListener('click', undoZurueck);
+$('redo').addEventListener('click', undoVor);
+window.addEventListener('keydown', e => {   // Strg+Z, Strg+Umschalt+Z, Strg+Y; am Mac ebenso mit der Befehlstaste
+  if (!(e.ctrlKey || e.metaKey) || e.altKey) { return; }
+  const k = e.key.toLowerCase(); if (k !== 'z' && k !== 'y') { return; }
+  const t = e.target;
+  if (t instanceof Element && t.matches('input:not([type=range]):not([type=checkbox]):not([type=color]), textarea')) { return; }   // Texteingaben behalten ihr eigenes Rückgängig
+  e.preventDefault();
+  if (k === 'y' || e.shiftKey) { undoVor(); } else { undoZurueck(); }
+});
 function resetAll() {   // alles auf Standard, nur Mandelbrot/Julia bleibt
   resetState(); peShow(false);
   try { for (const k of ['fractal.aa', 'fractal.aamode', 'fractal.aatol', 'fractal.aamax', 'fractal.aasigma', 'fractal.palfilter', 'fractal.palfilterk', 'fractal.cycle', 'fractal.bla']) localStorage.removeItem(k); } catch (e) { /* egal */ }
@@ -13268,6 +13363,7 @@ buildPalSelect();
 densEl.value = densToPos(S.density); showDens();
 iterAuto.checked = S.autoIter;
 syncIterUI();
+undoMerken();   // Ausgangsstand für Rückgängig; die erste Änderung wird damit ein Schritt
 initRenderer();
 })();
 </script>
