@@ -321,6 +321,7 @@
   .paar-zeile { display: flex; gap: 10px; align-items: center; }
   .paar-zeile select { flex: 1; min-width: 0; }
   .paar-zeile .chk { flex: none; }
+  .paar-ziel { flex: none; color: var(--muted); }   /* Beschriftung vor dem Ziel eines Werts */
   .tex-karte.aus > :not(.tex-slot):not(.nach-eigen), .tex-karte.aus .nach-eigen > :not(.tex-slot), .tex-karte.aus select, .tex-karte.aus .tex-kurz { opacity: .45; }   /* ausgeschaltet: gedämpft, Schalter und Knöpfe bleiben klar */
   .tex-kopf { align-items: center; gap: 6px; }
   .tex-kopf label { flex: 0 0 auto; white-space: nowrap; }
@@ -915,13 +916,8 @@
         <optgroup data-i18n-label="colour.orbit-averages" data-ohne-newton>
           <option value="19" data-i18n="colour.stripe-average"></option>
           <option value="20" data-i18n="colour.triangle-inequality-average-mitchell"></option>
-          <option value="22" data-i18n="colour.stripe-average-and-escape"></option>
-          <option value="23" data-i18n="colour.triangle-average-and-escape"></option>
-          <option value="25" data-i18n="colour.stripe-average-and-origin"></option>
           <option value="26" data-i18n="colour.total-turning"></option>
-          <option value="27" data-i18n="colour.stripe-average-and-turning"></option>
-          <option value="30" data-i18n="colour.turning-and-escape"></option>
-          <option value="31" data-i18n="colour.own-pair"></option>
+          <option value="31" data-i18n="colour.combine-values"></option>
           <option value="21" data-i18n="colour.sign-changes"></option>
         </optgroup>
         <optgroup data-i18n-label="colour.orbit-traps" data-ohne-newton>
@@ -969,6 +965,15 @@
             <option value="8" data-i18n="colour.escape-angle"></option>
             <option value="9" data-i18n="colour.stripe-phase"></option>
           </select>
+          <div class="paar-zeile">
+            <label class="paar-ziel" for="paarZielA" data-i18n="colour.pair-target"></label>
+            <select id="paarZielA" data-i18n-title="colour.pair-target-title">
+              <option value="0" data-i18n="colour.pair-target-axis-a"></option>
+              <option value="1" data-i18n="colour.pair-target-axis-b"></option>
+              <option value="2" data-i18n="colour.pair-target-brightness"></option>
+              <option value="3" data-i18n="colour.pair-target-saturation"></option>
+            </select>
+          </div>
           <div class="lbl wertzeile"><label for="paarFaktorA" data-i18n-title="colour.pair-factor-title" data-i18n="colour.pair-factor"></label><input class="val mono wert" id="paarFaktorAVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
           <input id="paarFaktorA" type="range" min="0" max="1000" step="1" value="500">
           <div class="paar-zeile">
@@ -993,6 +998,15 @@
             <option value="8" data-i18n="colour.escape-angle"></option>
             <option value="9" data-i18n="colour.stripe-phase"></option>
           </select>
+          <div class="paar-zeile">
+            <label class="paar-ziel" for="paarZielB" data-i18n="colour.pair-target"></label>
+            <select id="paarZielB" data-i18n-title="colour.pair-target-title">
+              <option value="0" data-i18n="colour.pair-target-axis-a"></option>
+              <option value="1" data-i18n="colour.pair-target-axis-b"></option>
+              <option value="2" data-i18n="colour.pair-target-brightness"></option>
+              <option value="3" data-i18n="colour.pair-target-saturation"></option>
+            </select>
+          </div>
           <div class="lbl wertzeile"><label for="paarFaktorB" data-i18n-title="colour.pair-factor-title" data-i18n="colour.pair-factor"></label><input class="val mono wert" id="paarFaktorBVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
           <input id="paarFaktorB" type="range" min="0" max="1000" step="1" value="500">
           <div class="paar-zeile">
@@ -1853,21 +1867,16 @@ const TEXTE = {
   'mapping.text.19': { de: 'Mittel eines Streifenmusters über die Bahn: feine Strähnen (Streifen, Vorlauf, Gewichtung).', en: 'Average of a stripe pattern along the orbit: fine strands (stripes, skip, weighting).' },
   'mapping.text.20': { de: 'Mittel der Dreiecksungleichung über die Bahn: weiche Wolken.', en: 'Average of the triangle inequality along the orbit: soft clouds.' },
   'mapping.text.21': { de: 'Wie oft Real- und Imaginärteil das Vorzeichen wechseln.', en: 'How often real and imaginary part change sign.' },
-  'mapping.text.22': { de: 'Paar: Fluchtzeit auf der ersten, Streifenmittel auf der zweiten Achse.', en: 'Pair: escape time on the first axis, stripe average on the second.' },
-  'mapping.text.23': { de: 'Paar: Fluchtzeit auf der ersten, Dreiecksmittel auf der zweiten Achse.', en: 'Pair: escape time on the first axis, triangle average on the second.' },
   'mapping.text.24': { de: 'Kleinster Betrag der Bahn: hell nahe den Urbildern des Ursprungs, innen wie außen.', en: 'Smallest magnitude of the orbit: bright near the preimages of the origin, inside and out.' },
-  'mapping.text.25': { de: 'Paar: Ursprungsnähe mit Fluchtzeit-Abzug auf der ersten, Streifenmittel auf der zweiten Achse.', en: 'Pair: closest approach with escape-time deduction on the first axis, stripe average on the second.' },
   'mapping.text.26': { de: 'Mittlere Winkeländerung je Schritt: ruhige Bahnen unten, drehende oben in der Palette.', en: 'Mean angle change per step: calm orbits low, turning ones high in the palette.' },
-  'mapping.text.27': { de: 'Paar: Gesamtdrehung mit Fluchtzeit-Abzug auf der ersten, Streifenmittel auf der zweiten Achse.', en: 'Pair: total turning with escape-time deduction on the first axis, stripe average on the second.' },
   'mapping.text.28': { de: 'Übertragungskurve über den Häufigkeiten: du ziehst die Punkte selbst.', en: 'Transfer curve over the frequencies: you drag the points yourself.' },
   'mapping.text.29': { de: 'Schritt der größten Nähe zum Ursprung: Gebiete gleicher Periode, innen wie außen.', en: 'Step of closest approach to the origin: domains of equal period, inside and out.' },
-  'mapping.text.30': { de: 'Paar: Gesamtdrehung mit Fluchtzeit-Abzug auf der ersten, Fluchtzeit auf der zweiten Achse.', en: 'Pair: total turning with escape-time deduction on the first axis, escape time on the second.' },
   'mapping.text.33': { de: 'Logarithmisch ab einer Startiteration: bis dorthin Farbe 1, danach erst linear, dann logarithmisch bis zur Iterationsgrenze, über 256 Paletteneinträge. Farbdichte 1/256 (0,0039) trifft die Palette Eintrag für Eintrag.', en: 'Logarithmic from a start iteration: colour 1 up to it, then linear, then logarithmic up to the iteration limit, over 256 palette entries. Colour density 1/256 (0.0039) hits the palette entry by entry.' },
   'colour.logmap': { de: 'Logarithmisch ab Iteration (logmap)', en: 'Logarithmic from iteration (logmap)' },
   'colour.logmap-start': { de: 'Startiteration', en: 'Start iteration' },
   'colour.logmap-start-title': { de: 'Iterationen bis hierher bekommen Farbe 1; darüber beginnt die Zuordnung. 0 und 1: ab der ersten Iteration.', en: 'Iterations up to here get colour 1; above it the mapping starts. 0 and 1: from the first iteration.' },
   'mapping.text.32': { de: 'Kleinster Abstand der Bahn zu einer logarithmischen Spirale um den Ursprung, innen wie außen; die Windung stellst du unter Bahnstatistik ein.', en: 'Closest approach of the orbit to a logarithmic spiral around the origin, inside and out; set the winding under orbit statistics.' },
-  'mapping.text.31': { de: 'Eigenes Paar: zwei Bahnwerte nach Wahl, je mit Faktor, Abzug und Klemme.', en: 'Custom pair: two orbit values of your choice, each with factor, deduction and clamp.' },
+  'mapping.text.31': { de: 'Zwei Bahnwerte nach Wahl auf den Achsen der Palette, je mit Faktor, Abzug und Klemme.', en: 'Two orbit values of your choice on the axes of the palette, each with factor, deduction and clamp.' },
   'colour.textures': { de: 'Texturen', en: 'Textures' },
   'colour.orbit-statistics': { de: 'Bahnstatistik', en: 'Orbit statistics' },
   'colour.complex-lyapunov-exponent': { de: 'Komplexer Lyapunov-Exponent', en: 'Complex Lyapunov exponent' },
@@ -1932,10 +1941,7 @@ const TEXTE = {
   'colour.square-root': { de: 'Wurzel', en: 'Square root' },
   'colour.standard': { de: 'Gewöhnlich', en: 'Standard' },
   'colour.stripe-average': { de: 'Streifenmittel', en: 'Stripe average' },
-  'colour.stripe-average-and-escape': { de: 'Streifenmittel und Fluchtzeit', en: 'Stripe average and escape time' },
-  'colour.triangle-average-and-escape': { de: 'Dreiecksmittel und Fluchtzeit', en: 'Triangle average and escape time' },
   'colour.closest-to-origin': { de: 'Ursprungsnähe', en: 'Closest approach to the origin' },
-  'colour.stripe-average-and-origin': { de: 'Streifenmittel und Ursprungsnähe', en: 'Stripe average and closest approach' },
   'colour.texture': { de: 'Textur', en: 'Texture' },
   'colour.texture-middle': { de: 'Mitte', en: 'Middle' },
   'colour.texture-middle-title': { de: 'Der Wert der Statistik, der die Farbe unverändert lässt (0 … 1). Das Streifenmittel liegt meist nahe ½, die Gesamtdrehung darunter.', en: 'The value of the statistic that leaves the colour unchanged (0 … 1). The stripe average usually lies near ½, the total turning below.' },
@@ -2006,13 +2012,17 @@ const TEXTE = {
   'colour.texture-r-y': { de: 'Punkt, Imaginärteil', en: 'Point, imaginary part' },
   'colour.texture-r-point-title': { de: 'Der Punkt in der Ebene, zu dem die Bahn ihren kleinsten Abstand sucht', en: 'The point in the plane the orbit comes closest to' },
   'colour.total-turning': { de: 'Gesamtdrehung', en: 'Total turning' },
-  'colour.stripe-average-and-turning': { de: 'Streifenmittel und Gesamtdrehung', en: 'Stripe average and total turning' },
-  'colour.turning-and-escape': { de: 'Gesamtdrehung und Fluchtzeit', en: 'Total turning and escape time' },
-  'colour.own-pair': { de: 'Eigenes Paar', en: 'Custom pair' },
+  'colour.combine-values': { de: 'Werte kombinieren', en: 'Combine values' },
   'colour.escape-time-value': { de: 'Fluchtzeit', en: 'Escape time' },
   'colour.pair-first-axis': { de: 'Erste Achse', en: 'First axis' },
-  'colour.pair-first-axis-title': { de: 'Der Wert der ersten Achse der zweidimensionalen Palette (bei einer gewöhnlichen Palette addieren sich beide Achsen). Die Paare 22 bis 30 sind Voreinstellungen: Änderst du hier etwas, wird daraus ein eigenes Paar.', en: 'The value on the first axis of the two-dimensional palette (with an ordinary palette both axes add up). Pairs 22 to 30 are presets: changing anything here turns them into a custom pair.' },
+  'colour.pair-first-axis-title': { de: 'Der Wert der ersten Achse der zweidimensionalen Palette; bei einer gewöhnlichen Palette addieren sich beide Achsen.', en: 'The value on the first axis of the two-dimensional palette; with an ordinary palette both axes add up.' },
   'colour.pair-second-axis': { de: 'Zweite Achse', en: 'Second axis' },
+  'colour.pair-target': { de: 'Ziel', en: 'Target' },
+  'colour.pair-target-axis-a': { de: 'Erste Achse', en: 'First axis' },
+  'colour.pair-target-axis-b': { de: 'Zweite Achse', en: 'Second axis' },
+  'colour.pair-target-brightness': { de: 'Helligkeit', en: 'Brightness' },
+  'colour.pair-target-saturation': { de: 'Sättigung', en: 'Saturation' },
+  'colour.pair-target-title': { de: 'Wohin dieser Wert wirkt: auf eine der beiden Achsen der Palette oder auf Helligkeit oder Sättigung der fertigen Farbe. Zwei Werte auf demselben Ziel addieren sich.', en: 'Where this value acts: on one of the two axes of the palette, or on brightness or saturation of the finished colour. Two values on the same target add up.' },
   'colour.pair-second-axis-title': { de: 'Der Wert der zweiten Achse; der Farbversatz wirkt auf sie.', en: 'The value on the second axis; the colour offset acts on it.' },
   'colour.pair-factor': { de: 'Faktor', en: 'Factor' },
   'colour.pair-factor-title': { de: 'Dehnt den Wert vor der Farbdichte: 30 für Mittel und Drehung, 1 für die Fluchtzeit, 5 für die Ursprungsnähe (Voreinstellungen).', en: 'Stretches the value before the colour density: 30 for averages and turning, 1 for escape time, 5 for closest approach (presets).' },
@@ -2757,24 +2767,19 @@ const aaPosToTol = p => AA_TOL.min * Math.pow(AA_TOL.max / AA_TOL.min, Math.min(
 const aaMaxToPos = n => Math.min(9, Math.max(0, Math.round(Math.log2(n / 8))));
 const aaPosToMax = p => 8 * Math.pow(2, Math.min(9, Math.max(0, p)));
 const MAP_MAX = 34;   // höchste Nummer einer Färbung (siehe Liste „Färbung nach“)
-const MAPPING_TEXT = { 0: 'mapping.text.0', 1: 'mapping.text.1', 2: 'mapping.text.2', 3: 'mapping.text.3', 4: 'mapping.text.4', 5: 'mapping.text.5', 6: 'mapping.text.6', 7: 'mapping.text.7', 8: 'mapping.text.8', 9: 'mapping.text.9', 10: 'mapping.text.10', 11: 'mapping.text.11', 12: 'mapping.text.12', 13: 'mapping.text.13', 14: 'mapping.text.14', 15: 'mapping.text.15', 16: 'mapping.text.16', 17: 'mapping.text.17', 18: 'mapping.text.18', 19: 'mapping.text.19', 20: 'mapping.text.20', 21: 'mapping.text.21', 22: 'mapping.text.22', 23: 'mapping.text.23', 24: 'mapping.text.24', 25: 'mapping.text.25', 26: 'mapping.text.26', 27: 'mapping.text.27', 28: 'mapping.text.28', 29: 'mapping.text.29', 30: 'mapping.text.30', 31: 'mapping.text.31', 32: 'mapping.text.32', 33: 'mapping.text.33', 34: 'mapping.text.34' };   // ein Satz je Färbung, unter der Auswahl
-// Paare: Färbungen aus zwei Bahnwerten. Je Achse ein Wert (PAAR_WERTE), ein Faktor, wahlweise ein Fluchtzeit-Abzug (0 keiner,
-// 1 β·log₂(N+1), 2 β·0,1·(log₂(N+1) − 10)), bei 0 geklemmt, mit Farbanker (Fluchtzeit: Farbanker der Fluchtzeit; Mittel: der des
-// Bahnmittels). 22, 23, 25, 27 und 30 sind Voreinstellungen dieses einen Mechanismus, 31 das eigene Paar (S.paar).
+const MAPPING_TEXT = { 0: 'mapping.text.0', 1: 'mapping.text.1', 2: 'mapping.text.2', 3: 'mapping.text.3', 4: 'mapping.text.4', 5: 'mapping.text.5', 6: 'mapping.text.6', 7: 'mapping.text.7', 8: 'mapping.text.8', 9: 'mapping.text.9', 10: 'mapping.text.10', 11: 'mapping.text.11', 12: 'mapping.text.12', 13: 'mapping.text.13', 14: 'mapping.text.14', 15: 'mapping.text.15', 16: 'mapping.text.16', 17: 'mapping.text.17', 18: 'mapping.text.18', 19: 'mapping.text.19', 20: 'mapping.text.20', 21: 'mapping.text.21', 24: 'mapping.text.24', 26: 'mapping.text.26', 28: 'mapping.text.28', 29: 'mapping.text.29', 31: 'mapping.text.31', 32: 'mapping.text.32', 33: 'mapping.text.33', 34: 'mapping.text.34' };   // ein Satz je Färbung, unter der Auswahl
+// „Werte kombinieren“ (31): eine Färbung aus zwei Bahnwerten, frei gewählt. Je Achse ein Wert (PAAR_WERTE), ein Faktor,
+// wahlweise ein Fluchtzeit-Abzug (0 keiner, 1 β·log₂(N+1), 2 β·0,1·(log₂(N+1) − 10)), bei 0 geklemmt, mit Farbanker
+// (Fluchtzeit: Farbanker der Fluchtzeit; Mittel: der des Bahnmittels). Die Einstellung steht in S.paar.
 const PAAR_WERTE = ['', 'fluchtzeit', 'streifen', 'dreieck', 'drehung', 'ursprung', 'kreuz', 'perioden', 'winkel', 'phase'];   // 9 Streifenphase
 const PAAR_STAT = [0, 0, 3, 4, 8, 7, 1, 10, 0, 18];   // Sammler des Shaders je Wert (0: keiner — Fluchtzeit und Fluchtwinkel brauchen keinen)
 const PAAR_NAMEN = ['', 'colour.escape-time-value', 'colour.stripe-average', 'colour.texture-triangle', 'colour.total-turning', 'colour.closest-to-origin', 'colour.texture-cross', 'colour.period-domains', 'colour.escape-angle', 'colour.stripe-phase'];
-const PAARE = {
-  22: { a: { wert: 1, faktor: 1, abzug: 0, klemme: false, anker: true }, b: { wert: 2, faktor: 30, abzug: 0, klemme: false, anker: true } },
-  23: { a: { wert: 1, faktor: 1, abzug: 0, klemme: false, anker: true }, b: { wert: 3, faktor: 37.5, abzug: 0, klemme: false, anker: true } },
-  25: { a: { wert: 5, faktor: 5, abzug: 1, klemme: true, anker: false }, b: { wert: 2, faktor: 30, abzug: 0, klemme: false, anker: false } },
-  27: { a: { wert: 4, faktor: 30, abzug: 2, klemme: false, anker: false }, b: { wert: 2, faktor: 30, abzug: 0, klemme: false, anker: false } },
-  30: { a: { wert: 4, faktor: 30, abzug: 2, klemme: false, anker: false }, b: { wert: 1, faktor: 0.15, abzug: 0, klemme: false, anker: true } },
-};
-const PAAR_EIGEN = () => ({ a: { wert: 1, faktor: 1, abzug: 0, klemme: false, anker: true }, b: { wert: 2, faktor: 30, abzug: 0, klemme: false, anker: true } });   // Start des eigenen Paars: wie 22
-function paarKonfig() {   // das Paar der Färbung oder null
+const PAAR_ZIELE = 4;   // 0 erste Achse, 1 zweite Achse, 2 Helligkeit, 3 Sättigung; die beiden Achsen gehen in die Palette, die anderen beiden auf die fertige Farbe
+const PAAR_ZIEL_VOR = { a: 0, b: 1 };   // Vorgabe je Platz: der erste Wert auf die erste Achse, der zweite auf die zweite
+const PAAR_EIGEN = () => ({ a: { wert: 1, faktor: 1, abzug: 0, klemme: false, anker: true, ziel: 0 }, b: { wert: 2, faktor: 30, abzug: 0, klemme: false, anker: true, ziel: 1 } });   // Vorgabe: Fluchtzeit auf Achse A, Streifenmittel ×30 auf Achse B
+function paarKonfig() {   // die Werte der Färbung „Werte kombinieren“ oder null
   if (S.family !== 'escape' || wurzelFormel(S.formula) || FORMULAS[S.formula].seq) return null;
-  return PAARE[S.mapping] || (S.mapping === 31 ? S.paar : null);
+  return S.mapping === 31 ? S.paar : null;
 }
 function paarAbzug() { const k = paarKonfig(); return !!k && (k.a.abzug !== 0 || k.b.abzug !== 0); }   // eine Achse zieht die Fluchtzeit ab: der β-Regler gilt
 function paarVoll() { const k = paarKonfig(); return !!k && (k.a.wert === 1) !== (k.b.wert === 1); }   // genau eine Achse ist die Fluchtzeit: der andere Wert steht voll (32 Bit) im Kanal
@@ -2782,7 +2787,7 @@ function paarPipeline() { const k = paarKonfig(); return k ? { paar: 1, paarA: k
 function paarKey() { const k = paarKonfig(); return k ? k.a.wert + ':' + k.b.wert + ':' + (paarVoll() ? 1 : 0) : ''; }
 function paarUniform() {   // (Wert A, Wert B, Faktor A, Faktor B), (Abzug A, Abzug B, Flags A, Flags B): Bit 0 Anker, Bit 1 Klemme, Bit 2 voll
   const k = paarKonfig(); if (!k) return [0, 0, 0, 0, 0, 0, 0, 0];
-  const voll = paarVoll(), fl = x => (x.anker ? 1 : 0) | (x.klemme ? 2 : 0) | (voll && x.wert !== 1 ? 4 : 0);
+  const voll = paarVoll(), fl = x => (x.anker ? 1 : 0) | (x.klemme ? 2 : 0) | (voll && x.wert !== 1 ? 4 : 0) | ((x.ziel || 0) << 3);   // Bit 3 und 4: das Ziel
   return [k.a.wert, k.b.wert, k.a.faktor, k.b.faktor, k.a.abzug, k.b.abzug, fl(k.a), fl(k.b)];
 }
 const AA_MODI = ['grid', 'adaptive', 'fast'];   // Raster, adaptiv, adaptiv schnell
@@ -3228,11 +3233,11 @@ function quelle2() {
   if (S.family !== 'escape') return '';
   if (FORMULAS[S.formula].seq) return 'markus';
   if (wurzelFormel(S.formula)) return 'newton';
-  return { 13: 'lyap', 14: 'reim', 15: 'winkel', 16: 'komplex', 18: 'kreuz2', 21: 'vorzeichen', 22: 'streifen', 23: 'dreieck', 25: 'streifenUrsprung', 27: 'streifenDrehung', 30: 'drehungZeit', 31: 'paar' }[S.mapping] || '';
+  return { 13: 'lyap', 14: 'reim', 15: 'winkel', 16: 'komplex', 18: 'kreuz2', 21: 'vorzeichen', 31: 'paar' }[S.mapping] || '';
 }
 // Vorgaben je Quelle beim Namen, damit Entfernen oder Umstellen einer Vorgabe nichts verschiebt
-const PAL2_START = { reim: 'pastel', markus: 'gold-and-blue', komplex: 'field-lines', kreuz2: 'field-lines', vorzeichen: 'field-lines', streifen: 'sage-two-axes', dreieck: 'sage-two-axes', streifenUrsprung: 'sage-halo', streifenDrehung: 'sage-turn', drehungZeit: 'sage-time', paar: 'field-lines' };   // die neuen Färbungen zeigen sich mit Feldlinien, die Bahnmittel mit Pastell
-const PAL2_ZWEI = { reim: 'pastel', markus: 'gold-and-blue', lyap: 'gold-and-blue', newton: 'tiles', winkel: 'field-lines', komplex: 'field-lines', kreuz2: 'field-lines', vorzeichen: 'field-lines', streifen: 'sage-two-axes', dreieck: 'sage-two-axes', streifenUrsprung: 'sage-halo', streifenDrehung: 'sage-turn', drehungZeit: 'sage-time', paar: 'field-lines' };   // erste zweidimensionale beim Umschalten
+const PAL2_START = { reim: 'pastel', markus: 'gold-and-blue', komplex: 'field-lines', kreuz2: 'field-lines', vorzeichen: 'field-lines', paar: 'field-lines' };   // Vorgabe je Quelle beim Namen: die neuen Färbungen zeigen sich mit Feldlinien
+const PAL2_ZWEI = { reim: 'pastel', markus: 'gold-and-blue', lyap: 'gold-and-blue', newton: 'tiles', winkel: 'field-lines', komplex: 'field-lines', kreuz2: 'field-lines', vorzeichen: 'field-lines', paar: 'field-lines' };   // erste zweidimensionale beim Umschalten
 // Alte Links nannten die Stelle in der Liste (so lag sie am 11.09.2026; null: Vorgabe entfernt), nur für solche Links
 const PAL2_ALT = ['pastel', 'gold-and-blue', 'ice-and-embers', null, 'field-lines', 'tiles', 'binary-decomposition', 'bands', 'magenta-and-mint'];
 function pal2Nr(k) { return PAL2.findIndex(p => p.kennung === k); }   // −1: unbekannt oder entfernt
@@ -4489,6 +4494,7 @@ fn texturMit(col: vec3f, v: f32, p: vec4f, hell: vec3f, dunkel: vec3f) -> vec3f 
   let d = p.y * (2.0 * g - 1.0);
   return select(mix(col, dunkel, -d), mix(col, hell, d), d > 0.0);
 }
+fn paarWeich(w: f32) -> f32 { return 1.0 + tanh(w); }   // Ziel Helligkeit oder Sättigung: am Anker bleibt die Farbe, darüber heller bzw. bunter, darunter dunkler bzw. grauer
 fn paarAchse(wert: u32, roh: f32, nu: f32, faktor: f32, abzug: u32, flags: u32) -> f32 {   // eine Achse des Paars: Wert (Fluchtzeit aus nu), Anker, Fluchtzeit-Abzug, Klemme, Faktor
   var w = roh;
   if (wert == 1u) { w = mapNu(nu) - select(0.0, anchorV(), (flags & 1u) != 0u); }
@@ -4677,12 +4683,20 @@ fn sampleColor(px: vec4u, xy: vec2i, k: i32) -> vec3f {
     let nu = f32(u & 0x03FFFFFFu) * (1.0 / 256.0); let th = bitcast<f32>(px.y);
     let p = vec2f((mapNu(nu) - anchorV()) * C.misc.x, th);
     if (zwei) { col = farbe2(vec2f(1.0, th), p, false); } else { col = pal(p.x + p.y + C.misc.y); }
-  } else if (C.paar.x > 0.5) {   // Paar aus zwei Bahnwerten (22, 23, 25, 27, 30 als Voreinstellungen, 31 eigenes): je Achse Wert · Faktor, wahlweise minus Fluchtzeit-Abzug, mit Anker
+  } else if (C.paar.x > 0.5) {   // Werte kombinieren (31): je Wert · Faktor, wahlweise minus Fluchtzeit-Abzug, mit Anker, auf sein Ziel (Bit 3 und 4 der Flags)
     let nu = f32(u & 0x03FFFFFFu) * (1.0 / 256.0); let v2 = unpack2x16float(px.y); let voll = bitcast<f32>(px.y);
     let fa = u32(C.paar2.z); let fb = u32(C.paar2.w);
     let ra = select(v2.x, voll, (fa & 4u) != 0u); let rb = select(v2.y, voll, (fb & 4u) != 0u);   // der Partner der Fluchtzeit steht voll im Kanal
-    let p = vec2f(paarAchse(u32(C.paar.x), ra, nu, C.paar.z, u32(C.paar2.x), fa) * C.misc.x, paarAchse(u32(C.paar.y), rb, nu, C.paar.w, u32(C.paar2.y), fb) * C.misc.x + C.misc.y);
+    let wa = paarAchse(u32(C.paar.x), ra, nu, C.paar.z, u32(C.paar2.x), fa) * C.misc.x;
+    let wb = paarAchse(u32(C.paar.y), rb, nu, C.paar.w, u32(C.paar2.y), fb) * C.misc.x;
+    let za = (fa >> 3u) & 3u; let zb = (fb >> 3u) & 3u;
+    var p = vec2f(0.0); var md = vec2f(0.0);   // p: die beiden Achsen der Palette, md: x Helligkeit, y Sättigung
+    if (za == 0u) { p.x += wa; } else if (za == 1u) { p.y += wa; } else if (za == 2u) { md.x += wa; } else { md.y += wa; }
+    if (zb == 0u) { p.x += wb; } else if (zb == 1u) { p.y += wb; } else if (zb == 2u) { md.x += wb; } else { md.y += wb; }
+    p.y += C.misc.y;   // der Farbversatz wirkt auf die zweite Achse
     if (zwei) { col = farbe2(vec2f(1.0), p, false); } else { col = pal(p.x + p.y); }
+    if (za == 2u || zb == 2u) { col = col * paarWeich(md.x); }                     // Helligkeit: am Anker unverändert, sonst dunkler oder heller
+    if (za == 3u || zb == 3u) { col = max(mix(vec3f(lum(col)), col, paarWeich(md.y)), vec3f(0.0)); }   // Sättigung: am Anker unverändert, darunter grauer, darüber bunter
   } else if (u32(C.misc.w) == 19u || u32(C.misc.w) == 20u || u32(C.misc.w) == 26u) {   // Streifen-, Dreiecksmittel, Gesamtdrehung: nur außen; Standarddichte 1,2 bzw. 1,5 Umläufe
     col = pal((bitcast<f32>(px.y) - ankerS()) * select(37.5, 30.0, u32(C.misc.w) != 20u) * C.misc.x + C.misc.y);
   } else {
@@ -6206,6 +6220,7 @@ vec3 texturMit(vec3 col, float v, vec4 p, vec3 hell, vec3 dunkel) {   // Textur 
   float g = clamp(0.5 + (v - p.w) * p.z, 0.0, 1.0), d = p.y * (2.0 * g - 1.0);
   return d > 0.0 ? mix(col, hell, d) : mix(col, dunkel, -d);
 }
+float paarWeich(float w) { return 1.0 + tanh(w); }   // wie im WGSL-Shader
 float paarAchse(uint wert, float roh, float nu, float faktor, uint abzug, uint flags) {   // wie im WGSL-Shader
   float w = roh;
   if (wert == 1u) w = mapNu(nu) - ((flags & 1u) != 0u ? gAnchorV : 0.0);
@@ -6345,12 +6360,20 @@ vec3 sampleColor(uvec4 px, ivec2 xy, int k) {   // Farbe einer Probe; k = Ebene,
     float nu = float(u & 0x03FFFFFFu) / 256.0, th = uintBitsToFloat(px.y);
     vec2 p = vec2((mapNu(nu) - gAnchorV) * uMisc.x, th);
     col = zwei ? farbe2(vec2(1.0, th), p, false) : pal(p.x + p.y + uMisc.y);
-  } else if (uPaar.x > 0.5) {   // Paar aus zwei Bahnwerten wie im WGSL-Shader
+  } else if (uPaar.x > 0.5) {   // Werte kombinieren wie im WGSL-Shader
     float nu = float(u & 0x03FFFFFFu) / 256.0; vec2 v2 = unpackHalf2x16(px.y); float voll = uintBitsToFloat(px.y);
     uint fa = uint(uPaar2.z), fb = uint(uPaar2.w);
     float ra = (fa & 4u) != 0u ? voll : v2.x, rb = (fb & 4u) != 0u ? voll : v2.y;
-    vec2 p = vec2(paarAchse(uint(uPaar.x), ra, nu, uPaar.z, uint(uPaar2.x), fa) * uMisc.x, paarAchse(uint(uPaar.y), rb, nu, uPaar.w, uint(uPaar2.y), fb) * uMisc.x + uMisc.y);
+    float wa = paarAchse(uint(uPaar.x), ra, nu, uPaar.z, uint(uPaar2.x), fa) * uMisc.x;
+    float wb = paarAchse(uint(uPaar.y), rb, nu, uPaar.w, uint(uPaar2.y), fb) * uMisc.x;
+    uint za = (fa >> 3u) & 3u, zb = (fb >> 3u) & 3u;
+    vec2 p = vec2(0.0), md = vec2(0.0);
+    if (za == 0u) p.x += wa; else if (za == 1u) p.y += wa; else if (za == 2u) md.x += wa; else md.y += wa;
+    if (zb == 0u) p.x += wb; else if (zb == 1u) p.y += wb; else if (zb == 2u) md.x += wb; else md.y += wb;
+    p.y += uMisc.y;
     col = zwei ? farbe2(vec2(1.0), p, false) : pal(p.x + p.y);
+    if (za == 2u || zb == 2u) col *= paarWeich(md.x);
+    if (za == 3u || zb == 3u) col = max(mix(vec3(lum(col)), col, paarWeich(md.y)), vec3(0.0));
   } else if (uMapping == 19 || uMapping == 20 || uMapping == 26) {
     col = pal((uintBitsToFloat(px.y) - ankerS()) * (uMapping != 20 ? 30.0 : 37.5) * uMisc.x + uMisc.y);
   } else {
@@ -8518,7 +8541,7 @@ function brauchtAbstand() { return abstandSonst() || richtungImKanal(); }   // d
 function abstandSonst() { return (S.glowMode !== 0 && !lyapModus() && !(winkelModus() & 1) && !statIrgend()) || S.mapping === 4 || S.mapping === 6 || S.mapping === 12 || texArten().includes(10) || texArten().includes(21) || maskeBrauchtAbstand(); }   // auch die Textur „Randnähe“ braucht den Abstand
 function brauchtInnen() { return S.interior === 2 && !lyapModus() && !statUeberall(); }
 // Farbanker nur, wo die Färbung ihn nutzt: bei Lyapunov (Markus) und den Färbungen nach Lyapunov-Exponent verschöbe er nur den Farbversatz
-const statMitZeit = () => { const k = paarKonfig(); return !!k && k.a.wert === 1; };   // Paar mit der Fluchtzeit als erster Achse (22, 23, eigene): der Farbanker der Fluchtzeit gilt
+const statMitZeit = () => { const k = paarKonfig(); return !!k && k.a.wert === 1; };   // Fluchtzeit auf der ersten Achse: der Farbanker der Fluchtzeit gilt
 function statAnkerWirkt() { const k = paarKonfig(); if (k) return [k.a, k.b].some(x => (x.wert === 2 || x.wert === 3) && x.anker); const m = statModus(); return m === 3 || m === 4 || m === 8; }   // Farbanker des Bahnmittels
 function statMittel() { return [statModus(), statModus2()].some(m => m === 3 || m === 4 || m === 8); }
 // Textur: eine Bahnstatistik als Helligkeit über der Fluchtzeit-Färbung — nur, wo der zweite Kanal frei ist (kein Relief, keine
@@ -9170,12 +9193,13 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
   const den = parseFloat(h.get('den'));
   if (Number.isFinite(den)) S.density = clamp(den, DENS.min, DENS.max);
   const off = parseFloat(h.get('off')); if (Number.isFinite(off)) S.offset = clamp(off, 0, 1);
-  const map = parseInt(h.get('map'), 10); if (Number.isFinite(map)) S.mapping = clamp(map, 0, MAP_MAX);
+  const map = parseInt(h.get('map'), 10); if (Number.isFinite(map)) { const m = clamp(map, 0, MAP_MAX); S.mapping = MAPPING_TEXT[m] ? m : 2; }   // unbekannte Nummer (etwa ein altes Paar): logarithmisch
   S.paar = PAAR_EIGEN();   // eigenes Paar (31): pa und pb je Wert:Faktor:Abzug:Klemme
   for (const [k, ach] of [['pa', 'a'], ['pb', 'b']]) {
     const t = (h.get(k) || '').split(':'); if (t.length < 2) continue;
     const w = parseInt(t[0], 10), f = parseFloat(t[1]), ab = parseInt(t[2], 10);
     if (w >= 1 && w < PAAR_WERTE.length) S.paar[ach].wert = w; if (Number.isFinite(f) && f > 0) S.paar[ach].faktor = clamp(f, 0.001, 1000); S.paar[ach].abzug = ab === 1 || ab === 2 ? ab : 0; S.paar[ach].klemme = t[3] === '1';
+    const zi = parseInt(t[4], 10); if (zi >= 0 && zi < PAAR_ZIELE) S.paar[ach].ziel = zi;   // fehlt das Feld, bleibt die Vorgabe des Platzes
     S.paar[ach].anker = S.paar[ach].wert <= 3;   // Anker bei Fluchtzeit und Mitteln
   }
   const lg = parseFloat(h.get('lg')); S.lyGrenze = Number.isFinite(lg) ? clamp(lg, 0, 1e9) : 2;   // wie LY_GRENZE (die steht erst weiter unten)
@@ -9289,7 +9313,7 @@ function buildParams() {
   if (S.mapping === 32 && S.spirale !== SPIRALE.def) p.set('sd', String(+S.spirale.toFixed(3)));
   if (S.texInnen) p.set('ti', '1'); if (S.texVerbund > 0) p.set('tv', String(+S.texVerbund.toFixed(2)));   // Texturen auch innen; Fallenverbund
   if (statIrgend() && S.vorlauf !== VORLAUF.def) p.set('sk', String(S.vorlauf));   // Vorlauf bei jeder Bahnstatistik
-  if (S.mapping === 31) { const q = x => [x.wert, +x.faktor.toFixed(3), x.abzug, x.klemme ? 1 : 0].join(':'); p.set('pa', q(S.paar.a)); p.set('pb', q(S.paar.b)); }   // eigenes Paar: je Achse Wert:Faktor:Abzug:Klemme
+  if (S.mapping === 31) { const q = (x, ach) => { const t = [x.wert, +x.faktor.toFixed(3), x.abzug, x.klemme ? 1 : 0]; if ((x.ziel || 0) !== PAAR_ZIEL_VOR[ach]) t.push(x.ziel); return t.join(':'); }; p.set('pa', q(S.paar.a, 'a')); p.set('pb', q(S.paar.b, 'b')); }   // je Wert Wert:Faktor:Abzug:Klemme, das Ziel nur abweichend vom Platz
   if (S.mapping === 28 && !kurveIstGerade()) p.set('kv', S.kurve.map(([x, y]) => +x.toFixed(3) + ':' + +y.toFixed(3)).join(','));   // Kurve nur, wo sie färbt
   if (S.mapping === 28 && S.kurveSpann) p.set('ks', '1');
   if (S.textur !== 0) {   // Textur samt Reglern, sofern sie von der Vorgabe abweichen
@@ -10703,9 +10727,7 @@ $('comp').addEventListener('input', () => setzeStauchung(posToComp(+$('comp').va
 $('comp').value = compToPos(S.comp);
 const mapSel = $('mapping'); mapSel.value = String(S.mapping);
 mapSel.addEventListener('change', () => {
-  const paarAlt = paarKonfig(), quelleAlt = quelle2();   // von einem festen Paar zum eigenen: Achsen und Palette mitnehmen
   S.mapping = clamp(parseInt(mapSel.value, 10) || 0, 0, MAP_MAX);
-  if (S.mapping === 31 && paarAlt && quelleAlt && quelleAlt !== 'paar') paarUebernehmen(paarAlt, quelleAlt);
   if (histAktiv()) histDirty = true;
   if (brauchtAbstand() && !deInTexture) fractalDirty = true;   // Abstände müssen erst berechnet werden
   if (richtungModus() !== richtungInTexture) { formatPruefen(); fractalDirty = true; }   // Kanal der Richtung: y, z oder keiner
@@ -10893,18 +10915,11 @@ function syncPaar() {
     $('paarFaktor' + K).value = String(Math.round(faktorZuPos(x.faktor))); $('paarFaktor' + K + 'Val').value = fmtZahl(x.faktor, x.faktor < 1 ? 3 : 2);
     $('paarAbzug' + K).value = String(x.abzug); if ($('paarAbzug' + K)._sync) $('paarAbzug' + K)._sync();
     $('paarKlemme' + K).checked = !!x.klemme;
+    $('paarZiel' + K).value = String(x.ziel || 0); if ($('paarZiel' + K)._sync) $('paarZiel' + K)._sync();
   }
 }
-function paarUebernehmen(k, q) {   // eine Voreinstellung wird zum eigenen Paar: Achsen kopieren, die zweidimensionale Palette der Färbung mitnehmen
-  S.paar = { a: Object.assign({}, k.a), b: Object.assign({}, k.b) };
-  const ref = S.pal2[q]; S.pal2.paar = ref === undefined ? pal2Start(q) : ref;
-}
-function paarEigen() {   // eine Voreinstellung wird zum eigenen Paar: Kopie nach S.paar, Färbung 31
-  if (S.mapping !== 31) { const k = paarKonfig(), q = quelle2(); if (k && q) paarUebernehmen(k, q); else S.paar = PAAR_EIGEN(); S.mapping = 31; $('mapping').value = '31'; if ($('mapping')._sync) $('mapping')._sync(); }
-  return S.paar;
-}
 function setzePaar(ach, feld, v, neuRechnen) {
-  const p = paarEigen(); p[ach][feld] = v;
+  const p = S.paar; p[ach][feld] = v;
   if (feld === 'wert') p[ach].anker = v <= 3;   // Anker bei Fluchtzeit und Mitteln
   syncFarbUI(); scheduleHash();
   if (neuRechnen) viewChanged(); else { colorDirty = true; requestFrame(); }
@@ -10914,6 +10929,7 @@ for (const [ach, K] of [['a', 'A'], ['b', 'B']]) {
   $('paarFaktor' + K).addEventListener('input', () => setzePaar(ach, 'faktor', +posZuFaktor(+$('paarFaktor' + K).value).toFixed(3), false));
   $('paarAbzug' + K).addEventListener('change', () => setzePaar(ach, 'abzug', clamp(parseInt($('paarAbzug' + K).value, 10) || 0, 0, 2), false));
   $('paarKlemme' + K).addEventListener('change', () => setzePaar(ach, 'klemme', $('paarKlemme' + K).checked, false));
+  $('paarZiel' + K).addEventListener('change', () => setzePaar(ach, 'ziel', clamp(parseInt($('paarZiel' + K).value, 10) || 0, 0, PAAR_ZIELE - 1), false));   // nur umfärben: das Ziel ist ein Uniform
 }
 const setzePaarFaktorA = v => setzePaar('a', 'faktor', clamp(v, 0.001, 1000), false), setzePaarFaktorB = v => setzePaar('b', 'faktor', clamp(v, 0.001, 1000), false);   // getippt: auch jenseits der Reglerskala
 const texSetzer = (n, feld, grenzen) => v => { S[texKeys(n)[feld]] = clamp(v, grenzen.min, grenzen.max); syncTextur(); colorDirty = true; scheduleHash(); requestFrame(); };   // Regler: nur Farbe, kein Neurechnen

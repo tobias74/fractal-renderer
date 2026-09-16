@@ -72,7 +72,7 @@ describe('Farbe und Farbschema-Editor', () => {
   });
 
   it('Verläufe Relief, Doppelt logarithmisch und Logarithmisch + Relief: Adresse, Neurender, andere Bilder', () => {
-    cy.get('#mapping option').should('have.length', 35);   // 29 einwertige (mit Kurve, Ursprungsnähe, Gesamtdrehung, Periodengebiete, Spiralfalle, logmap, äußerer Winkel) plus fünf feste Paare und das eigene Paar
+    cy.get('#mapping option').should('have.length', 30);   // 29 einwertige (mit Kurve, Ursprungsnähe, Gesamtdrehung, Periodengebiete, Spiralfalle, logmap, äußerer Winkel) plus „Werte kombinieren“
     cy.rerender(() => cy.pickOption('mapping', 5));
     cy.expectHash('map', '5');
     cy.rerender(() => cy.pickOption('mapping', 7));
@@ -599,7 +599,7 @@ describe('Färbungen nach Bahnstatistik', () => {
       cy.expectHash('sp', '9');
       cy.shotStats('streifen-9').then(neun => anders(fuenf, neun, 'neun Streifen sehen anders aus als fünf'));
     });
-    cy.rerender(() => cy.pickOption('mapping', 22));                      // mit Fluchtzeit: dieselbe Statistik, Regler bleibt
+    cy.rerender(() => cy.pickOption('mapping', 31));                      // kombiniert (Fluchtzeit, Streifenmittel): dieselbe Statistik, Regler bleibt
     cy.get('#streifenRow').should('not.have.attr', 'hidden');
     cy.get('#streifenVal').should('have.value', '9');
     cy.rerender(() => cy.pickOption('mapping', 20));                      // Dreiecksmittel kennt keine Streifen
@@ -654,19 +654,22 @@ describe('Färbungen nach Bahnstatistik', () => {
       cy.get('#interior').parent().should('have.attr', 'hidden');       // färbt innen wie außen, wie die Kreuzfalle
       cy.shotStats('ursprung-24').then(u => {
         anders(log, u, 'Ursprungsnähe sieht anders aus als logarithmisch');
-        cy.rerender(() => cy.pickOption('mapping', 25));
-        cy.expectHash('map', '25');
-        cy.get('#palArt').should('not.have.attr', 'hidden');            // zwei Werte: Umschalter da, Vorgabe zweidimensional „Salbei mit Saum“
+        cy.rerender(() => cy.pickOption('mapping', 31));                // kombiniert: Ursprungsnähe mit Abzug auf der ersten Achse
+        cy.expectHash('map', '31');
+        cy.rerender(() => cy.pickOption('paarA', 5));
+        cy.rerender(() => cy.pickOption('paarAbzugA', 1));
+        cy.get('#palArt').should('not.have.attr', 'hidden');            // zwei Werte: Umschalter da, Vorgabe zweidimensional „Feldlinien“
         cy.get('#palArt [data-art="2"]').should('have.class', 'on');
-        cy.get('#palette').find('option:selected').should('have.text', 'Salbei mit Saum');
+        cy.get('#palette').find('option:selected').should('have.text', 'Feldlinien');
         cy.get('#streifenRow').should('not.have.attr', 'hidden');
         cy.get('#gewichtRow').should('not.have.attr', 'hidden');
         cy.get('#abzugRow').should('not.have.attr', 'hidden');          // Fluchtzeit-Abzug nur hier
         cy.get('#abzugVal').invoke('val').should('match', /^0[.,]00$/);
         cy.expectHash('sn', null);
         cy.shotStats('ursprung-25').then(p => {
-          anders(u, p, 'das Paar sieht anders aus als die Ursprungsnähe allein');
-          cy.get('#abzugVal').clear().type('0,3{enter}');               // reine Farbstufe: kein Neurechnen
+          anders(u, p, 'die Kombination sieht anders aus als die Ursprungsnähe allein');
+          cy.get('#abzugVal').clear({ force: true }).type('0,3{enter}', { force: true });   // force: nach dem Screenshot hält Cypress das Feld für verdeckt, die App zeigt es
+
           cy.get('#abzug').should('have.value', '0.3');
           cy.expectHash('sn', '0.3');
           cy.wait(400);
@@ -682,16 +685,18 @@ describe('Färbungen nach Bahnstatistik', () => {
         cy.get('#gewichtRow').should('not.have.attr', 'hidden');
         cy.shotStats('drehung-26').then(d => {
           anders(u, d, 'Gesamtdrehung sieht anders aus als die Ursprungsnähe');
-          cy.rerender(() => cy.pickOption('mapping', 27));              // Paar mit dem Streifenmittel: Streifen, Gewichtung, Abzug, Vorgabe „Salbei mit Höfen“
-          cy.expectHash('map', '27');
+          cy.rerender(() => cy.pickOption('mapping', 31));              // kombiniert: Gesamtdrehung mit Abzug und Streifenmittel
+          cy.rerender(() => cy.pickOption('paarA', 4));
+          cy.rerender(() => cy.pickOption('paarAbzugA', 2));
+          cy.expectHash('map', '31');
           cy.get('#palArt [data-art="2"]').should('have.class', 'on');
-          cy.get('#palette').find('option:selected').should('have.text', 'Salbei mit Höfen');
+          cy.get('#palette option').contains('Salbei mit Höfen').then($o => cy.pickOption('palette', $o.val()));   // dieses Schema trägt das Muster „Verlauf über Verlauf“
           cy.get('#streifenRow').should('not.have.attr', 'hidden');
           cy.get('#abzugRow').should('not.have.attr', 'hidden');
           cy.expectHash('sn', '0.3');                                    // der Abzug von vorhin gilt hier weiter
           cy.shotStats('drehung-27').then(e => {
-            anders(d, e, 'das Paar sieht anders aus als die Drehung allein');
-            cy.get('#abzugVal').clear().type('2{enter}');                // Bereich bis 2
+            anders(d, e, 'die Kombination sieht anders aus als die Drehung allein');
+            cy.get('#abzugVal').clear({ force: true }).type('2{enter}', { force: true });   // Bereich bis 2 (force wie oben)
             cy.get('#abzug').should('have.value', '2');
             cy.expectHash('sn', '2');
             cy.revealInDetails('palEdit');                              // die Vorgabe nutzt das neue Muster „Verlauf über Verlauf“
@@ -766,7 +771,7 @@ describe('Färbungen nach Bahnstatistik', () => {
         cy.shotStats('statistik-wieder-ohne').then(zurueck => gleich(ohne, zurueck, 'ohne Textur wieder das alte Bild'));
       });
     });
-    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&map=27&tx=1&ts=0.8');   // das Paar mit Textur aus dem Link
+    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&map=31&pa=4:30:2:0&pb=2:30:0:0&tx=1&ts=0.8');   // die Kombination mit Textur aus dem Link
     cy.get('#texturRow').should('not.have.attr', 'hidden');
     cy.get('#textur').should('have.value', '1');
     cy.shotStats('paar-mit-textur').then(mit => {
@@ -839,7 +844,7 @@ describe('Färbungen nach Bahnstatistik', () => {
     cy.expectHash('tx', '5'); cy.expectHash('tc', 'ff8040'); cy.expectHash('t2', '3');
     cy.get('#texturRow .tex-kurz').should('contain.text', 'Ursprungsnähe');
     cy.get('#texturRow .tex-kopf > label').should('have.attr', 'hidden');   // belegt: kein Platzname im Kopf, nur die Art
-    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&map=27&tx=1&t2=3&t3=5&t4=2&ts=0.8');   // vier Texturen über einer Statistik-Färbung (Kanäle z und w)
+    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&map=31&pa=4:30:2:0&pb=2:30:0:0&tx=1&t2=3&t3=5&t4=2&ts=0.8');   // vier Texturen über einer Statistik-Färbung (Kanäle z und w)
     cy.get('#textur4').should('have.value', '2');
     cy.waitRender();
     cy.get('#state').should('contain.text', 'Fertig');
@@ -1015,60 +1020,65 @@ describe('Färbungen nach Bahnstatistik', () => {
     cy.rerender(() => cy.pickOption('textur', 0));                        // ohne erste gibt es auch keine zweite
     cy.get('#textur2Row').should('have.attr', 'hidden');
   });
-  it('Gesamtdrehung und Fluchtzeit (30): Paar mit Abzug und Vorgabe „Salbei nach Fluchtzeit“, anderes Bild als 27 und 26, Textur obendrauf', () => {
-    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&map=27');
-    cy.shotStats('drehzeit-27').then(paar => {
-      cy.rerender(() => cy.pickOption('mapping', 30));
-      cy.expectHash('map', '30');
-      cy.get('#palArt [data-art="2"]').should('have.class', 'on');
-      cy.get('#palette').find('option:selected').should('have.text', 'Salbei nach Fluchtzeit');
-      cy.get('#abzugRow').should('not.have.attr', 'hidden');            // der Fluchtzeit-Abzug gilt auch hier
-      cy.get('#streifenRow').should('have.attr', 'hidden');              // keine Streifen: die zweite Achse ist die Fluchtzeit
-      cy.get('#gewichtRow').should('not.have.attr', 'hidden');
-      cy.get('#texturRow').should('not.have.attr', 'hidden');
-      cy.shotStats('drehzeit-30').then(dz => {
-        anders(paar, dz, 'das Paar mit der Fluchtzeit sieht anders aus als das mit dem Streifenmittel');
-        cy.get('#abzugVal').clear().type('2{enter}');
-        cy.expectHash('sn', '2');
-        cy.wait(600);                                                      // der Abzug färbt nur neu ein: den nächsten Frame abwarten
-        cy.shotStats('drehzeit-30-abzug').then(ab => {
-          anders(dz, ab, 'der Abzug ändert das Bild');
-          cy.rerender(() => cy.pickOption('textur', 1));                // Streifen als Textur obendrauf (dritter Kanal)
-          cy.expectHash('tx', '1');
-          cy.shotStats('drehzeit-30-textur').then(tx => anders(ab, tx, 'die Textur ändert das Bild'));
-          cy.rerender(() => cy.pickOption('textur', 0));
+  it('Werte kombinieren: jedes Ziel einzeln — Achsen, Helligkeit, Sättigung; im Link nur, wenn es vom Platz abweicht', () => {
+    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&ca=off&p2=n&map=31');
+    cy.pane('farbe');
+    cy.get('#paarZielA').should('have.value', '0');                       // Vorgabe: erster Wert auf die erste Achse
+    cy.get('#paarZielB').should('have.value', '1');                       // zweiter auf die zweite
+    cy.expectHash('pa', '1:1:0:0'); cy.expectHash('pb', '2:30:0:0');      // das Ziel fehlt im Link, solange es dem Platz entspricht
+    cy.shotStats('ziel-achsen').then(achsen => {
+      cy.rerender(() => cy.pickOption('paarZielB', 2));                   // zweiter Wert auf die Helligkeit
+      cy.expectHash('pb', '2:30:0:0:2');
+      cy.shotStats('ziel-hell').then(hell => {
+        anders(achsen, hell, 'als Helligkeit sieht der Wert anders aus als auf der zweiten Achse');
+        cy.rerender(() => cy.pickOption('paarZielB', 3));                 // und auf die Sättigung
+        cy.expectHash('pb', '2:30:0:0:3');
+        cy.shotStats('ziel-satt').then(satt => anders(hell, satt, 'Sättigung sieht anders aus als Helligkeit'));
+        cy.rerender(() => cy.pickOption('paarZielB', 0));                 // beide auf dieselbe Achse: sie addieren sich
+        cy.expectHash('pb', '2:30:0:0:0');
+        cy.get('#state').should('contain.text', 'Fertig');
+      });
+    });
+  });
+
+  it('Werte kombinieren (31): Achsen frei, Faktor, Abzug, Klemme, Textur obendrauf, alles im Link', () => {
+    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&ca=off');          // ohne Farbanker: kein Ankerlesen zwischen den Bildern
+    cy.rerender(() => cy.pickOption('mapping', 31));
+    cy.get('#paarRow').should('not.have.attr', 'hidden');
+    cy.get('#paarA').should('have.value', '1'); cy.get('#paarB').should('have.value', '2');   // Vorgabe: Fluchtzeit und Streifenmittel ×30
+    cy.get('#paarFaktorBVal').invoke('val').should('match', /^30[.,]00$/);
+    cy.expectHash('map', '31'); cy.expectHash('pa', '1:1:0:0'); cy.expectHash('pb', '2:30:0:0');
+    cy.shotStats('komb-vorgabe').then(vorgabe => {
+      cy.rerender(() => cy.pickOption('paarA', 4));                       // erste Achse auf die Gesamtdrehung
+      cy.rerender(() => cy.pickOption('paarAbzugA', 2));                  // mit Fluchtzeit-Abzug
+      cy.expectHash('pa', '4:1:2:0');                                   // der Faktor bleibt beim Wechsel des Werts stehen
+      cy.get('#abzugRow').should('not.have.attr', 'hidden');              // der β-Regler gehört zum Abzug
+      cy.get('#streifenRow').should('not.have.attr', 'hidden');           // zweite Achse ist das Streifenmittel
+      cy.shotStats('komb-drehung').then(drehung => {
+        anders(vorgabe, drehung, 'andere erste Achse, anderes Bild');
+        cy.rerender(() => cy.pickOption('paarB', 1));                     // zweite Achse auf die Fluchtzeit
+        cy.expectHash('pb', '1:30:0:0');
+        cy.get('#streifenRow').should('have.attr', 'hidden');             // ohne Streifenmittel keine Streifen
+        cy.shotStats('komb-drehzeit').then(dz => {
+          anders(drehung, dz, 'andere zweite Achse, anderes Bild');
+          cy.get('#paarFaktorAVal').clear({ force: true }).type('300{enter}', { force: true });   // Faktor getippt
+          cy.expectHash('pa', '4:300:2:0');
+          cy.get('#paarKlemmeA').check({ force: true });                  // Klemme
+          cy.expectHash('pa', '4:300:2:1');
+          cy.wait(600);
+          cy.shotStats('komb-faktor').then(fk => {
+            anders(dz, fk, 'Faktor und Klemme ändern das Bild');
+            cy.rerender(() => cy.pickOption('textur', 1));                // Textur obendrauf (dritter Kanal)
+            cy.expectHash('tx', '1');
+            cy.shotStats('komb-textur').then(tx => anders(fk, tx, 'die Textur ändert das Bild'));
+            cy.rerender(() => cy.pickOption('textur', 0));
+          });
         });
       });
     });
-    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&map=30&sn=1.5');   // aus dem Link
-    cy.get('#mapping').should('have.value', '30');
-    cy.get('#abzug').should('have.value', '1.5');
-  });
-  it('Eigenes Paar (31): Voreinstellungen füllen die Achsen, jede Änderung macht daraus ein eigenes Paar, Link pa/pb, wie 22 in der Vorgabe', () => {
-    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&map=22&ca=off');   // ohne Farbanker: kein Ankerlesen, das zwischen den Bildern landen könnte
-    cy.get('#paarRow').should('not.have.attr', 'hidden');                 // die festen Paare zeigen ihre Achsen
-    cy.get('#paarA').should('have.value', '1'); cy.get('#paarB').should('have.value', '2');   // 22: Fluchtzeit und Streifenmittel
-    cy.get('#paarFaktorBVal').invoke('val').should('match', /^30[.,]00$/);
-    cy.shotStats('paar-22').then(p22 => {
-      cy.rerender(() => cy.pickOption('mapping', 31));                   // das eigene Paar startet wie 22
-      cy.expectHash('map', '31'); cy.expectHash('pa', '1:1:0:0'); cy.expectHash('pb', '2:30:0:0');
-      cy.shotStats('paar-31').then(p31 => gleich(p22, p31, 'das eigene Paar färbt in der Vorgabe wie 22'));
-    });
-    cy.rerender(() => cy.pickOption('mapping', 27));                     // eine Voreinstellung: Drehung mit Abzug, Streifenmittel
-    cy.get('#paarA').should('have.value', '4'); cy.get('#paarAbzugA').should('have.value', '2'); cy.get('#paarB').should('have.value', '2');
-    cy.get('#abzugRow').should('not.have.attr', 'hidden');
-    cy.shotStats('paar-27').then(p27 => {
-      cy.rerender(() => cy.pickOption('paarB', 1));                      // zweite Achse auf die Fluchtzeit: daraus wird das eigene Paar
-      cy.get('#mapping').should('have.value', '31');
-      cy.expectHash('map', '31'); cy.expectHash('pa', '4:30:2:0'); cy.expectHash('pb', '1:30:0:0');
-      cy.shotStats('paar-eigen').then(pe => anders(p27, pe, 'die andere Achse ändert das Bild'));
-      cy.get('#paarFaktorBVal').clear().type('0.15{enter}');             // Faktor getippt
-      cy.expectHash('pb', '1:0.15:0:0');
-      cy.get('#paarKlemmeA').check({ force: true });
-      cy.expectHash('pa', '4:30:2:1');
-    });
-    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&map=31&pa=5:5:1:1&pb=2:30:0:0&sn=1');   // aus dem Link: wie 25
+    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&map=31&pa=5:5:1:1&pb=2:30:0:0&sn=1');   // alles aus dem Link
     cy.get('#paarA').should('have.value', '5'); cy.get('#paarKlemmeA').should('be.checked'); cy.get('#paarAbzugA').should('have.value', '1');
+    cy.get('#paarB').should('have.value', '2'); cy.get('#abzug').should('have.value', '1');
     cy.waitRender();
     cy.get('#state').should('contain.text', 'Fertig');
   });
@@ -1121,8 +1131,8 @@ describe('Färbungen nach Bahnstatistik', () => {
     cy.get('#palArt').should('have.attr', 'hidden');
     cy.expectHash('map', '19');
     cy.shotStats('bahn-einwertig').then(ein => {
-      cy.rerender(() => cy.pickOption('mapping', 22));               // dieselbe Statistik, aber als Paar mit der Fluchtzeit
-      cy.expectHash('map', '22');
+      cy.rerender(() => cy.pickOption('mapping', 31));               // dieselbe Statistik, aber kombiniert mit der Fluchtzeit
+      cy.expectHash('map', '31');
       cy.get('#palArt').should('not.have.attr', 'hidden');
       cy.get('#palArt [data-art="2"]').should('have.class', 'on');   // Vorgabe ist hier die zweidimensionale Palette
       gruppen().should('deep.eq', ['Vorgaben']);
