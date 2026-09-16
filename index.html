@@ -2245,6 +2245,17 @@ const TEXTE = {
   'mask.edges': { de: 'Kanten', en: 'Edges' },
   'mask.threshold': { de: 'Schwelle', en: 'Threshold' },
   'mask.texture-value': { de: 'Wert einer Textur', en: 'Texture value' },
+  'mask.layer-state': { de: 'Stand nach einer Ebene', en: 'State after a layer' },
+  'mask.layer-state-hint': { de: 'Die Helligkeit des Bildes, wie es nach der gewählten Ebene aussieht. Es zählen nur Ebenen über dieser; ein Verweis nach unten oder auf sich selbst bleibt wirkungslos, so kann keine Rückkopplung entstehen.', en: 'The luminance of the picture as it looks after the chosen layer. Only layers above this one count; a reference downwards or to itself has no effect, so no feedback can arise.' },
+  'mask.layer': { de: 'Ebene', en: 'Layer' },
+  'mask.layer-1': { de: 'Ebene 1', en: 'Layer 1' },
+  'mask.layer-2': { de: 'Ebene 2', en: 'Layer 2' },
+  'mask.layer-3': { de: 'Ebene 3', en: 'Layer 3' },
+  'mask.layer-4': { de: 'Ebene 4', en: 'Layer 4' },
+  'mask.layer-5': { de: 'Ebene 5', en: 'Layer 5' },
+  'mask.layer-6': { de: 'Ebene 6', en: 'Layer 6' },
+  'mask.layer-7': { de: 'Ebene 7', en: 'Layer 7' },
+  'mask.layer-8': { de: 'Ebene 8', en: 'Layer 8' },
   'mask.texture-hint': { de: 'Nutzt den Wert dieses Texturplatzes aus dem Bereich „Farbe“; mit Stärke 0 dient die Textur allein der Maske.', en: 'Uses the value of that texture slot from the “Colour” panel; with strength 0 the texture serves only the mask.' },
   'mask.slot': { de: 'Textur', en: 'Texture' },
   'mask.slot-1': { de: 'Platz 1', en: 'Slot 1' },
@@ -2900,10 +2911,11 @@ const MASKE_ARTEN = [
   { art: 10, text: 'mask.distance', hinweis: 'mask.distance-hint', regler: [{ typ: 'zahl', k: 'von', min: 0, max: 200, schritt: 0.5, def: 0, text: 'mask.from-px' }, { typ: 'zahl', k: 'bis', min: 0, max: 200, schritt: 0.5, def: 8, text: 'mask.to-px' }] },
   { art: 11, text: 'mask.edges', regler: [{ typ: 'zahl', k: 'schwelle', min: 0, max: 1, schritt: 0.005, def: 0.1, text: 'mask.threshold' }] },
   { art: 12, text: 'mask.texture-value', hinweis: 'mask.texture-hint', regler: [{ typ: 'wahl', k: 'platz', def: 0, optionen: [[0, 'mask.slot-1'], [1, 'mask.slot-2'], [2, 'mask.slot-3'], [3, 'mask.slot-4']], text: 'mask.slot' }, { typ: 'zahl', k: 'von', min: 0, max: 1, schritt: 0.01, def: 0.5, text: 'mask.from' }, { typ: 'zahl', k: 'bis', min: 0, max: 1, schritt: 0.01, def: 1, text: 'mask.to' }] },
+  { art: 13, text: 'mask.layer-state', hinweis: 'mask.layer-state-hint', regler: [{ typ: 'wahl', k: 'ebene', def: 0, optionen: [[0, 'mask.layer-1'], [1, 'mask.layer-2'], [2, 'mask.layer-3'], [3, 'mask.layer-4'], [4, 'mask.layer-5'], [5, 'mask.layer-6'], [6, 'mask.layer-7'], [7, 'mask.layer-8']], text: 'mask.layer' }, { typ: 'zahl', k: 'von', min: 0, max: 1, schritt: 0.01, def: 0, text: 'mask.from' }, { typ: 'zahl', k: 'bis', min: 0, max: 1, schritt: 0.01, def: 0.35, text: 'mask.to' }] },
 ];
 function maskeArt(art) { return MASKE_ARTEN.find(a => a.art === art) || null; }
 // Texturmasken: dieselben Arten, ohne Innen/Außen (Texturen wirken nur außen) und ohne den Abstand (im Texturpfad nicht verfügbar)
-const MASKE_TEX_ARTEN = MASKE_ARTEN.filter(a => a.art !== 1 && a.art !== 10);
+const MASKE_TEX_ARTEN = MASKE_ARTEN.filter(a => a.art !== 1 && a.art !== 10 && a.art !== 13);   // 13 braucht Ebenen über sich: nur für Ebenenmasken
 function maskeTexArt(art) { return MASKE_TEX_ARTEN.find(a => a.art === art) || null; }
 function texMaskeLesen(text) { const m = text ? maskeLesen(text) : maskeNeu(0); return maskeTexArt(m.art) ? m : maskeNeu(0); }   // aus dem Link (tu, t2u …)
 function maskeZahlen(md) { return md.regler.reduce((a, r) => a + nachBreite(r), 0); }
@@ -4728,6 +4740,8 @@ fn nKurve(zeile: i32, c: vec3f) -> vec3f {   // Gesamtkurve (Spalte x), danach d
 }
 // ---- Masken: berechnete Auswahl je Ebene (Arten siehe MASKE_ARTEN im Skript), wirkt als Faktor auf die Deckkraft ----
 struct MaskeWerte { nu: f32, innen: f32, de: f32, tw: vec4f }
+var<private> gLum: array<f32, 8>;    // Helligkeit nach jeder Ebene: Quelle der Maske „Stand nach einer Ebene“
+var<private> gLumM: array<f32, 8>;   // dieselben Stände vom Mittelpixel, für den letzten Durchlauf mit der Nachbar-Ebene
 var<private> gM: MaskeWerte;   // Werte des gerade bearbeiteten Pixels (Probe 0): Fluchtzeit, Innen, Abstand, Rohwerte der Texturen
 var<private> gLxyS: vec2i;   // Bildschirmpixel des gerade bearbeiteten Punkts (Leuchten)
 fn maskeLaden(xyS: vec2i, dims: vec2i, rdims: vec2i) {   // xyS: Bildschirmpixel; die Iterationstextur liegt um C.shift versetzt
@@ -4758,6 +4772,7 @@ fn nMaske(i: u32, xy: vec2i, c: vec3f, kante: f32) -> f32 {   // Auswahl 0 … 1
     case 10u: { m = select(nBand(gM.de, a.x, a.y, weich), 0.0, gM.innen > 0.5); }   // Abstandsband (in Pixeln; gM.de zählt schon Pixel)
     case 11u: { m = smoothstep(a.x * (1.0 - weich), a.x * (1.0 + weich) + 1.0e-4, kante); }   // Kanten (Steilheit der Helligkeit zu den Nachbarn)
     case 12u: { m = nBand(maskeTexWert(u32(a.x)), a.y, a.z, weich); }   // Wert eines Texturplatzes
+    case 13u: { let k = min(u32(a.x), 7u); if (k >= i) { return 1.0; } m = nBand(gLum[k], a.y, a.z, weich); }   // Stand nach einer Ebene darüber; nach unten ohne Wirkung
     default: {}
   }
   return select(m, 1.0 - m, m0.y > 0.5);   // umkehren
@@ -4892,10 +4907,11 @@ const WGSL_POST_MAIN = /* wgsl */`
       bis2 = n;
     }
     gLxyS = pxyS;
-    for (var i = von; i < bis2; i++) { c = nEbene(c, i, pxy, kante); }
+    if (q == zahl) { for (var k = 0u; k < 8u; k++) { gLum[k] = gLumM[k]; } }   // letzter Durchlauf: die Stände des Mittelpixels gelten weiter
+    for (var i = von; i < bis2; i++) { c = nEbene(c, i, pxy, kante); gLum[i] = nLum(c); }
     if (q < zahl) {
       let w = nGauss(off.x, rad) * nGauss(off.y, rad); summe += w * c; gew += w;
-      if (off.x == 0 && off.y == 0) { mitte = c; }
+      if (off.x == 0 && off.y == 0) { mitte = c; for (var k = 0u; k < 8u; k++) { gLumM[k] = gLum[k]; } }
       if (abs(off.x) <= 1 && abs(off.y) <= 1) { let l = nLum(c); gx += f32(off.x) * f32(2 - abs(off.y)) * l; gy += f32(off.y) * f32(2 - abs(off.x)) * l;   // Sobel
         if (lq > 0u) { var tv = nTw(textureLoad(rohTW, clamp(pxyS, vec2i(0), rdims - vec2i(1)), 0), min(lq - 1u, 3u)); if (lq == 5u) { tv = nHoeheAbstand(pxy, dims); } else if (lq >= 6u) { tv = nHoeheFlucht(pxy, dims); } gtx += f32(off.x) * f32(2 - abs(off.y)) * tv; gty += f32(off.y) * f32(2 - abs(off.x)) * tv; } }
     } else { col = c; }
@@ -6408,6 +6424,8 @@ vec3 nLut(int zeile, ivec3 k, vec3 v) {   // wie im WGSL-Shader: linear zwischen
 }
 vec3 nKurve(int zeile, vec3 c) { return nLut(zeile, ivec3(1, 2, 3), nLut(zeile, ivec3(0), c)); }
 // ---- Masken, wie im WGSL-Shader ----
+float gLum[8] = float[8](0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);    // wie im WGSL-Shader
+float gLumM[8] = float[8](0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 float gMnu = 0.0, gMinnen = 0.0, gMde = 0.0; vec4 gMtw = vec4(0.0);
 ivec2 gLxyS = ivec2(0);   // Bildschirmpixel des gerade bearbeiteten Punkts (Leuchten)
 vec3 leuchtWert(ivec2 xyS) {   // wie im WGSL-Shader: das kleine Bild bilinear
@@ -6441,6 +6459,7 @@ float nMaske(int i, ivec2 xy, vec3 c, float kante) {
     case 10: { m = gMinnen > 0.5 ? 0.0 : nBand(gMde, a.x, a.y, weich); } break;   // wie im WGSL-Shader
     case 11: { m = smoothstep(a.x * (1.0 - weich), a.x * (1.0 + weich) + 1.0e-4, kante); } break;
     case 12: { m = nBand(maskeTexWert(int(a.x)), a.y, a.z, weich); } break;
+    case 13: { int k = clamp(int(a.x), 0, 7); if (k >= i) return 1.0; m = nBand(gLum[k], a.y, a.z, weich); } break;   // wie im WGSL-Shader
     default: break;
   }
   return m0.y > 0.5 ? 1.0 - m : m;
@@ -6547,10 +6566,11 @@ void main() {
       bis2 = n;
     }
     gLxyS = pxyS;
-    for (int i = von; i < bis2; i++) c = nEbene(c, i, pxy, kante);
+    if (q == zahl) { for (int k = 0; k < 8; k++) gLum[k] = gLumM[k]; }
+    for (int i = von; i < bis2; i++) { c = nEbene(c, i, pxy, kante); gLum[i] = nLum(c); }
     if (q < zahl) {
       float w = nGauss(off.x, rad) * nGauss(off.y, rad); summe += w * c; gew += w;
-      if (off.x == 0 && off.y == 0) mitte = c;
+      if (off.x == 0 && off.y == 0) { mitte = c; for (int k = 0; k < 8; k++) gLumM[k] = gLum[k]; }
       if (abs(off.x) <= 1 && abs(off.y) <= 1) { float l = nLum(c); gx += float(off.x) * float(2 - abs(off.y)) * l; gy += float(off.y) * float(2 - abs(off.x)) * l;
         if (lq > 0) { float tv = lq == 5 ? nHoeheAbstand(pxy, dims) : (lq >= 6 ? nHoeheFlucht(pxy, dims) : nTw(texelFetch(uRohTW, clamp(pxyS, ivec2(0), rdims - 1), 0), lq - 1)); gtx += float(off.x) * float(2 - abs(off.y)) * tv; gty += float(off.y) * float(2 - abs(off.x)) * tv; } }
     } else col = c;

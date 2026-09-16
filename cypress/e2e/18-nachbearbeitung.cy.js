@@ -195,6 +195,28 @@ describe('Nachbearbeitung: Einstellungsebenen', () => {
     cy.expectHash('nb', '11:1:1:1;20:1:1:2');
   });
 
+  it('Maske „Stand nach einer Ebene“: die Ebene darüber wählt aus, ein Verweis nach unten wirkt nicht', () => {
+    const SW = B + '&nb=16:1:1:0.5,0';   // Ebene 1: Schwellenwert, das Bild wird schwarzweiß
+    cy.visitApp(SW);
+    cy.shotStats('stand-nur-schwelle').then(nur => {
+      cy.visitApp(SW + ';11:1:1:1');   // Ebene 2 invertiert überall
+      cy.shotStats('stand-invertiert').then(ganz => {
+        cy.visitApp(SW + ';11:1:1:1:m13,0,0,0.25,0,0,0.35');   // nur dort, wo das Bild nach Ebene 1 dunkel ist
+        cy.pane('nach');
+        cy.get('#nachM2_art').should('have.value', '13');
+        cy.shotStats('stand-maskiert').then(maske => {
+          diff(nur, maske).then(d => expect(d.meanDiff, 'die Maske wählt einen Teil aus').to.be.greaterThan(3));
+          diff(ganz, maske).then(d => expect(d.meanDiff, 'nicht das ganze Bild').to.be.greaterThan(3));
+        });
+      });
+    });
+    cy.visitApp(B + '&nb=11:1:1:1:m13,0,0,0.25,1,0,0.35;16:1:1:0.5,0');   // Verweis nach unten: ohne Wirkung
+    cy.shotStats('stand-abwaerts').then(ab => {
+      cy.visitApp(B + '&nb=11:1:1:1;16:1:1:0.5,0');
+      cy.shotStats('stand-ohne-maske').then(ohne => diff(ab, ohne).then(d => expect(d.meanDiff, 'ein Verweis nach unten bleibt wirkungslos').to.be.lessThan(0.5)));
+    });
+  });
+
   // Exportpfad: mit Ebene muss die Datei invertiert sein (das Zwischenbild der Nachbearbeitung gilt auch je Exportkachel), auf beiden Renderern gleich
   const exportMittel = (hash, storage) => {
     cy.task('clearDownloads');
