@@ -1061,6 +1061,14 @@
             <option value="21" data-i18n="colour.texture-chart"></option>
           </select>
         </div>
+        <div class="paar-zeile" id="texWoRow1" hidden>
+          <label class="paar-ziel" for="texWo1" data-i18n="colour.texture-where"></label>
+          <select id="texWo1" data-i18n-title="colour.texture-where-title">
+            <option value="0" data-i18n="colour.texture-where-outside"></option>
+            <option value="1" data-i18n="colour.texture-where-inside"></option>
+            <option value="2" data-i18n="colour.texture-where-both"></option>
+          </select>
+        </div>
         <div class="paar-zeile" id="texZielRow1" hidden>
           <label class="paar-ziel" for="texZiel1" data-i18n="colour.pair-target"></label>
           <select id="texZiel1" data-i18n-title="colour.texture-target-title">
@@ -1122,6 +1130,14 @@
             <option value="19" data-i18n="colour.texture-point"></option>
             <option value="20" data-i18n="colour.texture-spiral"></option>
             <option value="21" data-i18n="colour.texture-chart"></option>
+          </select>
+        </div>
+        <div class="paar-zeile" id="texWoRow2" hidden>
+          <label class="paar-ziel" for="texWo2" data-i18n="colour.texture-where"></label>
+          <select id="texWo2" data-i18n-title="colour.texture-where-title">
+            <option value="0" data-i18n="colour.texture-where-outside"></option>
+            <option value="1" data-i18n="colour.texture-where-inside"></option>
+            <option value="2" data-i18n="colour.texture-where-both"></option>
           </select>
         </div>
         <div class="paar-zeile" id="texZielRow2" hidden>
@@ -1187,6 +1203,14 @@
             <option value="21" data-i18n="colour.texture-chart"></option>
           </select>
         </div>
+        <div class="paar-zeile" id="texWoRow3" hidden>
+          <label class="paar-ziel" for="texWo3" data-i18n="colour.texture-where"></label>
+          <select id="texWo3" data-i18n-title="colour.texture-where-title">
+            <option value="0" data-i18n="colour.texture-where-outside"></option>
+            <option value="1" data-i18n="colour.texture-where-inside"></option>
+            <option value="2" data-i18n="colour.texture-where-both"></option>
+          </select>
+        </div>
         <div class="paar-zeile" id="texZielRow3" hidden>
           <label class="paar-ziel" for="texZiel3" data-i18n="colour.pair-target"></label>
           <select id="texZiel3" data-i18n-title="colour.texture-target-title">
@@ -1250,6 +1274,14 @@
             <option value="21" data-i18n="colour.texture-chart"></option>
           </select>
         </div>
+        <div class="paar-zeile" id="texWoRow4" hidden>
+          <label class="paar-ziel" for="texWo4" data-i18n="colour.texture-where"></label>
+          <select id="texWo4" data-i18n-title="colour.texture-where-title">
+            <option value="0" data-i18n="colour.texture-where-outside"></option>
+            <option value="1" data-i18n="colour.texture-where-inside"></option>
+            <option value="2" data-i18n="colour.texture-where-both"></option>
+          </select>
+        </div>
         <div class="paar-zeile" id="texZielRow4" hidden>
           <label class="paar-ziel" for="texZiel4" data-i18n="colour.pair-target"></label>
           <select id="texZiel4" data-i18n-title="colour.texture-target-title">
@@ -1282,7 +1314,6 @@
       </div>
       <div id="texLive" class="sr-nur" aria-live="polite"></div>
       <div id="texOptionen" class="tex-optionen" hidden>
-        <label class="chk" data-i18n-title="colour.textures-inside-title"><input type="checkbox" id="texInnen"> <span data-i18n="colour.textures-inside"></span></label>
         <div class="lbl wertzeile"><label for="texVerbund" data-i18n-title="colour.trap-fusion-title" data-i18n="colour.trap-fusion"></label><input class="val mono wert" id="texVerbundVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="texVerbund" type="range" min="0" max="2" step="0.01" value="0">
       </div>
@@ -2019,8 +2050,6 @@ const TEXTE = {
   'colour.texture-r-rays-title': { de: 'Äußere Strahlen zu den Winkeln k/n der Böttcher-Abbildung; sie kreuzen die Ringe rechtwinklig. Nur bei z^d + c. 0 = keine Strahlen.', en: 'External rays at the angles k/n of the Böttcher map; they cross the rings at right angles. Only for z^d + c. 0 = no rays.' },
   'colour.texture-r-line-width': { de: 'Linienbreite', en: 'Line width' },
   'colour.texture-r-line-width-title': { de: 'Breite der Linien in Pixeln, überall gleich: aus der Abstandsschätzung, bei den Strahlen über die Winkeltreue der Böttcher-Abbildung.', en: 'Line width in pixels, the same everywhere: from the distance estimate, for the rays through the conformality of the Böttcher map.' },
-  'colour.textures-inside': { de: 'Texturen auch innen', en: 'Textures inside too' },
-  'colour.textures-inside-title': { de: 'Legt die Texturen auch über die Punkte, die nicht entkommen (Innenfarbe, Verlauf, Winkel). Fallen zeichnen dann auch das Innere, etwa eine Siegel-Scheibe.', en: 'Applies the textures to the points that never escape as well (interior colour, gradient, angle). Traps then draw the interior too, such as a Siegel disc.' },
   'colour.trap-fusion': { de: 'Fallen verbinden (weiches Minimum)', en: 'Fuse traps (smooth minimum)' },
   'colour.trap-fusion-title': { de: 'Verbindet die Fallen-Texturen des Stapels (Kreuz, Ursprung, Gitter, Ring, Punkt, Spirale) je Bahnschritt zu einem weichen Minimum ihrer Abstände; der erste Fallenplatz trägt das Ergebnis, die anderen Fallenplätze wirken nicht mehr einzeln. 0 = aus, größer = weicher.', en: 'Fuses the trap textures of the stack (cross, origin, lattice, ring, point, spiral) per orbit step into a smooth minimum of their distances; the first trap slot carries the result, the other trap slots no longer act on their own. 0 = off, larger = softer.' },
   'colour.texture-r-winding': { de: 'Windung', en: 'Winding' },
@@ -2057,6 +2086,11 @@ const TEXTE = {
   'colour.pair-target-axis-b': { de: 'Zweite Achse', en: 'Second axis' },
   'colour.pair-target-brightness': { de: 'Helligkeit', en: 'Brightness' },
   'colour.pair-target-saturation': { de: 'Sättigung', en: 'Saturation' },
+  'colour.texture-where': { de: 'Wirkt', en: 'Acts' },
+  'colour.texture-where-outside': { de: 'Außen', en: 'Outside' },
+  'colour.texture-where-inside': { de: 'Innen', en: 'Inside' },
+  'colour.texture-where-both': { de: 'Überall', en: 'Everywhere' },
+  'colour.texture-where-title': { de: 'Wo dieser Platz wirkt: außen wie seit jeher, nur innerhalb der Menge, oder überall. Innen rechnet die App die Werte nur, wenn ein Platz sie braucht.', en: 'Where this slot acts: outside as always, only inside the set, or everywhere. Inside, the app computes the values only when a slot needs them.' },
   'colour.texture-target-title': { de: 'Wohin der Wert dieses Platzes wirkt: auf die Farbe wie bisher (hell und dunkel) oder auf eine Achse der Palette — dort addiert er sich mit seiner Stärke zu den Werten der Färbung. Achsen gibt es, wenn die Färbung Werte kombiniert.', en: 'Where the value of this slot acts: on the colour as before (light and dark) or on an axis of the palette — there it adds up with its strength to the values of the colouring. Axes exist when the colouring combines values.' },
   'colour.pair-target-title': { de: 'Wohin dieser Wert wirkt: auf eine der beiden Achsen der Palette oder auf Helligkeit oder Sättigung der fertigen Farbe. Zwei Werte auf demselben Ziel addieren sich.', en: 'Where this value acts: on one of the two axes of the palette, or on brightness or saturation of the finished colour. Two values on the same target add up.' },
   'colour.pair-second-axis-title': { de: 'Der Wert der zweiten Achse; der Farbversatz wirkt auf sie.', en: 'The value on the second axis; the colour offset acts on it.' },
@@ -2241,6 +2275,7 @@ const TEXTE = {
   'post.opacity': { de: 'Deckkraft', en: 'Opacity' },
   'post.remove': { de: 'Diese Ebene aus dem Stapel nehmen', en: 'Remove this layer from the stack' },
   'post.drag': { de: 'Ziehen, um die Reihenfolge zu ändern (Tastatur: Pfeil auf und ab)', en: 'Drag to change the order (keyboard: arrow up and down)' },
+  'post.layer-kind': { de: 'Art der Ebene; beim Wechsel bleiben Deckkraft, Schalter und Maske erhalten', en: 'Kind of the layer; opacity, switch and mask are kept when it changes' },
   'post.on': { de: 'Ebene an oder aus; die Einstellungen bleiben erhalten', en: 'Layer on or off; the settings are kept' },
   'post.collapse': { de: 'Regler dieser Ebene einklappen', en: 'Collapse the controls of this layer' },
   'post.expand': { de: 'Regler dieser Ebene ausklappen', en: 'Expand the controls of this layer' },
@@ -2896,7 +2931,10 @@ function texWerteEigen(art, w) { return texRegler(art).some((r, i) => (w[i] ?? r
 // Ziel eines Texturplatzes: dieselben Nummern wie bei den Werten der Färbung (0 erste Achse, 1 zweite Achse, 2 Helligkeit).
 // Die Achsen stehen nur zur Wahl, wenn die Färbung welche liefert; sonst wirkt der Platz wie immer auf die Farbe.
 const TEX_ZIEL_VOR = 2;
-const TEXTUR_AUS = { art: 0, staerke: 0, kontrast: 1, mitte: 0.5, hell: [1, 1, 1], dunkel: [0, 0, 0], ziel: TEX_ZIEL_VOR };   // hell/dunkel: die Farben, zu denen die Textur zieht (Weiß/Schwarz = aufhellen/abdunkeln)
+// Wo ein Texturplatz wirkt: 0 außen (wie seit jeher), 1 nur innen, 2 überall. Innen rechnet der Fraktal-Shader die Werte
+// nur, wenn irgendein Platz sie braucht; dann liegen sie wie außen in den Kanälen z und w.
+const TEX_WO_VOR = 0;
+const TEXTUR_AUS = { art: 0, staerke: 0, kontrast: 1, mitte: 0.5, hell: [1, 1, 1], dunkel: [0, 0, 0], ziel: TEX_ZIEL_VOR, wo: TEX_WO_VOR };   // hell/dunkel: die Farben, zu denen die Textur zieht (Weiß/Schwarz = aufhellen/abdunkeln)
 // Texturstapel: TEX_SLOTS Plätze, von oben nach unten angewandt. Platz 1 trägt die Zustandsnamen von früher (textur, texStaerke …),
 // Platz n die mit Nummer (textur2, tex2Staerke …); ein Platz mit Art 0 ist leer und ändert nichts
 const TEX_SLOTS = 4;
@@ -3047,11 +3085,11 @@ function nachLesen(text) {   // aus dem Link; Unbekanntes wird ausgelassen
   }
   return aus;
 }
-const TEXTUR_LEER = { art: 0, staerke: TEXTUR.staerke.def, kontrast: TEXTUR.kontrast.def, mitte: TEXTUR.mitte.def, hell: '#ffffff', dunkel: '#000000', an: true, ziel: TEX_ZIEL_VOR, maske: null };   // maske: siehe MASKE_TEX_ARTEN
+const TEXTUR_LEER = { art: 0, staerke: TEXTUR.staerke.def, kontrast: TEXTUR.kontrast.def, mitte: TEXTUR.mitte.def, hell: '#ffffff', dunkel: '#000000', an: true, ziel: TEX_ZIEL_VOR, wo: TEX_WO_VOR, maske: null };   // maske: siehe MASKE_TEX_ARTEN
 const texZielWirkt = z => { const v = z === undefined ? TEX_ZIEL_VOR : z; return (v === 0 || v === 1) && !paarKonfig() ? TEX_ZIEL_VOR : v; };
-function texKeys(n) { const p = n === 1 ? 'tex' : 'tex' + n; return { art: n === 1 ? 'textur' : 'textur' + n, staerke: p + 'Staerke', kontrast: p + 'Kontrast', mitte: p + 'Mitte', hell: p + 'Hell', dunkel: p + 'Dunkel', an: p + 'An', werte: p + 'Werte', ziel: p + 'Ziel', maske: p + 'Maske' }; }
-function texSlot(n) { const k = texKeys(n); return { art: S[k.art], staerke: S[k.staerke], kontrast: S[k.kontrast], mitte: S[k.mitte], hell: S[k.hell], dunkel: S[k.dunkel], an: S[k.an] !== false, werte: S[k.werte] || texWerteVorgabe(S[k.art]), ziel: S[k.ziel] === undefined ? TEX_ZIEL_VOR : S[k.ziel], maske: S[k.maske] || maskeNeu(0) }; }
-function texSlotSetzen(n, t) { const k = texKeys(n); S[k.art] = t.art; S[k.staerke] = t.staerke; S[k.kontrast] = t.kontrast; S[k.mitte] = t.mitte; S[k.hell] = t.hell; S[k.dunkel] = t.dunkel; S[k.an] = t.an !== false; S[k.ziel] = t.ziel === undefined ? TEX_ZIEL_VOR : t.ziel; S[k.werte] = (t.werte || texWerteVorgabe(t.art)).slice(); S[k.maske] = t.maske ? Object.assign({}, t.maske, { p: t.maske.p.slice() }) : maskeNeu(0); }
+function texKeys(n) { const p = n === 1 ? 'tex' : 'tex' + n; return { art: n === 1 ? 'textur' : 'textur' + n, staerke: p + 'Staerke', kontrast: p + 'Kontrast', mitte: p + 'Mitte', hell: p + 'Hell', dunkel: p + 'Dunkel', an: p + 'An', werte: p + 'Werte', ziel: p + 'Ziel', wo: p + 'Wo', maske: p + 'Maske' }; }
+function texSlot(n) { const k = texKeys(n); return { art: S[k.art], staerke: S[k.staerke], kontrast: S[k.kontrast], mitte: S[k.mitte], hell: S[k.hell], dunkel: S[k.dunkel], an: S[k.an] !== false, werte: S[k.werte] || texWerteVorgabe(S[k.art]), ziel: S[k.ziel] === undefined ? TEX_ZIEL_VOR : S[k.ziel], wo: S[k.wo] === undefined ? TEX_WO_VOR : S[k.wo], maske: S[k.maske] || maskeNeu(0) }; }
+function texSlotSetzen(n, t) { const k = texKeys(n); S[k.art] = t.art; S[k.staerke] = t.staerke; S[k.kontrast] = t.kontrast; S[k.mitte] = t.mitte; S[k.hell] = t.hell; S[k.dunkel] = t.dunkel; S[k.an] = t.an !== false; S[k.ziel] = t.ziel === undefined ? TEX_ZIEL_VOR : t.ziel; S[k.wo] = t.wo === undefined ? TEX_WO_VOR : t.wo; S[k.werte] = (t.werte || texWerteVorgabe(t.art)).slice(); S[k.maske] = t.maske ? Object.assign({}, t.maske, { p: t.maske.p.slice() }) : maskeNeu(0); }
 function texArtAn(n) { const k = texKeys(n); return S[k.an] === false ? 0 : S[k.art]; }   // wirksame Art: 0, wenn der Platz ausgeschaltet ist (die Einstellungen bleiben)
 function texturBelegt() { let z = 0; for (let n = 1; n <= TEX_SLOTS; n++) if (S[texKeys(n).art] !== 0) z = n; return z; }   // letzter Platz mit gewählter Art, auch wenn ausgeschaltet (Anzeige, Link)
 // Übertragungskurve (Färbung 28): Punkte (x, y) in 0 … 1, nach x geordnet, erster bei x = 0, letzter bei x = 1; Vorgabe die Gerade
@@ -4555,18 +4593,20 @@ fn texAchsen(px: vec4u, kw: f32) -> vec2f {   // Summe der Plätze, die auf eine
   let t = vec4f(texStapelWert(0u, v.x, kw), texStapelWert(1u, v.y, kw), texStapelWert(2u, w.x, kw), texStapelWert(3u, w.y, kw));
   for (var i = 0u; i < 4u; i = i + 1u) {
     if (C.stapel[3u * i].x < 0.5 || (i > 1u && C.tex2.z < 2.5) || (i > 2u && C.tex2.z < 3.5)) { continue; }
-    let z = texZiel(i); if (z > 1u || verbundStill(i)) { continue; }
+    let z = texZiel(i); if (z > 1u || texWo(i) == 1u || verbundStill(i)) { continue; }   // reine Innen-Plätze zählen auf den Achsen nicht mit
     a[z] = a[z] + texWertGeformt(t[i], C.stapel[3u * i]);
   }
   return a;
 }
-fn texturN(col: vec3f, i: u32, v: f32) -> vec3f {   // Platz i des Stapels (0-basiert), mit seiner Maske als Faktor; „Maske zeigen“: die Auswahl als Grau
+fn texWo(i: u32) -> u32 { return u32(C.stapel[3u * i + 2u].w); }   // wo der Platz wirkt: 0 außen, 1 nur innen, 2 überall
+fn texturN(col: vec3f, i: u32, v: f32, innen: bool) -> vec3f {   // Platz i des Stapels (0-basiert), mit seiner Maske als Faktor; „Maske zeigen“: die Auswahl als Grau
+  let wo = texWo(i); if (select(wo == 1u, wo == 0u, innen)) { return col; }   // hier gilt der Platz nicht
   if (texZiel(i) != 2u) { return col; }   // wirkt auf eine Achse: die Farbe bleibt hier unberührt
   if (verbundStill(i)) { return col; }
   let mk = texMaskeVon(i); if (texMaskeZeigt(i)) { return vec3f(mk); }
   return mix(col, texturMit(col, v, C.stapel[3u * i], C.stapel[3u * i + 1u].xyz, C.stapel[3u * i + 2u].xyz), mk);
 }
-fn textur(col: vec3f, v: f32) -> vec3f { texMaskeWerte(vec4f(v, 0.0, 0.0, 0.0)); texMaskenAlle(col); return texturN(col, 0u, v); }
+fn textur(col: vec3f, v: f32) -> vec3f { texMaskeWerte(vec4f(v, 0.0, 0.0, 0.0)); texMaskenAlle(col); return texturN(col, 0u, v, false); }
 fn nuAt(xy: vec2i, k: i32, dims: vec2i, fallback: f32) -> f32 {   // glatte Iterationszahl des Nachbarn; innen, ungerechnet oder außerhalb des Bildes: der eigene Wert
   if (xy.x < 0 || xy.y < 0 || xy.x >= dims.x || xy.y >= dims.y) { return fallback; }
   let q = textureLoad(iter, xy, k, 0);
@@ -4582,14 +4622,14 @@ fn kanteWert(xy: vec2i, k: i32) -> f32 {   // Kanten (Art 11): Steilheit der Flu
 }
 fn kanteHell(g: f32, empf: f32) -> f32 { return 0.5 * exp(-0.5 * g * empf); }   // ½ in der Fläche, gegen 0 an scharfen Kanten
 fn texStapelWert(i: u32, v: f32, kw: f32) -> f32 { if (u32(C.stapel[3u * i].x) == 11u) { return kanteHell(kw, C.stapelW[i].x); } return v; }   // Kanten entstehen erst im Farbpass (kw, einmal je Probe), alle anderen Werte kommen gepackt aus dem Fraktal-Shader
-fn texturStapel(col: vec3f, a: u32, b: u32, kw: f32) -> vec3f {   // bis zu vier Texturen: je zwei Werte als 16-Bit-Hälften in a (Platz 1, 2) und b (3, 4), von oben nach unten angewandt
+fn texturStapel(col: vec3f, a: u32, b: u32, kw: f32, innen: bool) -> vec3f {   // bis zu vier Texturen: je zwei Werte als 16-Bit-Hälften in a (Platz 1, 2) und b (3, 4), von oben nach unten angewandt
   let v = unpack2x16unorm(a); let w = select(vec2f(0.0), unpack2x16unorm(b), C.tex2.z > 2.5);
   let t = vec4f(texStapelWert(0u, v.x, kw), texStapelWert(1u, v.y, kw), texStapelWert(2u, w.x, kw), texStapelWert(3u, w.y, kw)); texMaskeWerte(t); texMaskenAlle(col);   // alle Werte und alle Masken einmal je Probe
-  var c = texturN(col, 0u, t.x); if (texMaskeZeigt(0u)) { return c; } c = texturN(c, 1u, t.y); if (texMaskeZeigt(1u)) { return c; }
-  if (C.tex2.z > 2.5) { c = texturN(c, 2u, t.z); if (texMaskeZeigt(2u)) { return c; } if (C.tex2.z > 3.5) { c = texturN(c, 3u, t.w); } }
+  var c = texturN(col, 0u, t.x, innen); if (texMaskeZeigt(0u)) { return c; } c = texturN(c, 1u, t.y, innen); if (texMaskeZeigt(1u)) { return c; }
+  if (C.tex2.z > 2.5) { c = texturN(c, 2u, t.z, innen); if (texMaskeZeigt(2u)) { return c; } if (C.tex2.z > 3.5) { c = texturN(c, 3u, t.w, innen); } }
   return c;
 }
-fn texturZ(col: vec3f, px: vec4u, kw: f32) -> vec3f { return texturStapel(col, px.z, px.w, kw); }   // Textur über einer Statistik-Färbung: die Werte im z- und w-Kanal (nur außen)   // Farbanker des Bahnmittels (19, 20, 22, 23): das verankerte Mittel wird vom Mittel abgezogen; negativ = keiner
+fn texturZ(col: vec3f, px: vec4u, kw: f32, innen: bool) -> vec3f { return texturStapel(col, px.z, px.w, kw, innen); }   // Textur über einer Statistik-Färbung: die Werte im z- und w-Kanal (nur außen)   // Farbanker des Bahnmittels (19, 20, 22, 23): das verankerte Mittel wird vom Mittel abgezogen; negativ = keiner
 // Stauchung: Box-Cox (n^p − 1)/p, p = 1 linear, 0,5 Wurzel, → 0 Logarithmus, < 0 stärker als Log (sättigt); normiert bei nu = 50
 fn boxcox(nu: f32) -> f32 {
   let p = C.extra.x;
@@ -4729,7 +4769,7 @@ fn sampleColor(px: vec4u, xy: vec2i, k: i32) -> vec3f {
       let p = vec2f(r * C.misc.x * 25.0, th);
       if (zwei) { col = farbe2(vec2f(r, th), p, false); } else { col = pal(p.x + p.y + C.misc.y); }
     } else if (interior == 4u) { col = C.innen.xyz; }    // eigene Farbe
-    if (C.opt.x > 0.5 && C.tex2.z > 0.5 && C.tex2.y < 0.5) { col = texturStapel(col, px.z, px.w, kw); }   // Texturen auch innen: die Werte gepackt im z- und w-Kanal (über Statistik-Färbungen unten bei texturZ)
+    if (C.opt.x > 0.5 && C.tex2.z > 0.5 && C.tex2.y < 0.5) { col = texturStapel(col, px.z, px.w, kw, true); }   // Plätze, die innen wirken: die Werte gepackt im z- und w-Kanal (über Statistik-Färbungen unten bei texturZ)
   } else if (u32(C.misc3.x) == 11u || u32(C.misc3.x) == 23u) {                 // Newton/Nova: jede Wurzel beginnt an ihrer Stelle der Palette,
     let root = (u >> 26u) & 7u;                        // die Schritte bis zur Konvergenz laufen wie Iterationen weiter
     let nu = f32(u & 0x03FFFFFFu) * (1.0 / 256.0);
@@ -4765,7 +4805,7 @@ fn sampleColor(px: vec4u, xy: vec2i, k: i32) -> vec3f {
       if (C.extra.y > 0.0) { col = palAvg(t, palWidth(xy, k) * C.extra.y); } else { col = pal(t); }
       if (u32(C.misc.w) == 6u || u32(C.misc.w) == 12u) { col = reliefLight(xy, k, bitcast<f32>(px.y), col); }   // Iterationsbänder, vom Abstandsrelief beleuchtet
       if (C.tex2.z > 0.5) {   // Textur (wirksame Plätze > 0): die Bahnstatistik (oder der Winkel) im y-Kanal als Helligkeit; gestapelt: zwei Werte als 16-Bit-Hälften
-        if (C.tex2.z > 1.5 || C.opt.x > 0.5 || u32(C.tex.x) == 21u) { col = texturStapel(col, px.y, px.z, kw); }   // gestapelt (oder Texturen auch innen): gepackte Werte in y (und z)
+        if (C.tex2.z > 1.5 || C.opt.x > 0.5 || u32(C.tex.x) == 21u) { col = texturStapel(col, px.y, px.z, kw, false); }   // gestapelt (oder Werte auch für innen gepackt): Werte in y (und z)
         else { var v = texturWert(px); if (u32(C.tex.x) == 11u) { v = kanteHell(kw, C.stapelW[0].x); } col = textur(col, v); }
       }
     }
@@ -4774,7 +4814,7 @@ fn sampleColor(px: vec4u, xy: vec2i, k: i32) -> vec3f {
       if (glowMode == 1u) { col *= 1.0 - g; } else { col = mix(col, vec3f(1.0), g); }
     }
   }
-  if (C.tex2.y > 0.5 && ((u & 0x80000000u) == 0u || C.opt.x > 0.5)) { col = texturZ(col, px, kw); }   // Textur über einer Statistik-Färbung
+  if (C.tex2.y > 0.5 && ((u & 0x80000000u) == 0u || C.opt.x > 0.5)) { col = texturZ(col, px, kw, (u & 0x80000000u) != 0u); }   // Textur über einer Statistik-Färbung
   return col;
 }
 `;
@@ -6290,8 +6330,9 @@ float paarAchse(uint wert, float roh, float nu, float faktor, uint abzug, uint f
 bool fallenArt(uint kind) { return kind == 4u || kind == 5u || kind == 14u || kind == 15u || kind == 19u || kind == 20u; }
 bool verbundStill(int i) { return uOpt.y > 0.0 && fallenArt(uint(uStapel[3 * i].x)) && i + 1 != int(uOpt.z); }
 uint texZiel(int i) { return uint(uStapel[3 * i + 1].w); }   // wie im WGSL-Shader
-vec3 texturN(vec3 col, int i, float v) { if (texZiel(i) != 2u) return col; if (verbundStill(i)) return col; float mk = texMaskeVon(i); if (texMaskeZeigt(i)) return vec3(mk); return mix(col, texturMit(col, v, uStapel[3 * i], uStapel[3 * i + 1].xyz, uStapel[3 * i + 2].xyz), mk); }
-vec3 textur(vec3 col, float v) { texMaskeWerte(vec4(v, 0.0, 0.0, 0.0)); texMaskenAlle(col); return texturN(col, 0, v); }
+uint texWo(int i) { return uint(uStapel[3 * i + 2].w); }   // wie im WGSL-Shader
+vec3 texturN(vec3 col, int i, float v, bool innen) { uint wo = texWo(i); if (innen ? wo == 0u : wo == 1u) return col; if (texZiel(i) != 2u) return col; if (verbundStill(i)) return col; float mk = texMaskeVon(i); if (texMaskeZeigt(i)) return vec3(mk); return mix(col, texturMit(col, v, uStapel[3 * i], uStapel[3 * i + 1].xyz, uStapel[3 * i + 2].xyz), mk); }
+vec3 textur(vec3 col, float v) { texMaskeWerte(vec4(v, 0.0, 0.0, 0.0)); texMaskenAlle(col); return texturN(col, 0, v, false); }
 float nuAt(ivec2 xy, int k, ivec2 dims, float fallback) {   // wie im WGSL-Shader
   if (xy.x < 0 || xy.y < 0 || xy.x >= dims.x || xy.y >= dims.y) return fallback;
   uvec4 q = texelFetch(uIter, ivec3(xy, k), 0);
@@ -6313,19 +6354,19 @@ vec2 texAchsen(uvec4 px, float kw) {   // wie im WGSL-Shader
   vec4 t = vec4(texStapelWert(0, v.x, kw), texStapelWert(1, v.y, kw), texStapelWert(2, w.x, kw), texStapelWert(3, w.y, kw));
   for (int i = 0; i < 4; i++) {
     if (uStapel[3 * i].x < 0.5 || (i > 1 && uTex2.z < 2.5) || (i > 2 && uTex2.z < 3.5)) continue;
-    int z = int(texZiel(i)); if (z > 1 || verbundStill(i)) continue;
+    int z = int(texZiel(i)); if (z > 1 || texWo(i) == 1u || verbundStill(i)) continue;   // reine Innen-Plätze zählen auf den Achsen nicht mit
     a[z] += texWertGeformt(t[i], uStapel[3 * i]);
   }
   return a;
 }
-vec3 texturStapel(vec3 col, uint a, uint b, float kw) {
+vec3 texturStapel(vec3 col, uint a, uint b, float kw, bool innen) {
   vec2 v = unpackUnorm2x16(a), w = uTex2.z > 2.5 ? unpackUnorm2x16(b) : vec2(0.0);
   vec4 t = vec4(texStapelWert(0, v.x, kw), texStapelWert(1, v.y, kw), texStapelWert(2, w.x, kw), texStapelWert(3, w.y, kw)); texMaskeWerte(t); texMaskenAlle(col);
-  vec3 c = texturN(col, 0, t.x); if (texMaskeZeigt(0)) return c; c = texturN(c, 1, t.y); if (texMaskeZeigt(1)) return c;
-  if (uTex2.z > 2.5) { c = texturN(c, 2, t.z); if (texMaskeZeigt(2)) return c; if (uTex2.z > 3.5) c = texturN(c, 3, t.w); }
+  vec3 c = texturN(col, 0, t.x, innen); if (texMaskeZeigt(0)) return c; c = texturN(c, 1, t.y, innen); if (texMaskeZeigt(1)) return c;
+  if (uTex2.z > 2.5) { c = texturN(c, 2, t.z, innen); if (texMaskeZeigt(2)) return c; if (uTex2.z > 3.5) c = texturN(c, 3, t.w, innen); }
   return c;
 }
-vec3 texturZ(vec3 col, uvec4 px, float kw) { return texturStapel(col, px.z, px.w, kw); }
+vec3 texturZ(vec3 col, uvec4 px, float kw, bool innen) { return texturStapel(col, px.z, px.w, kw, innen); }
 float lum(vec3 c) { return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
 vec2 tAt(ivec2 xy, int k, ivec2 dims) {   // Palettenparameter des Texels ohne Versatz; y = 0: außerhalb, ungerechnet oder innen
   if (xy.x < 0 || xy.y < 0 || xy.x >= dims.x || xy.y >= dims.y) return vec2(0.0);
@@ -6420,7 +6461,7 @@ vec3 sampleColor(uvec4 px, ivec2 xy, int k) {   // Farbe einer Probe; k = Ebene,
       vec2 p = vec2(r * uMisc.x * 25.0, th);
       col = zwei ? farbe2(vec2(r, th), p, false) : pal(p.x + p.y + uMisc.y);
     } else if (uInterior == 4) col = uInnen.xyz;
-    if (uOpt.x > 0.5 && uTex2.z > 0.5 && uTex2.y < 0.5) col = texturStapel(col, px.z, px.w, kw);   // Texturen auch innen wie im WGSL-Shader
+    if (uOpt.x > 0.5 && uTex2.z > 0.5 && uTex2.y < 0.5) col = texturStapel(col, px.z, px.w, kw, true);   // wie im WGSL-Shader
   } else if (int(uMisc3.x) == 11 || int(uMisc3.x) == 23) {
     uint root = (u >> 26u) & 7u;
     float nu = float(u & 0x03FFFFFFu) / 256.0;
@@ -6455,14 +6496,14 @@ vec3 sampleColor(uvec4 px, ivec2 xy, int k) {   // Farbe einer Probe; k = Ebene,
       float t = (v - gAnchorV) * uMisc.x + uMisc.y;
       col = uPalFilter > 0.0 ? palAvg(t, palWidth(xy, k) * uPalFilter) : pal(t);
       if (uMapping == 6 || uMapping == 12) col = reliefLight(xy, k, uintBitsToFloat(px.y), col);
-      if (uTex2.z > 0.5) { if (uTex2.z > 1.5 || uOpt.x > 0.5 || int(uTex.x) == 21) col = texturStapel(col, px.y, px.z, kw); else col = textur(col, int(uTex.x) == 11 ? kanteHell(kw, uStapelW[0].x) : texturWert(px)); }
+      if (uTex2.z > 0.5) { if (uTex2.z > 1.5 || uOpt.x > 0.5 || int(uTex.x) == 21) col = texturStapel(col, px.y, px.z, kw, false); else col = textur(col, int(uTex.x) == 11 ? kanteHell(kw, uStapelW[0].x) : texturWert(px)); }
     }
     if (uGlowMode != 0) {
       float g = exp(-uintBitsToFloat(px.y) / uGlowWidth);
       if (uGlowMode == 1) col *= 1.0 - g; else col = mix(col, vec3(1.0), g);
     }
   }
-  if (uTex2.y > 0.5 && ((u & 0x80000000u) == 0u || uOpt.x > 0.5)) col = texturZ(col, px, kw);   // Textur über einer Statistik-Färbung
+  if (uTex2.y > 0.5 && ((u & 0x80000000u) == 0u || uOpt.x > 0.5)) col = texturZ(col, px, kw, (u & 0x80000000u) != 0u);   // Textur über einer Statistik-Färbung
   return col;
 }
 `;
@@ -7029,7 +7070,7 @@ class GpuRenderer {
     const t2 = cp.textur2 || TEXTUR_AUS; f[56] = t2.art; f[57] = t2.staerke; f[58] = t2.kontrast; f[59] = t2.mitte;   // zweite Textur
     f[53] = cp.texz ? 1 : 0; f[54] = cp.texZahl || 0; f[55] = cp.texKante || 0;   // Texturwerte im z-Kanal (über einer Statistik-Färbung); belegte Plätze des Stapels
     const stp = cp.stapel || [];   // der Stapel: je Platz (Art, Stärke, Kontrast, Mitte), helle und dunkle Farbe
-    for (let i = 0; i < 4; i++) { const t = stp[i] || TEXTUR_AUS, b = 140 + 12 * i; f[b] = t.art; f[b + 1] = t.staerke; f[b + 2] = t.kontrast; f[b + 3] = t.mitte; f.set(t.hell || [1, 1, 1], b + 4); f[b + 7] = t.ziel === undefined ? TEX_ZIEL_VOR : t.ziel; f.set(t.dunkel || [0, 0, 0], b + 8); }   // b + 7: das Ziel des Platzes
+    for (let i = 0; i < 4; i++) { const t = stp[i] || TEXTUR_AUS, b = 140 + 12 * i; f[b] = t.art; f[b + 1] = t.staerke; f[b + 2] = t.kontrast; f[b + 3] = t.mitte; f.set(t.hell || [1, 1, 1], b + 4); f[b + 7] = t.ziel === undefined ? TEX_ZIEL_VOR : t.ziel; f.set(t.dunkel || [0, 0, 0], b + 8); f[b + 11] = t.wo === undefined ? TEX_WO_VOR : t.wo; }   // b + 7: das Ziel des Platzes, b + 11: wo er wirkt
     f.set(cp.paar || [0, 0, 0, 0, 0, 0, 0, 0], 188);   // Paar: Werte, Faktoren, Abzüge, Flags
     if (cp.stapelW) f.set(cp.stapelW, 196);   // eigene Regler je Platz des Stapels
     if (cp.nach) f.set(cp.nach, 212); if (cp.nachInfo) f.set(cp.nachInfo, 340); if (cp.nachBild) f.set(cp.nachBild, 344);   // Nachbearbeitung: Ebenen, Nachbar-Ebene, Lage der Kachel im Bild
@@ -7663,7 +7704,7 @@ class GlRenderer {
     gl.uniform1i(u.uInterior, cp.interior); gl.uniform1f(u.uHistL, cp.histL);
     gl.uniform4f(u.uMisc3, cp.formula, cp.roots, cp.palMode || 0, cp.lightY || 1); gl.uniform1f(u.uPsC, cp.ps || 1); gl.uniform1f(u.uAnchor, cp.anchor === undefined ? -1 : cp.anchor); gl.uniform1f(u.uComp, cp.comp || 0); gl.uniform1f(u.uStatAnker, cp.statAnker === undefined ? -1 : cp.statAnker); gl.uniform1f(u.uAbzug, cp.abzug || 0); const tx = cp.textur || TEXTUR_AUS; gl.uniform4f(u.uTex, tx.art, tx.staerke, tx.kontrast, tx.mitte); const inn = cp.innen || [0, 0, 0, 0]; gl.uniform4f(u.uInnen, inn[0], inn[1], inn[2], inn[3]); gl.uniform4f(u.uTex2, cp.streifen || STREIFEN.def, cp.texz ? 1 : 0, cp.texZahl || 0, cp.texKante || 0); const t2 = cp.textur2 || TEXTUR_AUS; gl.uniform4f(u.uTex3, t2.art, t2.staerke, t2.kontrast, t2.mitte); gl.uniform4f(u.uOpt, cp.texInnen || 0, cp.texVerbund || 0, cp.texVerbundErster || 0, cp.leuchtErster || 0); gl.uniform4f(u.uOpt2, cp.logmap ? cp.logmap[0] : 0, cp.logmap ? cp.logmap[1] : 0, 0, 0);
     const stp = cp.stapel || [], sa = new Float32Array(48);   // der Stapel wie im WebGPU-Renderer
-    for (let i = 0; i < 4; i++) { const t = stp[i] || TEXTUR_AUS, b = 12 * i; sa[b] = t.art; sa[b + 1] = t.staerke; sa[b + 2] = t.kontrast; sa[b + 3] = t.mitte; sa.set(t.hell || [1, 1, 1], b + 4); sa[b + 7] = t.ziel === undefined ? TEX_ZIEL_VOR : t.ziel; sa.set(t.dunkel || [0, 0, 0], b + 8); }
+    for (let i = 0; i < 4; i++) { const t = stp[i] || TEXTUR_AUS, b = 12 * i; sa[b] = t.art; sa[b + 1] = t.staerke; sa[b + 2] = t.kontrast; sa[b + 3] = t.mitte; sa.set(t.hell || [1, 1, 1], b + 4); sa[b + 7] = t.ziel === undefined ? TEX_ZIEL_VOR : t.ziel; sa.set(t.dunkel || [0, 0, 0], b + 8); sa[b + 11] = t.wo === undefined ? TEX_WO_VOR : t.wo; }
     gl.uniform4fv(u.uStapel, sa);
     const pr = cp.paar || [0, 0, 0, 0, 0, 0, 0, 0]; gl.uniform4f(u.uPaar, pr[0], pr[1], pr[2], pr[3]); gl.uniform4f(u.uPaar2, pr[4], pr[5], pr[6], pr[7]); gl.uniform4fv(u.uStapelW, cp.stapelW || new Float32Array(16));
     gl.uniform2f(u.uShift, cp.shift ? cp.shift[0] : 0, cp.shift ? cp.shift[1] : 0);
@@ -8628,18 +8669,19 @@ function statPipeline4() { return paarKonfig() ? texStat(2) : (statModus() ? tex
 function statPipeline5() { return paarKonfig() ? texStat(3) : (statModus() ? texStat(4) : 0); }
 function statPipeline6() { return paarKonfig() ? texStat(4) : 0; }
 function texturZ() { return statFaerbung() && texturAktiv() ? 1 : 0; }   // Textur über einer Färbung nach Bahnwerten: die Texturwerte kommen in den z- und w-Kanal
-function texturBreit() { return !!(texturZ() || texturZahl() >= 3 || (S.texInnen && texturZahl() >= 1) || richtungModus() === 2); }   // braucht die Kanäle z und w: Iterationstextur rgba32uint (auch für Texturen innen)
+function texInnenIrgend() { for (let n = 1; n <= TEX_SLOTS; n++) { const t = texSlot(n); if (t.art !== 0 && t.an && (t.wo || TEX_WO_VOR) >= 1) return true; } return false; }   // wirkt irgendein Platz innen?
+function texturBreit() { return !!(texturZ() || texturZahl() >= 3 || (texInnenIrgend() && texturZahl() >= 1) || richtungModus() === 2); }   // braucht die Kanäle z und w: Iterationstextur rgba32uint (auch für Texturen innen)
 const FALLEN_ARTEN = [4, 5, 14, 15, 19, 20];   // Texturarten, die Fallen sind: Kreuz, Ursprung, Gitter, Ring, Punkt, Spirale
 function verbundK() { return S.texVerbund > 0 && texArten().some(a => FALLEN_ARTEN.includes(a)) ? S.texVerbund : 0; }   // Fallenverbund: Weichheit, 0 = aus (auch ohne Fallen)
 function verbundErster() { if (!verbundK()) return 0; for (let m = 1; m <= texturZahl(); m++) if (FALLEN_ARTEN.includes(texArtAn(m))) return m; return 0; }   // erster Fallenplatz (1-basiert)
 function verbundMaske() { if (!verbundK()) return 0; let mk = 0; for (let k = 1; k <= 6; k++) { const m = statSlot(k); if (m && FALLEN_ARTEN.includes(texArtAn(m))) mk |= 1 << (k - 1); } return mk; }   // welche Sammler Fallen-Texturen sind
-function texArtenParam() { const g = texturAktiv2() || texturZ() || (S.texInnen && texturZahl() >= 1) || texArten().includes(21);   // die Karte rechnet immer im Fraktal-Shader
+function texArtenParam() { const g = texturAktiv2() || texturZ() || (texInnenIrgend() && texturZahl() >= 1) || texArten().includes(21);   // die Karte rechnet immer im Fraktal-Shader
  return { tex1: g ? texArtAn(1) : 0, tex2: g ? texArtAn(2) : 0, tex3: g ? texArtAn(3) : 0, tex4: g ? texArtAn(4) : 0 }; }   // gepackter Weg: die wirksamen Arten der Plätze (sonst der rohe Wert im y-Kanal)
 function texZielRueckfall() {   // ohne Achsen in der Färbung fällt jeder Platz auf die Helligkeit zurück — sichtbar, nicht heimlich
   if (paarKonfig()) return;
   for (let m = 1; m <= TEX_SLOTS; m++) { const k = texKeys(m); if (S[k.ziel] === 0 || S[k.ziel] === 1) S[k.ziel] = TEX_ZIEL_VOR; }
 }
-function texFarbParam(n) { const t = texSlot(n); if (!t.an || t.art === 0) return TEXTUR_AUS; return { art: t.art, staerke: t.staerke, kontrast: t.kontrast, mitte: t.mitte, hell: farbe01(t.hell), dunkel: farbe01(t.dunkel), ziel: texZielWirkt(t.ziel) }; }   // ausgeschaltet: wirkt wie keine
+function texFarbParam(n) { const t = texSlot(n); if (!t.an || t.art === 0) return TEXTUR_AUS; return { art: t.art, staerke: t.staerke, kontrast: t.kontrast, mitte: t.mitte, hell: farbe01(t.hell), dunkel: farbe01(t.dunkel), ziel: texZielWirkt(t.ziel), wo: t.wo === undefined ? TEX_WO_VOR : t.wo }; }   // ausgeschaltet: wirkt wie keine
 function statIrgend() { return statPipeline() || statPipeline2() || statPipeline3() || statPipeline4() || statPipeline5() || statPipeline6(); }   // rechnet der Shader irgendeine Bahnstatistik? (BLA, Zyklen, Abstand)
 function histAktiv() { return S.mapping === 3 || S.mapping === 28; }   // Färbungen mit Tabelle: Histogramm und Kurve
 // Werteprobe: kleines Abbild der Ansicht rendern und die Abbildungswerte (mapNuJS) der entkommenen Punkte lesen — für „Anpassen“
@@ -8658,7 +8700,7 @@ function fractalParams(s, maxIter, layer = 0) {
     dcOffset: drehOffset((ox - W / 2) * ps, yd ? (H / 2 - oy) * ps : (oy - H / 2) * ps, shift), rotC: drehCS()[0], rotS: drehCS()[1], invM: S.invM, biomorph: S.biomorph ? 1 : 0, richtungY: richtungModus(), abkl: 1 - S.abklingen, param2: [...S.param2, S.zweig || 0],   // Drehung der Ansicht: der feste Teil hier, der Pixelanteil im Shader; Inversionsmitte
     maxIter, lenA: orbitLenA, baseB: orbitBaseB, lenB: orbitLenB,
     isJulia: S.mode === 'julia' ? 1 : 0,
-    needDE: brauchtAbstand() ? 1 : 0, ps, cycle: cycleOn(maxIter), lyap: lyapModus(), winkel: winkelModus(), texP: texWerteSammler(), texW: texWertePlaetze(), texInnen: S.texInnen && texturZahl() > 0 ? 1 : 0, verbund: verbundK(), verbundMaske: verbundMaske(), verbundErster: verbundErster(), stat: statPipeline(), stat2: statPipeline2(), stat3: statPipeline3(), stat4: statPipeline4(), stat5: statPipeline5(), stat6: statPipeline6(), ...paarPipeline(), texz: texturZ(), ...texArtenParam(), lyGrenze: S.lyGrenze, streifen: S.streifen, vorlauf: S.vorlauf, gewicht: S.gewicht, fluchtForm: S.fluchtForm, fluchtRadius: S.fluchtRadius,
+    needDE: brauchtAbstand() ? 1 : 0, ps, cycle: cycleOn(maxIter), lyap: lyapModus(), winkel: winkelModus(), texP: texWerteSammler(), texW: texWertePlaetze(), texInnen: texInnenIrgend() && texturZahl() > 0 ? 1 : 0, verbund: verbundK(), verbundMaske: verbundMaske(), verbundErster: verbundErster(), stat: statPipeline(), stat2: statPipeline2(), stat3: statPipeline3(), stat4: statPipeline4(), stat5: statPipeline5(), stat6: statPipeline6(), ...paarPipeline(), texz: texturZ(), ...texArtenParam(), lyGrenze: S.lyGrenze, streifen: S.streifen, vorlauf: S.vorlauf, gewicht: S.gewicht, fluchtForm: S.fluchtForm, fluchtRadius: S.fluchtRadius,
     power: S.power, invert: S.invert ? 1 : 0, needInt: brauchtInnen() ? 1 : 0, pRef: [pr[0], pi[0]],
   });
 }
@@ -8725,7 +8767,7 @@ function colorParams() {
     mapping: S.mapping, glowMode: lyapModus() || (winkelModus() & 1) || statIrgend() || paarKonfig() ? 0 : S.glowMode, glowWidth: S.glowWidth, interior: S.interior, histL: Math.log2(currentMaxIter() + 1),
     textur: texturAktiv() ? texFarbParam(1) : TEXTUR_AUS,                                                          // Platz 1 des Stapels (roher Weg: nur er)
     textur2: texturAktiv2() ? texFarbParam(2) : TEXTUR_AUS,
-    texInnen: S.texInnen && texturZahl() > 0 ? 1 : 0, texVerbund: verbundK(), texVerbundErster: verbundErster(), leucht: leuchtParams(), leuchtErster: leuchtIndex() + 1, texz: texturZ(), texZahl: texturZahl(), texKante: texArten().includes(11) ? 1 : 0, stapelW: texWertePlaetze(), paar: paarUniform(),   // texKante: irgendein Platz mit Kanten (Art 11), der Farbpass rechnet sie je Probe einmal                                                       // Paar: Werte, Faktoren, Abzüge, Flags je Achse
+    texInnen: texInnenIrgend() && texturZahl() > 0 ? 1 : 0, texVerbund: verbundK(), texVerbundErster: verbundErster(), leucht: leuchtParams(), leuchtErster: leuchtIndex() + 1, texz: texturZ(), texZahl: texturZahl(), texKante: texArten().includes(11) ? 1 : 0, stapelW: texWertePlaetze(), paar: paarUniform(),   // texKante: irgendein Platz mit Kanten (Art 11), der Farbpass rechnet sie je Probe einmal                                                       // Paar: Werte, Faktoren, Abzüge, Flags je Achse
                                                                           // Werte im z-Kanal (über einer Statistik-Färbung); belegte Plätze
     stapel: [1, 2, 3, 4].map(n => n <= texturZahl() ? texFarbParam(n) : TEXTUR_AUS),                                  // alle Plätze der Reihe nach
     innen: [...hexRGB(S.innenFarbe).map(v => v / 255), S.gestuft ? 1 : 0],                                              // eigene Innenfarbe, „gestuft“
@@ -9280,7 +9322,9 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
   const lg = parseFloat(h.get('lg')); S.lyGrenze = Number.isFinite(lg) ? clamp(lg, 0, 1e9) : 2;   // wie LY_GRENZE (die steht erst weiter unten)
   const sp = parseInt(h.get('sp'), 10); S.streifen = Number.isFinite(sp) ? clamp(sp, STREIFEN.min, STREIFEN.max) : STREIFEN.def;
   const sd = parseFloat(h.get('sd')); S.spirale = Number.isFinite(sd) ? clamp(sd, SPIRALE.min, SPIRALE.max) : SPIRALE.def;   // Windung der Spiralfalle (Färbung 32)
-  S.texInnen = h.get('ti') === '1'; const tv = parseFloat(h.get('tv')); S.texVerbund = Number.isFinite(tv) ? clamp(tv, 0, 2) : 0;   // Texturen auch innen; Fallenverbund (Weichheit, 0 = aus)
+  const tvAlt = h.get('ti') === '1';   // alter Link: ein Schalter für alle Plätze — er wird zu „überall“ auf jedem belegten Platz
+  for (let m = 1; m <= TEX_SLOTS; m++) { const k = texKeys(m); const v = parseInt(h.get(m === 1 ? 'tw' : 't' + m + 'w'), 10); S[k.wo] = v >= 0 && v <= 2 ? v : (tvAlt ? 2 : TEX_WO_VOR); }   // die Arten stehen hier noch nicht: der alte Schalter gilt für alle Plätze, im Link steht er nur bei den belegten
+  const tv = parseFloat(h.get('tv')); S.texVerbund = Number.isFinite(tv) ? clamp(tv, 0, 2) : 0;   // Fallenverbund (Weichheit, 0 = aus)
   const sk = parseInt(h.get('sk'), 10); S.vorlauf = Number.isFinite(sk) ? clamp(sk, VORLAUF.min, VORLAUF.max) : VORLAUF.def;
   const sw = parseFloat(h.get('sw')); S.gewicht = Number.isFinite(sw) ? clamp(sw, GEWICHT.min, GEWICHT.max) : GEWICHT.def;
   const se = parseFloat(h.get('se')); S.abklingen = Number.isFinite(se) ? clamp(se, 0, ABKL.max) : 0;   // Abklingen der Bahnmittel
@@ -9388,7 +9432,7 @@ function buildParams() {
   if (S.mapping === 14 && S.lyGrenze !== 2) p.set('lg', String(+S.lyGrenze.toPrecision(4)));
   if (([statModus(), statModus2()].includes(3) || texArten().some(a => [1, 6, 7, 8].includes(a))) && S.streifen !== STREIFEN.def) p.set('sp', String(S.streifen));   // Streifen nur, wo das Streifenmittel rechnet
   if (S.mapping === 32 && S.spirale !== SPIRALE.def) p.set('sd', String(+S.spirale.toFixed(3)));
-  if (S.texInnen) p.set('ti', '1'); if (S.texVerbund > 0) p.set('tv', String(+S.texVerbund.toFixed(2)));   // Texturen auch innen; Fallenverbund
+  if (S.texVerbund > 0) p.set('tv', String(+S.texVerbund.toFixed(2)));   // Fallenverbund
   if (statIrgend() && S.vorlauf !== VORLAUF.def) p.set('sk', String(S.vorlauf));   // Vorlauf bei jeder Bahnstatistik
   if (S.mapping === 31) { const q = (x, ach) => { const t = [x.wert, +x.faktor.toFixed(3), x.abzug, x.klemme ? 1 : 0]; if ((x.ziel || 0) !== PAAR_ZIEL_VOR[ach]) t.push(x.ziel); return t.join(':'); }; p.set('pa', q(S.paar.a, 'a')); p.set('pb', q(S.paar.b, 'b')); }   // je Wert Wert:Faktor:Abzug:Klemme, das Ziel nur abweichend vom Platz
   if (S.mapping === 28 && !kurveIstGerade()) p.set('kv', S.kurve.map(([x, y]) => +x.toFixed(3) + ':' + +y.toFixed(3)).join(','));   // Kurve nur, wo sie färbt
@@ -9403,6 +9447,7 @@ function buildParams() {
     if (S.texHell !== '#ffffff') p.set('tc', S.texHell.slice(1)); if (S.texDunkel !== '#000000') p.set('td', S.texDunkel.slice(1));   // Farben nur abseits der Vorgabe
     if (S.texAn === false) p.set('ta', '0');   // ausgeschaltet, Einstellungen bleiben
     if (texZielWirkt(S.texZiel) !== TEX_ZIEL_VOR) p.set('tz', String(S.texZiel));   // Ziel nur abseits der Helligkeit
+    if ((S.texWo || TEX_WO_VOR) !== TEX_WO_VOR) p.set('tw', String(S.texWo));   // wo der Platz wirkt, nur abseits von außen
     for (let n = 2; n <= texturBelegt(); n++) {   // die weiteren Plätze des Stapels (leere Plätze fehlen im Link und bleiben so leer)
       const t = texSlot(n), q = 't' + n;
       if (t.art === 0) continue;
@@ -9415,6 +9460,7 @@ function buildParams() {
       if (t.hell !== '#ffffff') p.set(q + 'c', t.hell.slice(1)); if (t.dunkel !== '#000000') p.set(q + 'd', t.dunkel.slice(1));
       if (!t.an) p.set(q + 'a', '0');
       if (texZielWirkt(t.ziel) !== TEX_ZIEL_VOR) p.set(q + 'z', String(t.ziel));
+      if ((t.wo || TEX_WO_VOR) !== TEX_WO_VOR) p.set(q + 'w', String(t.wo));
     }
   }
   if ((statMittel() || texArten().some(a => a >= 1 && a <= 3)) && S.gewicht !== GEWICHT.def) p.set('sw', String(+S.gewicht.toFixed(2)));   // Gewichtung nur bei den Mitteln (19, 20, 22, 23, 25)
@@ -9757,6 +9803,9 @@ function syncFarbUI() {   // Bereich Farbe: was je nach Familie, Formel und Fär
     const leer = zeigen && !belegt;   // ein freier Platz (auch der erste): nur eine schlanke Zeile „Textur hinzufügen“
     e.karte.hidden = !zeigen; e.row.hidden = !zeigen; for (const r of e.reihen) r.hidden = !(zeigen && belegt && !zu);
     texWerteZeigen(n, e, zeigen && belegt && !zu);   // eigene Regler der Art
+    const wr = $('texWoRow' + n), ws = $('texWo' + n);   // wo der Platz wirkt
+    if (wr) wr.hidden = !(zeigen && belegt && !zu);
+    if (ws) { ws.value = String(sl.wo || TEX_WO_VOR); if (ws._sync) ws._sync(); }
     const zielW = texZielWirkt(sl.ziel), zr = $('texZielRow' + n), zs = $('texZiel' + n);   // Ziel des Platzes
     if (zr) zr.hidden = !(zeigen && belegt && !zu);
     if (zs) {
@@ -10846,8 +10895,7 @@ $('lyGrenze').addEventListener('input', () => setzeGrenze(posZuGrenze(+$('lyGren
 function syncSpirale() { $('spirale').value = String(S.spirale); $('spiraleVal').value = String(S.spirale); }
 const setzeSpirale = v => { S.spirale = clamp(v, SPIRALE.min, SPIRALE.max); syncSpirale(); scheduleHash(); viewChanged(); };   // entsteht beim Iterieren
 $('spirale').addEventListener('input', () => setzeSpirale(+$('spirale').value));
-function syncTexOptionen() { $('texInnen').checked = !!S.texInnen; $('texVerbund').value = String(S.texVerbund); $('texVerbundVal').value = String(S.texVerbund); }
-$('texInnen').addEventListener('change', () => { S.texInnen = $('texInnen').checked; scheduleHash(); viewChanged(); });   // neu rechnen: die Werte entstehen im Fraktal-Shader
+function syncTexOptionen() { $('texVerbund').value = String(S.texVerbund); $('texVerbundVal').value = String(S.texVerbund); }
 const setzeTexVerbund = v => { S.texVerbund = clamp(v, 0, 2); syncTexOptionen(); scheduleHash(); viewChanged(); };
 $('texVerbund').addEventListener('input', () => setzeTexVerbund(+$('texVerbund').value));
 function syncAbklingen() { $('abklingen').value = String(S.abklingen); $('abklingenVal').value = String(S.abklingen); }
@@ -11243,6 +11291,12 @@ function nachKartenBauen() {   // neu gebaut bei anderer Zahl, Art, Reihenfolge 
 function nachId(i, slot, ziel = 'p') { return (ziel === 't' ? 'texM' : ziel === 'm' ? 'nachM' : 'nachW') + (i + 1) + '_' + (slot < 0 ? 'deck' : slot); }   // ziel: p = Regler der Ebene, m = Maske der Ebene, t = Maske des Texturplatzes i + 1
 function nachWertSetzen(i, slot, v, ziel) { if (ziel === 't') texMaskeSetzen(i + 1, slot, v); else if (ziel === 'm') nachMaskeSetzen(i, slot, v); else nachSetzen(i, slot, v); }
 function nachMaskeSetzen(i, slot, v) { const m = S.nach[i] && S.nach[i].m; if (!m) return; if (slot === MASKE_WEICH_SLOT) m.weich = clamp(v, 0, 1); else m.p[slot] = v; nachAenderung(); nachKarteWerte(i); }   // wie nachSetzen: das Wertfeld folgt dem Schieber
+function nachArtSetzen(i, art) {   // andere Art an Ort und Stelle: was nicht an der Art hängt, bleibt stehen
+  const alt = S.nach[i], d = nachArt(art); if (!alt || !d) return;
+  const frisch = nachNeu(art);
+  frisch.an = alt.an; frisch.deck = alt.deck; frisch.zu = alt.zu; frisch.m = alt.m;   // Schalter, Deckkraft, zugeklappt und Maske hängen nicht an der Art
+  S.nach[i] = frisch; nachAenderung(); nachKartenBauen();
+}
 function nachMaskeArt(i, art) { if (!S.nach[i]) return; S.nach[i].m = maskeNeu(art); nachAenderung(); nachKartenBauen(); }
 function nachZahlZeile(i, slot, r, ziel = 'p') {   // Schieber mit getipptem Wert, wie überall im Bedienfeld
   const wrap = document.createElement('div'), id = nachId(i, slot, ziel);
@@ -11286,8 +11340,13 @@ function nachKarte(i) {
   const kopf = document.createElement('div'); kopf.className = 'lbl tex-kopf';
   const griff = document.createElement('button'); griff.type = 'button'; griff.className = 'tex-griff'; griff.textContent = '⋮⋮'; griff.title = t('post.drag'); griff.setAttribute('aria-label', t('post.drag'));
   const zu = document.createElement('button'); zu.type = 'button'; zu.className = 'nach-zu'; zu.id = 'nachZu' + (i + 1); zu.setAttribute('aria-controls', 'nachRegler' + (i + 1));
-  const name = document.createElement('span'); name.className = 'tex-kurz'; name.textContent = t(d.text);
-  const wert = document.createElement('span'); wert.className = 'tex-wert'; name.append(wert);   // zugeklappt: die Deckkraft im Kopf
+  const artSel = document.createElement('select'); artSel.id = 'nachArt' + (i + 1); artSel.title = t('post.layer-kind');   // die Art steht im Kopf und ist dort umstellbar
+  artSel.setAttribute('aria-label', t('post.layer-kind'));
+  for (const a of NACH_ARTEN) { const o = document.createElement('option'); o.value = String(a.art); o.textContent = t(a.text); artSel.append(o); }
+  artSel.value = String(e.art);
+  artSel.addEventListener('change', () => nachArtSetzen(i, parseInt(artSel.value, 10) || 0));
+  const name = document.createElement('span'); name.className = 'tex-kurz';   // zugeklappt: die Deckkraft neben der Auswahl
+  const wert = document.createElement('span'); wert.className = 'tex-wert'; name.append(wert);
   const klappen = () => { S.nach[i].zu = !S.nach[i].zu; nachKarteWerte(i); };
   zu.addEventListener('click', klappen); name.addEventListener('click', klappen);
   const kn = document.createElement('span'); kn.className = 'tex-knoepfe';
@@ -11297,7 +11356,7 @@ function nachKarte(i) {
   sch.append(an, document.createElement('span'));
   const weg = document.createElement('button'); weg.type = 'button'; weg.className = 'tex-weg'; weg.textContent = '×'; weg.title = t('post.remove'); weg.setAttribute('aria-label', t('post.remove'));
   weg.addEventListener('click', () => nachEntfernen(i));
-  kn.append(sch, weg); kopf.append(griff, zu, name, kn); karte.append(kopf);
+  kn.append(sch, weg); kopf.append(griff, zu, artSel, name, kn); enhanceSelect(artSel); karte.append(kopf);   // Auswahl vor der Kurzangabe: erst die Art, dann (zugeklappt) die Deckkraft
   const regler = document.createElement('div'); regler.className = 'nach-regler'; regler.id = 'nachRegler' + (i + 1);
   const hinweis = document.createElement('p'); hinweis.className = 'hint nach-hinweis'; hinweis.hidden = true; hinweis.textContent = t('post.only-one-neighbour'); regler.append(hinweis);
   const eigen = document.createElement('div'); eigen.className = 'nach-eigen';   // die Regler der Ebene selbst: eigenes Band
@@ -11350,6 +11409,8 @@ function nachKarteWerte(i) {   // Werte der Karte aus dem Zustand (Regler, Felde
   if (md) { zeigen(md.regler, e.m.p, 'm'); setz(MASKE_WEICH_SLOT, MASKE_WEICH, e.m.weich, 'm'); for (const k of ['inv', 'zeig']) { const cb = $('nachM' + (i + 1) + '_' + k); if (cb) cb.checked = !!e.m[k]; } const an = $('nachM' + (i + 1) + '_an'); if (an) an.checked = e.m.an !== false; }
   const an = $('nachAn' + (i + 1)); if (an) an.checked = e.an;
   karte.classList.toggle('aus', !e.an);
+  const artSel = $('nachArt' + (i + 1));   // die Auswahl im Kopf folgt dem Zustand (auch nach dem Umsortieren)
+  if (artSel) { artSel.value = String(e.art); if (artSel._sync) artSel._sync(); }
   karte.classList.toggle('nach-zu', !!e.zu);   // zugeklappt: nur der Kopf, mit der Deckkraft als Wert
   const zu = $('nachZu' + (i + 1)); if (zu) { zu.textContent = e.zu ? '▸' : '▾'; zu.title = t(e.zu ? 'post.expand' : 'post.collapse'); zu.setAttribute('aria-label', zu.title); zu.setAttribute('aria-expanded', e.zu ? 'false' : 'true'); }
   const kw = karte.querySelector('.tex-kopf .tex-wert'); if (kw) kw.textContent = e.zu ? fmtZahl(e.deck * 100, 0) + ' %' : '';
@@ -11419,6 +11480,8 @@ for (let n = 1; n <= TEX_SLOTS; n++) {
   e.klapp.addEventListener('click', () => { texZu[n] = !texZu[n]; syncFarbUI(); });
   const zsel = $('texZiel' + n);
   if (zsel) zsel.addEventListener('change', () => { S[k.ziel] = clamp(parseInt(zsel.value, 10) || 0, 0, 2); syncFarbUI(); scheduleHash(); colorDirty = true; requestFrame(); });   // nur umfärben: der Wert liegt schon im Puffer
+  const wsel = $('texWo' + n);
+  if (wsel) wsel.addEventListener('change', () => { S[k.wo] = clamp(parseInt(wsel.value, 10) || 0, 0, 2); syncFarbUI(); scheduleHash(); viewChanged(); });   // innen entstehen die Werte im Fraktal-Shader: neu rechnen
   griffBinden(e.griff, n, TEX_STAPEL);
 }
 // Übertragungskurve (Färbung 28): stückweise linear durch die Punkte, als Tabelle mit CDF_N Einträgen wie die Verteilungsfunktion
@@ -12772,7 +12835,7 @@ async function exportPoster() {
         const base = Object.assign({
           dcScale: [psX, yd ? -psY : psY],
           maxIter, lenA: orbitLenA, baseB: orbitBaseB, lenB: orbitLenB,
-          isJulia: S.mode === 'julia' ? 1 : 0, needDE: brauchtAbstand() ? 1 : 0, ps: psX, cycle: cycleOn(maxIter), lyap: lyapModus(), winkel: winkelModus(), texP: texWerteSammler(), texW: texWertePlaetze(), texInnen: S.texInnen && texturZahl() > 0 ? 1 : 0, verbund: verbundK(), verbundMaske: verbundMaske(), verbundErster: verbundErster(), stat: statPipeline(), stat2: statPipeline2(), stat3: statPipeline3(), stat4: statPipeline4(), stat5: statPipeline5(), stat6: statPipeline6(), ...paarPipeline(), texz: texturZ(), ...texArtenParam(), lyGrenze: S.lyGrenze, streifen: S.streifen, vorlauf: S.vorlauf, gewicht: S.gewicht, fluchtForm: S.fluchtForm, fluchtRadius: S.fluchtRadius,
+          isJulia: S.mode === 'julia' ? 1 : 0, needDE: brauchtAbstand() ? 1 : 0, ps: psX, cycle: cycleOn(maxIter), lyap: lyapModus(), winkel: winkelModus(), texP: texWerteSammler(), texW: texWertePlaetze(), texInnen: texInnenIrgend() && texturZahl() > 0 ? 1 : 0, verbund: verbundK(), verbundMaske: verbundMaske(), verbundErster: verbundErster(), stat: statPipeline(), stat2: statPipeline2(), stat3: statPipeline3(), stat4: statPipeline4(), stat5: statPipeline5(), stat6: statPipeline6(), ...paarPipeline(), texz: texturZ(), ...texArtenParam(), lyGrenze: S.lyGrenze, streifen: S.streifen, vorlauf: S.vorlauf, gewicht: S.gewicht, fluchtForm: S.fluchtForm, fluchtRadius: S.fluchtRadius,
           power: S.power, invert: S.invert ? 1 : 0, needInt: brauchtInnen() ? 1 : 0, pRef: [pr[0], pi[0]], rotC: drehCS()[0], rotS: drehCS()[1], invM: S.invM, biomorph: S.biomorph ? 1 : 0, richtungY: richtungModus(), abkl: 1 - S.abklingen, param2: [...S.param2, S.zweig || 0],
         }, directParams(pr, pi), blaParams());
         const params = offs.map(([ox, oy]) => Object.assign({}, base, {   // ein Parametersatz je Probenebene

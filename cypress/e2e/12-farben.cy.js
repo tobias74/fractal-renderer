@@ -1358,22 +1358,30 @@ describe('Spiralfalle, Texturen innen und Fallenverbund', () => {
     });
   });
 
-  it('Texturen auch innen: die Punktfalle zeichnet die Siegel-Scheibe, außen bleibt alles gleich; Schalter und Link (ti)', () => {
-    cy.visitApp(J + '&tx=19&ts=0.8');
-    cy.shotStats('innen-ohne').then(ohne => {
-      cy.visitApp(J + '&tx=19&ts=0.8&ti=1');
-      cy.pane('farbe');
-      cy.get('#texOptionen').should('not.have.attr', 'hidden');
-      cy.get('#texInnen').should('be.checked');
-      cy.shotStats('innen-mit').then(mit => {
-        diff(ohne, mit).then(d => expect(d.meanDiff, 'innen färbt die Textur').to.be.greaterThan(5));
-        diff(ohne, mit, AUSSEN).then(d => expect(d.meanDiff, 'außen bleibt gleich').to.be.lessThan(0.5));
+  it('Wo ein Platz wirkt: außen, nur innen oder überall — je Platz wählbar, im Link (tw), alter Schalter ti wird „überall“', () => {
+    cy.visitApp(J + '&tx=19&ts=0.8');                                  // Punktfalle, wie immer nur außen
+    cy.pane('farbe');
+    cy.get('#texWo1').should('have.value', '0');
+    cy.expectHash('tw', null);                                          // außen ist die Vorgabe und steht nicht im Link
+    cy.shotStats('wo-aussen').then(aussen => {
+      cy.rerender(() => cy.pickOption('texWo1', '1'));                  // nur innen
+      cy.expectHash('tw', '1');
+      cy.shotStats('wo-innen').then(innen => {
+        diff(aussen, innen).then(d => expect(d.meanDiff, 'das Innere bekommt die Falle').to.be.greaterThan(5));
+        diff(aussen, innen, AUSSEN).then(d => expect(d.meanDiff, 'außen ist die Textur verschwunden').to.be.greaterThan(1));
+        cy.rerender(() => cy.pickOption('texWo1', '2'));                // überall
+        cy.expectHash('tw', '2');
+        cy.shotStats('wo-ueberall').then(ueberall => {
+          diff(aussen, ueberall, AUSSEN).then(d => expect(d.meanDiff, 'außen wieder wie zu Beginn').to.be.lessThan(0.5));
+          diff(innen, ueberall, AUSSEN).then(d => expect(d.meanDiff, 'außen anders als bei „nur innen“').to.be.greaterThan(1));
+        });
       });
-      cy.get('#texInnen').uncheck({ force: true });
-      cy.expectHash('ti', v => expect(v).to.eq(null));
-      cy.waitRender();
-      cy.shotStats('innen-aus').then(aus => diff(ohne, aus).then(d => expect(d.meanDiff, 'ausgeschaltet wie ohne').to.be.lessThan(0.5)));
     });
+    cy.visitApp(J + '&tx=19&ts=0.8&ti=1');                              // alter Link: ein Schalter für alle Plätze
+    cy.pane('farbe');
+    cy.get('#texWo1').should('have.value', '2');                        // wird zu „überall“
+    cy.expectHash('tw', '2');
+    cy.expectHash('ti', null);
   });
 
   it('Texturen auch innen mit WebGL 2: gezeichnetes Inneres, außen unverändert', () => {

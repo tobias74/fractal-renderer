@@ -17,7 +17,7 @@ describe('Nachbearbeitung: Einstellungsebenen', () => {
     cy.shotStats('nach-ohne').then(ohne => {
       ebene(11);   // Invertieren
       cy.get('#nachStapel .nach-karte').should('have.length', 1);
-      cy.get('#nachKarte1 .tex-kurz').should('have.text', 'Invertieren');
+      cy.get('#nachKarte1 .tex-kopf .menu-btn').should('contain.text', 'Invertieren');
       cy.get('#nachW1_deck').should('have.value', '1'); cy.get('#nachW1_0').should('have.value', '1');   // Deckkraft und Stärke
       cy.expectHash('nb', '11:1:1:1');
         cy.shotStats('nach-invers').then(inv => {
@@ -48,7 +48,7 @@ describe('Nachbearbeitung: Einstellungsebenen', () => {
     cy.get('#nachW1_deckVal').clear().type('0,25{enter}');
     cy.expectHash('nb', '12:1:0.25:4,1');
     ebene(18);   // Körnung: Schalter „farbig“
-    cy.get('#nachKarte2 .tex-kurz').should('have.text', 'Körnung');
+    cy.get('#nachKarte2 .tex-kopf .menu-btn').should('contain.text', 'Körnung');
     cy.get('#nachW2_1').should('not.be.checked').check({ force: true });
     cy.expectHash('nb', v => expect(v).to.contain(';18:1:1:0.3,1,1'));
     ebene(14);   // Zweiton: zwei Farben
@@ -72,7 +72,7 @@ describe('Nachbearbeitung: Einstellungsebenen', () => {
     cy.get('#nachKarte2 .tex-weg').click();   // Körnung raus, Zweiton rückt auf; Karte 1 bleibt zu
     cy.get('#nachKarte1').should('have.class', 'nach-zu');
     cy.get('#nachStapel .nach-karte').should('have.length', 2);
-    cy.get('#nachKarte2 .tex-kurz').should('have.text', 'Zweiton');
+    cy.get('#nachKarte2 .tex-kopf .menu-btn').should('contain.text', 'Zweiton');
     cy.expectHash('nb', v => { expect(v).to.contain('12:1:0.25:4,1;14:1:1:'); expect(v).to.not.contain('18:'); });
   });
 
@@ -80,19 +80,19 @@ describe('Nachbearbeitung: Einstellungsebenen', () => {
     cy.visitApp(B + '&nb=3:1:1:0.2,0.3;20:1:1:1;21:1:1:1,1;10:0:0.5:0.5,0.75,0.5,1');
     cy.pane('nach');
     cy.get('#nachStapel .nach-karte').should('have.length', 4);
-    cy.get('#nachKarte1 .tex-kurz').should('have.text', 'Helligkeit und Kontrast');
+    cy.get('#nachKarte1 .tex-kopf .menu-btn').should('contain.text', 'Helligkeit und Kontrast');
     cy.get('#nachW1_0').should('have.value', '0.2'); cy.get('#nachW1_1').should('have.value', '0.3');
-    cy.get('#nachKarte2 .tex-kurz').should('have.text', 'Weichzeichnen');
-    cy.get('#nachKarte3 .tex-kurz').should('have.text', 'Schärfen');
+    cy.get('#nachKarte2 .tex-kopf .menu-btn').should('contain.text', 'Weichzeichnen');
+    cy.get('#nachKarte3 .tex-kopf .menu-btn').should('contain.text', 'Schärfen');
     cy.get('#nachKarte3').should('have.class', 'nach-inaktiv');   // zweite Ebene mit Nachbarn: wirkt nicht, sagt es
     cy.get('#nachKarte3 .nach-hinweis').should('not.have.attr', 'hidden');   // (unterhalb des sichtbaren Bereichs der Schublade: hidden-Attribut statt Sichtbarkeit)
     cy.get('#nachKarte2').should('not.have.class', 'nach-inaktiv');
     cy.get('#nachKarte4').should('have.class', 'aus');   // Vignette aus, Deckkraft 0,5 bleibt
     cy.get('#nachW4_deck').should('have.value', '0.5');
     cy.get('#nachKarte3 .tex-griff').focus().type('{upArrow}');   // Schärfen über Weichzeichnen: jetzt wirkt Schärfen
-    cy.get('#nachKarte2 .tex-kurz').should('have.text', 'Schärfen');
+    cy.get('#nachKarte2 .tex-kopf .menu-btn').should('contain.text', 'Schärfen');
     cy.get('#nachKarte2').should('not.have.class', 'nach-inaktiv');
-    cy.get('#nachKarte3 .tex-kurz').should('have.text', 'Weichzeichnen');
+    cy.get('#nachKarte3 .tex-kopf .menu-btn').should('contain.text', 'Weichzeichnen');
     cy.get('#nachKarte3').should('have.class', 'nach-inaktiv');
     cy.expectHash('nb', v => expect(v).to.match(/^3:[^;]*;21:[^;]*;20:[^;]*;10:/));
     cy.get('#nachLive').should('contain.text', 'Ebene jetzt an Platz 2 von 4');
@@ -193,6 +193,23 @@ describe('Nachbearbeitung: Einstellungsebenen', () => {
     cy.get('#nachKarte2').should('not.have.class', 'nach-inaktiv');   // ohne Kantenmaske wirkt das Weichzeichnen wieder
     cy.pickOption('nachM1_art', '0');
     cy.expectHash('nb', '11:1:1:1;20:1:1:2');
+  });
+
+  it('die Art einer Ebene lässt sich in der Kopfzeile umstellen; Deckkraft, Schalter und Maske bleiben', () => {
+    cy.visitApp(B + '&nb=11:1:0.6:1:m3,0,0,0.25,0,20');            // Invertieren, Deckkraft 0,6, mit Maske „Iterationsbereich“
+    cy.pane('nach');
+    cy.get('#nachKarte1 .tex-kopf .menu-btn').should('contain.text', 'Invertieren');
+    cy.get('#nachArt1').should('have.value', '11');
+    cy.shotStats('art-invertieren').then(vorher => {
+      cy.rerender(() => cy.pickOption('nachArt1', '18'));           // in der Kopfzeile auf „Körnung“ umstellen
+      cy.get('#nachArt1').should('have.value', '18');
+      cy.get('#nachKarte1 .tex-kopf .menu-btn').should('contain.text', 'Körnung');
+      cy.expectHash('nb', nb => expect(nb, 'die neue Art steht im Link').to.match(/^18:1:0[.,]?6?/));
+      cy.get('#nachW1_0').should('exist');                          // die Regler der neuen Art stehen da
+      cy.get('#nachM1_art').should('have.value', '3');              // die Maske hängt nicht an der Art und bleibt
+      cy.get('#nachAn1').should('be.checked');
+      cy.shotStats('art-koernung').then(nachher => diff(vorher, nachher).then(d => expect(d.meanDiff, 'die andere Art färbt anders').to.be.greaterThan(1)));
+    });
   });
 
   it('eine andere Maskenart baut nur ihre eigene Karte neu: die Ansicht bleibt stehen', () => {
@@ -302,7 +319,7 @@ describe('Nachbearbeitung: Einstellungsebenen', () => {
     cy.visitApp(B + '&nb=1:1:1::0/0+0.5/0.2+1/1~0/0+1/1~0/0+1/1~0/0+1/1');
     cy.expectHash('nb', v => expect(v).to.match(/^1:1:1::0\/0\+0\.5\/0\.2\+1\/1~/));
     cy.pane('nach');
-    cy.get('#nachKarte1 .tex-kurz').should('have.text', 'Gradationskurven');
+    cy.get('#nachKarte1 .tex-kopf .menu-btn').should('contain.text', 'Gradationskurven');
   });
 });
 
@@ -315,7 +332,7 @@ describe('Beleuchtung (Ebenenart 28)', () => {
     cy.shotStats('licht-ohne').then(ohne => {
       cy.visitApp(J + '&nb=' + L);
       cy.pane('nach');
-      cy.get('#nachKarte1 .tex-kurz').should('have.text', 'Beleuchtung');
+      cy.get('#nachKarte1 .tex-kopf .menu-btn').should('contain.text', 'Beleuchtung');
       cy.get('#nachW1_0').should('have.value', '0'); cy.get('#nachW1_2').should('have.value', '315');   // Quelle Helligkeit, Lichtrichtung
       cy.expectHash('nb', L);
       cy.shotStats('licht-mit').then(mit => {
@@ -353,7 +370,7 @@ describe('Leuchten (Ebenenart 29)', () => {
     cy.shotStats('leucht-ohne').then(ohne => {
       cy.visitApp(J + '&nb=' + G);
       cy.pane('nach');
-      cy.get('#nachKarte1 .tex-kurz').should('have.text', 'Leuchten');
+      cy.get('#nachKarte1 .tex-kopf .menu-btn').should('contain.text', 'Leuchten');
       cy.get('#nachW1_1').should('have.value', '16');
       cy.expectHash('nb', G);
       cy.shotStats('leucht-mit').then(mit => {
