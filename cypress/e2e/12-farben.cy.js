@@ -71,19 +71,83 @@ describe('Farbe und Farbschema-Editor', () => {
     cy.waitRender();
   });
 
+  it('Stufen des Logarithmus: der Regler ersetzt die alten Nummern, Zwischenwerte blenden über, alte Links kommen an', () => {
+    const B = 'mode=mandel&re=-0.7462586155&im=0.1111580353&z=5.6e4&it=2000';   // eigene Vergleicher: dieser Abschnitt hat keine
+    const gleich = (x, y, text) => cy.task('pngDiff', { a: x.file, b: y.file, region: IMAGE_REGION }).then(dd => expect(dd.meanDiff, text).to.be.lessThan(0.5));
+    const anders = (x, y, text) => cy.task('pngDiff', { a: x.file, b: y.file, region: IMAGE_REGION }).then(dd => expect(dd.meanDiff, text).to.be.greaterThan(5));
+    cy.visitApp(B + '&map=9');                                       // alter Link: fünffach logarithmisch
+    cy.get('#mapping').should('have.value', '2');                    // wird zur logarithmischen Färbung mit fünf Stufen
+    cy.get('#logStufen').should('have.value', '5');
+    cy.expectHash('map', null); cy.expectHash('lst', '5');   // die logarithmische Färbung ist die Vorgabe und steht nicht im Link
+    cy.shotStats('log-alt-9').then(alt9 => {
+      cy.visitApp(B + '&map=2&lst=5');                               // derselbe Zustand, neu geschrieben
+      cy.shotStats('log-neu-5').then(neu5 => gleich(alt9, neu5, 'Stufe 5 färbt wie die alte Nummer 9'));
+      cy.visitApp(B + '&map=2');                                     // eine Stufe: die gewohnte logarithmische Färbung
+      cy.shotStats('log-1').then(eins => {
+        anders(eins, alt9, 'fünf Stufen sehen anders aus als eine');
+        cy.visitApp(B + '&map=2&lst=3&ca=off');                      // Farbanker an und aus darf das Bild nicht verschieben:
+        cy.pane('palette');                                          // die JS-Kopie der Abbildung muss die Stufen kennen
+        cy.revealInDetails('colAnchor');
+        cy.shotStats('log-anker-ohne').then(ohneAnker => {
+          cy.get('#colAnchor').check({ force: true });
+          cy.waitRender();
+          cy.wait(600);
+          cy.shotStats('log-anker-mit').then(mitAnker => gleich(ohneAnker, mitAnker, 'der Anker verschiebt das Bild nicht'));
+        });
+        cy.visitApp(B + '&map=2&lst=1.5');                           // Zwischenwert: kein Einrasten, eigenes Bild
+        cy.pane('farbe');
+        cy.get('#logStufen').should('have.value', '1.5');
+        cy.get('#logStufenVal').invoke('val').should('match', /^1[.,]50$/);
+        cy.shotStats('log-1punkt5').then(halb => {
+          anders(eins, halb, 'anderthalb Stufen sehen anders aus als eine');
+          cy.visitApp(B + '&map=2&lst=2');
+          cy.shotStats('log-2').then(zwei => anders(halb, zwei, 'und anders als zwei'));
+        });
+      });
+    });
+  });
+
+  it('Stufen mit „Dichte mitführen“: aus bleibt die Dichte stehen wie bisher, an zieht sie nach, anderes Bild, Häkchen im Link', () => {
+    const gleich = (x, y, text) => cy.task('pngDiff', { a: x.file, b: y.file, region: IMAGE_REGION }).then(dd => expect(dd.meanDiff, text).to.be.lessThan(0.5));
+    const anders = (x, y, text) => cy.task('pngDiff', { a: x.file, b: y.file, region: IMAGE_REGION }).then(dd => expect(dd.meanDiff, text).to.be.greaterThan(5));
+    const B = 'mode=mandel&re=-0.743643887037158&im=0.131825904205330&z=1e5&it=5000';   // Seepferdchental: große Spanne an Fluchtzeiten
+    cy.visitApp(B + '&map=2');
+    cy.pane('farbe');
+    cy.get('#logDichteMit').should('not.be.checked');                 // Vorgabe: aus, die Dichte bleibt stehen
+    cy.rerender(() => cy.setRange('logStufen', 3));
+    cy.expectHash('den', '0.0400'); cy.expectHash('lsd', null);       // wie bisher
+    cy.shotStats('lsd-aus').then(aus => {
+      cy.rerender(() => cy.setRange('logStufen', 1));
+      cy.get('#logDichteMit').check();
+      cy.expectHash('lsd', '1');
+      cy.wait(800);                                                   // die Werteprobe der Ansicht liest die Fluchtzeiten
+      cy.rerender(() => cy.setRange('logStufen', 3));
+      cy.expectHash('den', v => expect(parseFloat(v), 'Dichte nachgezogen').to.be.greaterThan(0.05));   // enger gedrückte Werte, höhere Dichte
+      cy.shotStats('lsd-an').then(an => {
+        anders(aus, an, 'mit Dichte anders als ohne');
+        cy.location('hash').then(h => {
+          cy.visitApp(h);                                             // derselbe Link: Häkchen, Stufe und Dichte kommen mit
+          cy.pane('farbe');
+          cy.get('#logDichteMit').should('be.checked');
+          cy.get('#logStufen').should('have.value', '3');
+          cy.shotStats('lsd-link').then(link => gleich(an, link, 'der Link gibt das Bild wieder'));
+        });
+      });
+    });
+  });
+
   it('Verläufe Relief, Doppelt logarithmisch und Logarithmisch + Relief: Adresse, Neurender, andere Bilder', () => {
-    cy.get('#mapping option').should('have.length', 30);   // 29 einwertige (mit Kurve, Ursprungsnähe, Gesamtdrehung, Periodengebiete, Spiralfalle, logmap, äußerer Winkel) plus „Werte kombinieren“
-    cy.rerender(() => cy.pickOption('mapping', 5));
-    cy.expectHash('map', '5');
-    cy.rerender(() => cy.pickOption('mapping', 7));
-    cy.expectHash('map', '7');
-    cy.rerender(() => cy.pickOption('mapping', 8));
-    cy.expectHash('map', '8');
-    cy.rerender(() => cy.pickOption('mapping', 9));
-    cy.expectHash('map', '9');
-    cy.rerender(() => cy.pickOption('mapping', 10));
-    cy.expectHash('map', '10');
+    cy.get('#mapping option').should('have.length', 25);   // 24 einwertige (mit Kurve, Ursprungsnähe, Gesamtdrehung, Periodengebiete, Spiralfalle, logmap, äußerer Winkel) plus „Werte kombinieren“
+    cy.rerender(() => cy.pickOption('mapping', 2));
+    cy.get('#logStufenRow').should('not.have.attr', 'hidden');       // die Stufen gehören zur logarithmischen Färbung
+    for (const st of [2, 3, 4, 5, 6, 10]) {                          // früher fünf eigene Färbungen, heute ein Regler (bis 10)
+      cy.rerender(() => cy.setRange('logStufen', st));
+      cy.expectHash('lst', String(st));
+    }
+    cy.rerender(() => cy.setRange('logStufen', 1));
+    cy.expectHash('lst', null);                                      // die einfache Stufe steht nicht im Link
     cy.rerender(() => cy.pickOption('mapping', 6));
+    cy.get('#logStufenRow').should('have.attr', 'hidden');            // andere Färbung: der Regler ist weg
     cy.expectHash('map', '6');
     cy.rerender(() => cy.pickOption('mapping', 2));
     cy.shotStats('verlauf-log').then(a => {
@@ -1080,7 +1144,9 @@ describe('Färbungen nach Bahnstatistik', () => {
         cy.expectHash('pb', '1:30:0:0');
         cy.get('#streifenRow').should('have.attr', 'hidden');             // ohne Streifenmittel keine Streifen
         cy.shotStats('komb-drehzeit').then(dz => {
-          anders(drehung, dz, 'andere zweite Achse, anderes Bild');
+          // Eigene Schwelle: die zweite Achse läuft mit Faktor 30 so schnell durch die Palette, dass der Wechsel zwar überall
+          // sichtbar ist, über das ganze Bild gemittelt aber nur gut 5 ergibt — gemessen 4,9 bis 5,3, also zu dicht an der 5.
+          cy.task('pngDiff', { a: drehung.file, b: dz.file, region: IMAGE_REGION }).then(dd => expect(dd.meanDiff, 'andere zweite Achse, anderes Bild').to.be.greaterThan(3));
           cy.get('#paarFaktorAVal').clear({ force: true }).type('300{enter}', { force: true });   // Faktor getippt
           cy.expectHash('pa', '4:300:2:0');
           cy.get('#paarKlemmeA').check({ force: true });                  // Klemme

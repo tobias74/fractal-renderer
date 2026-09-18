@@ -250,6 +250,71 @@ describe('Glättung und Technik', () => {
     cy.get('#resInfo').should('contain.text', 'Render 640 × 360 px');
   });
 
+  it('Rechenstapel: Vorgabe, Regler, getippter Wert und Vorrang der Bedienung', () => {
+    cy.pane('technik');
+    cy.get('#stapelMs').should('have.value', '40');                  // Vorgabe: das bisherige Verhalten
+    cy.get('#stapelMsVal').should('have.value', '40');
+    cy.get('#uiVorrang').should('be.checked');
+    cy.setRange('stapelMs', 110);
+    cy.get('#stapelMsVal').should('have.value', '110');
+    cy.window().then(win => expect(win.localStorage.getItem('fractal.stapelms')).to.eq('110'));
+    cy.get('#stapelMsVal').clear().type('9{enter}');                 // getippter Wert zählt genauso
+    cy.get('#stapelMs').should('have.value', '9');
+    cy.get('#stapelMsVal').clear().type('999{enter}');               // außerhalb: auf die Grenze gezogen
+    cy.get('#stapelMs').should('have.value', '120');
+    cy.get('#uiVorrang').uncheck();
+    cy.window().then(win => expect(win.localStorage.getItem('fractal.uivorrang')).to.eq('0'));
+    cy.get('label[for="stapelMs"]').should('have.attr', 'title').and('not.be.empty');   // beide tragen ihre Erklärung
+    cy.get('#uiVorrang').parent().should('have.attr', 'title').and('not.be.empty');
+  });
+
+  it('Rechenstapel aus dem Speicher: wird übernommen und hält die Einstellungen dahinter nicht auf', () => {
+    // Die Werte werden der Reihe nach gelesen; bleibt einer hängen, fehlen still alle folgenden. Darum stehen hier
+    // ausdrücklich auch Glättung, Zykluserkennung und Näherung, die erst hinter dem Rechenstapel an der Reihe sind.
+    cy.visitApp('', { aa: null, storage: { 'fractal.stapelms': '8', 'fractal.uivorrang': '0', 'fractal.aa': '2', 'fractal.cycle': '0', 'fractal.bla': '0' } });
+    cy.pane('technik');
+    cy.get('#stapelMs').should('have.value', '8');
+    cy.get('#stapelMsVal').should('have.value', '8');
+    cy.get('#uiVorrang').should('not.be.checked');
+    cy.get('#aaSel').should('have.value', '2');
+    cy.get('#cycleSel').should('have.value', '0');
+    cy.get('#blaSel').should('have.value', '0');
+    cy.visitApp('', { aa: null, storage: { 'fractal.stapelms': '9999' } });   // Unsinn aus dem Speicher: auf die Grenze
+    cy.get('#stapelMs').should('have.value', '120');
+  });
+
+  it('Erscheinungsbild: dunkel als Vorgabe, hell und schwarz schalten um, gespeichert nur mit Einwilligung, „wie das System“ folgt dem System', () => {
+    const farbe = (win, was) => win.getComputedStyle(win.document.body)[was];
+    cy.pane('technik');
+    cy.get('#themeSel').should('have.value', 'dunkel');
+    cy.get('html').should('not.have.attr', 'data-theme');                      // Vorgabe: das CSS wie bisher, ohne Schema am Wurzelelement
+    cy.window().then(win => expect(farbe(win, 'backgroundColor'), 'dunkler Grund').to.eq('rgb(11, 13, 18)'));
+    cy.pickOption('themeSel', 'hell');
+    cy.get('html').should('have.attr', 'data-theme', 'hell');
+    cy.window().then(win => {
+      expect(farbe(win, 'backgroundColor'), 'heller Grund').to.eq('rgb(244, 242, 237)');
+      expect(farbe(win, 'color'), 'dunkle Schrift').to.eq('rgb(30, 29, 26)');
+      expect(win.localStorage.getItem('fractal.theme'), 'mit Einwilligung abgelegt').to.eq('hell');
+    });
+    cy.pickOption('themeSel', 'schwarz');
+    cy.get('html').should('have.attr', 'data-theme', 'schwarz');
+    cy.window().then(win => expect(farbe(win, 'backgroundColor'), 'schwarzer Grund').to.eq('rgb(0, 0, 0)'));
+    cy.visitApp('', { storage: { 'fractal.theme': 'hell' } });                 // aus dem Speicher: gilt vor dem ersten Bild
+    cy.get('html').should('have.attr', 'data-theme', 'hell');
+    cy.pane('technik'); cy.get('#themeSel').should('have.value', 'hell');
+    cy.visitApp('', { consent: { v: 2, ts: 1, settings: false, marketing: false } });   // ohne Einwilligung zu Einstellungen
+    cy.pane('technik');
+    cy.pickOption('themeSel', 'hell');
+    cy.get('html').should('have.attr', 'data-theme', 'hell');                  // wirkt in der Sitzung …
+    cy.window().then(win => expect(win.localStorage.getItem('fractal.theme'), '… wird aber nicht abgelegt').to.be.null);
+    cy.visitApp('', { storage: { 'fractal.theme': 'system' }, onBeforeLoad(win) {   // das System meldet hell
+      const orig = win.matchMedia.bind(win);
+      win.matchMedia = q => q.includes('prefers-color-scheme: light') ? { matches: true, media: q, addEventListener() {}, removeEventListener() {} } : orig(q);
+    } });
+    cy.get('html').should('have.attr', 'data-theme', 'hell');
+    cy.pane('technik'); cy.get('#themeSel').should('have.value', 'system');   // gespeichert ist die Wahl, nicht die Auflösung
+  });
+
   it('Gespeicherte Stufe über dem Budget: Menü zeigt die höchste passende Stufe, alter Schlüssel der Speichergrenze verschwindet', () => {
     cy.visitApp('', { storage: { 'fractal.aa': '8', 'fractal.aamem': '2000' }, aa: null });
     cy.get('#aaSel').should('have.value', '5');

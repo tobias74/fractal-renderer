@@ -110,7 +110,9 @@ describe('Dateien: Parameter und Bilder speichern und wieder öffnen', () => {
       cy.get('#metaInput').selectFile(files[0], { force: true });
       cy.get('#metaDlg').should('be.visible');
       cy.get('#metaBericht').should('contain.text', 'PNG').and('contain.text', 'p=5').and('contain.text', 'Klassisch').and('contain.text', 'aaMode');
-      cy.get('#metaBericht').should('contain.text', 'sRGB').and('contain.text', 'vom Browser gesetzt');   // die App legt nichts anderes an; der Browser schreibt sein Farbraum-Kennzeichen
+      // Die App legt keine Fremdblöcke an. Ältere Browser schreiben ein Farbraum-Kennzeichen (sRGB, als „vom Browser gesetzt“ ausgewiesen),
+      // Chrome ab 152 schreibt keines mehr: dann meldet der Bericht, dass es keine weiteren Blöcke gibt.
+      cy.get('#metaBericht').invoke('text').should(t => expect(/sRGB[^]*vom Browser gesetzt|Keine weiteren Text- oder Anwendungsblöcke/.test(t), 'Fremdblöcke: nur das Kennzeichen des Browsers oder keine').to.be.true);
       cy.get('#metaDlg .hint').last().should('contain.text', 'entfernt keine Metadaten');
       cy.get('#power').should('have.value', '2');   // Prüfen ändert nichts
       cy.get('#metaApply').click();

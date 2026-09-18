@@ -133,6 +133,7 @@ describe('Nachbearbeitung: Einstellungsebenen', () => {
         ['mitten', '9:1:1:0,0,0.5,0.6', 2]]) {   // nur die Mitten heller (angehängter Regler)
         cy.visitApp(B + '&nb=' + pp);
         cy.get('#nachKarte1').should('exist');
+        cy.waitRender();   // erst fotografieren, wenn das Bild steht (sonst gelegentlich das Bild ohne Ebene)
         cy.shotStats('neu-' + name).then(s => diff(ohne, s).then(d => expect(d.meanDiff, name + ' färbt anders').to.be.greaterThan(mind)));
       }
       cy.visitApp(B + '&nb=9:1:1:0.2,0.3,0.5');   // alter Link ohne Mitten: liest sich wie mit Mitten 0
@@ -168,7 +169,7 @@ describe('Nachbearbeitung: Einstellungsebenen', () => {
             cy.get('#nachM1_zeig').check({ force: true });   // die Maske als Grau
             cy.expectHash('nb', '11:1:1:1:m1,1,1,0.25,1');
             cy.waitRender();
-            cy.shotStats('maske-zeigen').then(z => { diff(innen, z).then(d => expect(d.meanDiff, 'Maske als Grau').to.be.greaterThan(5)); expect(z.colors, 'nur Grau').to.be.lessThan(30); });
+            cy.shotStats('maske-zeigen').then(z => { diff(innen, z).then(d => expect(d.meanDiff, 'Maske als Grau').to.be.greaterThan(5)); expect(z.grau, 'nur Grau (Anteil grauer Pixel; das skalierte Testbild hat viele Grautöne)').to.be.greaterThan(0.98); });
           });
         });
       });
@@ -256,6 +257,8 @@ describe('Nachbearbeitung: Einstellungsebenen', () => {
         cy.visitApp(SW + ';11:1:1:1:m13,0,0,0.25,0,0,0.35');   // nur dort, wo das Bild nach Ebene 1 dunkel ist
         cy.pane('nach');
         cy.get('#nachM2_art').should('have.value', '13');
+        cy.get('#nachM2_0 option:not([hidden])').should('have.length', 1).first().should('have.value', '0');   // Ebene 2 kann nur auf Ebene 1 verweisen
+        cy.get('#nachM1_art option[value="13"]').should('have.attr', 'hidden');                                // die oberste Ebene hat nichts über sich
         cy.shotStats('stand-maskiert').then(maske => {
           diff(nur, maske).then(d => expect(d.meanDiff, 'die Maske wählt einen Teil aus').to.be.greaterThan(3));
           diff(ganz, maske).then(d => expect(d.meanDiff, 'nicht das ganze Bild').to.be.greaterThan(3));
@@ -263,6 +266,11 @@ describe('Nachbearbeitung: Einstellungsebenen', () => {
       });
     });
     cy.visitApp(B + '&nb=11:1:1:1:m13,0,0,0.25,1,0,0.35;16:1:1:0.5,0');   // Verweis nach unten: ohne Wirkung
+    cy.pane('nach');
+    cy.get('#nachM1_art').should('have.value', '13');                                                   // aus dem Link: bleibt sichtbar …
+    cy.get('#nachM1_0').should('have.value', '1');
+    cy.get('#nachM1_0 option[value="1"]').should('have.attr', 'hidden');                                       // … ist aber nicht erneut wählbar
+    cy.get('#nachM1_0 option[value="1"]').should('contain.text', 'nicht darüber');                              // und als wirkungslos gekennzeichnet
     cy.shotStats('stand-abwaerts').then(ab => {
       cy.visitApp(B + '&nb=11:1:1:1;16:1:1:0.5,0');
       cy.shotStats('stand-ohne-maske').then(ohne => diff(ab, ohne).then(d => expect(d.meanDiff, 'ein Verweis nach unten bleibt wirkungslos').to.be.lessThan(0.5)));

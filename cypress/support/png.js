@@ -39,15 +39,16 @@ function bounds(img, region = {}) {
 // Mittlere Helligkeit, Streuung und Anzahl unterschiedlicher Farben im Bereich
 function pngStats(buf, region) {
   const img = decodePng(buf), { ax, ay, bx, by } = bounds(img, region);
-  let n = 0, sum = 0, sum2 = 0, dsum = 0, dn = 0; const colors = new Set();
+  let n = 0, sum = 0, sum2 = 0, dsum = 0, dn = 0, grau = 0; const colors = new Set();   // grau: Pixel, deren Kanäle sich um höchstens 6 unterscheiden
   for (let y = ay; y < by; y += 2) for (let x = ax; x < bx; x += 2) {
     const i = (y * img.w + x) * img.ch, l = (img.data[i] + img.data[i + 1] + img.data[i + 2]) / 3;
     sum += l; sum2 += l * l; n++;
     if (x + 1 < bx) { const j = i + img.ch; dsum += Math.abs((img.data[j] + img.data[j + 1] + img.data[j + 2]) / 3 - l); dn++; }   // Rauheit: Sprung zum rechten Nachbarn
     if (colors.size < 5000) colors.add((img.data[i] << 16) | (img.data[i + 1] << 8) | img.data[i + 2]);
+    { const r = img.data[i], g = img.data[i + 1], b = img.data[i + 2]; if (Math.abs(r - g) <= 6 && Math.abs(g - b) <= 6 && Math.abs(r - b) <= 6) grau++; }
   }
   const mean = sum / n, std = Math.sqrt(Math.max(0, sum2 / n - mean * mean));
-  return { width: img.w, height: img.h, mean: +mean.toFixed(2), std: +std.toFixed(2), rough: +(dsum / Math.max(1, dn)).toFixed(2), colors: colors.size, samples: n };
+  return { width: img.w, height: img.h, mean: +mean.toFixed(2), std: +std.toFixed(2), rough: +(dsum / Math.max(1, dn)).toFixed(2), colors: colors.size, grau: +(grau / Math.max(1, n)).toFixed(4), samples: n };   // grau: Anteil 0 … 1
 }
 
 // Mittlere absolute Abweichung (0..255) zweier gleich großer Bilder im Bereich

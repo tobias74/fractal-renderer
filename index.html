@@ -16,11 +16,35 @@
     --maske: #b09ae0;   /* Masken: eigener Ton neben dem Akzent, damit Ebene und Maske auseinanderzuhalten sind */
     --warn: #e2b04c;
     --bad: #e4706a;
+    /* Schema-abhängige Bausteine (Vorgabe: die bisherigen dunklen Werte); die Schemata unten überschreiben sie */
+    --tint: 255, 255, 255;           /* Schleier für Hover, Füllungen, Regler-Spuren: rgba(var(--tint), α) */
+    --input: #14161d;                /* Grund von Menüs, Auswahl-Einträgen, Schublade */
+    --glow: #fff;                    /* Leuchtsaum der gewählten Palettenmarke */
+    --bg-rgb: 11, 13, 18;            /* --bg als Tripel, für halbdurchsichtige Flächen */
+    --deep-rgb: 5, 6, 9;             /* Abdunkelung hinter Dialogen und der Schublade */
+    --panel-rgb: 17, 19, 26;         /* Grund der Fußleiste */
+    --fade-rgb: 8, 9, 13;            /* Verlauf hinter der Kopfleiste (Handy) */
+    --pop: rgba(30, 33, 42, .92);    /* Knopf der Schublade beim Zeigen */
+    --sheet: rgba(13, 15, 21, .92);  /* Reiterleiste (Handy) */
+    --accent-rgb: 130, 203, 190;     /* Akzent als Tripel, für gewählte Bereiche */
+    --schalter-ink: #10221e;         /* Knopf des Texturschalters, wenn an */
     /* nur Systemschriften: die App lädt nichts von fremden Servern */
     --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     --font-mono: ui-monospace, 'Cascadia Mono', 'Segoe UI Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
     --radius: 10px;
     --rail: 46px;   /* Breite der Bereichsleiste am rechten Rand */
+  }
+  :root[data-theme="schwarz"] {   /* reines Schwarz, etwa für OLED: dieselben Töne auf schwarzem Grund */
+    --bg: #000; --bg-rgb: 0, 0, 0; --panel: rgba(0, 0, 0, .86); --panel-rgb: 0, 0, 0; --input: #050505; --deep-rgb: 0, 0, 0; --fade-rgb: 0, 0, 0;
+    --pop: rgba(20, 20, 20, .92); --sheet: rgba(0, 0, 0, .92); --line: rgba(255, 255, 255, .12); --line-strong: rgba(255, 255, 255, .22); --text: #f2efe8;
+  }
+  :root[data-theme="hell"] {   /* helles Schema: warmes Weiß, dunkle Schrift, ein dunklerer Akzent für den Kontrast */
+    color-scheme: light;
+    --bg: #f4f2ed; --bg-rgb: 244, 242, 237; --panel: rgba(250, 249, 246, .88); --panel-rgb: 250, 249, 246;
+    --line: rgba(0, 0, 0, .1); --line-strong: rgba(0, 0, 0, .2); --text: #1e1d1a; --muted: #605e58; --faint: #8b8983;
+    --accent: #1f7f70; --accent-rgb: 31, 127, 112; --accent-ink: #ffffff; --maske: #6a4fb0; --warn: #8f6200; --bad: #b2403a;
+    --tint: 0, 0, 0; --input: #ffffff; --glow: #000; --deep-rgb: 244, 242, 237; --fade-rgb: 244, 242, 237;
+    --pop: rgba(255, 255, 255, .96); --sheet: rgba(250, 249, 246, .92); --schalter-ink: #ffffff;
   }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
@@ -82,7 +106,7 @@
     border: 0; border-radius: 6px;
     background: transparent; color: var(--muted); cursor: pointer;
   }
-  .icon-btn:hover { background: rgba(255, 255, 255, .06); color: var(--text); }
+  .icon-btn:hover { background: rgba(var(--tint), .06); color: var(--text); }
   .panel-head .icon-btn { display: none; }   /* am PC übernimmt der Griff an der Schubladenkante */
   .icon-btn svg { transition: transform .2s ease; }
   .panel.collapsed .icon-btn svg { transform: rotate(180deg); }
@@ -111,7 +135,7 @@
 
   .seg {
     display: grid; grid-template-columns: 1fr 1fr; gap: 3px;
-    background: rgba(255, 255, 255, .05);
+    background: rgba(var(--tint), .05);
     border: 1px solid var(--line); border-radius: 7px; padding: 3px;
   }
   .seg button {
@@ -136,7 +160,7 @@
   /* Wertanzeigen sind Eingabefelder: dieselbe Optik wie die Zahlenfelder bei c und z₀, nur schmaler und rechtsbündig */
   input.wert {
     flex: 0 1 auto; min-width: 56px; width: 96px; text-align: right;   /* in schmalen Zellen (Handy) schrumpft das Feld, statt über den Rand zu stehen */
-    background: rgba(255, 255, 255, .05); color: var(--text);
+    background: rgba(var(--tint), .05); color: var(--text);
     border: 1px solid var(--line-strong); border-radius: 6px;
     padding: 3px 6px; font: 12px var(--font-mono); font-variant-numeric: tabular-nums;
   }
@@ -150,26 +174,26 @@
   input[type=range]:disabled { opacity: .45; }
   select, .julia-c input[type=number] {
     width: 100%;
-    background: rgba(255, 255, 255, .05); color: var(--text);
+    background: rgba(var(--tint), .05); color: var(--text);
     border: 1px solid var(--line-strong); border-radius: 6px;
     padding: 7px 8px; font: 13px var(--font-ui);
   }
-  select option { background: #14161d; color: var(--text); padding: 4px 6px; }
-  select optgroup { background: #14161d; color: var(--muted); font-weight: 600; font-style: normal; letter-spacing: .02em; }
+  select option { background: var(--input); color: var(--text); padding: 4px 6px; }
+  select optgroup { background: var(--input); color: var(--muted); font-weight: 600; font-style: normal; letter-spacing: .02em; }
   .link-knopf { border: 0; background: none; padding: 0; color: var(--accent); font: inherit; text-decoration: underline; cursor: pointer; }
   .sel-hidden { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
   .crop-bar .menu-btn { width: auto; }
   .menu-btn:disabled { opacity: .5; cursor: default; }
   .menu-btn {
     width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px;
-    background: rgba(255, 255, 255, .05); border: 1px solid var(--line-strong); border-radius: 6px;
+    background: rgba(var(--tint), .05); border: 1px solid var(--line-strong); border-radius: 6px;
     padding: 7px 8px 7px 10px; color: var(--text); font: 13px var(--font-ui); cursor: pointer; text-align: left;
   }
-  .menu-btn:hover { background: rgba(255, 255, 255, .08); }
+  .menu-btn:hover { background: rgba(var(--tint), .08); }
   .menu-btn svg { flex: none; color: var(--muted); }
   .menu {
     position: fixed; z-index: 70; padding: 6px 0;   /* über Unterseite (45), Einwilligung (40) und Seitenleiste (60) */
-    background: #14161d; border: 1px solid var(--line-strong); border-radius: 8px;
+    background: var(--input); border: 1px solid var(--line-strong); border-radius: 8px;
     box-shadow: 0 16px 48px rgba(0, 0, 0, .55); overflow-y: auto; scrollbar-width: thin;
   }
   .menu h4 {
@@ -181,7 +205,7 @@
     display: block; width: 100%; text-align: left; background: transparent; border: 0;
     color: var(--text); font: 13px var(--font-ui); padding: 7px 14px; cursor: pointer;
   }
-  .menu button:hover, .menu button:focus-visible, .menu button.hl { background: rgba(255, 255, 255, .08); outline: none; }
+  .menu button:hover, .menu button:focus-visible, .menu button.hl { background: rgba(var(--tint), .08); outline: none; }
   .menu button.on { color: var(--accent); }
   .menu button.on::before { content: '▸ '; color: var(--accent); }
   .chk {
@@ -201,12 +225,12 @@
     text-align: center; text-decoration: none; line-height: 1.3;
   }
   .ghost { background: transparent; border: 1px solid var(--line-strong); color: var(--text); }
-  .ghost:hover { background: rgba(255, 255, 255, .06); }
+  .ghost:hover { background: rgba(var(--tint), .06); }
   .primary { background: var(--accent); border: 1px solid var(--accent); color: var(--accent-ink); }
   .primary:hover { filter: brightness(1.06); }
   button:disabled { opacity: .5; cursor: default; }
 
-  .track { height: 3px; background: rgba(255, 255, 255, .08); border-radius: 2px; overflow: hidden; }
+  .track { height: 3px; background: rgba(var(--tint), .08); border-radius: 2px; overflow: hidden; }
   .fill { height: 100%; background: var(--accent); width: 0%; transition: width .15s linear; }
   .hint { color: var(--faint); font-size: 11.5px; line-height: 1.45; }
   .state { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -219,12 +243,12 @@
 
   .modal {
     position: fixed; inset: 0; z-index: 52;   /* über dem Menüknopf (50), unter Einwilligung (55), Schublade (60) und Menüs (70) */
-    background: rgba(5, 6, 9, .78);
+    background: rgba(var(--deep-rgb), .78);
     display: flex; justify-content: center;
     padding: calc(16px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));   /* am Handy an Kerbe und Home-Leiste vorbei */
     overflow-y: auto; overscroll-behavior: contain;   /* höhere Karten als das Bild bleiben scrollbar */
   }
-  #linkText { width: 100%; box-sizing: border-box; font: 12px var(--font-mono); background: rgba(255, 255, 255, .04); color: var(--text); border: 1px solid var(--line-strong); border-radius: 8px; padding: 8px 10px; resize: vertical; word-break: break-all; }
+  #linkText { width: 100%; box-sizing: border-box; font: 12px var(--font-mono); background: rgba(var(--tint), .04); color: var(--text); border: 1px solid var(--line-strong); border-radius: 8px; padding: 8px 10px; resize: vertical; word-break: break-all; }
   .modal-card {
     background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
     padding: 12px; max-width: min(94vw, 960px); width: 100%;
@@ -236,7 +260,7 @@
   .meta-box { border: 1px dashed var(--line); border-radius: 8px; padding: 8px 12px 10px; display: flex; flex-direction: column; gap: 8px; }   /* Metadaten im Speichern-Dialog */
   .meta-box .meta-liste { display: flex; flex-direction: column; gap: 9px; padding: 4px 0 6px; }
   .meta-box .chk { margin: 0; }
-  .meta-text { width: 100%; box-sizing: border-box; font: 11px var(--font-mono); background: rgba(255, 255, 255, .04); color: var(--text); border: 1px solid var(--line-strong); border-radius: 8px; padding: 6px 8px; resize: none; overflow: hidden; word-break: break-all; }
+  .meta-text { width: 100%; box-sizing: border-box; font: 11px var(--font-mono); background: rgba(var(--tint), .04); color: var(--text); border: 1px solid var(--line-strong); border-radius: 8px; padding: 6px 8px; resize: none; overflow: hidden; word-break: break-all; }
   .meta-card { max-width: min(94vw, 720px); }
   .meta-bericht { display: flex; flex-direction: column; gap: 6px; max-height: 60vh; overflow: auto; }
   .meta-bericht h3 { margin: 6px 0 0; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
@@ -262,24 +286,24 @@
   .tex-karte.aus .nach-eigen::before, .tex-karte.aus .nach-maske::before { background: var(--muted); opacity: .3; }
   .tex-karte.tex-leer { background: none; padding-bottom: 0; }   /* der leere Platz im Texturstapel: nur die Auswahl, kein Band */
   .tex-karte.tex-leer .nach-eigen::before { display: none; }
-  .tex-karte .tex-kopf { margin: 0 -10px 0 -12px; padding: 6px 8px 6px 6px; min-height: 30px; background: rgba(255, 255, 255, .055); border-top: 1px solid var(--line-strong); border-radius: 8px 8px 0 0; }
+  .tex-karte .tex-kopf { margin: 0 -10px 0 -12px; padding: 6px 8px 6px 6px; min-height: 30px; background: rgba(var(--tint), .055); border-top: 1px solid var(--line-strong); border-radius: 8px 8px 0 0; }
   .tex-karte .tex-kopf .tex-kurz { font-weight: 600; color: var(--text); }
   .tex-kopf > select, .tex-kopf > .menu-btn { flex: 1; min-width: 0; height: 26px; margin: 0; }   /* die Art steht in der Kopfzeile, nicht doppelt darunter */
   .tex-kopf > select + .menu-btn { font-weight: 600; }
   .tex-kopf > .menu-btn span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }   /* lange Namen kürzen statt umbrechen */
   .nach-kurve { display: flex; flex-direction: column; gap: 6px; }
-  .nach-kurve-bild { width: 100%; height: auto; border: 1px solid var(--line); border-radius: 6px; background: rgba(255, 255, 255, .03); touch-action: none; cursor: crosshair; display: block; }
+  .nach-kurve-bild { width: 100%; height: auto; border: 1px solid var(--line); border-radius: 6px; background: rgba(var(--tint), .03); touch-action: none; cursor: crosshair; display: block; }
   .nach-kurve .ghost.klein { align-self: flex-start; }
   .pal-ed { display: flex; flex-direction: column; gap: 9px; }
   .grid2.paare > div[hidden] + div, .grid2.paare > div:has(+ div[hidden]) { grid-column: 1 / -1; }   /* im Formel-Raster: bleibt eine Zelle allein (z. B. „Ebene“ ohne „Potenz d“), nimmt sie die ganze Breite */
   .pal-ed canvas { width: 100%; height: 28px; border-radius: 6px; border: 1px solid var(--line); display: block; }
-  .pal-ed canvas.pe-hist { height: 40px; background: rgba(255, 255, 255, .03); }   /* Häufigkeit je Palettenstelle, unter den Marken */
+  .pal-ed canvas.pe-hist { height: 40px; background: rgba(var(--tint), .03); }   /* Häufigkeit je Palettenstelle, unter den Marken */
   /* Marken der Stützstellen unter der Vorschau: Dreieck in der Farbe der Stelle, ziehbar; die gewählte leuchtet */
   .pe-marken { position: relative; height: 14px; margin: 1px 0 4px; }
   .pe-marke { position: absolute; top: 0; width: 0; height: 0; margin-left: -7px; border-left: 7px solid transparent; border-right: 7px solid transparent; border-bottom: 11px solid var(--c, #888); cursor: ew-resize; touch-action: none; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .7)); }
-  .pe-marke.on, .pe-marke:hover { filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 2px #fff); }
+  .pe-marke.on, .pe-marke:hover { filter: drop-shadow(0 0 1px var(--glow)) drop-shadow(0 0 2px var(--glow)); }
   .pe-marke:focus-visible { outline: none; filter: drop-shadow(0 0 1px var(--accent)) drop-shadow(0 0 3px var(--accent)); }
-  .pe-stop.on { background: rgba(255, 255, 255, .06); border-radius: 6px; }
+  .pe-stop.on { background: rgba(var(--tint), .06); border-radius: 6px; }
   .wertzeile .klein { margin-left: auto; margin-right: 8px; padding: 2px 8px; font-size: 12px; line-height: 1.4; }
   .innen-farbe { width: 100%; height: 30px; margin-top: 6px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; cursor: pointer; }
   /* Texturstapel: je Platz ein Eintrag mit linker Leitlinie statt Kasten; Kopfzeile [Griff][Klapp] Name · Art · Stärke … [Schalter][▲][▼][×] */
@@ -291,7 +315,7 @@
   .tex-titel { margin-top: 6px; }
   .tex-optionen { display: flex; flex-direction: column; gap: 6px; padding: 2px 2px 6px; }   /* unter dem Stapel: Texturen auch innen, Fallenverbund */   /* Abschnitt „Texturen“: etwas Luft über dem Stapel */
   .stat-titel { margin-top: 12px; }   /* Abschnitt „Bahnstatistik“ (Streifen, Vorlauf, Gewichtung): Luft nach dem Stapel */
-  .tex-karte { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 0 10px 8px 12px; background: rgba(255, 255, 255, .03); border-radius: 8px; }   /* Band, Grund und Rückgrat: siehe die Regeln oben bei .nach-karte */
+  .tex-karte { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 0 10px 8px 12px; background: rgba(var(--tint), .03); border-radius: 8px; }   /* Band, Grund und Rückgrat: siehe die Regeln oben bei .nach-karte */
   .tex-karte.tex-leer { padding-bottom: 0; }
   .tex-karte.aus > :not(.tex-slot):not(.nach-eigen), .tex-karte.aus .nach-eigen > :not(.tex-slot), .tex-karte.aus select, .tex-karte.aus .tex-kurz, .tex-karte.aus > .tex-slot > .lbl > label { opacity: .45; }   /* ausgeschaltet: gedämpft, Schalter und Knöpfe bleiben klar */
   .tex-karte.tex-platz { opacity: .25; }   /* die Lücke: der gezogene Eintrag bleibt an Ort und Stelle, nur blass */
@@ -306,16 +330,16 @@
   .tex-kurz { flex: 1; min-width: 0; color: var(--text); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tex-kurz .tex-wert { color: var(--faint); font-family: var(--font-mono); font-size: 11.5px; margin-left: 6px; }
   .tex-kopf button { width: 22px; height: 22px; padding: 0; border: none; border-radius: 5px; background: none; color: var(--muted); font: 11px var(--font-ui); cursor: pointer; }
-  .tex-kopf button:hover, .tex-kopf button:focus-visible { color: var(--text); background: rgba(255, 255, 255, .08); outline: none; }
+  .tex-kopf button:hover, .tex-kopf button:focus-visible { color: var(--text); background: rgba(var(--tint), .08); outline: none; }
   .tex-griff { cursor: grab; touch-action: none; letter-spacing: -2px; margin-left: -4px; }
   .tex-klapp { font-size: 12px; }
   .tex-knoepfe { display: flex; gap: 2px; align-items: center; }
   .tex-schalter { position: relative; width: 30px; height: 18px; display: inline-block; cursor: pointer; margin-right: 4px; }
   .tex-schalter input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
-  .tex-schalter span { position: absolute; inset: 0; border-radius: 9px; background: rgba(255, 255, 255, .14); transition: background .15s; }
+  .tex-schalter span { position: absolute; inset: 0; border-radius: 9px; background: rgba(var(--tint), .14); transition: background .15s; }
   .tex-schalter span::after { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--muted); transition: transform .15s, background .15s; }
   .tex-schalter input:checked + span { background: var(--accent); }
-  .tex-schalter input:checked + span::after { transform: translateX(12px); background: #10221e; }
+  .tex-schalter input:checked + span::after { transform: translateX(12px); background: var(--schalter-ink); }
   .tex-schalter input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
   select.tex-neu { color: var(--muted); border-style: dashed; background: transparent; }   /* der nächste freie Platz: „＋ Textur hinzufügen“ */
   /* Paar aus zwei Bahnwerten: je Achse ein Block mit Wert, Faktor, Abzug und Klemme */
@@ -333,10 +357,10 @@
   .tex-klapp:hover, .tex-klapp:focus-visible { color: var(--text); outline: none; }
   .tex-schalter { position: relative; width: 30px; height: 18px; display: inline-block; cursor: pointer; margin-right: 3px; }
   .tex-schalter input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
-  .tex-schalter span { position: absolute; inset: 0; border-radius: 9px; background: rgba(255, 255, 255, .14); transition: background .15s; }
+  .tex-schalter span { position: absolute; inset: 0; border-radius: 9px; background: rgba(var(--tint), .14); transition: background .15s; }
   .tex-schalter span::after { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--muted); transition: transform .15s, background .15s; }
   .tex-schalter input:checked + span { background: var(--accent); }
-  .tex-schalter input:checked + span::after { transform: translateX(12px); background: #10221e; }
+  .tex-schalter input:checked + span::after { transform: translateX(12px); background: var(--schalter-ink); }
   .tex-schalter input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
   .tex-knoepfe { display: flex; gap: 3px; }
   .tex-knoepfe button { width: 24px; height: 22px; padding: 0; border: 1px solid var(--line); border-radius: 5px; background: none; color: var(--muted); font: 11px var(--font-ui); cursor: pointer; }
@@ -347,7 +371,7 @@
   .tex-farben label { flex: 1; display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12.5px; cursor: pointer; }
   .tex-farben input[type=color] { width: 46px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; cursor: pointer; }
   /* Übertragungskurve: Häufigkeiten als Balken, darüber die Kurve mit ziehbaren Punkten */
-  canvas.kurve { width: 100%; height: auto; aspect-ratio: 24 / 11; border-radius: 6px; border: 1px solid var(--line); display: block; background: rgba(255, 255, 255, .03); cursor: crosshair; touch-action: none; }
+  canvas.kurve { width: 100%; height: auto; aspect-ratio: 24 / 11; border-radius: 6px; border: 1px solid var(--line); display: block; background: rgba(var(--tint), .03); cursor: crosshair; touch-action: none; }
   canvas.kurve:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .pal-ed .btns { display: flex; gap: 6px; align-items: stretch; }   /* Knöpfe einer Reihe gleich hoch, auch wenn nur einer zweizeilig umbricht */
   .pal-ed .btns .chk { flex: 1; }
@@ -404,9 +428,9 @@
     .poster-card .thumb { max-height: 84px; }
   }
   .poster-card h2 { margin: 0 0 2px; font-size: 15px; font-weight: 600; }
-  #seq { background: rgba(255, 255, 255, .05); color: var(--text); border: 1px solid var(--line-strong); border-radius: 6px; padding: 5px 8px; font: 12.5px var(--font-mono); letter-spacing: .08em; }
+  #seq { background: rgba(var(--tint), .05); color: var(--text); border: 1px solid var(--line-strong); border-radius: 6px; padding: 5px 8px; font: 12.5px var(--font-mono); letter-spacing: .08em; }
   .poster-card input[type=number] {
-    width: 100%; background: rgba(255, 255, 255, .05); color: var(--text);
+    width: 100%; background: rgba(var(--tint), .05); color: var(--text);
     border: 1px solid var(--line-strong); border-radius: 6px; padding: 7px 8px; font: 13px var(--font-mono);
   }
   .poster-card .thumb { max-height: 140px; width: auto; max-width: 100%; border-radius: 6px; display: block; margin: 0 auto; }
@@ -463,13 +487,13 @@
   .site-bar {
     position: fixed; left: 12px; bottom: 10px; z-index: 6;
     display: flex; gap: 1px; align-items: center;
-    background: rgba(17, 19, 26, .72); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    background: rgba(var(--panel-rgb), .72); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
     border: 1px solid var(--line); border-radius: 8px; padding: 2px 4px;
   }
   .site-bar button, .site-bar a { background: transparent; border: 0; color: var(--muted); font: 11.5px var(--font-ui); padding: 5px 7px; cursor: pointer; border-radius: 5px; text-decoration: none; }
-  .site-bar button:hover, .site-bar a:hover { color: var(--text); background: rgba(255, 255, 255, .06); }
+  .site-bar button:hover, .site-bar a:hover { color: var(--text); background: rgba(var(--tint), .06); }
   .site-bar .menu-btn, .site-bar select { width: auto; background: transparent; border: 0; color: var(--muted); font: 11.5px var(--font-ui); padding: 4px 6px 4px 8px; gap: 5px; }
-  .site-bar .menu-btn:hover, .site-bar select:hover { color: var(--text); background: rgba(255, 255, 255, .06); }
+  .site-bar .menu-btn:hover, .site-bar select:hover { color: var(--text); background: rgba(var(--tint), .06); }
   .site-bar .menu-btn svg { width: 10px; height: 10px; }
   /* Burger-Menü: Knopf oben rechts, Seitenleiste fliegt von rechts ein */
   .burger {
@@ -479,11 +503,11 @@
     background: var(--panel); -webkit-backdrop-filter: blur(16px) saturate(120%); backdrop-filter: blur(16px) saturate(120%);
     box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
   }
-  .burger:hover { background: rgba(30, 33, 42, .92); }
-  .drawer-backdrop { position: fixed; inset: 0; z-index: 59; background: rgba(5, 6, 9, .45); }
+  .burger:hover { background: var(--pop); }
+  .drawer-backdrop { position: fixed; inset: 0; z-index: 59; background: rgba(var(--deep-rgb), .45); }
   .drawer {
     position: fixed; top: 0; left: 0; bottom: 0; z-index: 60; width: min(440px, 92vw);
-    background: #14161d; border-right: 1px solid var(--line-strong); box-shadow: 16px 0 48px rgba(0, 0, 0, .5);
+    background: var(--input); border-right: 1px solid var(--line-strong); box-shadow: 16px 0 48px rgba(0, 0, 0, .5);
     transform: translateX(calc(-100% - 8px)); transition: transform .28s ease;
     display: flex; flex-direction: column;
   }
@@ -549,9 +573,9 @@
     border: 0; border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer;
     transition: color .15s ease, background-color .15s ease;
   }
-  .rail button:hover { color: var(--text); background: rgba(255, 255, 255, .07); }
+  .rail button:hover { color: var(--text); background: rgba(var(--tint), .07); }
   .rail button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .rail button.on { color: var(--accent); background: rgba(130, 203, 190, .12); }
+  .rail button.on { color: var(--accent); background: rgba(var(--accent-rgb), .12); }
   .rail button.on::before { content: ''; position: absolute; left: -1px; top: 7px; bottom: 7px; width: 2px; border-radius: 2px; background: var(--accent); }
   .rail .rail-gap { margin-top: auto; }
   .rail .rail-chevron { transition: transform .36s cubic-bezier(.22, .78, .24, 1); }
@@ -568,7 +592,7 @@
     width: 34px; height: 34px; display: grid; place-items: center;
     border: 0; border-radius: 7px; background: transparent; color: var(--muted); cursor: pointer;
   }
-  .toolbar button:hover:not(:disabled) { color: var(--text); background: rgba(255, 255, 255, .07); }
+  .toolbar button:hover:not(:disabled) { color: var(--text); background: rgba(var(--tint), .07); }
   .toolbar button:disabled { opacity: .4; cursor: default; }
   .toolbar button.primary { color: var(--accent); }
   .toolbar .sep { width: 1px; height: 20px; background: var(--line); margin: 0 3px; }
@@ -594,9 +618,9 @@
   .consent-nec strong { font-size: 13.5px; }
   .consent-cat {
     display: grid; grid-template-columns: 18px 1fr; gap: 10px; align-items: start;
-    padding: 12px 14px; border: 1px solid var(--line-strong); border-radius: 10px; background: rgba(255, 255, 255, .03); cursor: pointer;
+    padding: 12px 14px; border: 1px solid var(--line-strong); border-radius: 10px; background: rgba(var(--tint), .03); cursor: pointer;
   }
-  .consent-cat:hover { background: rgba(255, 255, 255, .05); }
+  .consent-cat:hover { background: rgba(var(--tint), .05); }
   .consent-cat input { accent-color: var(--accent); width: 16px; height: 16px; margin: 2px 0 0; }
   .consent-cat strong { display: block; font-size: 13.5px; margin-bottom: 2px; }
   .consent-cat small { display: block; color: var(--muted); font-size: 12px; line-height: 1.45; }
@@ -618,7 +642,7 @@
       position: fixed; top: 0; left: 0; right: 0; z-index: 7; height: var(--appbar);
       display: flex; align-items: center; gap: 10px;
       padding: env(safe-area-inset-top) calc(8px + env(safe-area-inset-right)) 0 calc(60px + env(safe-area-inset-left));
-      background: linear-gradient(to bottom, rgba(8, 9, 13, .7), rgba(8, 9, 13, .25) 70%, rgba(8, 9, 13, 0));
+      background: linear-gradient(to bottom, rgba(var(--fade-rgb), .7), rgba(var(--fade-rgb), .25) 70%, rgba(var(--fade-rgb), 0));
       pointer-events: none;   /* die Leiste lässt Ziehen und Zoomen durch, nur ihr Knopf fängt */
     }
     .appbar-title { min-width: 0; font-size: 14.5px; font-weight: 600; letter-spacing: .01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 8px rgba(0, 0, 0, .6); }
@@ -636,14 +660,14 @@
     .m-info {
       position: fixed; z-index: 9; top: calc(var(--appbar) + 2px); right: calc(8px + env(safe-area-inset-right));
       width: min(320px, calc(100vw - 16px)); display: flex; flex-direction: column; gap: 9px; padding: 12px 14px;
-      background: #14161d; border: 1px solid var(--line-strong); border-radius: 12px; box-shadow: 0 16px 48px rgba(0, 0, 0, .5);
+      background: var(--input); border: 1px solid var(--line-strong); border-radius: 12px; box-shadow: 0 16px 48px rgba(0, 0, 0, .5);
     }
     #mDepthRow { display: flex; flex-direction: column; gap: 6px; }
 
     .tabbar {
       position: fixed; left: 0; right: 0; bottom: 0; z-index: 8; height: var(--tabbar);
       display: flex; padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-      background: rgba(13, 15, 21, .92); -webkit-backdrop-filter: blur(18px) saturate(120%); backdrop-filter: blur(18px) saturate(120%);
+      background: var(--sheet); -webkit-backdrop-filter: blur(18px) saturate(120%); backdrop-filter: blur(18px) saturate(120%);
       border-top: 1px solid var(--line);
     }
     .tabbar button {
@@ -653,7 +677,7 @@
     .tabbar .ico { display: grid; place-items: center; width: 52px; height: 28px; border-radius: 14px; transition: background-color .15s ease, color .15s ease; }
     .tabbar .tab-save .ico { color: var(--accent); }
     .tabbar button.on { color: var(--accent); }
-    .tabbar button.on .ico { background: rgba(130, 203, 190, .16); }
+    .tabbar button.on .ico { background: rgba(var(--accent-rgb), .16); }
 
     /* das Blatt: sitzt auf den Reitern, fährt nach unten hinter sie weg */
     .panel {
@@ -683,10 +707,10 @@
     .panel .chk input { width: 20px; height: 20px; }
     .panel .lbl { font-size: 13px; }
     .panel input[type=range] { -webkit-appearance: none; appearance: none; height: 32px; margin: 0; background: transparent; }
-    .panel input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: rgba(255, 255, 255, .18); }
-    .panel input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; margin-top: -10px; border-radius: 50%; background: var(--kanal, var(--accent)); border: 3px solid #0b0d12; box-shadow: 0 0 0 1px rgba(255, 255, 255, .25); }
-    .panel input[type=range]::-moz-range-track { height: 4px; border-radius: 2px; background: rgba(255, 255, 255, .18); }
-    .panel input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--kanal, var(--accent)); border: 3px solid #0b0d12; }
+    .panel input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: rgba(var(--tint), .18); }
+    .panel input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; margin-top: -10px; border-radius: 50%; background: var(--kanal, var(--accent)); border: 3px solid var(--bg); box-shadow: 0 0 0 1px rgba(var(--tint), .25); }
+    .panel input[type=range]::-moz-range-track { height: 4px; border-radius: 2px; background: rgba(var(--tint), .18); }
+    .panel input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--kanal, var(--accent)); border: 3px solid var(--bg); }
 
     /* Fraktal als Chips, Paletten als Farbfelder; die Auswahlfelder bleiben die Zustandsträger */
     #family, #family + .menu-btn, .pal-cell > .lbl, .pal-cell > select, .pal-cell > .menu-btn { display: none; }
@@ -695,7 +719,7 @@
     .chips { gap: 6px; }
     .chips button {
       flex: none; height: 38px; padding: 0 14px; border-radius: 19px; cursor: pointer; white-space: nowrap;
-      border: 1px solid var(--line-strong); background: rgba(255, 255, 255, .04); color: var(--text); font: 500 14px var(--font-ui);
+      border: 1px solid var(--line-strong); background: rgba(var(--tint), .04); color: var(--text); font: 500 14px var(--font-ui);
     }
     .chips button.on { background: var(--text); border-color: var(--text); color: var(--accent-ink); }
     .chips .trenner, .pal-strip .trenner { flex: none; width: 1px; margin: 6px 3px; background: var(--line-strong); }
@@ -704,7 +728,7 @@
       flex: none; width: 74px; display: flex; flex-direction: column; gap: 6px; padding: 0; cursor: pointer;
       border: 0; background: none; color: var(--muted); font: 11.5px var(--font-ui); text-align: left;
     }
-    .pal-strip .sw { display: block; height: 40px; border-radius: 8px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1); }
+    .pal-strip .sw { display: block; height: 40px; border-radius: 8px; box-shadow: inset 0 0 0 1px rgba(var(--tint), .1); }
     .pal-strip .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .pal-strip button.on { color: var(--text); }
     .pal-strip button.on .sw { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -725,8 +749,8 @@
     body.regler-aktiv .panel { background-color: transparent; border-color: transparent; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
     body.regler-aktiv .panel * { visibility: hidden; }
     body.regler-aktiv .panel .fokus, body.regler-aktiv .panel .fokus * { visibility: visible; }
-    body.regler-aktiv .panel .fokus:not(input) { background: rgba(11, 13, 18, .74); box-shadow: 0 0 0 6px rgba(11, 13, 18, .74); border-radius: 6px; }
-    body.regler-aktiv .panel input.fokus { background: rgba(11, 13, 18, .6); border-radius: 16px; }
+    body.regler-aktiv .panel .fokus:not(input) { background: rgba(var(--bg-rgb), .74); box-shadow: 0 0 0 6px rgba(var(--bg-rgb), .74); border-radius: 6px; }
+    body.regler-aktiv .panel input.fokus { background: rgba(var(--bg-rgb), .6); border-radius: 16px; }
     body.regler-aktiv .appbar, body.regler-aktiv .tabbar, body.regler-aktiv .burger, body.regler-aktiv .m-info { opacity: 0; pointer-events: none; }
     /* Zuschnitt am Bild: die Leisten treten ab, dessen Knopfleiste sitzt unten */
     body.zuschnitt .appbar, body.zuschnitt .tabbar, body.zuschnitt .m-info { display: none; }
@@ -892,11 +916,6 @@
           <option value="0" data-i18n="colour.linear"></option>
           <option value="1" data-i18n="colour.square-root"></option>
           <option value="2" data-i18n="colour.logarithmic"></option>
-          <option value="5" data-i18n="colour.double-logarithmic"></option>
-          <option value="7" data-i18n="colour.triple-logarithmic"></option>
-          <option value="8" data-i18n="colour.quadruple-logarithmic"></option>
-          <option value="9" data-i18n="colour.quintuple-logarithmic"></option>
-          <option value="10" data-i18n="colour.sextuple-logarithmic"></option>
           <option value="33" data-i18n="colour.logmap"></option>
           <option value="3" data-i18n="colour.histogram"></option>
           <option value="28" data-i18n="colour.curve"></option>
@@ -932,6 +951,12 @@
         </optgroup>
       </select>
       <p class="hint" id="mappingText"></p>   <!-- ein Satz zur gewählten Färbung -->
+      <div id="logStufenRow" hidden>
+        <div class="lbl wertzeile"><label for="logStufen" data-i18n-title="colour.log-stages-title" data-i18n="colour.log-stages"></label><input class="val mono wert" id="logStufenVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+        <input id="logStufen" type="range" min="1" max="10" step="0.01" value="1" list="logStufenMarken">
+        <datalist id="logStufenMarken"><option value="1"></option><option value="2"></option><option value="3"></option><option value="4"></option><option value="5"></option><option value="6"></option><option value="7"></option><option value="8"></option><option value="9"></option><option value="10"></option></datalist>
+        <label class="chk" data-i18n-title="colour.log-stages-density-title"><input type="checkbox" id="logDichteMit"> <span data-i18n="colour.log-stages-density"></span></label>
+      </div>
       <div id="compRow" hidden>
         <div class="lbl wertzeile"><label for="comp" data-i18n="colour.compression"></label><span class="val-zusatz" id="compNote"></span><input class="val mono wert" id="compVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="comp" type="range" min="0" max="1000" value="333">
@@ -1584,6 +1609,14 @@
     </section>
       <h2 class="pane-title" data-i18n="technical.technical"></h2>
     <section class="row" id="techRow">
+      <div class="lbl"><label for="themeSel" data-i18n-title="technical.appearance-title" data-i18n="technical.appearance"></label>
+        <select id="themeSel">
+          <option value="dunkel" data-i18n="technical.theme-dark"></option>
+          <option value="schwarz" data-i18n="technical.theme-black"></option>
+          <option value="hell" data-i18n="technical.theme-light"></option>
+          <option value="system" data-i18n="technical.theme-system"></option>
+        </select>
+      </div>
       <div class="lbl"><label for="renderer" data-i18n="technical.renderer"></label>
         <select id="renderer">
           <option value="auto" data-i18n="technical.automatic"></option>
@@ -1605,6 +1638,9 @@
           <option value="0" data-i18n="colour.off"></option>
         </select>
       </div>
+      <div class="lbl wertzeile"><label for="stapelMs" data-i18n-title="technical.batch-title" data-i18n="technical.batch"></label><input class="val mono wert" id="stapelMsVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+      <input id="stapelMs" type="range" min="8" max="120" step="1" value="40">
+      <label class="chk" data-i18n-title="technical.ui-first-title"><input type="checkbox" id="uiVorrang" checked> <span data-i18n="technical.ui-first"></span></label>
       <p class="hint" id="techInfo"></p>
     </section>
     </div>
@@ -1914,12 +1950,7 @@ const TEXTE = {
   'mapping.text.2': { de: 'Logarithmus der Iterationszahl, die übliche Wahl: jede Verdopplung ein gleich großer Schritt.', en: 'Logarithm of the iteration count, the usual choice: every doubling one equal step.' },
   'mapping.text.3': { de: 'Verteilung der Werte in der Ansicht: jede Farbe bekommt gleich viele Punkte.', en: 'Distribution of the values in the view: every colour gets the same number of points.' },
   'mapping.text.4': { de: 'Abstand zum Rand der Menge als Relief, mit Licht von oben.', en: 'Distance to the boundary of the set as a relief, lit from above.' },
-  'mapping.text.5': { de: 'Zweifacher Logarithmus: noch flacher bei großen Zahlen.', en: 'Double logarithm: flatter still at large counts.' },
   'mapping.text.6': { de: 'Logarithmische Bänder, vom Abstandsrelief beleuchtet.', en: 'Logarithmic bands, lit by the distance relief.' },
-  'mapping.text.7': { de: 'Dreifacher Logarithmus.', en: 'Triple logarithm.' },
-  'mapping.text.8': { de: 'Vierfacher Logarithmus.', en: 'Quadruple logarithm.' },
-  'mapping.text.9': { de: 'Fünffacher Logarithmus.', en: 'Quintuple logarithm.' },
-  'mapping.text.10': { de: 'Sechsfacher Logarithmus.', en: 'Sextuple logarithm.' },
   'mapping.text.11': { de: 'Stauchung mit Regler: stufenlos zwischen linear und logarithmisch.', en: 'Compression with a slider: continuously between linear and logarithmic.' },
   'mapping.text.12': { de: 'Stauchung mit Regler, vom Abstandsrelief beleuchtet.', en: 'Compression with a slider, lit by the distance relief.' },
   'mapping.text.13': { de: 'Lyapunov-Exponent: wie stark benachbarte Bahnen auseinanderlaufen.', en: 'Lyapunov exponent: how strongly neighbouring orbits diverge.' },
@@ -1976,7 +2007,6 @@ const TEXTE = {
   'colour.cross-trap-two-values': { de: 'Bahnfalle Kreuz, zwei Werte', en: 'Cross trap, two values' },
   'colour.dark': { de: 'Dunkel', en: 'Dark' },
   'colour.distance': { de: 'Abstand', en: 'Distance' },
-  'colour.double-logarithmic': { de: 'Doppelt logarithmisch', en: 'Double logarithmic' },
   'colour.edge-lines': { de: 'Randlinien', en: 'Edge lines' },
   'colour.edge-width': { de: 'Randbreite', en: 'Edge width' },
   'colour.edit-colour-scheme': { de: 'Farbschema bearbeiten …', en: 'Edit colour scheme …' },
@@ -1992,6 +2022,10 @@ const TEXTE = {
   'colour.kind-colour-palette': { de: 'Art der Farbpalette', en: 'Kind of colour palette' },
   'colour.light': { de: 'Hell', en: 'Light' },
   'colour.linear': { de: 'Linear', en: 'Linear' },
+  'colour.log-stages': { de: 'Stufen des Logarithmus', en: 'Stages of the logarithm' },
+  'colour.log-stages-title': { de: 'Wie oft der Logarithmus auf die Iterationszahl wirkt. 1 ist die gewohnte logarithmische Färbung; höhere Stufen drücken große Iterationszahlen immer stärker zusammen und zeigen im Tiefenzoom oben noch Struktur. Zwischenwerte blenden über, die ganzen Zahlen sind die früheren Färbungen (2 = doppelt, 3 = dreifach …).', en: 'How often the logarithm acts on the iteration count. 1 is the familiar logarithmic colouring; higher stages squeeze large counts ever more and keep structure at the top in a deep zoom. Values in between blend, the whole numbers are the former colourings (2 = double, 3 = triple …).' },
+  'colour.log-stages-density': { de: 'Dichte mitführen', en: 'Carry the density along' },
+  'colour.log-stages-density-title': { de: 'Beim Verschieben der Stufen zieht die App die Dichte so nach, dass die Spanne der sichtbaren Werte gleich viele Palettendurchläufe behält. Höhere Stufen verteilen die Farbe dann um, statt das Bild blasser zu machen. Aus: die Dichte bleibt stehen, wie bisher.', en: 'When the stages move, the app pulls the density along so that the range of visible values keeps the same number of palette cycles. Higher stages then redistribute the colour instead of washing the picture out. Off: the density stays put, as before.' },
   'colour.logarithmic': { de: 'Logarithmisch', en: 'Logarithmic' },
   'colour.logarithmic-relief': { de: 'Logarithmisch + Relief', en: 'Logarithmic + relief' },
   'colour.lyapunov-by-re-im': { de: 'Lyapunov nach Re und Im', en: 'Lyapunov by Re and Im' },
@@ -1999,10 +2033,7 @@ const TEXTE = {
   'colour.off': { de: 'Aus', en: 'Off' },
   'colour.orbit-averages': { de: 'Bahnmittel', en: 'Orbit averages' },
   'colour.orbit-traps': { de: 'Bahnfallen', en: 'Orbit traps' },
-  'colour.quadruple-logarithmic': { de: 'Vierfach logarithmisch', en: 'Quadruple logarithmic' },
-  'colour.quintuple-logarithmic': { de: 'Fünffach logarithmisch', en: 'Quintuple logarithmic' },
   'colour.relief': { de: 'Relief', en: 'Relief' },
-  'colour.sextuple-logarithmic': { de: 'Sechsfach logarithmisch', en: 'Sextuple logarithmic' },
   'colour.sign-changes': { de: 'Vorzeichenwechsel', en: 'Sign changes' },
   'colour.square-root': { de: 'Wurzel', en: 'Square root' },
   'colour.standard': { de: 'Gewöhnlich', en: 'Standard' },
@@ -2104,7 +2135,6 @@ const TEXTE = {
   'colour.pair-clamp': { de: 'bei 0 klemmen', en: 'clamp at 0' },
   'colour.pair-clamp-title': { de: 'Negative Werte werden 0 (wie bei der Ursprungsnähe im Paar 25).', en: 'Negative values become 0 (as for closest approach in pair 25).' },
   'colour.triangle-inequality-average-mitchell': { de: 'Dreiecksmittel (Mitchell)', en: 'Triangle inequality average (Mitchell)' },
-  'colour.triple-logarithmic': { de: 'Dreifach logarithmisch', en: 'Triple logarithmic' },
   'colour.two-dimensional': { de: 'Zweidimensional', en: 'Two-dimensional' },
   // consent
   'consent.accept-all': { de: 'Alle akzeptieren', en: 'Accept all' },
@@ -2356,6 +2386,7 @@ const TEXTE = {
   'mask.layer-6': { de: 'Ebene 6', en: 'Layer 6' },
   'mask.layer-7': { de: 'Ebene 7', en: 'Layer 7' },
   'mask.layer-8': { de: 'Ebene 8', en: 'Layer 8' },
+  'mask.not-above': { de: 'nicht darüber', en: 'not above' },
   'mask.texture-hint': { de: 'Nutzt den Wert dieses Texturplatzes aus dem Bereich „Farbe“; mit Stärke 0 dient die Textur allein der Maske.', en: 'Uses the value of that texture slot from the “Colour” panel; with strength 0 the texture serves only the mask.' },
   'mask.slot': { de: 'Textur', en: 'Texture' },
   'mask.slot-1': { de: 'Platz 1', en: 'Slot 1' },
@@ -2727,6 +2758,16 @@ const TEXTE = {
   'technical.always': { de: 'Immer', en: 'Always' },
   'technical.approximation-bla': { de: 'Näherung (BLA)', en: 'Approximation (BLA)' },
   'technical.automatic': { de: 'Automatisch', en: 'Automatic' },
+  'technical.appearance': { de: 'Erscheinungsbild', en: 'Appearance' },
+  'technical.appearance-title': { de: 'Farben der Oberfläche: dunkel wie bisher, reines Schwarz, hell, oder wie es dein System gerade einstellt. Liegt nur in diesem Browser (mit deiner Einwilligung zu Einstellungen) und nie im Link.', en: 'Colours of the interface: dark as before, pure black, light, or whatever your system is set to. Kept only in this browser (with your consent to settings) and never in the link.' },
+  'technical.theme-dark': { de: 'Dunkel', en: 'Dark' },
+  'technical.theme-black': { de: 'Schwarz', en: 'Black' },
+  'technical.theme-light': { de: 'Hell', en: 'Light' },
+  'technical.theme-system': { de: 'Wie das System', en: 'Like the system' },
+  'technical.batch': { de: 'Rechenstapel (ms)', en: 'Compute batch (ms)' },
+  'technical.batch-title': { de: 'Wie lange die Grafikkarte am Stück am Fraktal rechnet, bevor der Browser wieder zum Zeichnen kommt. Größer heißt schnelleres Bild und zähere Bedienung, kleiner heißt flüssige Bedienung und langsameres Bild.', en: 'How long the graphics card works on the fractal in one go before the browser gets to draw again. Larger means a faster picture and a sluggish interface, smaller means a smooth interface and a slower picture.' },
+  'technical.ui-first': { de: 'Bedienung hat Vorrang', en: 'Interface first' },
+  'technical.ui-first-title': { de: 'Sobald du im Bedienfeld klickst, tippst oder ziehst, rechnet die App eine halbe Sekunde lang in einem Drittel der Stapelgröße weiter. Das Bild wird dabei nicht angehalten, nur feiner geschnitten.', en: 'As soon as you click, type or drag in the panel, the app keeps computing at a third of the batch size for half a second. The picture is not paused, only cut into finer slices.' },
   'technical.cycle-detection': { de: 'Zykluserkennung', en: 'Cycle detection' },
   'technical.deep-zoom-by-perturbation': { de: ' Tiefenzoom per Störungstheorie: Referenzbahn in Double-Double auf der CPU, Deltas in fp32 auf der GPU, Rebasing gegen Glitches, bilineare Näherung überspringt Iterationsblöcke.', en: ' Deep zoom by perturbation theory: reference orbit in double-double on the CPU, deltas in fp32 on the GPU, rebasing against glitches, bilinear approximation skips iteration blocks.' },
   'technical.depth': { de: 'Tiefe', en: 'Depth' },
@@ -2820,7 +2861,12 @@ const FORMULAS = [
   { name: 'formula.halley', pert: false, view: [-0.45, 0, 1.6], param: ['formula.param-relaxation', 0.5, 2, 1], jc: [0, 0] },   // Halley/Nova: z − a·2FF′/(2F′² − FF″) + c mit F = z^d − 1
 ];
 const TILES_N = 16;
-const TARGET_MS = 40;                             // angestrebte GPU-Zeit pro Frame
+const THEMES = ['dunkel', 'schwarz', 'hell', 'system'];   // Erscheinungsbild der Oberfläche; „system“ folgt prefers-color-scheme
+const STAPEL_MS = { min: 8, max: 120, def: 40 };   // angestrebte GPU-Zeit je Rechenstapel: klein = flüssige Bedienung, groß = schnelleres Bild
+const UI_VORRANG_MS = 500;                         // so lange nach einer Eingabe im Bedienfeld gilt der kleine Stapel
+let uiUntil = 0;                                   // bis dahin hat die Bedienung Vorrang (ein Drittel der Stapelgröße)
+let letzteNus = null, nusVeraltet = true;          // Fluchtzeiten der Ansicht aus der letzten Werteprobe (sortiert), und ob die Ansicht seither wechselte
+const TARGET_MS = 40;                             // Vorgabe; der geltende Wert steht in S.stapelMs
 const MAX_PIXELS = 4.5e6;
 const AA_BUDGET = 512;   // Grafikspeicher für die Glättung in MB, fest und nicht einstellbar: mehr ließ Rechner beim Auslagern hängen
 const AA_BYTES = 16;     // je Probe: zwei Ganzzahlkanäle à 4 Byte, doppelt gepuffert
@@ -2837,8 +2883,10 @@ const aaTolToPos = t => Math.round(1000 * Math.log(t / AA_TOL.min) / Math.log(AA
 const aaPosToTol = p => AA_TOL.min * Math.pow(AA_TOL.max / AA_TOL.min, Math.min(1000, Math.max(0, p)) / 1000);   // ohne clamp: das ist beim Laden des Speichers noch nicht definiert
 const aaMaxToPos = n => Math.min(9, Math.max(0, Math.round(Math.log2(n / 8))));
 const aaPosToMax = p => 8 * Math.pow(2, Math.min(9, Math.max(0, p)));
+const LOG_STUFEN = { min: 1, max: 10, def: 1 };   // wie oft der Logarithmus wirkt; stufenlos, ganze Zahlen sind die alten Färbungen (1 = 2, 2 = 5, 3 = 7, 4 = 8, 5 = 9, 6 = 10)
+const LOG_ALT = { 5: 2, 7: 3, 8: 4, 9: 5, 10: 6 };   // alte Nummern und ihre Stufenzahl
 const MAP_MAX = 34;   // höchste Nummer einer Färbung (siehe Liste „Färbung nach“)
-const MAPPING_TEXT = { 0: 'mapping.text.0', 1: 'mapping.text.1', 2: 'mapping.text.2', 3: 'mapping.text.3', 4: 'mapping.text.4', 5: 'mapping.text.5', 6: 'mapping.text.6', 7: 'mapping.text.7', 8: 'mapping.text.8', 9: 'mapping.text.9', 10: 'mapping.text.10', 11: 'mapping.text.11', 12: 'mapping.text.12', 13: 'mapping.text.13', 14: 'mapping.text.14', 15: 'mapping.text.15', 16: 'mapping.text.16', 17: 'mapping.text.17', 18: 'mapping.text.18', 19: 'mapping.text.19', 20: 'mapping.text.20', 21: 'mapping.text.21', 24: 'mapping.text.24', 26: 'mapping.text.26', 28: 'mapping.text.28', 29: 'mapping.text.29', 31: 'mapping.text.31', 32: 'mapping.text.32', 33: 'mapping.text.33', 34: 'mapping.text.34' };   // ein Satz je Färbung, unter der Auswahl
+const MAPPING_TEXT = { 0: 'mapping.text.0', 1: 'mapping.text.1', 2: 'mapping.text.2', 3: 'mapping.text.3', 4: 'mapping.text.4', 6: 'mapping.text.6', 11: 'mapping.text.11', 12: 'mapping.text.12', 13: 'mapping.text.13', 14: 'mapping.text.14', 15: 'mapping.text.15', 16: 'mapping.text.16', 17: 'mapping.text.17', 18: 'mapping.text.18', 19: 'mapping.text.19', 20: 'mapping.text.20', 21: 'mapping.text.21', 24: 'mapping.text.24', 26: 'mapping.text.26', 28: 'mapping.text.28', 29: 'mapping.text.29', 31: 'mapping.text.31', 32: 'mapping.text.32', 33: 'mapping.text.33', 34: 'mapping.text.34' };   // ein Satz je Färbung, unter der Auswahl
 // „Werte kombinieren“ (31): eine Färbung aus zwei Bahnwerten, frei gewählt. Je Achse ein Wert (PAAR_WERTE), ein Faktor,
 // wahlweise ein Fluchtzeit-Abzug (0 keiner, 1 β·log₂(N+1), 2 β·0,1·(log₂(N+1) − 10)), bei 0 geklemmt, mit Farbanker
 // (Fluchtzeit: Farbanker der Fluchtzeit; Mittel: der des Bahnmittels). Die Einstellung steht in S.paar.
@@ -4512,6 +4560,13 @@ fn itlog(x0: f32, times: u32) -> f32 {   // k-fach iterierter Logarithmus: log2(
   for (var i = 0u; i < times; i++) { x = log2(x + 1.0); }
   return x;
 }
+fn logStufig(nu: f32, stufen: f32) -> f32 {   // stufenlos: zwischen k- und (k+1)-fachem Logarithmus überblenden, bei nu = 50 immer gleich
+  let s = clamp(stufen, 1.0, 10.0); let k = u32(floor(s)); let fr = s - floor(s);
+  let a = 50.0 * itlog(nu, k) / itlog(50.0, k);
+  if (fr <= 0.0) { return a; }
+  let b = 50.0 * itlog(nu, k + 1u) / itlog(50.0, k + 1u);
+  return mix(a, b, fr);
+}
 // Farbanker: Abbildungswert des verankerten Iterationswerts (shift.w, negativ = kein Anker); wird von t abgezogen,
 // damit die Farbe an der Ankerstelle beim Ändern der Dichte stehen bleibt und die Bänder sich nur um sie herum dehnen
 fn anchorV() -> f32 {
@@ -4653,12 +4708,8 @@ fn mapNu(nu: f32) -> f32 {
   }
   if (m == 11u || m == 12u) { return boxcox(nu); }
   if (m == 1u) { return sqrt(nu * 50.0); }
-  if (m == 2u || m == 6u || m >= 13u) { return 50.0 * log2(nu + 1.0) / log2(51.0); }   // 13, 14: Lyapunov, sonst logarithmisch
-  if (m == 5u || m >= 7u) {   // doppelt bis sechsfach logarithmisch; bei nu = 50 wie die anderen
-    var k = 2u;
-    if (m == 7u) { k = 3u; } else if (m == 8u) { k = 4u; } else if (m == 9u) { k = 5u; } else if (m == 10u) { k = 6u; }
-    return 50.0 * itlog(nu, k) / itlog(50.0, k);
-  }
+  if (m == 2u) { return logStufig(nu, C.opt2.z); }   // logarithmisch, so oft wie der Regler sagt (1 = einfach)
+  if (m == 6u || m >= 13u) { return 50.0 * log2(nu + 1.0) / log2(51.0); }   // 13, 14: Lyapunov, sonst einfach logarithmisch
   return nu;
 }
 fn lum(c: vec3f) -> f32 { return dot(c, vec3f(0.2126, 0.7152, 0.0722)); }
@@ -6243,13 +6294,19 @@ float itlog(float x, int times) {
   return x;
 }
 // Nenner, die nur von Uniforms abhängen, rechnet jedes main() einmal (gItlogDen, gBoxDen), aus demselben Grund wie gAnchorV
-float gItlogDen = 1.0, gBoxDen = 1.0;
+float gItlogDen = 1.0, gItlogDen2 = 1.0, gBoxDen = 1.0;   // Nenner für k und k + 1 Stufen
 float boxcox(float nu) {
   float p = uComp;
   if (abs(p) < 1.0e-3) return 50.0 * log2(nu + 1.0) / log2(51.0);
   return 50.0 * (pow(nu + 1.0, p) - 1.0) / gBoxDen;
 }
-int itlogK() { return uMapping == 5 ? 2 : (uMapping == 7 ? 3 : (uMapping == 8 ? 4 : (uMapping == 9 ? 5 : 6))); }
+int itlogK() { return int(floor(clamp(uOpt2.z, 1.0, 10.0))); }   // ganze Stufen des Logarithmus
+float logStufig(float nu) {   // stufenlos: zwischen k und k + 1 überblenden, wie im WGSL-Shader
+  float s = clamp(uOpt2.z, 1.0, 10.0), fr = s - floor(s);
+  float a = 50.0 * itlog(nu, itlogK()) / gItlogDen;
+  if (fr <= 0.0) return a;
+  return mix(a, 50.0 * itlog(nu, itlogK() + 1) / gItlogDen2, fr);
+}
 float mapNu(float nu) {
   if (uMapping == 33) { float x = floor(nu) - uOpt2.x, mlf = uOpt2.y; if (x <= 1.0) return 1.0; if (x / log(x) <= mlf) return x; return floor(mlf * log(x)) + 1.0; }   // logmap wie im WGSL-Shader
   if (uMapping == 3 || uMapping == 28) {   // wie im WGSL-Shader
@@ -6261,8 +6318,8 @@ float mapNu(float nu) {
   }
   if (uMapping == 11 || uMapping == 12) return boxcox(nu);
   if (uMapping == 1) return sqrt(nu * 50.0);
-  if (uMapping == 2 || uMapping == 6 || uMapping >= 13) return 50.0 * log2(nu + 1.0) / log2(51.0);   // 13, 14: Lyapunov
-  if (uMapping == 5 || uMapping >= 7) return 50.0 * itlog(nu, itlogK()) / gItlogDen;
+  if (uMapping == 2) return logStufig(nu);   // logarithmisch, so oft wie der Regler sagt
+  if (uMapping == 6 || uMapping >= 13) return 50.0 * log2(nu + 1.0) / log2(51.0);   // 13, 14: Lyapunov
   return nu;
 }
 float anchorV() { return uAnchor < 0.0 || uMapping == 33 ? 0.0 : mapNu(uAnchor); }   // logmap ohne Anker wie im WGSL-Shader
@@ -6529,7 +6586,7 @@ void main() {
   ivec2 xy = ivec2(gl_FragCoord.xy) - ivec2(uShift);
   ivec2 dims = textureSize(uIter, 0).xy;
   if (xy.x < 0 || xy.y < 0 || xy.x >= dims.x || xy.y >= dims.y) { outColor = vec4(0.043, 0.051, 0.071, 1.0); return; }
-  gItlogDen = itlog(50.0, itlogK()); gBoxDen = pow(51.0, uComp) - 1.0; gAnchorV = anchorV();
+  gItlogDen = itlog(50.0, itlogK()); gItlogDen2 = itlog(50.0, itlogK() + 1); gBoxDen = pow(51.0, uComp) - 1.0; gAnchorV = anchorV();
   outColor = vec4(farbeRoh(xy, dims), 1.0);
 #if MRT
   outTW = gTv;
@@ -6751,7 +6808,7 @@ bool aaNeed(vec4 s, float n) {
 void main() {
   ivec2 xy = ivec2(gl_FragCoord.xy);
   if (uAP.w > 1.5) { oSum = vec4(0.0); oCnt = vec4(0.0); oNeed = uvec4(uAP.w < 2.5 ? 1u : 0u, 0u, 0u, 1u); return; }   // 2 = neu anfangen, 3 = als fertig markieren
-  gItlogDen = itlog(50.0, itlogK()); gBoxDen = pow(51.0, uComp) - 1.0; gAnchorV = anchorV();
+  gItlogDen = itlog(50.0, itlogK()); gItlogDen2 = itlog(50.0, itlogK() + 1); gBoxDen = pow(51.0, uComp) - 1.0; gAnchorV = anchorV();
   vec4 s = texelFetch(uAccSum, xy, 0); float n = texelFetch(uAccCnt, xy, 0).x;
   if (uAP.w < 0.5 && aaNeed(s, n)) {
     uvec4 px = texelFetch(uJit, ivec3(xy, 0), 0);
@@ -7058,7 +7115,7 @@ class GpuRenderer {
   }
   _writeCP(cp) {
     const f = new Float32Array(508);   // CP samt stapelW, Nachbearbeitung, Masken, Texturmasken und opt
-    f[500] = cp.texInnen || 0; f[501] = cp.texVerbund || 0; f[502] = cp.texVerbundErster || 0; f[503] = cp.leuchtErster || 0; if (cp.logmap) { f[504] = cp.logmap[0]; f[505] = cp.logmap[1]; }   // opt: Texturen auch innen; Fallenverbund (Weichheit, erster Fallenplatz); Leuchten-Ebene (1-basiert)
+    f[500] = cp.texInnen || 0; f[501] = cp.texVerbund || 0; f[502] = cp.texVerbundErster || 0; f[503] = cp.leuchtErster || 0; if (cp.logmap) { f[504] = cp.logmap[0]; f[505] = cp.logmap[1]; } f[506] = cp.logStufen || LOG_STUFEN.def;   // Stufen des Logarithmus   // opt: Texturen auch innen; Fallenverbund (Weichheit, erster Fallenplatz); Leuchten-Ebene (1-basiert)
     f.set(cp.a, 0); f.set(cp.b, 4); f.set(cp.c, 8); f.set(cp.d, 12);
     f[16] = cp.density; f[17] = cp.offset; f[18] = cp.layers; f[19] = cp.mapping;
     f[20] = cp.glowMode; f[21] = cp.glowWidth; f[22] = cp.interior; f[23] = cp.histL;
@@ -7702,7 +7759,7 @@ class GlRenderer {
     gl.uniform2f(u.uMisc, cp.density, cp.offset); gl.uniform1i(u.uAA, cp.layers); gl.uniform1i(u.uMapping, cp.mapping);
     gl.uniform1i(u.uGlowMode, cp.glowMode); gl.uniform1f(u.uGlowWidth, cp.glowWidth);
     gl.uniform1i(u.uInterior, cp.interior); gl.uniform1f(u.uHistL, cp.histL);
-    gl.uniform4f(u.uMisc3, cp.formula, cp.roots, cp.palMode || 0, cp.lightY || 1); gl.uniform1f(u.uPsC, cp.ps || 1); gl.uniform1f(u.uAnchor, cp.anchor === undefined ? -1 : cp.anchor); gl.uniform1f(u.uComp, cp.comp || 0); gl.uniform1f(u.uStatAnker, cp.statAnker === undefined ? -1 : cp.statAnker); gl.uniform1f(u.uAbzug, cp.abzug || 0); const tx = cp.textur || TEXTUR_AUS; gl.uniform4f(u.uTex, tx.art, tx.staerke, tx.kontrast, tx.mitte); const inn = cp.innen || [0, 0, 0, 0]; gl.uniform4f(u.uInnen, inn[0], inn[1], inn[2], inn[3]); gl.uniform4f(u.uTex2, cp.streifen || STREIFEN.def, cp.texz ? 1 : 0, cp.texZahl || 0, cp.texKante || 0); const t2 = cp.textur2 || TEXTUR_AUS; gl.uniform4f(u.uTex3, t2.art, t2.staerke, t2.kontrast, t2.mitte); gl.uniform4f(u.uOpt, cp.texInnen || 0, cp.texVerbund || 0, cp.texVerbundErster || 0, cp.leuchtErster || 0); gl.uniform4f(u.uOpt2, cp.logmap ? cp.logmap[0] : 0, cp.logmap ? cp.logmap[1] : 0, 0, 0);
+    gl.uniform4f(u.uMisc3, cp.formula, cp.roots, cp.palMode || 0, cp.lightY || 1); gl.uniform1f(u.uPsC, cp.ps || 1); gl.uniform1f(u.uAnchor, cp.anchor === undefined ? -1 : cp.anchor); gl.uniform1f(u.uComp, cp.comp || 0); gl.uniform1f(u.uStatAnker, cp.statAnker === undefined ? -1 : cp.statAnker); gl.uniform1f(u.uAbzug, cp.abzug || 0); const tx = cp.textur || TEXTUR_AUS; gl.uniform4f(u.uTex, tx.art, tx.staerke, tx.kontrast, tx.mitte); const inn = cp.innen || [0, 0, 0, 0]; gl.uniform4f(u.uInnen, inn[0], inn[1], inn[2], inn[3]); gl.uniform4f(u.uTex2, cp.streifen || STREIFEN.def, cp.texz ? 1 : 0, cp.texZahl || 0, cp.texKante || 0); const t2 = cp.textur2 || TEXTUR_AUS; gl.uniform4f(u.uTex3, t2.art, t2.staerke, t2.kontrast, t2.mitte); gl.uniform4f(u.uOpt, cp.texInnen || 0, cp.texVerbund || 0, cp.texVerbundErster || 0, cp.leuchtErster || 0); gl.uniform4f(u.uOpt2, cp.logmap ? cp.logmap[0] : 0, cp.logmap ? cp.logmap[1] : 0, cp.logStufen || LOG_STUFEN.def, 0);
     const stp = cp.stapel || [], sa = new Float32Array(48);   // der Stapel wie im WebGPU-Renderer
     for (let i = 0; i < 4; i++) { const t = stp[i] || TEXTUR_AUS, b = 12 * i; sa[b] = t.art; sa[b + 1] = t.staerke; sa[b + 2] = t.kontrast; sa[b + 3] = t.mitte; sa.set(t.hell || [1, 1, 1], b + 4); sa[b + 7] = t.ziel === undefined ? TEX_ZIEL_VOR : t.ziel; sa.set(t.dunkel || [0, 0, 0], b + 8); sa[b + 11] = t.wo === undefined ? TEX_WO_VOR : t.wo; }
     gl.uniform4fv(u.uStapel, sa);
@@ -8078,7 +8135,7 @@ const S = {
   autoIter: true, manualIter: 1000,
   palette: 0, density: 0.04, offset: 0, animate: false, customPal: null,   // customPal: eigenes Farbschema { id, name, cyclic, stops }
   pal2: {}, pal2Eigen: null,                               // zweidimensionale Palette je Färbung mit zwei Werten (siehe quelle2), Entwurf bzw. Schema aus dem Link
-  mapping: 2, glowMode: 0, glowWidth: 1.5, interior: 0, innenFarbe: '#000000', gestuft: false, lyGrenze: 2, fluchtForm: 0, fluchtRadius: 0, dreh: 0, spirale: SPIRALE.def, texInnen: false, texVerbund: 0, invM: [0, 0], biomorph: false, abb: 0, abklingen: 0, logmap: 0, streifen: STREIFEN.def, vorlauf: VORLAUF.def, gewicht: GEWICHT.def, abzug: ABZUG.def, nach: [], textur: 0, texWerte: [0, 0, 0, 0], tex2Werte: [0, 0, 0, 0], tex3Werte: [0, 0, 0, 0], tex4Werte: [0, 0, 0, 0], texStaerke: TEXTUR.staerke.def, texKontrast: TEXTUR.kontrast.def, texMitte: TEXTUR.mitte.def, textur2: 0, tex2Staerke: TEXTUR.staerke.def, tex2Kontrast: TEXTUR.kontrast.def, tex2Mitte: TEXTUR.mitte.def, texHell: '#ffffff', texDunkel: '#000000', tex2Hell: '#ffffff', tex2Dunkel: '#000000', textur3: 0, tex3Staerke: TEXTUR.staerke.def, tex3Kontrast: TEXTUR.kontrast.def, tex3Mitte: TEXTUR.mitte.def, tex3Hell: '#ffffff', tex3Dunkel: '#000000', textur4: 0, tex4Staerke: TEXTUR.staerke.def, tex4Kontrast: TEXTUR.kontrast.def, tex4Mitte: TEXTUR.mitte.def, tex4Hell: '#ffffff', tex4Dunkel: '#000000', texAn: true, tex2An: true, tex3An: true, tex4An: true, paar: PAAR_EIGEN(), kurve: KURVE_STD.map(p => p.slice()), kurveSpann: false,   // Verlaufsart (Standard logarithmisch), Randlinien, Randbreite px, Innen
+  mapping: 2, logStufen: LOG_STUFEN.def, logDichteMit: false, glowMode: 0, glowWidth: 1.5, interior: 0, innenFarbe: '#000000', gestuft: false, lyGrenze: 2, fluchtForm: 0, fluchtRadius: 0, dreh: 0, spirale: SPIRALE.def, texInnen: false, texVerbund: 0, invM: [0, 0], biomorph: false, abb: 0, abklingen: 0, logmap: 0, streifen: STREIFEN.def, vorlauf: VORLAUF.def, gewicht: GEWICHT.def, abzug: ABZUG.def, nach: [], textur: 0, texWerte: [0, 0, 0, 0], tex2Werte: [0, 0, 0, 0], tex3Werte: [0, 0, 0, 0], tex4Werte: [0, 0, 0, 0], texStaerke: TEXTUR.staerke.def, texKontrast: TEXTUR.kontrast.def, texMitte: TEXTUR.mitte.def, textur2: 0, tex2Staerke: TEXTUR.staerke.def, tex2Kontrast: TEXTUR.kontrast.def, tex2Mitte: TEXTUR.mitte.def, texHell: '#ffffff', texDunkel: '#000000', tex2Hell: '#ffffff', tex2Dunkel: '#000000', textur3: 0, tex3Staerke: TEXTUR.staerke.def, tex3Kontrast: TEXTUR.kontrast.def, tex3Mitte: TEXTUR.mitte.def, tex3Hell: '#ffffff', tex3Dunkel: '#000000', textur4: 0, tex4Staerke: TEXTUR.staerke.def, tex4Kontrast: TEXTUR.kontrast.def, tex4Mitte: TEXTUR.mitte.def, tex4Hell: '#ffffff', tex4Dunkel: '#000000', texAn: true, tex2An: true, tex3An: true, tex4An: true, paar: PAAR_EIGEN(), kurve: KURVE_STD.map(p => p.slice()), kurveSpann: false,   // Verlaufsart (Standard logarithmisch), Randlinien, Randbreite px, Innen
   colAnchor: null,                                         // Farbanker: Iterationswert, an dem der Dichte-Regler die Farbe hält (null = keiner)
   statAnker: null,                                         // Farbanker des Bahnmittels (Färbungen 19, 20, 22, 23): das Mittel, an dem die Farbe hält (null = keiner)
   anchorAuto: true,                                        // Standard an: ohne Wert im Link wird beim ersten Bild der Median der Ansicht verankert
@@ -8091,7 +8148,7 @@ const S = {
     // Familie escape oder accum (Punktwolken, accKind = Index in CLOUDS)
   cloudPrm: [0, 0, 0, 0],
   quality: 1, rendererPref: 'auto',
-  aa: DEFAULT_AA, aaMode: 'grid', aaTol: AA_TOL.def, aaMax: 64, aaSigma: AA_SIGMA.def,   // Glättung: Raster-Stufe, Verfahren (grid | adaptive | fast), Regler der adaptiven Verfahren
+  theme: 'dunkel', stapelMs: STAPEL_MS.def, uiVorrang: true, aa: DEFAULT_AA, aaMode: 'grid', aaTol: AA_TOL.def, aaMax: 64, aaSigma: AA_SIGMA.def,   // Glättung: Raster-Stufe, Verfahren (grid | adaptive | fast), Regler der adaptiven Verfahren
   palFilter: false, palFilterK: PALK.def,                  // Palette über den Bereich mitteln, den sie innerhalb eines Pixels durchläuft; Faktor auf die Breite
 };
 const views = { mandel: null, julia: null };
@@ -8136,6 +8193,9 @@ try {   // gespeicherte App-Einstellungen nur lesen, wenn die Einwilligung dafü
   if (einw && einw.v === 2 && einw.settings) {
     const p = localStorage.getItem('fractal.renderer'); if (p) S.rendererPref = p;
     const q = localStorage.getItem('fractal.quality'); if (q) S.quality = parseFloat(q) || 1;
+    const sm = localStorage.getItem('fractal.stapelms'); if (sm) S.stapelMs = Math.min(STAPEL_MS.max, Math.max(STAPEL_MS.min, parseInt(sm, 10) || STAPEL_MS.def));   // ohne clamp: das steht erst weiter unten
+    const uv = localStorage.getItem('fractal.uivorrang'); if (uv) S.uiVorrang = uv !== '0';
+    const th = localStorage.getItem('fractal.theme'); if (THEMES.includes(th)) S.theme = th;
     try { const m = JSON.parse(localStorage.getItem('fractal.meta') || 'null'); if (m && typeof m === 'object') for (const k of Object.keys(META)) if (typeof m[k] === 'boolean') META[k] = m[k]; } catch (e) { /* egal */ }   // Metadaten-Wahl
     const a = localStorage.getItem('fractal.aa'); if (a) S.aa = aaSnap(parseInt(a, 10) || DEFAULT_AA);
     const am = localStorage.getItem('fractal.aamode'); if (AA_MODI.includes(am)) S.aaMode = am;
@@ -8384,7 +8444,7 @@ function formatPruefen() {   // Textur über einer Statistik-Färbung braucht de
 let letzteAenderung = -1e9;   // wann viewChanged zuletzt lief: unterscheidet eine einzelne Änderung von einer Folge (Regler)
 function viewChanged() {
   formatPruefen();
-  orbitDirty = true; fractalDirty = true; accDirty = true; peHistPlan();
+  orbitDirty = true; fractalDirty = true; accDirty = true; nusVeraltet = true; peHistPlan();
   pendingSX = pendingSY = 0; panDirty = false; panCarryX = panCarryY = 0; zoomDirty = false; zoomPending = null;
   // Kacheln laufen erst, wenn Ruhe ist: Bei einer Folge von Änderungen (Regler, Tastenwiederholung) wie bisher 150 ms nach der
   // letzten, eine einzelne Änderung (Auswahl, getippter Wert, Link) rechnet sofort – sonst wartete jedes schwere Bild 150 ms.
@@ -8764,7 +8824,7 @@ function colorParams() {
     abzug: S.abzug,                                                             // Fluchtzeit-Abzug β (Färbung 25)
     logmap: logmapParam(), comp: S.comp, palFilter: S.palFilter ? S.palFilterK : 0,   // 0 = aus, sonst Faktor auf die Filterbreite
     z2: pal2Aktiv(),                                                            // zweidimensionale Palette (art 0 = keine)
-    mapping: S.mapping, glowMode: lyapModus() || (winkelModus() & 1) || statIrgend() || paarKonfig() ? 0 : S.glowMode, glowWidth: S.glowWidth, interior: S.interior, histL: Math.log2(currentMaxIter() + 1),
+    mapping: S.mapping, logStufen: S.mapping === 2 ? S.logStufen : LOG_STUFEN.def, glowMode: lyapModus() || (winkelModus() & 1) || statIrgend() || paarKonfig() ? 0 : S.glowMode, glowWidth: S.glowWidth, interior: S.interior, histL: Math.log2(currentMaxIter() + 1),
     textur: texturAktiv() ? texFarbParam(1) : TEXTUR_AUS,                                                          // Platz 1 des Stapels (roher Weg: nur er)
     textur2: texturAktiv2() ? texFarbParam(2) : TEXTUR_AUS,
     texInnen: texInnenIrgend() && texturZahl() > 0 ? 1 : 0, texVerbund: verbundK(), texVerbundErster: verbundErster(), leucht: leuchtParams(), leuchtErster: leuchtIndex() + 1, texz: texturZ(), texZahl: texturZahl(), texKante: texArten().includes(11) ? 1 : 0, stapelW: texWertePlaetze(), paar: paarUniform(),   // texKante: irgendein Platz mit Kanten (Art 11), der Farbpass rechnet sie je Probe einmal                                                       // Paar: Werte, Faktoren, Abzüge, Flags je Achse
@@ -8898,6 +8958,10 @@ function accWorkerJob() {
   return Object.assign(cloudParams(wolkenKetten(40000)), { W, H, stride: renderer.accStride, lut: palLUTCache });
 }
 let accNormBusy = false;
+function stapelMs(now) {   // die geltende Stapelgröße: während im Bedienfeld gearbeitet wird ein Drittel, damit Menüs und Regler flüssig bleiben
+  const v = clamp(S.stapelMs || STAPEL_MS.def, STAPEL_MS.min, STAPEL_MS.max);
+  return S.uiVorrang && now < uiUntil ? Math.max(STAPEL_MS.min, v / 3) : v;
+}
 function frame(now) {
   rafId = 0;
   if (!renderer || !W || !H || exporting) return;
@@ -8951,7 +9015,7 @@ function frame(now) {
       fractalDirty = false;
       if (stripMode) { stripMode = false; computeTiles(); }
       if (orbitDirty) { computeOrbits(maxIter); orbitDirty = false; }
-      const budget = throughput * TARGET_MS;
+      const budget = throughput * stapelMs(now);
       const s = clamp(Math.ceil(Math.sqrt(W * H * maxIter / budget)), 1, 48);
       renderT0 = now; renderMs = -1; refineMs = -1;
       renderer.clearRefine(); aaRestart();
@@ -8971,7 +9035,7 @@ function frame(now) {
       submitted = true; hasImage = true; colorDirty = true;
     } else if (phase === 'tiles' && (now >= interactUntil || stripMode)) {
       const t0 = tiles[tileIdx], layer = t0.layer || 0, tilePix = Math.max(1, t0.w * t0.h);
-      const budgetMs = now > interactUntil + 400 ? 2 * TARGET_MS : TARGET_MS;   // im Leerlauf größere Stapel
+      const budgetMs = now > interactUntil + 400 ? 2 * stapelMs(now) : stapelMs(now);   // im Leerlauf größere Stapel
       let k = clamp(Math.floor(throughput * budgetMs / (tilePix * maxIter)), 1, tiles.length - tileIdx);
       while (k > 1 && (tiles[tileIdx + k - 1].layer || 0) !== layer) k--;      // ein Stapel bleibt in einer Ebene
       renderer.renderFractal('full', tiles.slice(tileIdx, tileIdx + k), fractalParams(1, maxIter, layer), layer);
@@ -8979,14 +9043,14 @@ function frame(now) {
       if (tileIdx >= tiles.length) { if (aaOn) aaBegin(); else phase = 'idle'; if (stripMode) { stripMode = false; computeTiles(); } }
       submitted = true; colorDirty = true;
     } else if (phase === 'refine' && aaOn && now >= interactUntil) {   // adaptive Glättung: so viele Stapel, wie ins Zeitbudget passen
-      const budget = throughput * (now > interactUntil + 400 ? 2 * TARGET_MS : TARGET_MS);
+      const budget = throughput * (now > interactUntil + 400 ? 2 * stapelMs(now) : stapelMs(now));
       let work = 0, steps = 0;
       while (phase === 'refine' && work < budget && steps < 12) { const w = aaRefineStep(maxIter, budget - work); if (!w) break; work += w; steps++; }
       if (work) { lastWork = work; submitted = true; colorDirty = true; }
     } else if (histDirty && histAktiv() && hasImage) {
       runHistPass(maxIter);
       submitted = true;
-    } else if (werteWunsch.length && !wertePending && hasImage) {   // Werteprobe, wenn jemand darauf wartet
+    } else if ((werteWunsch.length || (S.logDichteMit && S.mapping === 2 && nusVeraltet)) && !wertePending && hasImage) {   // Werteprobe, wenn jemand darauf wartet oder die Dichte mitgeführt wird
       runWerteProbe(maxIter); submitted = true;
     } else if (!anchorPending && (anchorProbe || (S.anchorAuto && S.colAnchor === null && ankerVonSelbst())) && hasImage && ankerWirkt()) {   // Anker lesen: auf Wunsch oder als Standard beim ersten Bild
       const ankerVonSelber = !anchorProbe;   // ohne ausdrücklichen Wunsch: die App verankert von sich aus
@@ -9310,7 +9374,14 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
   const den = parseFloat(h.get('den'));
   if (Number.isFinite(den)) S.density = clamp(den, DENS.min, DENS.max);
   const off = parseFloat(h.get('off')); if (Number.isFinite(off)) S.offset = clamp(off, 0, 1);
-  const map = parseInt(h.get('map'), 10); if (Number.isFinite(map)) { const m = clamp(map, 0, MAP_MAX); S.mapping = MAPPING_TEXT[m] ? m : 2; }   // unbekannte Nummer (etwa ein altes Paar): logarithmisch
+  const lst = parseFloat(h.get('lst')); S.logStufen = Number.isFinite(lst) ? clamp(lst, LOG_STUFEN.min, LOG_STUFEN.max) : LOG_STUFEN.def;
+  S.logDichteMit = h.get('lsd') === '1';   // Dichte mitführen
+  const map = parseInt(h.get('map'), 10);
+  if (Number.isFinite(map)) {
+    const m = clamp(map, 0, MAP_MAX);
+    if (LOG_ALT[m]) { S.mapping = 2; if (!Number.isFinite(lst)) S.logStufen = LOG_ALT[m]; }   // alte mehrfach-logarithmische Färbung: eine Stufenzahl daraus
+    else { S.mapping = MAPPING_TEXT[m] ? m : 2; }   // unbekannte Nummer (etwa ein altes Paar): logarithmisch
+  }
   S.paar = PAAR_EIGEN();   // eigenes Paar (31): pa und pb je Wert:Faktor:Abzug:Klemme
   for (const [k, ach] of [['pa', 'a'], ['pb', 'b']]) {
     const t = (h.get(k) || '').split(':'); if (t.length < 2) continue;
@@ -9430,6 +9501,8 @@ function buildParams() {
   if (S.mapping !== 2) p.set('map', String(S.mapping));   // Standard ist logarithmisch
   if (S.mapping === 11 || S.mapping === 12) p.set('sc', S.comp.toFixed(3));
   if (S.mapping === 14 && S.lyGrenze !== 2) p.set('lg', String(+S.lyGrenze.toPrecision(4)));
+  if (S.mapping === 2 && S.logStufen !== LOG_STUFEN.def) p.set('lst', String(+S.logStufen.toFixed(2)));   // Stufen des Logarithmus, nur abseits der einfachen
+  if (S.mapping === 2 && S.logDichteMit) p.set('lsd', '1');   // Dichte mitführen
   if (([statModus(), statModus2()].includes(3) || texArten().some(a => [1, 6, 7, 8].includes(a))) && S.streifen !== STREIFEN.def) p.set('sp', String(S.streifen));   // Streifen nur, wo das Streifenmittel rechnet
   if (S.mapping === 32 && S.spirale !== SPIRALE.def) p.set('sd', String(+S.spirale.toFixed(3)));
   if (S.texVerbund > 0) p.set('tv', String(+S.texVerbund.toFixed(2)));   // Fallenverbund
@@ -9587,13 +9660,13 @@ try {
   const c = JSON.parse(localStorage.getItem('fractal.consent') || 'null');
   if (c && c.v === 2) consent = { v: 2, ts: c.ts, settings: !!c.settings, marketing: !!c.marketing };   // ältere Fassungen kannten die Kategorie App-Einstellungen nicht: neu fragen
 } catch (e) { consent = null; }
-const SETTINGS_KEYS = ['fractal.aa', 'fractal.aamode', 'fractal.aatol', 'fractal.aamax', 'fractal.aasigma', 'fractal.palfilter', 'fractal.palfilterk', 'fractal.cycle', 'fractal.bla', 'fractal.renderer', 'fractal.quality', 'fractal.meta', 'fractal.palettes', 'fractal.palettes2'];
+const SETTINGS_KEYS = ['fractal.aa', 'fractal.aamode', 'fractal.aatol', 'fractal.aamax', 'fractal.aasigma', 'fractal.palfilter', 'fractal.palfilterk', 'fractal.cycle', 'fractal.bla', 'fractal.renderer', 'fractal.quality', 'fractal.stapelms', 'fractal.uivorrang', 'fractal.theme', 'fractal.meta', 'fractal.palettes', 'fractal.palettes2'];
 function storeAllowed() { return !!(consent && consent.settings); }
 function lsSet(key, value) { scheduleHash();   // jede abgelegte Einstellung gehört zum Zustand: die Adresse zieht nach, dabei merkt sich Rückgängig den Schritt
   if (!storeAllowed()) return false; try { localStorage.setItem(key, value); return true; } catch (e) { return false; } }
 function persistSettings() {   // nach erteilter Einwilligung die aktuellen Einstellungen ablegen
   lsSet('fractal.aa', String(S.aa)); lsSet('fractal.aamode', S.aaMode); lsSet('fractal.aatol', String(S.aaTol)); lsSet('fractal.aamax', String(S.aaMax)); lsSet('fractal.aasigma', String(S.aaSigma)); lsSet('fractal.palfilter', S.palFilter ? '1' : '0'); lsSet('fractal.palfilterk', String(S.palFilterK)); lsSet('fractal.cycle', S.cycle); lsSet('fractal.bla', S.bla);
-  lsSet('fractal.renderer', S.rendererPref); lsSet('fractal.quality', String(S.quality)); lsSet('fractal.meta', JSON.stringify(META));
+  lsSet('fractal.renderer', S.rendererPref); lsSet('fractal.quality', String(S.quality)); lsSet('fractal.stapelms', String(S.stapelMs)); lsSet('fractal.uivorrang', S.uiVorrang ? '1' : '0'); lsSet('fractal.theme', S.theme); lsSet('fractal.meta', JSON.stringify(META));
   if (customPalettes.length) lsSet('fractal.palettes', JSON.stringify(customPalettes));
   if (eigene2.length) lsSet('fractal.palettes2', JSON.stringify(eigene2));
 }
@@ -9769,6 +9842,8 @@ function syncFarbUI() {   // Bereich Farbe: was je nach Familie, Formel und Fär
   const lyF = lyapModus(), winkel = (winkelModus() & 1) !== 0, p2 = pal2Objekt(), zwei = !!p2;
   const stF = statModus(), statF = statFaerbung(), ohneRand = verlauf || lyF !== 0 || winkel || statF || texturAktiv(), ohneInnen = verlauf || lyF !== 0 || statUeberall(), ohneVersatz = lyap && zwei && pal2Achse(p2)[0] > 0;
   $('mappingText').textContent = t(MAPPING_TEXT[S.mapping] || 'mapping.text.2'); $('mappingText').hidden = verlauf;   // ein Satz zur Färbung
+  $('logStufenRow').hidden = verlauf || S.mapping !== 2;   // die Stufen gehören zur logarithmischen Färbung
+  $('logStufen').value = String(S.logStufen); $('logStufenVal').value = fmtZahl(S.logStufen, 2); $('logDichteMit').checked = S.logDichteMit;
   $('palette').parentElement.hidden = false; $('palEdit').hidden = false;
   $('palArt').hidden = !quelle2();   // Umschalter nur, wo die Färbung zwei Werte liefert
   for (const b of $('palArt').querySelectorAll('button')) { const on = (b.dataset.art === '2') === zwei; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); }
@@ -9993,6 +10068,9 @@ document.addEventListener('pointerdown', e => { if (openMenu && !openMenu.menu.c
 window.addEventListener('keydown', e => { if (e.key === 'Escape' && openMenu) { closeOpenMenu(); e.preventDefault(); } });
 window.addEventListener('resize', () => { if (openMenu) openMenu.place(); });          // Menü folgt dem Knopf statt zu verschwinden
 document.addEventListener('scroll', () => { if (openMenu) openMenu.place(); }, true);
+for (const ev of ['pointerdown', 'keydown', 'input', 'change']) {   // im Bedienfeld, in einem Menü oder in der Leiste gearbeitet: kleine Stapel
+  document.addEventListener(ev, e => { if (e.target instanceof Element && e.target.closest('#panel, .menu, .appbar, .tabbar, .toolbar, #rail')) uiUntil = performance.now() + UI_VORRANG_MS; }, { capture: true, passive: true });
+}
 function syncFamMenu() { const sel = $('family'); if (sel._sync) sel._sync(); }
 function syncCloudUI() {
   const cloud = S.family === 'accum';
@@ -10860,6 +10938,20 @@ const setzeFluchtRadius = v => { S.fluchtRadius = v > 0 ? clamp(v, FLUCHT.min, F
 $('fluchtRadius').addEventListener('input', () => setzeFluchtRadius(posToFr(+$('fluchtRadius').value)));
 $('biomorph').addEventListener('change', () => { S.biomorph = $('biomorph').checked; scheduleHash(); viewChanged(); });   // Nachtest: neu rechnen
 $('fluchtForm').addEventListener('change', () => { S.fluchtForm = clamp(parseInt($('fluchtForm').value, 10) || 0, 0, 4); scheduleHash(); viewChanged(); });
+const setzeLogStufen = v => {   // reine Farbstufe: kein Neurechnen
+  const von = S.logStufen; S.logStufen = clamp(v, LOG_STUFEN.min, LOG_STUFEN.max);
+  if (S.logDichteMit && S.logStufen !== von) dichteMitfuehren(von, S.logStufen);
+  $('logStufen').value = String(S.logStufen); $('logStufenVal').value = fmtZahl(S.logStufen, 2); colorDirty = true; scheduleHash(); requestFrame();
+};
+function dichteMitfuehren(von, nach) {   // Dichte so nachziehen, dass die Spanne zwischen dem 5. und 95. Hundertstel der Fluchtzeiten der Ansicht gleich viele Durchläufe behält
+  if (!letzteNus || letzteNus.length < 2) { requestFrame(); return; }   // noch keine Probe: die Schleife holt sie, die nächste Bewegung nutzt sie
+  const lo = letzteNus[Math.floor(letzteNus.length * 0.05)], hi = letzteNus[Math.floor(letzteNus.length * 0.95)];
+  const sVon = logStufigJS(hi, von) - logStufigJS(lo, von), sNach = logStufigJS(hi, nach) - logStufigJS(lo, nach);
+  if (!(sVon > 1e-6) || !(sNach > 1e-6)) return;   // einfarbige Ansicht: nichts nachzuziehen
+  S.density = clamp(S.density * sVon / sNach, DENS.min, DENS.max); densEl.value = densToPos(S.density); showDens(); peHistPlan();
+}
+$('logDichteMit').addEventListener('change', () => { S.logDichteMit = $('logDichteMit').checked; scheduleHash(); requestFrame(); });   // an: die Schleife holt die Werteprobe
+$('logStufen').addEventListener('input', () => setzeLogStufen(+$('logStufen').value));
 const setzeStauchung = v => { S.comp = v; $('comp').value = compToPos(v); showComp(); colorDirty = true; scheduleHash(); requestFrame(); };
 $('comp').addEventListener('input', () => setzeStauchung(posToComp(+$('comp').value)));
 $('comp').value = compToPos(S.comp);
@@ -10895,6 +10987,8 @@ $('lyGrenze').addEventListener('input', () => setzeGrenze(posZuGrenze(+$('lyGren
 function syncSpirale() { $('spirale').value = String(S.spirale); $('spiraleVal').value = String(S.spirale); }
 const setzeSpirale = v => { S.spirale = clamp(v, SPIRALE.min, SPIRALE.max); syncSpirale(); scheduleHash(); viewChanged(); };   // entsteht beim Iterieren
 $('spirale').addEventListener('input', () => setzeSpirale(+$('spirale').value));
+function syncStapel() { $('stapelMs').value = String(S.stapelMs); $('stapelMsVal').value = String(S.stapelMs); $('uiVorrang').checked = !!S.uiVorrang; }
+const setzeStapelMs = v => { S.stapelMs = Math.round(clamp(v, STAPEL_MS.min, STAPEL_MS.max)); syncStapel(); lsSet('fractal.stapelms', String(S.stapelMs)); };
 function syncTexOptionen() { $('texVerbund').value = String(S.texVerbund); $('texVerbundVal').value = String(S.texVerbund); }
 const setzeTexVerbund = v => { S.texVerbund = clamp(v, 0, 2); syncTexOptionen(); scheduleHash(); viewChanged(); };
 $('texVerbund').addEventListener('input', () => setzeTexVerbund(+$('texVerbund').value));
@@ -11317,7 +11411,14 @@ function nachReglerElement(i, slot, r, ziel = 'p') {   // ein Bedienelement aus 
     const wrap = document.createElement('div'), zeile = document.createElement('div'); zeile.className = 'lbl';
     const lab = document.createElement('label'); lab.htmlFor = id; lab.textContent = t(r.text); zeile.append(lab);
     const sel = document.createElement('select'); sel.id = id;
-    for (const [v, key] of r.optionen) { const o = document.createElement('option'); o.value = String(v); o.textContent = t(key); sel.append(o); }
+    const ist = ziel === 'm' && S.nach[i] && S.nach[i].m ? S.nach[i].m.p[slot] : null;
+    for (const [v, key] of r.optionen) {
+      const o = document.createElement('option'); o.value = String(v); o.textContent = t(key);
+      if (ziel === 'm' && r.k === 'ebene' && v >= i) {   // nur Ebenen darüber gibt es hier; ein alter Verweis bleibt sichtbar, gekennzeichnet, nicht erneut wählbar
+        o.hidden = true; if (v === ist) o.textContent += ' · ' + t('mask.not-above');
+      }
+      sel.append(o);
+    }
     sel.addEventListener('change', () => nachWertSetzen(i, slot, parseFloat(sel.value), ziel));
     wrap.append(zeile, sel); enhanceSelect(sel); return wrap;
   }
@@ -11369,7 +11470,11 @@ function nachKarte(i) {
   const mz = document.createElement('div'); mz.className = 'lbl'; const ml = document.createElement('label'); ml.htmlFor = 'nachM' + (i + 1) + '_art'; ml.textContent = t('mask.mask'); mz.append(ml);
   const msel = document.createElement('select'); msel.id = 'nachM' + (i + 1) + '_art';
   const o0 = document.createElement('option'); o0.value = '0'; o0.textContent = t('mask.none'); msel.append(o0);
-  for (const md of MASKE_ARTEN) { const o = document.createElement('option'); o.value = String(md.art); o.textContent = t(md.text); msel.append(o); }
+  for (const md of MASKE_ARTEN) {
+    const o = document.createElement('option'); o.value = String(md.art); o.textContent = t(md.text);
+    if (md.art === 13 && i === 0) { o.hidden = true; if (e.m && e.m.art === 13) o.textContent += ' · ' + t('mask.not-above'); }   // die oberste Ebene hat nichts über sich
+    msel.append(o);
+  }
   msel.addEventListener('change', () => nachMaskeArt(i, parseInt(msel.value, 10) || 0));
   mbox.append(mz, msel); enhanceSelect(msel);
   const md = e.m ? maskeArt(e.m.art) : null;
@@ -11632,19 +11737,27 @@ function runWerteProbe(maxIter) {
   renderer.readRegion(hw, hh).then(vals => {
     wertePending = false;
     if (renderer !== my) return;
-    const v = [];
-    for (let k = 0; k < vals.length; k += 2) { const u = vals[k]; if (u === 0xFFFFFFFF || (u & 0x80000000)) continue; v.push(mapNuJS((u & 0x03FFFFFF) / 256)); }
+    const v = [], roh = [];
+    for (let k = 0; k < vals.length; k += 2) { const u = vals[k]; if (u === 0xFFFFFFFF || (u & 0x80000000)) continue; const nu = (u & 0x03FFFFFF) / 256; v.push(mapNuJS(nu)); roh.push(nu); }
     v.sort((a, b) => a - b); letzteWerte = Float32Array.from(v);
+    roh.sort((a, b) => a - b); letzteNus = Float32Array.from(roh); nusVeraltet = false;   // die rohen Fluchtzeiten: Spanne der Ansicht für das Mitführen der Dichte
     for (const cb of cbs) cb(letzteWerte);
   }).catch(e => { wertePending = false; console.warn('Werteprobe:', e); });
 }
 let anchorProbe = false, anchorAt = null, anchorPending = false, ankerFrisch = false, ankerOrt = null, lastCdf = null, lastHist = null, lastVerteilung = null;   // anchorAt: Canvas-Punkt aus Alt+Klick, sonst ganze Ansicht; lastHist, lastVerteilung: Häufigkeiten und Verteilungsfunktion der Ansicht
 // ankerFrisch: Bahnmittel neu ankern, ohne Ausgleich; ankerOrt: der Alt+Klick-Punkt in der Ebene (Mitte und Abstand dazu), damit das Neuankern denselben Punkt trifft
 function itlogJS(x, k) { for (let i = 0; i < k; i++) x = Math.log2(x + 1); return x; }
+function logStufigJS(nu, stufen) {   // wie logStufig im Shader: zwischen k und k + 1 Stufen überblenden
+  const s = clamp(stufen === undefined ? LOG_STUFEN.def : stufen, LOG_STUFEN.min, LOG_STUFEN.max), k = Math.floor(s), fr = s - k;
+  const a = 50 * itlogJS(nu, k) / itlogJS(50, k);
+  if (fr <= 0) return a;
+  return a + (50 * itlogJS(nu, k + 1) / itlogJS(50, k + 1) - a) * fr;
+}
 function mapNuJS(nu) {   // dieselbe Abbildung wie im Shader (mapNu), für den Ausgleich des Versatzes beim Ankerwechsel
   const m = S.mapping;
   if (m === 1) return Math.sqrt(nu * 50);
-  if (m === 2 || m === 6 || m === 15) return 50 * Math.log2(nu + 1) / Math.log2(51);
+  if (m === 2) return logStufigJS(nu, S.logStufen);   // mit den Stufen des Reglers, wie logStufig im Shader
+  if (m === 6 || m === 15) return 50 * Math.log2(nu + 1) / Math.log2(51);
   if (m === 3 || m === 28) {   // Histogramm und Kurve: die geladene Tabelle
     if (!lastCdf) return 0;
     const x = clamp(Math.log2(nu + 1) / Math.log2(currentMaxIter() + 1), 0, 0.999) * 511, i = Math.floor(x), fr = x - i;
@@ -11653,7 +11766,6 @@ function mapNuJS(nu) {   // dieselbe Abbildung wie im Shader (mapNu), für den A
   if (m === 11 || m === 12) { const p = S.comp; return Math.abs(p) < 1e-3 ? 50 * Math.log2(nu + 1) / Math.log2(51) : 50 * (Math.pow(nu + 1, p) - 1) / (Math.pow(51, p) - 1); }
   if (statMitZeit()) return 50 * Math.log2(nu + 1) / Math.log2(51);   // Paar mit der Fluchtzeit als erster Achse: die Fluchtzeit logarithmisch wie im Shader
   if (m >= 16) return 0;   // Bahnstatistik und komplexer Lyapunov nutzen den Anker der Fluchtzeit nicht
-  if (m === 5 || m >= 7) { const k = m === 5 ? 2 : m - 4; return 50 * itlogJS(nu, k) / itlogJS(50, k); }
   if (m === 4 || m >= 13) return 0;   // Relief und Lyapunov-Färbung nutzen den Anker nicht
   return nu;
 }
@@ -11727,6 +11839,20 @@ function runAnchorProbe(maxIter, vonSelbst = false) {
   }).catch(e => { anchorPending = false; S.anchorAuto = false; if (vonSelbst) { undoUebernehmen(); } console.warn('Farbanker:', e); });
 }
 
+// Erscheinungsbild: das Schema steht als data-theme am Wurzelelement (dunkel = keines, die Vorgabe des CSS); „system“ wird hier
+// aufgelöst und folgt dem System, wenn es wechselt. Gespeichert wird die Wahl, nicht die Auflösung.
+const systemHell = window.matchMedia('(prefers-color-scheme: light)');
+function themeAnwenden() {
+  const t = S.theme === 'system' ? (systemHell.matches ? 'hell' : 'dunkel') : S.theme;
+  if (t === 'dunkel') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t;
+}
+systemHell.addEventListener('change', () => { if (S.theme === 'system') themeAnwenden(); });
+const themeSel = $('themeSel');
+themeSel.addEventListener('change', () => { S.theme = THEMES.includes(themeSel.value) ? themeSel.value : 'dunkel'; themeAnwenden(); lsSet('fractal.theme', S.theme); });
+themeAnwenden(); themeSel.value = S.theme;   // das Auswahlfeld beim Start an den abgelegten Stand angleichen (der allgemeine Abgleich läuft früher)
+$('stapelMs').addEventListener('input', () => setzeStapelMs(+$('stapelMs').value));
+$('uiVorrang').addEventListener('change', () => { S.uiVorrang = $('uiVorrang').checked; lsSet('fractal.uivorrang', S.uiVorrang ? '1' : '0'); });
+syncStapel();   // Regler und Häkchen beim Start an den abgelegten Stand angleichen
 const rendSel = $('renderer'); rendSel.value = S.rendererPref;
 rendSel.addEventListener('change', () => {
   S.rendererPref = rendSel.value;
@@ -11934,6 +12060,8 @@ const WERTFELDER = [
   ['tex4StaerkeVal', 'tex4Staerke', () => [TEXTUR.staerke.min, TEXTUR.staerke.max], v => v, setzeTex4Staerke],
   ['tex4KontrastVal', 'tex4Kontrast', () => [TEXTUR.kontrast.min, TEXTUR.kontrast.max], v => v, setzeTex4Kontrast],
   ['tex4MitteVal', 'tex4Mitte', () => [TEXTUR.mitte.min, TEXTUR.mitte.max], v => v, setzeTex4Mitte],
+  ['stapelMsVal', 'stapelMs', () => [STAPEL_MS.min, STAPEL_MS.max], v => v, setzeStapelMs],   // Rechenstapel in Millisekunden
+  ['logStufenVal', 'logStufen', () => [LOG_STUFEN.min, LOG_STUFEN.max], v => v, setzeLogStufen],   // Stufen: die Reglerstellung ist der Wert selbst
   ['paarFaktorAVal', 'paarFaktorA', () => [0.001, 1000], faktorZuPos, setzePaarFaktorA],
   ['paarFaktorBVal', 'paarFaktorB', () => [0.001, 1000], faktorZuPos, setzePaarFaktorB],
   ['glowVal', 'glowWidth', () => [0.25, 8], gwToPos, setzeRandbreite],
@@ -11968,13 +12096,14 @@ function resetState() {   // Zustandsfelder auf Standard (Familie und Mandelbrot
   if (S.family === 'accum') S.cloudPrm = CLOUDS[CLOUD_KEYS[S.accKind]].prm.slice();   // Punktwolke: ihre eigenen Vorgaben
   S.autoIter = true; S.manualIter = 1000;
   S.palette = 0; S.customPal = null; S.pal2 = {}; S.pal2Eigen = null; S.density = 0.04; S.offset = 0; S.animate = false;
-  S.mapping = 2; S.glowMode = 0; S.glowWidth = 1.5; S.interior = 0; S.innenFarbe = '#000000'; S.gestuft = false; S.lyGrenze = 2; S.streifen = STREIFEN.def; S.vorlauf = VORLAUF.def; S.gewicht = GEWICHT.def; S.abzug = ABZUG.def; S.nach = []; S.textur = 0; S.texStaerke = TEXTUR.staerke.def; S.texKontrast = TEXTUR.kontrast.def; S.texMitte = TEXTUR.mitte.def; S.textur2 = 0; S.tex2Staerke = TEXTUR.staerke.def; S.tex2Kontrast = TEXTUR.kontrast.def; S.tex2Mitte = TEXTUR.mitte.def; for (let n = 1; n <= TEX_SLOTS; n++) texSlotSetzen(n, TEXTUR_LEER); S.paar = PAAR_EIGEN(); S.kurve = KURVE_STD.map(p => p.slice()); S.kurveSpann = false; S.colAnchor = null; S.statAnker = null; S.anchorAuto = true; S.comp = 0;
+  S.mapping = 2; S.logStufen = LOG_STUFEN.def; S.logDichteMit = false; S.glowMode = 0; S.glowWidth = 1.5; S.interior = 0; S.innenFarbe = '#000000'; S.gestuft = false; S.lyGrenze = 2; S.streifen = STREIFEN.def; S.vorlauf = VORLAUF.def; S.gewicht = GEWICHT.def; S.abzug = ABZUG.def; S.nach = []; S.textur = 0; S.texStaerke = TEXTUR.staerke.def; S.texKontrast = TEXTUR.kontrast.def; S.texMitte = TEXTUR.mitte.def; S.textur2 = 0; S.tex2Staerke = TEXTUR.staerke.def; S.tex2Kontrast = TEXTUR.kontrast.def; S.tex2Mitte = TEXTUR.mitte.def; for (let n = 1; n <= TEX_SLOTS; n++) texSlotSetzen(n, TEXTUR_LEER); S.paar = PAAR_EIGEN(); S.kurve = KURVE_STD.map(p => p.slice()); S.kurveSpann = false; S.colAnchor = null; S.statAnker = null; S.anchorAuto = true; S.comp = 0;
   S.jc = [-0.8, 0.156]; S.z0 = [0, 0];
+  S.stapelMs = STAPEL_MS.def; S.uiVorrang = true;
   S.aa = DEFAULT_AA; S.aaMode = 'grid'; S.aaTol = AA_TOL.def; S.aaMax = 64; S.aaSigma = AA_SIGMA.def; S.palFilter = false; S.palFilterK = PALK.def; S.cycle = 'auto'; S.bla = 'auto';
 }
 function syncAllUI() {   // Bedienfeld vollständig an den Zustand angleichen
   nachKartenBauen();   // Nachbearbeitung: die Karten des Stapels
-  cycleSel.value = S.cycle; blaSel.value = S.bla; qualSel.value = String(S.quality);
+  cycleSel.value = S.cycle; blaSel.value = S.bla; qualSel.value = String(S.quality); syncStapel(); $('themeSel').value = S.theme;
   histDirty = true; lastStatusKey = '';
   powSel.value = String(S.power); syncPlaneUI(); syncFormulaUI();
   iterAuto.checked = S.autoIter; syncIterUI();
