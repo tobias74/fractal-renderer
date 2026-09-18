@@ -71,7 +71,7 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
     // Am Handy im Artifact-Rahmen bleiben oft keine 500 px Höhe: alles muss zusammen ins Bild passen.
     cy.viewport(390, 480);
     cy.visitApp();
-    cy.get('#tabSave').click();   // am Handy sitzt Speichern in den Reitern
+    cy.get('#tabSave').click();   // am Handy sitzt Speichern in der Kopfzeile
     cy.get('#poster').should('be.visible');
     cy.setRange('posterRes', 3);
     cy.get('#poster').should($m => expect($m[0].scrollHeight, 'ohne Rollen').to.be.at.most($m[0].clientHeight));

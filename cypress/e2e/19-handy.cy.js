@@ -5,7 +5,7 @@
 
 // Ein Zustand mit Textur samt Maske und zwei Ebenen samt Maske: so sind alle Karten vollständig gebaut.
 const VOLL = 'mode=mandel&re=-0.9&im=0.6&z=1&it=400&map=19&tx=1&ts=0.4&tu=m3,1,0,0.25,0,20&nb=16:1:1:0.5,0;11:1:1:1:m13,0,0,0.25,0,0,0.35';
-const BEREICHE = [['motiv', 'tabMotiv'], ['farbe', 'tabFarbe'], ['palette', 'tabPalette'], ['qualitaet', 'tabQualitaet'], ['ebenen', 'tabEbenen'], ['nach', 'tabNach'], ['technik', 'tabMehr']];
+const BEREICHE = [['motiv', 'tabMotiv'], ['farbe', 'tabFarbe'], ['texturen', 'tabTexturen'], ['palette', 'tabPalette'], ['qualitaet', 'tabQualitaet'], ['ebenen', 'tabEbenen'], ['nach', 'tabNach'], ['technik', 'tabMehr']];
 
 // Alles, was rechts über den Bildschirm hinausragt. Waagerecht rollende Streifen (Chips, Farbfelder) zählen nicht mit.
 function ueberstand(pane, breite) {
@@ -39,7 +39,7 @@ describe('Bedienfeld am Handy', () => {
       expect(r.bottom, 'unten bündig').to.be.closeTo(812, 1);
       expect(r.width).to.eq(375);
     });
-    cy.get('#tabbar button:visible').should('have.length', 8);   // Motiv, Farbe, Palette, Qualität, Ebenen, Effekte, Speichern, Mehr
+    cy.get('#tabbar button:visible').should('have.length', 8);   // Motiv, Farbe, Texturen, Palette, Qualität, Mischen, Effekte, Mehr (Speichern sitzt in der Kopfzeile)
     cy.get('#mStatus').click();
     cy.get('#mInfo').should('be.visible').and('contain.text', 'Tiefe');
   });

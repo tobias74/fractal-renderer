@@ -6,7 +6,7 @@ Several fractals can lie on top of each other. Each layer is a complete fractal 
 
 | Place | What it does |
 |---|---|
-| **Layer stack** at the top of the panel, above every section | Which layer the sections *Motif*, *Colour*, *Palette* and *Quality* edit. One row per layer, the top layer first; the selected row is highlighted and its colour runs as a stripe along the panel and the “Layer” group of the bar. Each row has the eye (visible), S (solo), a grip to reorder (drag or arrow keys), and × to remove (with a confirmation; also the Delete key). `+` in the header adds a copy of the selected layer above it; the header switch decides whether gestures move all layers or only the selected one. With a single layer only the header is shown. |
+| **Layer stack** at the top of the panel, above every section | Which layer the sections *Motif*, *Colour*, *Textures*, *Palette* and *Quality* edit. One row per layer, the top layer first; the selected row is highlighted and its colour runs as a stripe along the panel and the “Layer” group of the bar. Each row has the eye (visible), S (solo), a grip to reorder (drag or arrow keys), and × to remove (with a confirmation; also the Delete key). `+` in the header adds a copy of the selected layer above it; the header switch decides whether gestures move all layers or only the selected one. With a single layer only the header is shown. |
 | **Blend** section (in the “Layer” group of the bar; on phones the “Blend” tab) | Belongs to the selected layer: name, blend mode, opacity, mask, whether the view is linked, align view, fine alignment. The ground shows a note instead. |
 | *Quality* (smoothing) | Belongs to the selected layer: method, samples, tolerance and filter width. The first layer keeps the browser setting as before; a further layer carries its own values in the link only when they differ from the first layer. |
 | *Quality* (resolution), *Post-processing*, *Technical* | Belong to the whole image: the resolution, the post-processing stack (it works on the blended result) and the renderer settings. |
@@ -23,7 +23,7 @@ A layer's mask is evaluated from that layer's own orbit data: inside/outside, to
 
 All layers share the view of the first layer unless a layer is *unlinked* (“Linked to the view” off in the mixer). An unlinked layer keeps its own centre, zoom and rotation; while it is selected, mouse and keyboard move only it, the other layers stay put. *Align view* puts it back onto the view of the first layer. The zoom text and the coordinates at the bottom always describe the selected layer.
 
-The bar on the right has two groups: “Layer” (Motif, Colour, Palette, Quality, Blend) and “Image” (Post-processing, Technical). The stack header carries the *Move* switch: all layers together or only the selected one (“only this” detaches the layer from the shared view; “all” takes detached layers along by the same screen movement). Showing only one layer is S (solo) in its stack row; the selection takes a sole solo along.
+The bar on the right has two groups: “Layer” (Motif, Colour, Textures, Palette, Quality, Blend) and “Image” (Post-processing, Technical). The stack header carries the *Move* switch: all layers together or only the selected one (“only this” detaches the layer from the shared view; “all” takes detached layers along by the same screen movement). Showing only one layer is S (solo) in its stack row; the selection takes a sole solo along.
 
 ## Fine alignment
 

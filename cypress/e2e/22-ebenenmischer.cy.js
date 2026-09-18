@@ -36,7 +36,7 @@ describe('Ebenenmischer', () => {
     cy.pane('ebenen'); cy.get('#ebeneModus2').should('exist'); cy.get('#ebeneModus1').should('not.exist');
     cy.get('#stWahl1').click(); cy.wait(600);
     cy.get('#stZeile1').should('have.class', 'on'); cy.expectHash('la', null);
-    cy.get('#ebeneModus1').should('not.exist'); cy.get('#stapelZeilen .stapel-zeile').should('have.length', 1);   // der Grund: nur der Hinweis
+    cy.get('#ebeneModus1').should('not.exist'); cy.get('#ebenenStapel .ebene-karte').should('have.length', 1).first().should('have.id', 'ebeneKarte1');   // der Grund: nur seine Karte mit dem Hinweis
     cy.pane('motiv'); cy.get('#pane-motiv > .pane-title').should('have.text', 'Motiv'); cy.get('#formula').should('have.value', '0');
     cy.get('#stWahl2').click(); cy.wait(600); cy.expectHash('la', '2'); cy.pane('ebenen'); cy.get('#ebeneModus2').should('exist');
     cy.visitApp('mode=mandel'); cy.waitRender();
@@ -45,17 +45,17 @@ describe('Ebenenmischer', () => {
 
   it('Sichtbarkeit: eine ausgeblendete Ebene fehlt im Bild und steht so im Link; der Grund allein gleicht seinem Einzelbild', () => {
     cy.visitApp('mode=mandel'); fertig();
-    cy.shotStats('em-grund').then(grund => {
+    cy.gezeichnet(); cy.shotStats('em-grund').then(grund => {
       cy.visitApp(ZWEI); fertig(); cy.pane('ebenen');
-      cy.shotStats('em-beide').then(beide => {
+      cy.gezeichnet(); cy.shotStats('em-beide').then(beide => {
         anders(beide, grund, 'zwei Ebenen sind anders als der Grund allein');
         cy.get('#stAuge2').uncheck({ force: true }); cy.wait(800);
         cy.expectHash('lm2', '2:0.7:0:0:1:');
         cy.get('#stZeile2').should('have.class', 'aus');
-        cy.shotStats('em-ohne-2').then(ohne => gleich(ohne, grund, 'ohne die zweite Ebene bleibt der Grund'));
+        cy.gezeichnet(); cy.shotStats('em-ohne-2').then(ohne => gleich(ohne, grund, 'ohne die zweite Ebene bleibt der Grund'));
         cy.get('#stAuge2').check({ force: true }); cy.get('#stAuge1').uncheck({ force: true }); cy.wait(800);
         cy.expectHash('lm1', '0:1:0:0:1:');
-        cy.shotStats('em-ohne-1').then(ohne1 => { anders(ohne1, grund, 'ohne den Grund bleibt die zweite Ebene'); anders(ohne1, beide, 'anders als beide zusammen'); });
+        cy.gezeichnet(); cy.shotStats('em-ohne-1').then(ohne1 => { anders(ohne1, grund, 'ohne den Grund bleibt die zweite Ebene'); anders(ohne1, beide, 'anders als beide zusammen'); });
         cy.get('#stAuge1').check({ force: true }); cy.wait(800); cy.expectHash('lm1', null);
       });
     });
@@ -63,18 +63,18 @@ describe('Ebenenmischer', () => {
 
   it('Solo: zeigt nur diese Ebene, Link und Schalter „Anzeigen“ folgen, der zweite Klick hebt es auf', () => {
     cy.visitApp(ZWEI); fertig(); cy.pane('ebenen');
-    cy.shotStats('em-solo-vorher').then(vorher => {
+    cy.gezeichnet(); cy.shotStats('em-solo-vorher').then(vorher => {
       cy.get('#stSolo2').click(); cy.wait(800);
       cy.get('#stSolo2').should('have.class', 'on'); cy.expectHash('lm2', '2:0.7:1:1:1:');
       cy.get('#stSolo2').should('have.attr', 'aria-pressed', 'true');
-      cy.shotStats('em-solo').then(solo => {
+      cy.gezeichnet(); cy.shotStats('em-solo').then(solo => {
         anders(solo, vorher, 'Solo zeigt nur die zweite Ebene');
         cy.get('#stAuge1').uncheck({ force: true }); cy.wait(800);
-        cy.shotStats('em-solo-2').then(s2 => gleich(s2, solo, 'Solo hängt nicht an der Sichtbarkeit des Grunds'));
+        cy.gezeichnet(); cy.shotStats('em-solo-2').then(s2 => gleich(s2, solo, 'Solo hängt nicht an der Sichtbarkeit des Grunds'));
         cy.get('#stAuge1').check({ force: true });
         cy.get('#stSolo2').click(); cy.wait(800);
         cy.get('#stSolo2').should('not.have.class', 'on'); cy.expectHash('lm2', '2:0.7:1:0:1:');
-        cy.shotStats('em-solo-aus').then(aus => gleich(aus, vorher, 'Solo aus: wieder beide Ebenen'));
+        cy.gezeichnet(); cy.shotStats('em-solo-aus').then(aus => gleich(aus, vorher, 'Solo aus: wieder beide Ebenen'));
       });
     });
   });
@@ -99,18 +99,18 @@ describe('Ebenenmischer', () => {
     }
     cy.get('@konsole').should('not.have.been.called');
     cy.pickOption('ebeneModus2', 0); cy.wait(600);
-    cy.shotStats('em-normal').then(normal => {
+    cy.gezeichnet(); cy.shotStats('em-normal').then(normal => {
       cy.pickOption('ebeneModus2', 1); cy.wait(600);
-      cy.shotStats('em-multi').then(multi => {
+      cy.gezeichnet(); cy.shotStats('em-multi').then(multi => {
         anders(normal, multi, 'Multiplizieren mischt anders als Normal');
         cy.pickOption('ebeneModus2', 10); cy.wait(600);
-        cy.shotStats('em-diff').then(diff => {
+        cy.gezeichnet(); cy.shotStats('em-diff').then(diff => {
           anders(multi, diff, 'Differenz mischt anders als Multiplizieren');
           cy.visitApp('mode=mandel&l2=f%3D1&lm2=10:0.7:1:0:1:&la=2', { storage: { 'fractal.renderer': 'webgl' } }); fertig();
           cy.get('#badge').should('contain.text', 'WebGL');
-          cy.shotStats('em-diff-webgl').then(gl => gleich(diff, gl, 'WebGL 2 mischt Differenz wie WebGPU', 10));
+          cy.gezeichnet(); cy.shotStats('em-diff-webgl').then(gl => gleich(diff, gl, 'WebGL 2 mischt Differenz wie WebGPU', 10));
           cy.visitApp('mode=mandel&l2=f%3D1&lm2=1:0.7:1:0:1:&la=2', { storage: { 'fractal.renderer': 'webgl' } }); fertig();
-          cy.shotStats('em-multi-webgl').then(gl => gleich(multi, gl, 'WebGL 2 mischt Multiplizieren wie WebGPU', 10));
+          cy.gezeichnet(); cy.shotStats('em-multi-webgl').then(gl => gleich(multi, gl, 'WebGL 2 mischt Multiplizieren wie WebGPU', 10));
         });
       });
     });
@@ -118,18 +118,18 @@ describe('Ebenenmischer', () => {
 
   it('Deckkraft: Regler und Zahlenfeld, 0 gleicht dem Grund allein, 1 ist anders als 0,3, alles im Link', () => {
     cy.visitApp('mode=mandel'); fertig();
-    cy.shotStats('em-deck-grund').then(grund => {
+    cy.gezeichnet(); cy.shotStats('em-deck-grund').then(grund => {
       cy.visitApp('mode=mandel&l2=f%3D1&la=2'); fertig(); cy.pane('ebenen');
       cy.get('#ebeneDeck2').should('have.value', '1');
       cy.setRange('ebeneDeck2', 0); cy.wait(800); cy.expectHash('lm2', '0:0:1:0:1:');
-      cy.shotStats('em-deck-0').then(d0 => {
+      cy.gezeichnet(); cy.shotStats('em-deck-0').then(d0 => {
         gleich(d0, grund, 'Deckkraft 0: nur der Grund');
         cy.setRange('ebeneDeck2', 0.3); cy.wait(800); cy.expectHash('lm2', '0:0.3:1:0:1:');
-        cy.shotStats('em-deck-03').then(d3 => {
+        cy.gezeichnet(); cy.shotStats('em-deck-03').then(d3 => {
           anders(d3, d0, 'Deckkraft 0,3 mischt die Ebene hinein');
           cy.get('#ebeneDeck2Val').clear().type('1{enter}'); cy.wait(800); cy.expectHash('lm2', '0:1:1:0:1:');
           cy.get('#ebeneDeck2').should('have.value', '1');
-          cy.shotStats('em-deck-1').then(d1 => anders(d1, d3, 'Deckkraft 1 ist anders als 0,3'));
+          cy.gezeichnet(); cy.shotStats('em-deck-1').then(d1 => anders(d1, d3, 'Deckkraft 1 ist anders als 0,3'));
         });
       });
     });
@@ -152,20 +152,20 @@ describe('Ebenenmischer', () => {
 
   it('Maske: Art, Regler und Umkehren ändern Bild und Link; „Keine“ löscht sie aus dem Link', () => {
     cy.visitApp(ZWEI); fertig(); cy.pane('ebenen');
-    cy.shotStats('em-maske-ohne').then(ohne => {
+    cy.gezeichnet(); cy.shotStats('em-maske-ohne').then(ohne => {
       cy.pickOption('ebM2_art', 3); cy.wait(300); uebersetzt();   // Iterationsbereich (Regler von/bis)
       cy.expectHash('lu2', v => expect(v.startsWith('m3,'), 'Maske im Link').to.be.true);
       cy.get('#ebM2_0').should('exist'); cy.setRange('ebM2_0', 10); cy.setRange('ebM2_1', 40); cy.wait(800);
-      cy.shotStats('em-maske-1').then(m1 => {
+      cy.gezeichnet(); cy.shotStats('em-maske-1').then(m1 => {
         anders(ohne, m1, 'die Maske ändert das Bild');
         cy.get('#ebM2_inv').check(); cy.wait(800);
         cy.expectHash('lu2', v => expect(v.split(',')[1], 'umgekehrt').to.eq('1'));
-        cy.shotStats('em-maske-inv').then(inv => {
+        cy.gezeichnet(); cy.shotStats('em-maske-inv').then(inv => {
           anders(m1, inv, 'umgekehrt ist anders');
           cy.setRange('ebM2_0', 20); cy.wait(800);
           cy.hashParams().then(h => expect(h.get('lu2').split(','), 'Reglerwert im Link').to.include('20'));
           cy.pickOption('ebM2_art', 0); cy.wait(800); cy.expectHash('lu2', null);
-          cy.shotStats('em-maske-weg').then(weg => gleich(weg, ohne, 'ohne Maske wie zuvor'));
+          cy.gezeichnet(); cy.shotStats('em-maske-weg').then(weg => gleich(weg, ohne, 'ohne Maske wie zuvor'));
         });
       });
     });
@@ -200,13 +200,13 @@ describe('Ebenenmischer', () => {
 
   it('Reihenfolge: die Pfeiltasten am Griff tauschen die Ebenen, der neue Grund verliert Modus und Deckkraft, Link und Bild folgen', () => {
     cy.visitApp(ZWEI); fertig(); cy.pane('ebenen');
-    cy.shotStats('em-reihe-vorher').then(vorher => {
+    cy.gezeichnet(); cy.shotStats('em-reihe-vorher').then(vorher => {
       cy.get('#stGriff2').focus().trigger('keydown', { key: 'ArrowDown', bubbles: true }); cy.wait(1500);   // im Stapel steht die oberste zuerst: nach unten = zum Grund
       cy.expectHash('f', '1'); cy.expectHash('l2', v => expect(v, 'die Mandelbrot-Menge liegt jetzt oben').not.to.match(/(^|&)f=1(&|$)/));
       cy.expectHash('lm2', '0:1:1:0:1:');   // der frühere Grund bringt Normal und volle Deckkraft mit
       cy.get('#stapelZeilen .stapel-zeile').last().should('contain.text', 'Burning Ship');
       fertig();
-      cy.shotStats('em-reihe-nachher').then(nachher => anders(vorher, nachher, 'getauscht ergibt ein anderes Bild'));
+      cy.gezeichnet(); cy.shotStats('em-reihe-nachher').then(nachher => anders(vorher, nachher, 'getauscht ergibt ein anderes Bild'));
       cy.get('#stGriff1').focus().trigger('keydown', { key: 'ArrowUp', bubbles: true }); cy.wait(1500);
       cy.expectHash('f', null); cy.expectHash('l2', v => expect(v).to.match(/(^|&)f=1(&|$)/));
     });
@@ -239,19 +239,19 @@ describe('Ebenenmischer', () => {
     });
     stand().then(z => expect(z.ebenen.every(e => e.frisch && !e.glattOffen), 'alle Ebenen frisch').to.be.true);
     cy.get('@konsole').should('not.have.been.called');
-    cy.shotStats('em-drei').then(drei => {
+    cy.gezeichnet(); cy.shotStats('em-drei').then(drei => {
       cy.visitApp('mode=mandel&f=2'); fertig();
-      cy.shotStats('em-drei-tricorn').then(t => anders(drei, t, 'drei Ebenen sind anders als das Tricorn allein'));
+      cy.gezeichnet(); cy.shotStats('em-drei-tricorn').then(t => anders(drei, t, 'drei Ebenen sind anders als das Tricorn allein'));
       cy.visitApp(DREI, { aa: '2', storage: { 'fractal.renderer': 'webgl' } }); alleFertig();
-      cy.shotStats('em-drei-webgl').then(gl => gleich(drei, gl, 'WebGL 2 mischt drei Ebenen wie WebGPU', 10));
+      cy.gezeichnet(); cy.shotStats('em-drei-webgl').then(gl => gleich(drei, gl, 'WebGL 2 mischt drei Ebenen wie WebGPU', 10));
     });
   });
 
   it('Maske auf einer Hintergrund-Ebene beim Start: sie wirkt, auch wenn die Fassung mit Masken erst übersetzt wird', () => {
     cy.visitApp('mode=mandel&l2=f%3D1&lm2=2:0.7:1:0:1:'); fertig(); cy.wait(1500);   // der Grund ist gewählt, die zweite Ebene rechnet im Hintergrund
-    cy.shotStats('em-hg-ohne').then(ohne => {
+    cy.gezeichnet(); cy.shotStats('em-hg-ohne').then(ohne => {
       cy.visitApp('mode=mandel&l2=f%3D1&lm2=2:0.7:1:0:1:&lu2=m1,0,0,0.25,0'); fertig(); uebersetzt(); cy.wait(1500);
-      cy.shotStats('em-hg-maske').then(mit => anders(ohne, mit, 'die Maske der Hintergrund-Ebene wirkt im Bild'));
+      cy.gezeichnet(); cy.shotStats('em-hg-maske').then(mit => anders(ohne, mit, 'die Maske der Hintergrund-Ebene wirkt im Bild'));
     });
   });
 
@@ -262,17 +262,17 @@ describe('Ebenenmischer', () => {
     cy.expectHash('l2', v => expect(new URLSearchParams(v).get('z'), 'Faktor 1,5 zum Grund bei Zoom 1').to.eq('1.5000e+0'));
     cy.get('#ebFein2_x').clear().type('10{enter}'); fertig();
     cy.get('#ebFein2_x').should('have.value', '10,00');
-    cy.hashParams().then(h => { const l2 = new URLSearchParams(h.get('l2')); expect(parseFloat(l2.get('re')) - parseFloat(h.get('re')), 'zehn Pixel des Grunds nach rechts').to.be.closeTo(10 * 3 / 720, 1e-6); });
+    cy.location('hash').should(hash => { const h = new URLSearchParams(hash.slice(1)), l2 = new URLSearchParams(h.get('l2')); expect(parseFloat(l2.get('re')) - parseFloat(h.get('re')), 'zehn Pixel des Grunds nach rechts').to.be.closeTo(10 * 3 / 720, 1e-6); });   // der Link folgt verzögert
     cy.contains('#ebeneFein2 .ebene-fein-knopf', '×2').click(); fertig(); cy.get('#ebFein2_f').should('have.value', '3,000000');
     cy.get('#ebFein2_mitte').click(); fertig(); cy.get('#ebFein2_x').should('have.value', '0,00'); cy.get('#ebFein2_y').should('have.value', '0,00');
-    cy.hashParams().then(h => { const l2 = new URLSearchParams(h.get('l2')); expect(l2.get('re'), 'Mitte auf der Grundmitte').to.eq(h.get('re')); });
+    cy.location('hash').should(hash => { const h = new URLSearchParams(hash.slice(1)), l2 = new URLSearchParams(h.get('l2')); expect(l2.get('re'), 'Mitte auf der Grundmitte').to.eq(h.get('re')); });
     cy.get('#ebFein2_f').clear().type('2,9{enter}'); fertig(); cy.get('#ebFein2_runden').click(); fertig(); cy.get('#ebFein2_f').should('have.value', '3,000000');
     cy.get('#ebFein2_d').clear().type('15{enter}'); fertig(); cy.expectHash('l2', v => expect(new URLSearchParams(v).get('dr'), 'Drehung zum Grund').to.eq('15'));
-    cy.shotStats('em-fein-normal').then(normal => {
+    cy.gezeichnet(); cy.shotStats('em-fein-normal').then(normal => {
       cy.get('#ebFein2_ausrichten').check(); cy.wait(800);
-      cy.get('#fadenkreuz').should('be.visible'); cy.expectHash('lm2', '2:0.7:1:0:0:');   // Ausrichten ändert Modus und Deckkraft nur in der Anzeige
-      cy.shotStats('em-fein-diff').then(diff => anders(normal, diff, 'Differenz zum Ausrichten'));
-      cy.get('#ebFein2_ausrichten').uncheck(); cy.get('#fadenkreuz').should('not.be.visible');
+      cy.get('#fadenkreuz').should('not.have.attr', 'hidden');   // Cypress hält es für verdeckt (pointer-events: none), sichtbar ist es über der Leinwand cy.expectHash('lm2', '2:0.7:1:0:0:');   // Ausrichten ändert Modus und Deckkraft nur in der Anzeige
+      cy.gezeichnet(); cy.shotStats('em-fein-diff').then(diff => anders(normal, diff, 'Differenz zum Ausrichten'));
+      cy.get('#ebFein2_ausrichten').uncheck(); cy.get('#fadenkreuz').should('have.attr', 'hidden');
     });
   });
 

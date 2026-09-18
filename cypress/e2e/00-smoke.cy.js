@@ -11,7 +11,7 @@ describe('Schnelltest', () => {
     cy.get('#fatal').should('not.be.visible');
     cy.get('#stage canvas').should('be.visible');
     cy.get('#resInfo').should('contain.text', 'Render ');
-    cy.get('#rail button[data-pane]').should('have.length', 7);
+    cy.get('#rail button[data-pane]').should('have.length', 8);
     for (const [p, titel] of [['motiv', 'Motiv'], ['farbe', 'Farbe'], ['palette', 'Palette'], ['qualitaet', 'Qualität'], ['nach', 'Nachbearbeitung'], ['technik', 'Technik']]) {
       cy.get('#rail button[data-pane="' + p + '"]').click();
       cy.get('#pane-' + p).should('not.have.attr', 'hidden');

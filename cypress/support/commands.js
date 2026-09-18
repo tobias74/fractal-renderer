@@ -120,7 +120,16 @@ Cypress.Commands.add('alleEbenenFertig', (timeout = 60000) => cy.window({ timeou
     const z = win.ebenenStand ? win.ebenenStand() : null, st = win.document.getElementById('state').textContent;
     const solo = z ? z.ebenen.findIndex(e => e.solo) : -1;
     const offen = !!z && z.ebenen.length > 1 && (z.phase !== 'idle' || z.renderEbene !== z.ebeneAktiv || z.ebenen.some((e, k) => (solo >= 0 ? k === solo : e.sichtbar) && (!e.frisch || e.glattOffen)));
-    if (/Fertig|Done/.test(st) && !offen) res(win.performance.now()); else if (Date.now() - t0 > timeout - 500) res(-1); else setTimeout(pruefe, 50);
+    const gezeichnet = !z || (!z.colorDirty && !z.rafId);   // ein angeforderter Frame steht noch aus (Electron drosselt requestAnimationFrame zuweilen auf Sekunden)
+    if (/Fertig|Done/.test(st) && !offen && gezeichnet) res(win.performance.now()); else if (Date.now() - t0 > timeout - 500) res(-1); else setTimeout(pruefe, 50);
   };
   setTimeout(pruefe, 120);   // ein Bild abwarten: die Statuszeile kann noch das alte „Fertig“ zeigen
+})));
+
+// Warten, bis kein angeforderter Frame mehr aussteht (Electron zeichnet requestAnimationFrame zuweilen erst Sekunden später):
+// vor jedem Bildvergleich nach einer Änderung an der Anzeige
+Cypress.Commands.add('gezeichnet', (timeout = 15000) => cy.window({ timeout }).then({ timeout }, win => new Promise(res => {
+  const t0 = Date.now();
+  const pruefe = () => { const z = win.ebenenStand ? win.ebenenStand() : null; if (!z || (!z.colorDirty && !z.rafId)) res(true); else if (Date.now() - t0 > timeout - 500) res(false); else setTimeout(pruefe, 40); };
+  setTimeout(pruefe, 60);
 })));

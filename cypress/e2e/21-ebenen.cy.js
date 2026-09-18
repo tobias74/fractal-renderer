@@ -36,20 +36,20 @@ describe('Fraktal-Ebenen', () => {
   it('Der Verbund im Bild: zwei Ebenen ergeben ein anderes Bild als jede allein, Solo und Sichtbarkeit greifen, WebGL 2 rechnet dasselbe', () => {
     cy.visitApp(ZWEI); cy.alleEbenenFertig();   // die zweite Ebene rechnet nach der ersten nach
     cy.get('#state').invoke('text').should('match', /Fertig/);
-    cy.shotStats('eb-zwei').then(zwei => {
+    cy.gezeichnet(); cy.shotStats('eb-zwei').then(zwei => {
       cy.visitApp('mode=mandel'); cy.waitRender();
-      cy.shotStats('eb-nur-mandel').then(m => anders(zwei, m, 'anders als die Mandelbrot-Menge allein'));
+      cy.gezeichnet(); cy.shotStats('eb-nur-mandel').then(m => anders(zwei, m, 'anders als die Mandelbrot-Menge allein'));
       cy.visitApp('mode=mandel&f=1'); cy.waitRender();
-      cy.shotStats('eb-nur-ship').then(sh => anders(zwei, sh, 'anders als das Burning Ship allein'));
+      cy.gezeichnet(); cy.shotStats('eb-nur-ship').then(sh => anders(zwei, sh, 'anders als das Burning Ship allein'));
       cy.visitApp(ZWEI, { storage: { 'fractal.renderer': 'webgl' } }); cy.alleEbenenFertig();
-      cy.shotStats('eb-zwei-webgl').then(gl => gleich(zwei, gl, 'WebGL 2 mischt dasselbe Bild', 10));
+      cy.gezeichnet(); cy.shotStats('eb-zwei-webgl').then(gl => gleich(zwei, gl, 'WebGL 2 mischt dasselbe Bild', 10));
       cy.visitApp(ZWEI); cy.alleEbenenFertig();
       cy.pane('ebenen'); cy.get('#stapelZeilen .stapel-zeile').should('have.length', 2);
       cy.get('#stSolo2').click(); cy.wait(600);   // Solo: nur die zweite Ebene
-      cy.shotStats('eb-solo').then(solo => {
+      cy.gezeichnet(); cy.shotStats('eb-solo').then(solo => {
         anders(zwei, solo, 'Solo zeigt nur die zweite Ebene');
         cy.get('#stSolo2').click(); cy.get('#stAuge1').uncheck({ force: true }); cy.wait(600);   // Solo aus, erste Ebene unsichtbar: dasselbe Bild wie Solo
-        cy.shotStats('eb-unsichtbar').then(u => gleich(solo, u, 'ohne die erste Ebene bleibt die zweite allein', 3));
+        cy.gezeichnet(); cy.shotStats('eb-unsichtbar').then(u => gleich(solo, u, 'ohne die erste Ebene bleibt die zweite allein', 3));
       });
     });
   });
@@ -58,10 +58,10 @@ describe('Fraktal-Ebenen', () => {
     cy.visitApp('mode=mandel&l2=f%3D1&la=2'); cy.alleEbenenFertig();
     cy.expectHash('lm2', '0:1:1:0:1:'); cy.expectHash('lu2', null);
     cy.pane('ebenen');
-    cy.shotStats('eb-normal').then(normal => {
+    cy.gezeichnet(); cy.shotStats('eb-normal').then(normal => {
       cy.pickOption('ebeneModus2', 10); cy.wait(600);   // Differenz
       cy.expectHash('lm2', '10:1:1:0:1:');
-      cy.shotStats('eb-differenz').then(diff => anders(normal, diff, 'Differenz mischt anders als Normal'));
+      cy.gezeichnet(); cy.shotStats('eb-differenz').then(diff => anders(normal, diff, 'Differenz mischt anders als Normal'));
       cy.setRange('ebeneDeck2', 0.3); cy.wait(600);
       cy.expectHash('lm2', '10:0.3:1:0:1:');
       cy.pickOption('ebM2_art', 1); cy.wait(600);   // Maske Innen/Außen
@@ -75,7 +75,7 @@ describe('Fraktal-Ebenen', () => {
   it('Gesten: „Nur diese“ löst die gewählte Ebene und bewegt nur sie, „Alle bewegen“ nimmt alle mit; Angleichen und Verbinden holen sie zurück', () => {
     cy.visitApp(ZWEI); cy.alleEbenenFertig();
     cy.get('#stAuge2').uncheck({ force: true }); cy.wait(600);   // der Grund allein, vor den Gesten
-    cy.shotStats('eb-grund-vorher').then(vorher => {
+    cy.gezeichnet(); cy.shotStats('eb-grund-vorher').then(vorher => {
     cy.get('#stAuge2').check({ force: true }); cy.wait(600);
     cy.get('#stapelKette').click();   // Bewegen: Nur diese
     cy.get('#stapelKette').should('have.attr', 'aria-pressed', 'true');
@@ -88,7 +88,7 @@ describe('Fraktal-Ebenen', () => {
     cy.expectHash('z', v => expect(parseFloat(v), 'die erste Ebene zoomte mit').to.be.greaterThan(1.1));
     cy.alleEbenenFertig(); cy.get('#state').invoke('text').should('match', /Fertig/);
     cy.get('#stAuge2').uncheck({ force: true }); cy.wait(600);
-    cy.shotStats('eb-grund-nachher').then(nachher => anders(vorher, nachher, 'der Grund rechnete in der neuen Ansicht nach'));   // vorher blieb sein gesicherter Stand stehen
+    cy.gezeichnet(); cy.shotStats('eb-grund-nachher').then(nachher => anders(vorher, nachher, 'der Grund rechnete in der neuen Ansicht nach'));   // vorher blieb sein gesicherter Stand stehen
     cy.get('#stAuge2').check({ force: true }); cy.wait(600);
     cy.pane('ebenen');
     cy.get('#ebeneAngleichen2').click(); cy.wait(800);   // auf die Ansicht der ersten Ebene

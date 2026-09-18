@@ -727,7 +727,8 @@
       border: 0; background: none; color: var(--muted); cursor: pointer; font: 500 11px var(--font-ui); letter-spacing: .02em;
     }
     .tabbar .ico { display: grid; place-items: center; width: 100%; max-width: 52px; height: 28px; border-radius: 14px; transition: background-color .15s ease, color .15s ease; }
-    .tabbar .tab-save .ico { color: var(--accent); }
+    .appbar-save { display: grid; place-items: center; width: 40px; height: 40px; border: 0; background: none; color: var(--accent); cursor: pointer; margin-left: auto; }   /* Speichern am Handy in der Kopfzeile, nicht mehr in den Reitern */
+    .appbar .m-status { margin-left: 6px; }
     .tabbar button.on { color: var(--accent); }
     .tabbar button.on .ico { background: rgba(var(--accent-rgb), .16); }
 
@@ -1177,6 +1178,31 @@
         <input id="abzug" type="range" min="0" max="2" step="0.01" value="0">
       </div>
       <div class="grid2">
+        <div><div class="lbl"><label for="glowMode" data-i18n="colour.edge-lines"></label></div>
+          <select id="glowMode">
+            <option value="0" data-i18n="colour.off"></option>
+            <option value="1" data-i18n="colour.dark"></option>
+            <option value="2" data-i18n="colour.light"></option>
+          </select></div>
+        <div><div class="lbl"><label for="interior" data-i18n="colour.interior"></label></div>
+          <select id="interior">
+            <option value="0" data-i18n="colour.black"></option>
+            <option value="1" data-i18n="colour.gradient"></option>
+            <option value="2" data-i18n="colour.contour-lines"></option>
+            <option value="3" data-i18n="colour.angle"></option>
+            <option value="4" data-i18n="colour.own-colour"></option>
+          </select><input type="color" id="innenFarbe" class="innen-farbe" value="#000000" hidden data-i18n-aria-label="colour.interior-colour"></div>
+      </div>
+      <div class="lbl wertzeile"><label for="glowWidth" data-i18n="colour.edge-width"></label><input class="val mono wert" id="glowVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+      <input id="glowWidth" type="range" min="0" max="1000" value="517">
+      <label class="chk" data-i18n-title="colour.stepped-title"><input id="gestuft" type="checkbox"> <span data-i18n="colour.stepped"></span></label>
+    </section>
+
+    </div>
+
+    <div class="pane" id="pane-texturen" hidden>   <!-- Texturen: eigener Bereich der Ebene, nach Farbe (die Ziele hängen an der Färbung) und vor Palette; leer, wenn die Formel oder die Färbung keine Texturen zulässt -->
+      <h2 class="pane-title" data-i18n="pane.textures"></h2>
+    <section class="row" id="texRow">
       <h2 class="sec-title tex-titel" id="texTitel" data-i18n="colour.textures" hidden></h2>
       <div class="tex-karte" id="texKarte1" hidden>
         <div id="texturRow" class="tex-slot" data-slot="1">
@@ -1524,28 +1550,8 @@
         <div class="lbl wertzeile"><label for="spirale" data-i18n-title="colour.spiral-winding-title" data-i18n="colour.spiral-winding"></label><input class="val mono wert" id="spiraleVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="spirale" type="range" min="0.05" max="1" step="0.01" value="0.2">
       </div>
-        <div><div class="lbl"><label for="glowMode" data-i18n="colour.edge-lines"></label></div>
-          <select id="glowMode">
-            <option value="0" data-i18n="colour.off"></option>
-            <option value="1" data-i18n="colour.dark"></option>
-            <option value="2" data-i18n="colour.light"></option>
-          </select></div>
-        <div><div class="lbl"><label for="interior" data-i18n="colour.interior"></label></div>
-          <select id="interior">
-            <option value="0" data-i18n="colour.black"></option>
-            <option value="1" data-i18n="colour.gradient"></option>
-            <option value="2" data-i18n="colour.contour-lines"></option>
-            <option value="3" data-i18n="colour.angle"></option>
-            <option value="4" data-i18n="colour.own-colour"></option>
-          </select><input type="color" id="innenFarbe" class="innen-farbe" value="#000000" hidden data-i18n-aria-label="colour.interior-colour"></div>
-      </div>
-      <div class="lbl wertzeile"><label for="glowWidth" data-i18n="colour.edge-width"></label><input class="val mono wert" id="glowVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
-      <input id="glowWidth" type="range" min="0" max="1000" value="517">
-      <label class="chk" data-i18n-title="colour.stepped-title"><input id="gestuft" type="checkbox"> <span data-i18n="colour.stepped"></span></label>
     </section>
-
     </div>
-
     <div class="pane" id="pane-palette" hidden>   <!-- Palette: welche Farben an welche Stelle kommen; die Werte dazu liefert der Reiter „Farbe“ -->
       <h2 class="pane-title" data-i18n="pane.palette"></h2>
     <section class="row" id="palRow">     <!-- Palette: welche Farben; Art (wo die Färbung zwei Werte liefert), Liste, Editor, Dichte, Versatz -->
@@ -1827,6 +1833,7 @@
 <nav class="rail" id="rail" data-i18n-aria-label="panel.areas">
   <button type="button" id="railMotiv" data-pane="motiv" class="on gruppe-ebene" data-i18n-title="misc.subject" data-i18n-aria-label="misc.subject"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.6 A6.4 6.4 0 1 0 8 14.4 A3.2 3.2 0 1 1 8 8 A3.2 3.2 0 1 0 8 1.6Z"/></svg></button>
   <button type="button" id="railFarbe" data-pane="farbe" class="gruppe-ebene" data-i18n-title="colour.colour" data-i18n-aria-label="colour.colour"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.2"/><path d="M8 1.8v12.4M2.4 5.4h11.2M2.4 10.6h11.2"/></svg></button>
+  <button type="button" id="railTexturen" data-pane="texturen" class="gruppe-ebene" data-i18n-title="pane.textures" data-i18n-aria-label="pane.textures"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M2 6h12M2 10h12M6 2v12M10 2v12"/><path d="M6 6h4v4H6z" fill="currentColor" opacity=".35"/></svg></button>
   <button type="button" id="railPalette" data-pane="palette" class="gruppe-ebene" data-i18n-title="pane.palette" data-i18n-aria-label="pane.palette"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.8a6.2 6.2 0 1 0 0 12.4c1.1 0 1.6-.7 1.3-1.6-.3-.9.2-1.6 1.2-1.6h1.3a2.4 2.4 0 0 0 2.4-2.4A6.6 6.6 0 0 0 8 1.8z"/><circle cx="5" cy="6.2" r=".9"/><circle cx="8.2" cy="4.4" r=".9"/><circle cx="11.2" cy="6.2" r=".9"/><circle cx="5.2" cy="9.6" r=".9"/></svg></button>
   <button type="button" id="railQualitaet" data-pane="qualitaet" class="gruppe-ebene" data-i18n-title="quality.quality" data-i18n-aria-label="quality.quality"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 13.5V6M6.2 13.5V3.5M9.8 13.5V8.5M13.5 13.5V5"/></svg></button>
   <button type="button" id="railEbenen" data-pane="ebenen" class="gruppe-ebene" data-i18n-title="pane.layers" data-i18n-aria-label="pane.layers"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.5 14 5.5 8 8.5 2 5.5Z"/><path d="M2 8.5 8 11.5 14 8.5" opacity=".6"/><path d="M2 11.5 8 14.5 14 11.5" opacity=".35"/></svg></button>
@@ -1857,6 +1864,7 @@
 <!-- Handy: oben eine schmale Leiste (links sitzt der Menü-Knopf), unten die Bereiche als Reiter -->
 <header class="appbar" id="appbar">
   <span class="appbar-title" data-i18n="misc.fractal-renderer"></span>
+  <button type="button" id="tabSave" class="appbar-save" data-i18n-title="editor.save" data-i18n-aria-label="editor.save"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.3 2.5h7.5l2.7 2.7v7.5a.8.8 0 0 1-.8.8H3.3a.8.8 0 0 1-.8-.8V3.3a.8.8 0 0 1 .8-.8z"/><path d="M5 13.5V9.6c0-.3.2-.5.5-.5h5c.3 0 .5.2.5.5v3.9M5.2 2.5v2.6c0 .3.2.5.5.5h4"/></svg></button>
   <button type="button" id="mStatus" class="m-status" data-i18n-aria-label="misc.status" aria-expanded="false" aria-controls="mInfo"><span class="dot" aria-hidden="true"></span><span id="mZoom">Zoom 1,0×</span></button>
 </header>
 <div id="mInfo" class="m-info" role="status" hidden>
@@ -1867,11 +1875,11 @@
 <nav class="tabbar" id="tabbar" data-i18n-aria-label="panel.areas">
   <button type="button" id="tabMotiv" data-tab="motiv"><span class="ico"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.6 A6.4 6.4 0 1 0 8 14.4 A3.2 3.2 0 1 1 8 8 A3.2 3.2 0 1 0 8 1.6Z"/></svg></span><span data-i18n="misc.subject"></span></button>
   <button type="button" id="tabFarbe" data-tab="farbe"><span class="ico"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.2"/><path d="M8 1.8v12.4M2.4 5.4h11.2M2.4 10.6h11.2"/></svg></span><span data-i18n="colour.colour"></span></button>
+  <button type="button" id="tabTexturen" data-tab="texturen"><span class="ico"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M2 6h12M2 10h12M6 2v12M10 2v12"/><path d="M6 6h4v4H6z" fill="currentColor" opacity=".35"/></svg></span><span data-i18n="pane.textures"></span></button>
   <button type="button" id="tabPalette" data-tab="palette"><span class="ico"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.8a6.2 6.2 0 1 0 0 12.4c1.1 0 1.6-.7 1.3-1.6-.3-.9.2-1.6 1.2-1.6h1.3a2.4 2.4 0 0 0 2.4-2.4A6.6 6.6 0 0 0 8 1.8z"/><circle cx="5" cy="6.2" r=".9"/><circle cx="8.2" cy="4.4" r=".9"/><circle cx="11.2" cy="6.2" r=".9"/><circle cx="5.2" cy="9.6" r=".9"/></svg></span><span data-i18n="pane.palette"></span></button>
   <button type="button" id="tabQualitaet" data-tab="qualitaet"><span class="ico"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 13.5V6M6.2 13.5V3.5M9.8 13.5V8.5M13.5 13.5V5"/></svg></span><span data-i18n="quality.quality"></span></button>
   <button type="button" id="tabEbenen" data-tab="ebenen"><span class="ico"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.5 14 5.5 8 8.5 2 5.5Z"/><path d="M2 8.5 8 11.5 14 8.5" opacity=".6"/><path d="M2 11.5 8 14.5 14 11.5" opacity=".35"/></svg></span><span data-i18n="pane.layers"></span></button>
   <button type="button" id="tabNach" data-tab="nach"><span class="ico"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 13.5c3-1 4-6 5.5-7s3.5 3 5.5 1.5"/><circle cx="8" cy="6.5" r="1.4"/></svg></span><span data-i18n="post.tab"></span></button>
-  <button type="button" id="tabSave" class="tab-save"><span class="ico"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.3 2.5h7.5l2.7 2.7v7.5a.8.8 0 0 1-.8.8H3.3a.8.8 0 0 1-.8-.8V3.3a.8.8 0 0 1 .8-.8z"/><path d="M5 13.5V9.6c0-.3.2-.5.5-.5h5c.3 0 .5.2.5.5v3.9M5.2 2.5v2.6c0 .3.2.5.5.5h4"/></svg></span><span data-i18n="editor.save"></span></button>
   <button type="button" id="tabMehr" data-tab="technik"><span class="ico"><svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="3.2" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="12.8" cy="8" r="1.3"/></svg></span><span data-i18n="status.more"></span></button>
 </nav>
 
@@ -2510,6 +2518,7 @@ const TEXTE = {
   'meta.apply': { de: 'Ansicht übernehmen', en: 'Apply this view' },
   'pane.post': { de: 'Nachbearbeitung', en: 'Post-processing' },
   'pane.layers': { de: 'Mischen', en: 'Blend' },
+  'pane.textures': { de: 'Texturen', en: 'Textures' },
   'layers.stack': { de: 'Ebenen', en: 'Layers' },
   'layers.one': { de: '1 Ebene', en: '1 layer' },
   'layers.hint': { de: 'Mischen: wie sich die gewählte Ebene mit den Ebenen darunter mischt (Modus, Deckkraft, Maske) und ob sie der gemeinsamen Ansicht folgt. Reihenfolge, Sichtbarkeit, Solo und Löschen stehen im Stapel oben im Bedienfeld.', en: 'Blend: how the selected layer blends with the layers below it (mode, opacity, mask) and whether it follows the shared view. Order, visibility, solo and removal live in the stack at the top of the panel.' },
@@ -11228,7 +11237,7 @@ function liveWechseln(k, fertig = false) {   // Ebene k rechnet ab jetzt: Textur
   else { fractalDirty = true; hasImage = true; window.ebenenProtokoll.push('grund ' + (k + 1)); }
   colorDirty = true; lastStatusKey = '';
 }
-window.ebenenStand = () => ({ renderEbene, ebeneAktiv, phase, glattStand, aaEff, aaOn, tiles: tiles.length, tilesL0, tileIdx, zeigerAktiv, ebenen: ebenen.map(e => ({ frisch: !!e.frisch, glattOffen: !!e.glattOffen, sichtbar: e.sichtbar, solo: e.solo, verbunden: e.verbunden, modus: e.modus, deck: e.deck, name: e.name })) });   // Testhaken (Cypress): Stand der Ebenenschleife
+window.ebenenStand = () => ({ renderEbene, ebeneAktiv, phase, glattStand, aaEff, aaOn, tiles: tiles.length, tilesL0, tileIdx, zeigerAktiv, colorDirty, rafId, ebenen: ebenen.map(e => ({ frisch: !!e.frisch, glattOffen: !!e.glattOffen, sichtbar: e.sichtbar, solo: e.solo, verbunden: e.verbunden, modus: e.modus, deck: e.deck, name: e.name })) });   // Testhaken (Cypress): Stand der Ebenenschleife
 function liveZurueck() { if (renderEbene !== ebeneAktiv && ebenen[ebeneAktiv]) liveWechseln(ebeneAktiv, !ebeneVeraltet(ebeneAktiv)); }   // Bedienung: die gewählte Ebene ist wieder dran
 function ebenenWeiter() {   // die rechnende Ebene ist fertig: ihre Farbe sichern, dann die nächste veraltete rechnen (oder zurück zur gewählten)
   if (glattStand === 'wartet') return;   // die Puffer der adaptiven Glättung entstehen gerade; aaSetup beginnt danach die Verfeinerung
@@ -11726,7 +11735,7 @@ if (!consent) showConsent(); else if (consent.marketing) loadMarketingPixels();
 //  Bedienfeld
 // ============================================================
 // Bereiche: die Leiste am rechten Rand zeigt immer genau einen; die Statuszeile bleibt darunter sichtbar
-const PANES = [['motiv', 'misc.subject'], ['farbe', 'colour.colour'], ['palette', 'pane.palette'], ['qualitaet', 'quality.quality'], ['ebenen', 'pane.layers'], ['nach', 'pane.post'], ['technik', 'technical.technical']];   // die ersten vier gehören der gewählten Fraktal-Ebene, dann der Mischer, dann das Bild
+const PANES = [['motiv', 'misc.subject'], ['farbe', 'colour.colour'], ['texturen', 'pane.textures'], ['palette', 'pane.palette'], ['qualitaet', 'quality.quality'], ['ebenen', 'pane.layers'], ['nach', 'pane.post'], ['technik', 'technical.technical']];   // die ersten vier gehören der gewählten Fraktal-Ebene, dann der Mischer, dann das Bild
 const mobileNarrow = () => window.matchMedia('(max-width: 640px)').matches;   // Handy: Reiter unten statt Leiste rechts
 let curPane = 'motiv';
 function setPane(name, open = true) {
@@ -11895,6 +11904,7 @@ function syncFarbUI() {   // Bereich Farbe: was je nach Familie, Formel und Fär
   $('statTitel').hidden = $('streifenRow').hidden && $('vorlaufRow').hidden && $('gewichtRow').hidden && $('spiraleRow').hidden;   // Überschrift nur, wenn darunter etwas steht
   const belegtBis = texturBelegt();   // Stapel: Platz 1 überall, wo eine Textur möglich ist; dahinter die belegten Plätze (auch ausgeschaltete) und ein freier
   $('texTitel').hidden = !texturMoeglich() || belegtBis === 0;
+  { const texOk = texturMoeglich(); $('railTexturen').hidden = !texOk; $('tabTexturen').hidden = !texOk; $('pane-texturen').classList.toggle('leer', !texOk); if (!texOk && curPane === 'texturen') setPane('farbe', false); }   // ohne Texturen (Newton, Lyapunov, Punktwolken …) gibt es den Bereich nicht
   $('texOptionen').hidden = $('texTitel').hidden;   // die Zusatzoptionen gehören zum Stapel   // Überschrift des Abschnitts: erst, wenn der Stapel etwas enthält (leer reicht die Zeile „Textur hinzufügen“)
   for (let n = 1; n <= TEX_SLOTS; n++) {
     const e = texElemente(n), sl = texSlot(n), zeigen = n === 1 ? texturMoeglich() : (texturMoeglich() && belegtBis > 0 && n <= belegtBis + 1), belegt = sl.art !== 0, zu = belegt && !!texZu[n];
@@ -15408,7 +15418,7 @@ const LEGAL = {
     <p>Ein Sammler rechnet je Bahnschritt erst die Zustandszeile <code>s = …</code>, dann den Wert; die Zusammenfassung (Mittel, Minimum, Maximum, Summe, letzter Wert, Schritt des Minimums) macht daraus einen Wert je Bildpunkt, gefärbt wie das Streifenmittel, innen wie außen. Gewichtung und Abklingen gelten für das Mittel; als Textur wird ein Wert zwischen 0 und 1 erwartet.</p>
     <p>Die eigene Formel rechnet in fp32 (Zoom bis 10<sup>5</sup>); Faltung, Gedächtnis und Start im Bildpunkt wirken wie bei den anderen direkten Formeln, die Ableitungen für Abstandsschätzung und Beleuchtung entstehen von selbst. Beispiele: <code>cosh(z) + c</code>, <code>sin(z)^2 + c</code>, <code>z^2 + c/z</code> mit Start im Bildpunkt; Sammler <code>min(|z - 1|, |z + 1|)</code> und <code>|re z im z|</code> (je Minimum); Abbildung <code>c/(1 + c^2)</code>. Mehr dazu in <code>docs/expressions.md</code> im Quelltext.</p>
     <h3>Ebenen</h3>
-    <p>Mehrere Fraktale übereinander: der Ebenenstapel oben im Bedienfeld wählt, welche Ebene die Bereiche Motiv, Farbe, Palette und Qualität bearbeiten („+“ legt eine Kopie darüber an, „×“ löscht die gewählte). Der Bereich „Mischen“ gehört der gewählten Ebene: Reihenfolge, Sichtbarkeit, Solo, Mischmodus (Multiplizieren, Negativ multiplizieren, Überlagern, Differenz, Farbton, Luminanz …), Deckkraft und Maske je Ebene, dazu ob die Ebene der gemeinsamen Ansicht folgt oder ihre eigene Mitte und ihren eigenen Zoom hat. Im Stapelkopf schaltet „Bewegen“ zwischen allen Ebenen und nur der gewählten; Auge und S in der Stapelzeile blenden eine Ebene aus oder zeigen nur sie. Eine gelöste Ebene lässt sich im Mischer fein zum Grund justieren (Zoomfaktor, Versatz in Pixeln, Drehung, Differenz zum Ausrichten); Umschalt, Strg und Alt machen Rad, Ziehen und Tasten fein. Die unterste Ebene ist der Grund, die Nachbearbeitung wirkt auf das Ergebnis. Jede Ebene glättet mit ihren eigenen Einstellungen (Verfahren, Proben, Toleranz), die Auflösung gilt fürs ganze Bild. Mehr dazu in <code>docs/layers.md</code> im Quelltext.</p>
+    <p>Mehrere Fraktale übereinander: der Ebenenstapel oben im Bedienfeld wählt, welche Ebene die Bereiche Motiv, Farbe, Texturen, Palette und Qualität bearbeiten („+“ legt eine Kopie darüber an, „×“ löscht die gewählte). Der Bereich „Mischen“ gehört der gewählten Ebene: Reihenfolge, Sichtbarkeit, Solo, Mischmodus (Multiplizieren, Negativ multiplizieren, Überlagern, Differenz, Farbton, Luminanz …), Deckkraft und Maske je Ebene, dazu ob die Ebene der gemeinsamen Ansicht folgt oder ihre eigene Mitte und ihren eigenen Zoom hat. Im Stapelkopf schaltet „Bewegen“ zwischen allen Ebenen und nur der gewählten; Auge und S in der Stapelzeile blenden eine Ebene aus oder zeigen nur sie. Eine gelöste Ebene lässt sich im Mischer fein zum Grund justieren (Zoomfaktor, Versatz in Pixeln, Drehung, Differenz zum Ausrichten); Umschalt, Strg und Alt machen Rad, Ziehen und Tasten fein. Die unterste Ebene ist der Grund, die Nachbearbeitung wirkt auf das Ergebnis. Jede Ebene glättet mit ihren eigenen Einstellungen (Verfahren, Proben, Toleranz), die Auflösung gilt fürs ganze Bild. Mehr dazu in <code>docs/layers.md</code> im Quelltext.</p>
     <h3>Quelltext</h3>
     <p>Der vollständige Quelltext liegt auf GitHub: <a href="https://github.com/tobias74/fractal-renderer" target="_blank" rel="noopener">github.com/tobias74/fractal-renderer</a>. Klonen und selbst ausprobieren.</p>` },
   impressum: { eyebrow: 'Rechtliches', title: 'Impressum', html: `
@@ -15733,7 +15743,7 @@ const LEGAL_EN = {
     <p>Each orbit step, a collector first evaluates the state line <code>s = …</code>, then the value; the aggregation (mean, minimum, maximum, sum, last value, step of the minimum) turns the steps into one value per pixel, coloured like the stripe average, inside as well as outside. Weighting and decay apply to the mean; as a texture a value between 0 and 1 is expected.</p>
     <p>The custom formula is computed in fp32 (zoom up to 10<sup>5</sup>); fold per step, memory and start at the pixel apply as for the other direct formulas, and the derivatives for distance estimation and lighting are generated automatically. Examples: <code>cosh(z) + c</code>, <code>sin(z)^2 + c</code>, <code>z^2 + c/z</code> with start at the pixel; collectors <code>min(|z - 1|, |z + 1|)</code> and <code>|re z im z|</code> (minimum each); mapping <code>c/(1 + c^2)</code>. More in <code>docs/expressions.md</code> in the source code.</p>
     <h3>Layers</h3>
-    <p>Several fractals on top of each other: the layer stack at the top of the panel selects which layer the panels Motif, Colour, Palette and Quality edit (“+” adds a copy above, “×” removes the selected one). The “Blend” panel belongs to the selected layer: order, visibility, solo, blend mode (multiply, screen, overlay, difference, hue, luminosity …), opacity and mask per layer, and whether a layer follows the shared view or keeps its own centre and zoom. In the stack header, “Move” switches between all layers and only the selected one; the eye and S in a stack row hide a layer or show only it. An unlinked layer can be aligned finely to the ground in the mixer (zoom factor, offset in pixels, rotation, difference view for aligning); Shift, Ctrl and Alt make wheel, drag and keys fine. The bottom layer is the ground; post-processing works on the result. Each layer smooths with its own settings (method, samples, tolerance); the resolution applies to the whole image. More in <code>docs/layers.md</code> in the source code.</p>
+    <p>Several fractals on top of each other: the layer stack at the top of the panel selects which layer the panels Motif, Colour, Textures, Palette and Quality edit (“+” adds a copy above, “×” removes the selected one). The “Blend” panel belongs to the selected layer: order, visibility, solo, blend mode (multiply, screen, overlay, difference, hue, luminosity …), opacity and mask per layer, and whether a layer follows the shared view or keeps its own centre and zoom. In the stack header, “Move” switches between all layers and only the selected one; the eye and S in a stack row hide a layer or show only it. An unlinked layer can be aligned finely to the ground in the mixer (zoom factor, offset in pixels, rotation, difference view for aligning); Shift, Ctrl and Alt make wheel, drag and keys fine. The bottom layer is the ground; post-processing works on the result. Each layer smooths with its own settings (method, samples, tolerance); the resolution applies to the whole image. More in <code>docs/layers.md</code> in the source code.</p>
     <h3>Source code</h3>
     <p>The complete source code is on GitHub: <a href="https://github.com/tobias74/fractal-renderer" target="_blank" rel="noopener">github.com/tobias74/fractal-renderer</a>. Clone it and try it yourself.</p>` },
   impressum: { eyebrow: 'Legal', title: 'Imprint', html: `

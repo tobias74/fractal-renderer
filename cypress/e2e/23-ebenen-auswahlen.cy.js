@@ -17,7 +17,7 @@ describe('Ebenen: alle Auswahlen und Kombinationen', () => {
 
   it('Maskenarten: jede Art auf der zweiten Ebene, mit und ohne Umkehren, rendert fertig und steht im Link; „Innen“ ändert das Bild', () => {
     cy.visitApp(ZWEI, spion); fertig(); cy.pane('ebenen');
-    cy.shotStats('ea-maske-ohne').then(ohne => {
+    cy.gezeichnet(); cy.shotStats('ea-maske-ohne').then(ohne => {
       optionen('ebM2_art').then(arten => {
         expect(arten.filter(a => a !== '0'), 'Maskenarten der Ebenen (ohne Kanten und Ebenenzustand)').to.have.length(7);
         for (const art of arten.filter(a => a !== '0')) {
@@ -28,9 +28,9 @@ describe('Ebenen: alle Auswahlen und Kombinationen', () => {
           cy.get('#ebM2_inv').uncheck(); cy.wait(200);
         }
         cy.pickOption('ebM2_art', 1); cy.wait(300); uebersetzt();
-        cy.shotStats('ea-maske-innen').then(innen => anders(ohne, innen, 'Innen-Maske ändert das Bild'));
+        cy.gezeichnet(); cy.shotStats('ea-maske-innen').then(innen => anders(ohne, innen, 'Innen-Maske ändert das Bild'));
         cy.pickOption('ebM2_art', 0); cy.wait(600); cy.expectHash('lu2', null);
-        cy.shotStats('ea-maske-weg').then(weg => gleich(weg, ohne, 'ohne Maske wie zuvor'));
+        cy.gezeichnet(); cy.shotStats('ea-maske-weg').then(weg => gleich(weg, ohne, 'ohne Maske wie zuvor'));
       });
     });
     cy.get('@konsole').should('not.have.been.called');
@@ -45,10 +45,10 @@ describe('Ebenen: alle Auswahlen und Kombinationen', () => {
     cy.get('#state').invoke('text').should('match', /Fertig/); cy.get('@konsole').should('not.have.been.called');
     for (let m = 0; m < 18; m++) {
       cy.visitApp(`mode=mandel&l2=f%3D1&lm2=${m}:0.6:1:0:1:&la=2`); fertig();
-      cy.shotStats('ea-modus-' + m).then(gpu => {
+      cy.gezeichnet(); cy.shotStats('ea-modus-' + m).then(gpu => {
         cy.visitApp(`mode=mandel&l2=f%3D1&lm2=${m}:0.6:1:0:1:&la=2`, { storage: { 'fractal.renderer': 'webgl' } }); fertig();
         cy.get('#badge').should('contain.text', 'WebGL');
-        cy.shotStats('ea-modus-' + m + '-gl').then(gl => gleich(gpu, gl, 'Modus ' + m + ': WebGL 2 wie WebGPU', 12));
+        cy.gezeichnet(); cy.shotStats('ea-modus-' + m + '-gl').then(gl => gleich(gpu, gl, 'Modus ' + m + ': WebGL 2 wie WebGPU', 12));
       });
     }
   });
@@ -147,9 +147,9 @@ describe('Ebenen: alle Auswahlen und Kombinationen', () => {
     cy.get('#abbildung').should('have.value', '7');
     cy.get('#stWahl1').click(); cy.wait(600); cy.get('#formula').should('have.value', '37');
     cy.get('@konsole').should('not.have.been.called');
-    cy.shotStats('ea-ausdruecke').then(gpu => {
+    cy.gezeichnet(); cy.shotStats('ea-ausdruecke').then(gpu => {
       cy.visitApp(link, { storage: { 'fractal.renderer': 'webgl' } }); alleFertig().then(ms => expect(ms).to.be.greaterThan(0));
-      cy.shotStats('ea-ausdruecke-gl').then(gl => gleich(gpu, gl, 'WebGL 2 rechnet die eigenen Ausdrücke auf allen Ebenen wie WebGPU', 12));
+      cy.gezeichnet(); cy.shotStats('ea-ausdruecke-gl').then(gl => gleich(gpu, gl, 'WebGL 2 rechnet die eigenen Ausdrücke auf allen Ebenen wie WebGPU', 12));
     });
   });
 });
