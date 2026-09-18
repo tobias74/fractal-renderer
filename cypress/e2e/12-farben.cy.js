@@ -137,7 +137,7 @@ describe('Farbe und Farbschema-Editor', () => {
   });
 
   it('Verläufe Relief, Doppelt logarithmisch und Logarithmisch + Relief: Adresse, Neurender, andere Bilder', () => {
-    cy.get('#mapping option').should('have.length', 25);   // 24 einwertige (mit Kurve, Ursprungsnähe, Gesamtdrehung, Periodengebiete, Spiralfalle, logmap, äußerer Winkel) plus „Werte kombinieren“
+    cy.get('#mapping option').should('have.length', 26);   // 25 einwertige (mit dem eigenen Sammler) plus „Werte kombinieren“ (mit Kurve, Ursprungsnähe, Gesamtdrehung, Periodengebiete, Spiralfalle, logmap, äußerer Winkel) plus „Werte kombinieren“
     cy.rerender(() => cy.pickOption('mapping', 2));
     cy.get('#logStufenRow').should('not.have.attr', 'hidden');       // die Stufen gehören zur logarithmischen Färbung
     for (const st of [2, 3, 4, 5, 6, 10]) {                          // früher fünf eigene Färbungen, heute ein Regler (bis 10)
@@ -951,8 +951,8 @@ describe('Färbungen nach Bahnstatistik', () => {
     const B = 'mode=mandel&re=-0.9&im=0.6&z=1&it=400';
     const deutlich = (a, b, text) => cy.task('pngDiff', { a: a.file, b: b.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, text).to.be.greaterThan(1.5));   // leiser als „anders“: manche Arten zeichnen fein
     cy.visitApp(B);
-    cy.get('#textur option').should('have.length', 22);   // Keine und 21 Arten (mit der Karte)
-    cy.get('#textur4 option').should('have.length', 22);
+    cy.get('#textur option').should('have.length', 23);   // Keine und 22 Arten (mit der Karte und dem eigenen Ausdruck)
+    cy.get('#textur4 option').should('have.length', 23);
     cy.shotStats('arten-ohne').then(ohne => {
       for (const art of [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]) {
         cy.visitApp(B + '&tx=' + art + '&ts=0.8');
