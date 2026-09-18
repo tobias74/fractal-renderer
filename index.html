@@ -727,7 +727,7 @@
       border: 0; background: none; color: var(--muted); cursor: pointer; font: 500 11px var(--font-ui); letter-spacing: .02em;
     }
     .tabbar .ico { display: grid; place-items: center; width: 100%; max-width: 52px; height: 28px; border-radius: 14px; transition: background-color .15s ease, color .15s ease; }
-    .appbar-save { display: grid; place-items: center; width: 40px; height: 40px; border: 0; background: none; color: var(--accent); cursor: pointer; margin-left: auto; }   /* Speichern am Handy in der Kopfzeile, nicht mehr in den Reitern */
+    .appbar-save { display: grid; place-items: center; width: 40px; height: 40px; border: 0; background: none; color: var(--accent); cursor: pointer; margin-left: auto; pointer-events: auto; }   /* die Kopfzeile selbst lässt Zeigerereignisse durch */   /* Speichern am Handy in der Kopfzeile, nicht mehr in den Reitern */
     .appbar .m-status { margin-left: 6px; }
     .tabbar button.on { color: var(--accent); }
     .tabbar button.on .ico { background: rgba(var(--accent-rgb), .16); }
@@ -1178,6 +1178,27 @@
         <input id="abzug" type="range" min="0" max="2" step="0.01" value="0">
       </div>
       <div class="grid2">
+      <h2 class="sec-title stat-titel" id="statTitel" data-i18n="colour.orbit-statistics" hidden></h2>
+      <div id="streifenRow" hidden>
+        <div class="lbl wertzeile"><label for="streifen" data-i18n-title="colour.stripes-title" data-i18n="colour.stripes"></label><input class="val mono wert" id="streifenVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+        <input id="streifen" type="range" min="1" max="16" step="1" value="5">
+      </div>
+      <div id="vorlaufRow" hidden>
+        <div class="lbl wertzeile"><label for="vorlauf" data-i18n-title="colour.skip-title" data-i18n="colour.skip"></label><input class="val mono wert" id="vorlaufVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+        <input id="vorlauf" type="range" min="0" max="1000" step="1" value="0">
+      </div>
+      <div id="gewichtRow" hidden>
+        <div class="lbl wertzeile"><label for="gewicht" data-i18n-title="colour.weighting-title" data-i18n="colour.weighting"></label><input class="val mono wert" id="gewichtVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+        <input id="gewicht" type="range" min="0" max="4" step="0.1" value="0">
+      </div>
+      <div id="abklingRow" hidden>
+        <div class="lbl wertzeile"><label for="abklingen" data-i18n-title="colour.decay-title" data-i18n="colour.decay"></label><input class="val mono wert" id="abklingenVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+        <input id="abklingen" type="range" min="0" max="0.5" step="0.005" value="0">
+      </div>
+      <div id="spiraleRow" hidden>
+        <div class="lbl wertzeile"><label for="spirale" data-i18n-title="colour.spiral-winding-title" data-i18n="colour.spiral-winding"></label><input class="val mono wert" id="spiraleVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+        <input id="spirale" type="range" min="0.05" max="1" step="0.01" value="0.2">
+      </div>
         <div><div class="lbl"><label for="glowMode" data-i18n="colour.edge-lines"></label></div>
           <select id="glowMode">
             <option value="0" data-i18n="colour.off"></option>
@@ -1528,27 +1549,6 @@
       <div id="texOptionen" class="tex-optionen" hidden>
         <div class="lbl wertzeile"><label for="texVerbund" data-i18n-title="colour.trap-fusion-title" data-i18n="colour.trap-fusion"></label><input class="val mono wert" id="texVerbundVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="texVerbund" type="range" min="0" max="2" step="0.01" value="0">
-      </div>
-      <h2 class="sec-title stat-titel" id="statTitel" data-i18n="colour.orbit-statistics" hidden></h2>
-      <div id="streifenRow" hidden>
-        <div class="lbl wertzeile"><label for="streifen" data-i18n-title="colour.stripes-title" data-i18n="colour.stripes"></label><input class="val mono wert" id="streifenVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
-        <input id="streifen" type="range" min="1" max="16" step="1" value="5">
-      </div>
-      <div id="vorlaufRow" hidden>
-        <div class="lbl wertzeile"><label for="vorlauf" data-i18n-title="colour.skip-title" data-i18n="colour.skip"></label><input class="val mono wert" id="vorlaufVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
-        <input id="vorlauf" type="range" min="0" max="1000" step="1" value="0">
-      </div>
-      <div id="gewichtRow" hidden>
-        <div class="lbl wertzeile"><label for="gewicht" data-i18n-title="colour.weighting-title" data-i18n="colour.weighting"></label><input class="val mono wert" id="gewichtVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
-        <input id="gewicht" type="range" min="0" max="4" step="0.1" value="0">
-      </div>
-      <div id="abklingRow" hidden>
-        <div class="lbl wertzeile"><label for="abklingen" data-i18n-title="colour.decay-title" data-i18n="colour.decay"></label><input class="val mono wert" id="abklingenVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
-        <input id="abklingen" type="range" min="0" max="0.5" step="0.005" value="0">
-      </div>
-      <div id="spiraleRow" hidden>
-        <div class="lbl wertzeile"><label for="spirale" data-i18n-title="colour.spiral-winding-title" data-i18n="colour.spiral-winding"></label><input class="val mono wert" id="spiraleVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
-        <input id="spirale" type="range" min="0.05" max="1" step="0.01" value="0.2">
       </div>
     </section>
     </div>
@@ -14921,7 +14921,8 @@ let posterUrl = null;
 // Der Export glättet genau wie der Bildschirm: dasselbe Verfahren, dieselben Werte. Eine eigene Wahl im Dialog gäbe
 // es nicht, weil dieselbe Zahl in beiden Welten etwas anderes bedeutet (der Bildschirm hat ein Speicherbudget, der
 // Export rechnet Kachel für Kachel), und weil man sonst etwas anderes bekäme als das, was man beurteilt hat.
-const exportAdaptiv = () => aaAdaptiv() && aaOn && !!(renderer && renderer.aa);
+const exportAdaptiv = () => aaAdaptiv() && !!renderer;                    // nach dem Verfahren; die Puffer legt exportPoster bei Bedarf an
+const exportPufferBereit = () => aaOn && !!(renderer && renderer.aa);   // die adaptiven Puffer stehen (nach dem Umstellen entstehen sie asynchron)
 // Im adaptiven Verfahren ist aaEff immer 1 (im Raster liegt nur Ebene 0). Sind die Puffer noch nicht bereit, wäre ein
 // Export mit aaEff also ganz ohne Glättung; dann lieber ein Raster, das dem Deckel am Bildschirm entspricht.
 const exportRaster = () => (aaAdaptiv() ? clamp(Math.round(Math.sqrt(aaParams().maxN)), 2, 16) : (aaEff || S.aa));
@@ -15233,7 +15234,8 @@ function nachgeben() {
 async function exportPoster() {
   if (posterIstSchirm()) return saveScreenShot();
   const [Wp, Hp] = posterDims();
-  const adaptiv = exportAdaptiv();                       // dasselbe Verfahren wie am Bildschirm
+  let adaptiv = exportAdaptiv();                         // dasselbe Verfahren wie am Bildschirm
+  if (adaptiv && !exportPufferBereit()) { await aaSetup(); adaptiv = exportPufferBereit(); }   /* Puffer fehlen noch (gerade umgestellt oder im Aufbau): erst anlegen; scheitert das, rechnet ein Raster wie am Deckel */
   const aa = adaptiv ? 1 : clamp(exportRaster(), 1, 16);
   const jpeg = posterFmt.value === 'jpg';
   const maxIter = currentMaxIter();

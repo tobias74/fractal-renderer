@@ -796,7 +796,7 @@ describe('Färbungen nach Bahnstatistik', () => {
         cy.get('#texStaerke').should('have.value', '0.2');
         cy.expectHash('ts', '0.2');
         cy.wait(400);
-        cy.shotStats('textur-schwach').then(schwach => anders(mit, schwach, 'weniger Stärke, anderes Bild'));
+        cy.gezeichnet(); cy.shotStats('textur-schwach').then(schwach => anders(mit, schwach, 'weniger Stärke, anderes Bild'));
         cy.rerender(() => cy.pickOption('textur', 0));                    // aus: wieder das alte Bild
         cy.expectHash('tx', null);
         cy.get('#glowMode').parent().should('not.have.attr', 'hidden');
@@ -1314,7 +1314,7 @@ describe('Farbe: Editor-Ergänzungen, Dichte anpassen, Innenfarbe, Gestuft', () 
   it('Anordnung: Abhängigkeiten laufen nur nach unten (Anker vor Dichte, Wandern vor Versatz, Automatik vor Iterationen, Textur vor ihren Reglern)', () => {
     cy.visitApp();
     const vor = (a, b) => cy.window().then(w => { const A = w.document.getElementById(a), B = w.document.getElementById(b); expect(A.compareDocumentPosition(B) & 4, a + ' steht vor ' + b).to.eq(4); });
-    vor('colAnchor', 'density'); vor('animate', 'offset'); vor('iterAuto', 'iterRange'); vor('textur', 'streifen'); vor('textur', 'gewicht'); vor('textur', 'glowMode'); vor('interior', 'innenFarbe'); vor('mapping', 'gestuft');
+    vor('colAnchor', 'density'); vor('animate', 'offset'); vor('iterAuto', 'iterRange'); vor('mapping', 'streifen'); vor('mapping', 'gewicht'); vor('mapping', 'textur'); vor('interior', 'innenFarbe'); vor('mapping', 'gestuft');
   });
 });
 
@@ -1326,7 +1326,7 @@ describe('Texturmasken: berechnete Auswahl je Platz', () => {
     cy.visitApp(B);
     cy.shotStats('tm-ohne').then(ohne => {
       cy.visitApp(B + '&tu=m3,1,0,0.25,0,20');   // umgekehrt: die Textur nur, wo die Fluchtzeit über 20 liegt (bei Zoom 1 ein schmaler Saum)
-      cy.pane('farbe');
+      cy.pane('texturen');
       cy.get('#texM1_art').should('have.value', '3'); cy.get('#texM1_1').should('have.value', '20'); cy.get('#texM1_8').should('have.value', '0.25');
       cy.get('#texM1_inv').should('be.checked'); cy.get('#texM1_an').should('be.checked');
       cy.shotStats('tm-inv').then(inv => {
@@ -1464,7 +1464,7 @@ describe('Spiralfalle, Texturen innen und Fallenverbund', () => {
 
   it('Fallenverbund: Punkt- und Ringfalle mit weichem Minimum ergeben ein anderes Bild; Regler mit Wertfeld, Link (tv)', () => {
     cy.visitApp(B + '&tx=19&t2=15&t2s=0.6');
-    cy.pane('farbe');
+    cy.pane('texturen');
     cy.get('#texVerbund').should('have.value', '0');
     cy.shotStats('verbund-ohne').then(ohne => {
       cy.get('#texVerbundVal').clear().type('0.5{enter}');
@@ -1474,7 +1474,7 @@ describe('Spiralfalle, Texturen innen und Fallenverbund', () => {
       cy.shotStats('verbund-mit').then(mit => diff(ohne, mit).then(d => expect(d.meanDiff, 'der Verbund verändert das Bild').to.be.greaterThan(5)));
     });
     cy.visitApp(B + '&tx=19&tv=0.5');   // eine Falle allein: der Verbund ist ihr eigenes Minimum, der Regler kommt aus dem Link
-    cy.pane('farbe');
+    cy.pane('texturen');
     cy.get('#texVerbund').should('have.value', '0.5');
     cy.get('#texVerbundVal').should('have.value', '0.5');
   });

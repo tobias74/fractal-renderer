@@ -34,6 +34,9 @@ module.exports = defineConfig({
         i18nPruefen() { return pruefeI18n(); },
         // Helligkeits-Statistik eines Bildbereichs (Anteile 0..1 der Bildbreite/-höhe) eines Screenshots
         pngStats({ file, region }) { return pngStats(fs.readFileSync(file), region); },
+        dateiDa(pfad) { return fs.existsSync(pfad); },   // Leistungs-Spec: gibt es schon Basiswerte?
+        // Leistungs-Spec: das Messwerkzeug ohne Shell starten (cy.exec scheitert unter Windows an einem SHELL-Pfad mit Leerzeichen)
+        leistung(argumente) { return new Promise(res => require('child_process').execFile(process.execPath, ['tools/leistung.js', ...argumente], { cwd: __dirname, maxBuffer: 64 << 20, timeout: 580000 }, (err, stdout, stderr) => res({ code: err ? (typeof err.code === 'number' ? err.code : 1) : 0, stdout: String(stdout || ''), stderr: String(stderr || '') }))); },
         // Mittlere Abweichung zweier Screenshots im Bereich
         pngDiff({ a, b, region }) { return pngDiff(fs.readFileSync(a), fs.readFileSync(b), region); },
         // Dateien im Download-Ordner, optional nach Muster gefiltert; wartet bis zu `timeoutMs` auf einen Treffer

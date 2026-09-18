@@ -18,3 +18,4 @@ cypress-12.log
 
 # Lokale Einstellungen der Entwicklungswerkzeuge
 .claude/
+cypress/leistung-lauf.json

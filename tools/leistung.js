@@ -14,7 +14,8 @@
 //   kalt      = erstes Bild nach dem Laden, so wie die App es stoppt (mit Übersetzen der Shader und ihrer Kachelplanung)
 //   warm      = Neurender nach einer Eingabe, so wie die App es stoppt (Vorschau, Kacheln, Bildtakt)
 //   Glättung  = Zeit der Glättung, nur bei Szenen mit Glättung
-//   Zug max   = größte Lücke zwischen zwei Bildern beim Ziehen mit gedrückter Maus (40 Schritte, 16 ms), Zug fps = Bildrate dabei
+//   Zug max   = größte Lücke zwischen zwei Bildern beim Ziehen mit gedrückter Maus (40 Schritte zu 4 px, 16 ms), Zug fps = Bildrate dabei
+//   Eilig max = dasselbe beim hastigen Ziehen (60 Schritte zu 12 px, 8 ms), Eilig fps = Bildrate dabei
 //   Ebenen-Szenen (ebenen2, ebenen3): kalt und warm sind die Zeit, bis alle Ebenen samt Glättung fertig sind; ältere Stände kennen sie nicht
 //   1. Bild   = vom Aufruf der Seite bis zum ersten Bild;  Laden = bis DOMContentLoaded (Lesen und Übersetzen der Seite)
 // Dazu eine JSON-Datei mit allen Einzelwerten.
@@ -158,12 +159,13 @@ async function main() {
   }
   // Ziehen: 40 Mausbewegungen im Abstand von 16 ms mit gedrückter Taste (echte Eingabe über das Protokoll), dazwischen die
   // Lücken zwischen den Bildern der Seite messen; danach warten, bis das Bild wieder fertig ist
-  async function ziehen(vorher) {
+  async function ziehen(vorher, schnell = false) {   // schnell: 60 Schritte zu 12 px im 8-ms-Takt (hastiges Ziehen), sonst 40 zu 4 px im 16-ms-Takt
     await js('window.__zug = { frames: 0, max: 0, last: performance.now(), lauf: true }; (function tick(t) { const g = window.__zug; g.frames++; g.max = Math.max(g.max, t - g.last); g.last = t; if (g.lauf) requestAnimationFrame(tick); })(performance.now()); true');
-    let x = 420, y = 380;
+    let x = schnell ? 300 : 420, y = schnell ? 300 : 380;
+    const schritte = schnell ? 60 : 40, dx = schnell ? 12 : 4, dy = schnell ? 6 : 2, takt = schnell ? 8 : 16;
     await send('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button: 'left', buttons: 1, clickCount: 1 });
     const t0 = Date.now();
-    for (let i = 0; i < 40; i++) { x += 4; y += 2; await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y, button: 'left', buttons: 1 }); await schlaf(16); }
+    for (let i = 0; i < schritte; i++) { x += dx; y += dy; await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y, button: 'left', buttons: 1 }); await schlaf(takt); }
     const dauer = Date.now() - t0;
     await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button: 'left', buttons: 0, clickCount: 1 });
     const g = await js('window.__zug.lauf = false; ({ frames: window.__zug.frames, max: window.__zug.max })');
@@ -185,7 +187,7 @@ async function main() {
   for (const szene of gewaehlt) {
     const zeile = { name: szene.name, was: szene.was, hash: szene.hash, staende: {} };
     const mitGlaettung = !!(szene.ls && szene.ls['fractal.aa'] && szene.ls['fractal.aa'] !== '1');
-    for (const st of staende) zeile.staende[st.name] = { kalt: [], warm: [], durchlauf: [], erstesBild: [], glaettung: [], laden: [], zugLuecke: [], zugFps: [], badge: '', groesse: '', hinweis: '', notizen: [] };
+    for (const st of staende) zeile.staende[st.name] = { kalt: [], warm: [], durchlauf: [], erstesBild: [], glaettung: [], laden: [], zugLuecke: [], zugFps: [], schnellLuecke: [], schnellFps: [], badge: '', groesse: '', hinweis: '', notizen: [] };
     for (let r = 0; r < RUNDEN; r++) {
       for (const st of staende) {
         const e = zeile.staende[st.name];
@@ -205,6 +207,7 @@ async function main() {
             e.warm.push(szene.ebenen ? Date.now() - tw : y.renderMs); /* bei Ebenen: vom Anstoß, bis alle Ebenen fertig sind */ if (mitGlaettung && y.refineMs > y.renderMs) e.glaettung.push(y.refineMs - y.renderMs); vorher = y.renderMs;
           }
           const zug = await ziehen(vorher); e.zugLuecke.push(zug.luecke); e.zugFps.push(zug.fps); if (zug.fertig) vorher = zug.fertig.renderMs;
+          const eilig = await ziehen(vorher, true); e.schnellLuecke.push(eilig.luecke); e.schnellFps.push(eilig.fps); if (eilig.fertig) vorher = eilig.fertig.renderMs;
           // reine Durchläufe: nur der Shader, ohne Planung – das ist die Zeit, die die Rechnung selbst braucht
           if (await js('typeof window.__leistungPass === "function"')) for (let p = 0; p < PASSES; p++) e.durchlauf.push(await js('window.__leistungPass()'));
         } catch (err) { e.notizen.push(`Runde ${r + 1}: ${err.message}`); }
@@ -222,13 +225,13 @@ async function main() {
 const f0 = v => Number.isFinite(v) ? Math.round(v).toString() : '–';
 function zeigeZeile(zeile, staende) {
   console.log(`\n${zeile.name}: ${zeile.was}`);
-  console.log('  Stand'.padEnd(12) + 'Renderer'.padEnd(9) + 'Leinwand'.padEnd(11) + 'Durchlauf'.padStart(10) + 'min'.padStart(6) + 'kalt'.padStart(7) + 'warm'.padStart(7) + 'Glättung'.padStart(10) + 'Zug max'.padStart(9) + 'Zug fps'.padStart(9) + '1. Bild'.padStart(9) + 'Laden'.padStart(7) + '   (ms)');
+  console.log('  Stand'.padEnd(12) + 'Renderer'.padEnd(9) + 'Leinwand'.padEnd(11) + 'Durchlauf'.padStart(10) + 'min'.padStart(6) + 'kalt'.padStart(7) + 'warm'.padStart(7) + 'Glättung'.padStart(10) + 'Zug max'.padStart(9) + 'Zug fps'.padStart(9) + 'Eilig max'.padStart(10) + 'Eilig fps'.padStart(10) + '1. Bild'.padStart(9) + 'Laden'.padStart(7) + '   (ms)');
   for (const st of staende) {
     const e = zeile.staende[st.name];
     if (e.hinweis) { console.log('  ' + st.name.padEnd(10) + '– ' + e.hinweis); continue; }
     const f1 = v => Number.isFinite(v) ? (v < 100 ? v.toFixed(1) : Math.round(v).toString()) : '–';
     console.log('  ' + st.name.padEnd(10) + e.badge.padEnd(9) + e.groesse.padEnd(11) + f1(median(e.durchlauf)).padStart(10) + f1(Math.min(...e.durchlauf)).padStart(6) + f0(median(e.kalt)).padStart(7) + f0(median(e.warm)).padStart(7)
-      + (e.glaettung.length ? f0(median(e.glaettung)) : '–').padStart(10) + (e.zugLuecke.length ? f0(median(e.zugLuecke)) : '–').padStart(9) + (e.zugFps.length ? f0(median(e.zugFps)) : '–').padStart(9) + f0(median(e.erstesBild)).padStart(9) + f0(median(e.laden)).padStart(7));
+      + (e.glaettung.length ? f0(median(e.glaettung)) : '–').padStart(10) + (e.zugLuecke.length ? f0(median(e.zugLuecke)) : '–').padStart(9) + (e.zugFps.length ? f0(median(e.zugFps)) : '–').padStart(9) + (e.schnellLuecke.length ? f0(median(e.schnellLuecke)) : '–').padStart(10) + (e.schnellFps.length ? f0(median(e.schnellFps)) : '–').padStart(10) + f0(median(e.erstesBild)).padStart(9) + f0(median(e.laden)).padStart(7));
     for (const n of e.notizen) console.log('             · ' + n);
   }
 }
