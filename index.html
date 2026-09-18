@@ -4652,24 +4652,20 @@ fn jFalt(z: vec2f, art: u32) -> mat2x2f {   // Jacobi der Faltung (für Abstand 
   }
 }
 fn nachFalt(w: vec2f, f: u32) -> vec2f {   // Nachfaltung der Betragsformeln nach der Potenz (Celtic: |Re|; Buffalo: |Re|, −|Im|)
-  switch f {
-    case 3u, 19u, 20u, 21u, 22u: { return vec2f(abs(w.x), w.y); }
-    case 4u: { return vec2f(abs(w.x), -abs(w.y)); }
-    default: { return w; }
-  }
+  if (f == 3u || f == 19u || f == 20u || f == 21u || f == 22u) { return vec2f(abs(w.x), w.y); }
+  if (f == 4u) { return vec2f(abs(w.x), -abs(w.y)); }
+  return w;
 }
 fn t1(z: vec2f, f: u32) -> vec2f {
-  switch f {
-    case 1u: { return abs(z); }
-    case 2u: { return vec2f(z.x, -z.y); }
-    case 5u: { return vec2f(abs(z.x), -z.y); }
-    case 6u: { return vec2f(z.x, -abs(z.y)); }
-    case 18u, 21u: { return vec2f(abs(z.x), z.y); }   // Heart, Celtic Heart: |x| + iy
-    case 19u: { return vec2f(z.x, -z.y); }   // Celtic Mandelbar: gespiegelt
-    case 20u: { return vec2f(abs(z.x), -z.y); }   // Perpendicular Celtic: |x| − iy
-    case 22u: { return vec2f(z.x, -abs(z.y)); }   // Perpendicular Buffalo: x − i|y|
-    default: { return z; }
-  }
+  if (f == 1u) { return abs(z); }
+  if (f == 2u) { return vec2f(z.x, -z.y); }
+  if (f == 5u) { return vec2f(abs(z.x), -z.y); }
+  if (f == 6u) { return vec2f(z.x, -abs(z.y)); }
+  if (f == 18u || f == 21u) { return vec2f(abs(z.x), z.y); }   // Heart, Celtic Heart: |x| + iy
+  if (f == 19u) { return vec2f(z.x, -z.y); }   // Celtic Mandelbar: gespiegelt
+  if (f == 20u) { return vec2f(abs(z.x), -z.y); }   // Perpendicular Celtic: |x| − iy
+  if (f == 22u) { return vec2f(z.x, -abs(z.y)); }   // Perpendicular Buffalo: x − i|y|
+  return z;
 }
 fn t1delta(Z: vec2f, d: vec2f, f: u32) -> vec2f {
   switch f {
@@ -4685,17 +4681,15 @@ fn t1delta(Z: vec2f, d: vec2f, f: u32) -> vec2f {
   }
 }
 fn j1(z: vec2f, f: u32) -> mat2x2f {
-  switch f {
-    case 1u: { return dg(sgn(z.x), sgn(z.y)); }
-    case 2u: { return dg(1.0, -1.0); }
-    case 5u: { return dg(sgn(z.x), -1.0); }
-    case 6u: { return dg(1.0, -sgn(z.y)); }
-    case 18u, 21u: { return dg(sgn(z.x), 1.0); }
-    case 19u: { return dg(1.0, -1.0); }
-    case 20u: { return dg(sgn(z.x), -1.0); }
-    case 22u: { return dg(1.0, -sgn(z.y)); }
-    default: { return dg(1.0, 1.0); }
-  }
+  if (f == 1u) { return dg(sgn(z.x), sgn(z.y)); }
+  if (f == 2u) { return dg(1.0, -1.0); }
+  if (f == 5u) { return dg(sgn(z.x), -1.0); }
+  if (f == 6u) { return dg(1.0, -sgn(z.y)); }
+  if (f == 18u || f == 21u) { return dg(sgn(z.x), 1.0); }
+  if (f == 19u) { return dg(1.0, -1.0); }
+  if (f == 20u) { return dg(sgn(z.x), -1.0); }
+  if (f == 22u) { return dg(1.0, -sgn(z.y)); }
+  return dg(1.0, 1.0);
 }
 fn t2delta(Q: vec2f, q: vec2f, f: u32) -> vec2f {
   switch f {
@@ -4706,12 +4700,10 @@ fn t2delta(Q: vec2f, q: vec2f, f: u32) -> vec2f {
   }
 }
 fn j2(q: vec2f, f: u32) -> mat2x2f {
-  switch f {
-    case 3u: { return dg(sgn(q.x), 1.0); }
-    case 4u: { return dg(sgn(q.x), -sgn(q.y)); }
-    case 19u, 20u, 21u, 22u: { return dg(sgn(q.x), 1.0); }
-    default: { return dg(1.0, 1.0); }
-  }
+  if (f == 3u) { return dg(sgn(q.x), 1.0); }
+  if (f == 4u) { return dg(sgn(q.x), -sgn(q.y)); }
+  if (f == 19u || f == 20u || f == 21u || f == 22u) { return dg(sgn(q.x), 1.0); }
+  return dg(1.0, 1.0);
 }
 
 // Zufallsversatz der adaptiven Glättung: gaußverteilt um die Pixelmitte (σ = P.extra.x, bei 3 σ abgeschnitten), aus einem
@@ -5089,12 +5081,36 @@ fn fsFast(pos: vec4f) -> vec4u {
       var Fm = dg(1.0, 1.0);
       var Gm = dg(1.0, 1.0);
       var stop = false;   // in WGSL verlässt break im switch nur den switch, nicht die Schleife: Abbruch danach
-      switch fs {
-        case 0u, 1u, 2u, 3u, 4u, 5u, 6u, 18u, 19u, 20u, 21u, 22u: {   // Polynomfamilie direkt (nur mit Hybrid-Folge): Faltung, Potenz, Nachfaltung
-          let tz = t1(z, fs); let w = cpow(tz, pw);
-          zn = nachFalt(w, fs) + c;
-          Fm = j2(w, fs) * M(f32(pw) * cpow(tz, pw - 1u)) * j1(z, fs);
+      if (fs <= 6u || (fs >= 18u && fs <= 22u)) {   // Polynomfamilie direkt (nur mit Hybrid-Folge): Faltung, Potenz, Nachfaltung — als if vor dem switch: ein case mit zwölf Werten übergeht ältere Shader-Compiler (Chrome 118) für alle Werte außer dem ersten
+        let tz = t1(z, fs); let w = cpow(tz, pw);
+        zn = nachFalt(w, fs) + c;
+        Fm = j2(w, fs) * M(f32(pw) * cpow(tz, pw - 1u)) * j1(z, fs);
+      }
+      if (fs == 35u || fs == 36u) {   // Newton bzw. Halley auf p(z) = Π (z − rₖ): u = p′/p = Σ 1/(z − rₖ), s = Σ 1/(z − rₖ)²   // als if vor dem switch (siehe Polynomfamilie)
+        let K = clamp(u32(P.opt2.w), 2u, 6u);
+        var u = vec2f(0.0); var sq = vec2f(0.0);
+        for (var k = 0u; k < K; k++) {
+          let r = select(P.wurzeln[k / 2u].zw, P.wurzeln[k / 2u].xy, (k & 1u) == 0u);
+          let q = cinv(z - r); u = u + q; sq = sq + cmul(q, q);
         }
+        let step = select(cmul(2.0 * u, cinv(cmul(u, u) + sq)), cinv(u), fs == 35u);   // Newton: 1/u; Halley: 2u/(u² + s)
+        zn = z - prm * step + c;
+        let mv = zn - z; let m2 = dot(mv, mv) / max(dot(zn, zn), 1.0);
+        if (m2 < 1.0e-10) {   // konvergiert: die nächste Nullstelle färbt, wie bei Newton/Nova
+          var best = 0u; var bd = 1.0e30;
+          for (var k = 0u; k < K; k++) { let r = select(P.wurzeln[k / 2u].zw, P.wurzeln[k / 2u].xy, (k & 1u) == 0u); let dd2 = dot(zn - r, zn - r); if (dd2 < bd) { bd = dd2; best = k; } }
+          root = best;
+          if (dot(c, c) > 0.0) { root = 0u; }        // Nova: ein Fixpunkt, keine Wurzeln zu unterscheiden
+          nu = f32(i) + 1.0 - log2(max(0.5 * log(max(m2, 1.0e-30)) / log(1.0e-5), 1.0)) * select(0.63092975, 1.0, fs == 35u);   // Halley: log₃, kubische Konvergenz
+          conv = true; escaped = true; stop = true;
+        }
+      }
+      if (fs == 29u || fs == 30u) {   // Barnsley 1 und 2: (z − 1)·c oder (z + 1)·c, je nach Vorzeichen (1: Re z; 2: Re z·Im c + Im z·Re c)   // als if vor dem switch (siehe Polynomfamilie)
+        let w = select(z.x, z.x * c.y + z.y * c.x, fs == 30u);
+        let kk = vec2f(prm, 0.0); let sv = select(z + kk, z - kk, w >= 0.0);   // Versatz k (Vorgabe 1)
+        zn = cmul(sv, c); Fm = M(c); Gm = M(sv);
+      }
+      switch fs {
         case 26u: { let z2 = cmul(z, z); let a = vec2f(prm, P.param2.x); zn = cmul(z2, z) + cmul(a, z2) + c; Fm = M(3.0 * z2 + 2.0 * cmul(a, z)); }   // Kubisch direkt
         case 27u: { let z2 = cmul(z, z); zn = cmul(z2, z) + cmul(c - one, z) - c; Fm = M(3.0 * z2 + c - one); }   // Ikenaga direkt
         case 28u: {   // Tschebyschow direkt: Tₙ über die Rekursion, Ableitung n·Uₙ₋₁
@@ -5174,25 +5190,6 @@ fn fsFast(pos: vec4f) -> vec4u {
           Fm = M(2.0 * cmul(g, gp));
           Gm = M(2.0 * cmul(g, cmul(den - num, cmul(idn, idn))));
         }
-        case 35u, 36u: {   // Newton bzw. Halley auf p(z) = Π (z − rₖ): u = p′/p = Σ 1/(z − rₖ), s = Σ 1/(z − rₖ)²
-          let K = clamp(u32(P.opt2.w), 2u, 6u);
-          var u = vec2f(0.0); var sq = vec2f(0.0);
-          for (var k = 0u; k < K; k++) {
-            let r = select(P.wurzeln[k / 2u].zw, P.wurzeln[k / 2u].xy, (k & 1u) == 0u);
-            let q = cinv(z - r); u = u + q; sq = sq + cmul(q, q);
-          }
-          let step = select(cmul(2.0 * u, cinv(cmul(u, u) + sq)), cinv(u), fs == 35u);   // Newton: 1/u; Halley: 2u/(u² + s)
-          zn = z - prm * step + c;
-          let mv = zn - z; let m2 = dot(mv, mv) / max(dot(zn, zn), 1.0);
-          if (m2 < 1.0e-10) {   // konvergiert: die nächste Nullstelle färbt, wie bei Newton/Nova
-            var best = 0u; var bd = 1.0e30;
-            for (var k = 0u; k < K; k++) { let r = select(P.wurzeln[k / 2u].zw, P.wurzeln[k / 2u].xy, (k & 1u) == 0u); let dd2 = dot(zn - r, zn - r); if (dd2 < bd) { bd = dd2; best = k; } }
-            root = best;
-            if (dot(c, c) > 0.0) { root = 0u; }        // Nova: ein Fixpunkt, keine Wurzeln zu unterscheiden
-            nu = f32(i) + 1.0 - log2(max(0.5 * log(max(m2, 1.0e-30)) / log(1.0e-5), 1.0)) * select(0.63092975, 1.0, fs == 35u);   // Halley: log₃, kubische Konvergenz
-            conv = true; escaped = true; stop = true;
-          }
-        }
         case 24u: {   // Magnet 2: ((z³ + 3(c−1)z + (c−1)(c−2)) / (3z² + 3(c−2)z + (c−1)(c−2) + 1))², konvergiert gegen 1
           let cm1 = c - one; let cm2 = c - vec2f(2.0, 0.0); let kk = cmul(cm1, cm2); let z2 = cmul(z, z);
           let num = cmul(z2, z) + 3.0 * cmul(cm1, z) + kk; let den = 3.0 * z2 + 3.0 * cmul(cm2, z) + kk + one;
@@ -5212,11 +5209,6 @@ fn fsFast(pos: vec4f) -> vec4u {
         case 25u: {   // Tetration: c^z = exp(z·ln c); Ableitung nach z: c^z·ln c, nach c: z·c^(z−1)
           let lc = clog(c); zn = cexp(cmul(z, lc));
           Fm = M(cmul(zn, lc)); Gm = M(cmul(z, cmul(zn, cinv(c))));
-        }
-        case 29u, 30u: {   // Barnsley 1 und 2: (z − 1)·c oder (z + 1)·c, je nach Vorzeichen (1: Re z; 2: Re z·Im c + Im z·Re c)
-          let w = select(z.x, z.x * c.y + z.y * c.x, fs == 30u);
-          let kk = vec2f(prm, 0.0); let sv = select(z + kk, z - kk, w >= 0.0);   // Versatz k (Vorgabe 1)
-          zn = cmul(sv, c); Fm = M(c); Gm = M(sv);
         }
         case 31u: {   // Barnsley 3: z² − 1, links der Achse zusätzlich c·Re z (nicht holomorph: Jacobi mit Spalte c)
           let z2 = cmul(z, z) - vec2f(prm, 0.0);   // Versatz k (Vorgabe 1)
