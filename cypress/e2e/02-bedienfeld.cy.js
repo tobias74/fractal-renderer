@@ -19,7 +19,7 @@ describe('Bedienfeld: Schublade und Bereichsleiste am PC', () => {
       expect(r.right, 'Leiste am rechten Rand').to.eq(1280);
       expect(r.width, 'Breite der Leiste').to.eq(RAIL);
     });
-    cy.get('#rail button[data-pane]').should('have.length', 7);   // Motiv, Farbe, Palette, Ebenen, Qualität, Nachbearbeitung, Technik
+    cy.get('#rail button[data-pane]').should('have.length', 7);   // Motiv, Farbe, Palette, Qualität, Ebenen, Nachbearbeitung, Technik
     cy.get('#rail button[data-pane="motiv"]').should('have.class', 'on');
     cy.get('#panelTab').should('be.visible').and('have.attr', 'aria-expanded', 'true');
     cy.get('#burger').then($b => { const b = $b[0].getBoundingClientRect(); expect(b.top).to.be.closeTo(14, 1); expect(b.left, 'Menü-Knopf links').to.be.closeTo(14, 1); });

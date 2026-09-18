@@ -1563,4 +1563,11 @@ describe('Abklingen der Bahnmittel', () => {
     cy.pane('farbe');
     cy.get('#abklingRow').should('have.attr', 'hidden');
   });
+
+  it('Texturplatz 2 bleibt im Link, wenn Platz 1 auf „Keine“ geht (der Shader rechnet ihn weiter)', () => {
+    cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&tx=1&t2=3'); cy.waitRender();
+    cy.expectHash('t2', '3');
+    cy.rerender(() => cy.pickOption('textur', 0));
+    cy.expectHash('tx', null); cy.expectHash('t2', '3');
+  });
 });

@@ -16,7 +16,7 @@ module.exports = defineConfig({
     screenshotOnRunFailure: true,
     defaultCommandTimeout: 10000,
     pageLoadTimeout: 60000,
-    retries: { runMode: 1, openMode: 0 },
+    retries: { runMode: 0, openMode: 0 },
     downloadsFolder: 'cypress/downloads',
     trashAssetsBeforeRuns: true,
     experimentalMemoryManagement: true,

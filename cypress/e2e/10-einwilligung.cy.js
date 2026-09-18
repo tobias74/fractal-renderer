@@ -64,6 +64,8 @@ describe('Cookie-Einwilligung', () => {
     cy.get('#consent').should('not.be.visible');
     cy.window().then(win => expect(win.fractalConsent.get()).to.include({ settings: true, marketing: false }));
     cy.waitRender();
+    cy.pickOption('cycleSel', '0'); cy.wait(300);
+    cy.window().then(win => { expect(win.localStorage.getItem('fractal.cycle'), 'Zykluserkennung gespeichert').to.eq('0'); expect(win.localStorage.getItem('fractal.palfilter'), 'Palettenfilter gespeichert').not.to.be.null; expect(win.localStorage.getItem('fractal.bla'), 'BLA gespeichert').not.to.be.null; });
     cy.pickOption('aaSel', 2);
     cy.window().then(win => expect(win.localStorage.getItem('fractal.aa')).to.eq('2'));
     cy.pickOption('cycleSel', '0');

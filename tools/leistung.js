@@ -14,6 +14,8 @@
 //   kalt      = erstes Bild nach dem Laden, so wie die App es stoppt (mit Übersetzen der Shader und ihrer Kachelplanung)
 //   warm      = Neurender nach einer Eingabe, so wie die App es stoppt (Vorschau, Kacheln, Bildtakt)
 //   Glättung  = Zeit der Glättung, nur bei Szenen mit Glättung
+//   Zug max   = größte Lücke zwischen zwei Bildern beim Ziehen mit gedrückter Maus (40 Schritte, 16 ms), Zug fps = Bildrate dabei
+//   Ebenen-Szenen (ebenen2, ebenen3): kalt und warm sind die Zeit, bis alle Ebenen samt Glättung fertig sind; ältere Stände kennen sie nicht
 //   1. Bild   = vom Aufruf der Seite bis zum ersten Bild;  Laden = bis DOMContentLoaded (Lesen und Übersetzen der Seite)
 // Dazu eine JSON-Datei mit allen Einzelwerten.
 const { spawn, execFileSync } = require('child_process');
@@ -38,6 +40,8 @@ const SZENEN = [
   { name: 'innen',    was: 'ganz im Inneren, jeder Punkt 5000 Iterationen, ohne Zyklenerkennung', hash: 'mode=mandel&re=-0.2&im=0&z=30&it=5000', ls: { 'fractal.cycle': '0' } },   // reiner Durchsatz
   { name: 'julia',    was: 'Julia-Menge, 500 Iterationen',                    hash: 'mode=julia&jre=-0.8&jim=0.156&it=500' },
   { name: 'relief',   was: 'Relief (Abstandsschätzung), Zoom 10⁶',            hash: `mode=mandel&${ORT}&z=1e6&it=1000&map=4` },
+  { name: 'ebenen2',  was: 'Zwei Fraktal-Ebenen (Mandelbrot, Burning Ship gemischt), Zoom 10⁵, 2000 Iterationen', hash: `mode=mandel&${ORT}&z=1e5&it=2000&l2=f%3D1%26it%3D2000&lm2=2:0.7:1:0:1:&la=2`, nurNeu: ['la=2'], ebenen: true },
+  { name: 'ebenen3',  was: 'Drei Fraktal-Ebenen (dazu Tricorn, Differenz), Zoom 10⁵, 2000 Iterationen',           hash: `mode=mandel&${ORT}&z=1e5&it=2000&l2=f%3D1%26it%3D2000&l3=f%3D2%26it%3D2000&lm2=2:0.7:1:0:1:&lm3=10:0.5:1:0:1:&la=3`, nurNeu: ['la=3'], ebenen: true },
   { name: 'histogramm', was: 'Histogramm-Färbung, Zoom 10⁶',                  hash: `mode=mandel&${ORT}&z=1e6&it=1000&map=3` },
   { name: 'streifen', was: 'Streifenmittel (Bahnstatistik), Zoom 10⁶',        hash: `mode=mandel&${ORT}&z=1e6&it=1000&map=19` },
   { name: 'dreieck',  was: 'Dreiecksmittel (Bahnstatistik), Zoom 10⁶',        hash: `mode=mandel&${ORT}&z=1e6&it=1000&map=20` },
@@ -120,7 +124,9 @@ async function main() {
     let z = window.__leistung ? window.__leistung() : null;
     if (!z) { const m = /Fertig · ([\\d.,]+) (ms|s)(?: \\+ ([\\d.,]+) (ms|s) Glättung)?/.exec(s);
       z = m ? { renderMs: zahl(m[1], m[2]), refineMs: m[3] ? zahl(m[1], m[2]) + zahl(m[3], m[4]) : -1, renderT0: performance.now() - zahl(m[1], m[2]) } : { renderMs: -1, refineMs: -1, renderT0: 0 }; }
-    return { fertig: /^Fertig/.test(s), status: s, renderMs: z.renderMs, refineMs: z.refineMs, renderT0: z.renderT0, badge: document.getElementById('badge').textContent,
+    const st = window.ebenenStand ? window.ebenenStand() : null;   // Fraktal-Ebenen (neuere Stände): erst fertig, wenn jede sichtbare Ebene gerechnet und geglättet ist
+    const alle = !st || st.ebenen.length <= 1 || (st.phase === 'idle' && st.renderEbene === st.ebeneAktiv && !st.ebenen.some((e, k) => { const solo = st.ebenen.findIndex(x => x.solo); return (solo >= 0 ? k === solo : e.sichtbar) && (!e.frisch || e.glattOffen); }));
+    return { fertig: /^Fertig/.test(s) && alle, status: s, renderMs: z.renderMs, refineMs: z.refineMs, renderT0: z.renderT0, jetzt: performance.now(), badge: document.getElementById('badge').textContent,
       breite: c ? c.width : 0, hoehe: c ? c.height : 0, hash: location.hash, fatal: !document.getElementById('fatal').hidden,
       params: (window.fractalState && window.fractalState.get().params) || '',
       dcl: performance.getEntriesByType('navigation')[0]?.domContentLoadedEventEnd || 0 }; })()`;
@@ -150,6 +156,20 @@ async function main() {
     }
     return null;
   }
+  // Ziehen: 40 Mausbewegungen im Abstand von 16 ms mit gedrückter Taste (echte Eingabe über das Protokoll), dazwischen die
+  // Lücken zwischen den Bildern der Seite messen; danach warten, bis das Bild wieder fertig ist
+  async function ziehen(vorher) {
+    await js('window.__zug = { frames: 0, max: 0, last: performance.now(), lauf: true }; (function tick(t) { const g = window.__zug; g.frames++; g.max = Math.max(g.max, t - g.last); g.last = t; if (g.lauf) requestAnimationFrame(tick); })(performance.now()); true');
+    let x = 420, y = 380;
+    await send('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button: 'left', buttons: 1, clickCount: 1 });
+    const t0 = Date.now();
+    for (let i = 0; i < 40; i++) { x += 4; y += 2; await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y, button: 'left', buttons: 1 }); await schlaf(16); }
+    const dauer = Date.now() - t0;
+    await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button: 'left', buttons: 0, clickCount: 1 });
+    const g = await js('window.__zug.lauf = false; ({ frames: window.__zug.frames, max: window.__zug.max })');
+    let fertig = null; try { fertig = await wartenBisFertig(vorher, 120000); } catch (e) { /* die Messung des Zugs zählt trotzdem */ }
+    return { luecke: g.max, fps: g.frames / (dauer / 1000), fertig };
+  }
   let ladungen = 0;
   async function laden(stand, szene) {
     const ls = Object.assign({ 'fractal.consent': JSON.stringify({ v: 2, ts: 1, settings: true, marketing: false }), 'fractal.lang': 'de', 'fractal.aa': '1', 'fractal.aamode': 'grid', 'fractal.quality': '1' }, szene.ls || {});
@@ -160,12 +180,12 @@ async function main() {
   }
 
   // Aufwärmen: einmal das Startbild jedes Stands, damit GPU, Chrome und der erste Gerätezugriff je Herkunft hinter uns liegen
-  for (const st of staende) await laden(st, SZENEN[0]);
+  for (const st of staende) { await laden(st, SZENEN[0]); const w = SZENEN.find(x => x.name === 'webgl'); if (w) { try { await laden(st, w); } catch (e) { /* ohne WebGL: egal */ } } }   // auch WebGL je Stand: die erste Nutzung im Prozess kostet Sekunden und träfe sonst nur den ersten Stand
   const ergebnis = { datum: new Date().toISOString(), rechner: os.hostname(), cpu: os.cpus()[0]?.model, fenster: BREITE + '×' + HOEHE, runden: RUNDEN, warm: WARM, staende: staende.map(s => s.name), szenen: [] };
   for (const szene of gewaehlt) {
     const zeile = { name: szene.name, was: szene.was, hash: szene.hash, staende: {} };
     const mitGlaettung = !!(szene.ls && szene.ls['fractal.aa'] && szene.ls['fractal.aa'] !== '1');
-    for (const st of staende) zeile.staende[st.name] = { kalt: [], warm: [], durchlauf: [], erstesBild: [], glaettung: [], laden: [], badge: '', groesse: '', hinweis: '', notizen: [] };
+    for (const st of staende) zeile.staende[st.name] = { kalt: [], warm: [], durchlauf: [], erstesBild: [], glaettung: [], laden: [], zugLuecke: [], zugFps: [], badge: '', groesse: '', hinweis: '', notizen: [] };
     for (let r = 0; r < RUNDEN; r++) {
       for (const st of staende) {
         const e = zeile.staende[st.name];
@@ -175,15 +195,16 @@ async function main() {
         // Kennt der Stand die Szene nicht (unbekannte Färbung, unbekannte Parameter), fehlt sie in seinem Zustand
         if (szene.nurNeu) { const ist = new URLSearchParams(z.params); for (const kv of szene.nurNeu) { const [k, v] = kv.split('='); if (ist.get(k) !== v) { e.hinweis = 'Stand kennt ' + kv + ' nicht'; break; } } }
         if (e.hinweis) continue;
-        e.kalt.push(z.renderMs); e.erstesBild.push(z.renderT0 + z.renderMs); e.laden.push(z.dcl);
+        e.kalt.push(szene.ebenen ? z.jetzt - z.dcl : z.renderMs); e.erstesBild.push(szene.ebenen ? z.jetzt : z.renderT0 + z.renderMs); e.laden.push(z.dcl);   // bei Ebenen: vom Ende des Ladens, bis alle Ebenen samt Glättung fertig sind (renderT0 gehört nur der zuletzt gerechneten Ebene)
         if (mitGlaettung && z.refineMs > z.renderMs) e.glaettung.push(z.refineMs - z.renderMs);
         let vorher = z.renderMs;
         try {
           for (let w = 0; w < WARM; w++) {
-            const y = await neuRendern(vorher);
+            const tw = Date.now(), y = await neuRendern(vorher);
             if (!y) { e.notizen.push(`Runde ${r + 1}: kein Neurender begonnen (Status „${(await js(LESEN)).status}“)`); break; }
-            e.warm.push(y.renderMs); if (mitGlaettung && y.refineMs > y.renderMs) e.glaettung.push(y.refineMs - y.renderMs); vorher = y.renderMs;
+            e.warm.push(szene.ebenen ? Date.now() - tw : y.renderMs); /* bei Ebenen: vom Anstoß, bis alle Ebenen fertig sind */ if (mitGlaettung && y.refineMs > y.renderMs) e.glaettung.push(y.refineMs - y.renderMs); vorher = y.renderMs;
           }
+          const zug = await ziehen(vorher); e.zugLuecke.push(zug.luecke); e.zugFps.push(zug.fps); if (zug.fertig) vorher = zug.fertig.renderMs;
           // reine Durchläufe: nur der Shader, ohne Planung – das ist die Zeit, die die Rechnung selbst braucht
           if (await js('typeof window.__leistungPass === "function"')) for (let p = 0; p < PASSES; p++) e.durchlauf.push(await js('window.__leistungPass()'));
         } catch (err) { e.notizen.push(`Runde ${r + 1}: ${err.message}`); }
@@ -201,13 +222,13 @@ async function main() {
 const f0 = v => Number.isFinite(v) ? Math.round(v).toString() : '–';
 function zeigeZeile(zeile, staende) {
   console.log(`\n${zeile.name}: ${zeile.was}`);
-  console.log('  Stand'.padEnd(12) + 'Renderer'.padEnd(9) + 'Leinwand'.padEnd(11) + 'Durchlauf'.padStart(10) + 'min'.padStart(6) + 'kalt'.padStart(7) + 'warm'.padStart(7) + 'Glättung'.padStart(10) + '1. Bild'.padStart(9) + 'Laden'.padStart(7) + '   (ms)');
+  console.log('  Stand'.padEnd(12) + 'Renderer'.padEnd(9) + 'Leinwand'.padEnd(11) + 'Durchlauf'.padStart(10) + 'min'.padStart(6) + 'kalt'.padStart(7) + 'warm'.padStart(7) + 'Glättung'.padStart(10) + 'Zug max'.padStart(9) + 'Zug fps'.padStart(9) + '1. Bild'.padStart(9) + 'Laden'.padStart(7) + '   (ms)');
   for (const st of staende) {
     const e = zeile.staende[st.name];
     if (e.hinweis) { console.log('  ' + st.name.padEnd(10) + '– ' + e.hinweis); continue; }
     const f1 = v => Number.isFinite(v) ? (v < 100 ? v.toFixed(1) : Math.round(v).toString()) : '–';
     console.log('  ' + st.name.padEnd(10) + e.badge.padEnd(9) + e.groesse.padEnd(11) + f1(median(e.durchlauf)).padStart(10) + f1(Math.min(...e.durchlauf)).padStart(6) + f0(median(e.kalt)).padStart(7) + f0(median(e.warm)).padStart(7)
-      + (e.glaettung.length ? f0(median(e.glaettung)) : '–').padStart(10) + f0(median(e.erstesBild)).padStart(9) + f0(median(e.laden)).padStart(7));
+      + (e.glaettung.length ? f0(median(e.glaettung)) : '–').padStart(10) + (e.zugLuecke.length ? f0(median(e.zugLuecke)) : '–').padStart(9) + (e.zugFps.length ? f0(median(e.zugFps)) : '–').padStart(9) + f0(median(e.erstesBild)).padStart(9) + f0(median(e.laden)).padStart(7));
     for (const n of e.notizen) console.log('             · ' + n);
   }
 }

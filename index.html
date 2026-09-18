@@ -272,21 +272,54 @@
   .meta-dl dt { color: var(--muted); } .meta-dl dd { margin: 0; word-break: break-all; } .meta-dl dd.mono { font: 11px var(--font-mono); }
   .nach-stapel { display: flex; flex-direction: column; gap: 14px; }   /* Nachbearbeitung: Ebenenstapel */
   /* Fraktal-Ebenen: die Ebenenzeile oben in Motiv, Farbe und Palette; der Mischer als Karten */
-  .ebenen-zeile { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: -6px 0 10px; }
-  .ebenen-pille { max-width: 100%; white-space: nowrap; }
-  .ebenen-pille .ebenen-name { overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
-  .ebenen-modus { display: inline-flex; margin-left: auto; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; }
-  .ebenen-modus-knopf { border: 0; background: none; color: var(--muted); font: inherit; font-size: 11.5px; padding: 3px 8px; cursor: pointer; }
-  .ebenen-modus-knopf.on { background: rgba(var(--accent-rgb), .18); color: var(--text); }
-  .immer-offen > summary { pointer-events: none; cursor: default; }
+  details.immer-offen > summary, #motivMehr > summary { display: none !important; }   /* kein Akkordeon mehr: auch keine Überschrift (die Regel der Akkordeons ist spezifischer) */
+  #motivMehr > div + div { margin-top: 10px; }   /* die Gruppen darunter mit Luft */
   .immer-offen > summary::before { display: none; }
-  .ebenen-zeile.einzeln { justify-content: flex-end; margin: -2px 0 8px; }   /* eine Ebene: nur das Plus, rechts unter dem Titel */
-  .ebenen-pille { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line-strong); border-radius: 999px; padding: 3px 9px; font: inherit; font-size: 12px; color: var(--text); background: rgba(var(--tint), .05); cursor: pointer; }
-  .ebenen-pille.on { background: rgba(var(--accent-rgb), .16); border-color: var(--accent); }
-  .ebenen-pille.aus .ebenen-name { opacity: .5; text-decoration: line-through; }
+  .ebene-fein { display: flex; flex-direction: column; gap: 6px; padding-top: 8px; border-top: 1px dashed var(--line); }
+  .ebene-fein-zeile { display: flex; align-items: center; gap: 4px; }
+  .ebene-fein-zeile label { flex: 1 1 auto; min-width: 0; color: var(--muted); font-size: 12px; }
+  .ebene-fein-zeile input { width: 78px; flex: none; }
+  .ebene-fein-knopf { padding: 2px 6px; font-size: 11px; white-space: nowrap; }
+  .ebene-fein-knoepfe { display: flex; gap: 6px; flex-wrap: wrap; }
+  .fadenkreuz { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+  .fadenkreuz::before, .fadenkreuz::after { content: ''; position: absolute; background: rgba(255, 255, 255, .55); box-shadow: 0 0 0 1px rgba(0, 0, 0, .35); }
+  .fadenkreuz::before { left: 50%; top: 0; bottom: 0; width: 1px; }
+  .fadenkreuz::after { top: 50%; left: 0; right: 0; height: 1px; }
+  .fadenkreuz[hidden] { display: none; }
+  /* Fraktal-Ebenen: der Stapel über allen Bereichen (oberste Ebene zuerst), die Leiste in „Ebene“ und „Bild“, Farbstreifen der gewählten Ebene */
+  .stapel { flex: none; padding: 6px 12px 6px 16px; background: linear-gradient(180deg, rgba(var(--accent-rgb), .10), rgba(var(--accent-rgb), .05)); border-bottom: 1px solid rgba(var(--accent-rgb), .28); }
+  .stapel-kopf { display: flex; align-items: center; gap: 8px; min-height: 26px; }
+  .stapel-titel { flex: 1; font: 600 10.5px var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
+  .stapel-kette { border: 1px solid var(--line-strong); border-radius: 999px; background: none; color: var(--muted); font: inherit; font-size: 11px; padding: 2px 8px; cursor: pointer; white-space: nowrap; }
+  .stapel-kette[aria-pressed="true"] { color: var(--text); background: rgba(var(--accent-rgb), .18); border-color: var(--accent); }
+  .stapel-plus { border: 1px solid var(--line-strong); border-radius: 999px; background: rgba(var(--tint), .06); color: var(--text); font: inherit; font-size: 14px; line-height: 1; padding: 2px 9px; cursor: pointer; }
+  .stapel-plus:disabled { opacity: .4; cursor: default; }
+  .stapel-zeile { display: flex; align-items: center; gap: 4px; min-height: 26px; padding: 1px 4px 1px 6px; border-left: 3px solid var(--ebene, transparent); border-radius: 0 6px 6px 0; }
+  .stapel-zeile.on { background: rgba(var(--accent-rgb), .16); }
+  .stapel-zeile.aus .stapel-wahl { opacity: .5; text-decoration: line-through; }
+  .stapel-wahl { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; border: 0; background: none; color: var(--text); font: inherit; font-size: 12px; text-align: left; padding: 2px 4px; cursor: pointer; white-space: nowrap; overflow: hidden; }
+  .stapel-wahl span:last-child { overflow: hidden; text-overflow: ellipsis; }
+  .stapel-zeile.on .stapel-wahl { font-weight: 600; }
+  .stapel-auge { position: relative; width: 22px; height: 22px; display: grid; place-items: center; cursor: pointer; }
+  .stapel-auge input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .stapel-auge span { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--muted); box-sizing: border-box; }
+  .stapel-auge input:checked + span { background: var(--accent); border-color: var(--accent); }
+  .stapel-auge input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .stapel-solo { border: 1px solid var(--line-strong); border-radius: 6px; background: none; color: var(--muted); font: inherit; font-size: 11px; font-weight: 700; width: 22px; height: 22px; cursor: pointer; }
+  .stapel-solo.on { background: var(--accent); color: var(--accent-ink, #000); border-color: var(--accent); }
+  .stapel-zeile .tex-griff { width: 22px; height: 22px; padding: 0; border: none; background: none; color: var(--muted); cursor: grab; touch-action: none; letter-spacing: -2px; }
+  .stapel-weg { width: 22px; height: 22px; padding: 0; border: none; border-radius: 5px; background: none; color: var(--muted); font-size: 14px; line-height: 1; cursor: pointer; }
+  .stapel-weg:hover { color: var(--bad); background: rgba(var(--tint), .1); }
+  .stapel-hinweis { margin: 4px 0 0; }
+  .rail-trenner { width: 24px; height: 1px; background: var(--line-strong); margin: 4px 0; }
+  .rail.ebenen-aktiv button.gruppe-ebene { box-shadow: inset 3px 0 0 var(--ebene-farbe); }
+  .panel.ebenen-aktiv::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--ebene-farbe); z-index: 1; pointer-events: none; }
+  #tabNach { margin-left: 4px; border-left: 1px solid var(--line-strong); }
   .ebenen-punkt { width: 8px; height: 8px; border-radius: 50%; flex: none; }
-  .ebenen-weg { margin-left: 2px; padding: 0 2px; color: var(--muted); font-size: 13px; line-height: 1; }
-  .ebenen-weg:hover { color: var(--bad); }
+  .rueckfrage { z-index: 72; }   /* über Schublade und Menüs */
+  .rueckfrage-karte { max-width: 380px; }
+  .rueckfrage-karte p { margin: 6px 2px 2px; font-size: 14px; }
+  .rueckfrage-karte .btns { justify-content: flex-end; }
   .ebenen-plus, .ebenen-knopf { border: 1px solid var(--line-strong); border-radius: 8px; background: rgba(var(--tint), .06); color: var(--text); font: inherit; font-size: 12px; padding: 3px 9px; cursor: pointer; }
   .ebenen-plus { border-radius: 999px; padding: 2px 9px; font-size: 14px; line-height: 1; }
   .ebenen-plus:disabled, .ebenen-knopf:disabled { opacity: .4; cursor: default; }
@@ -348,29 +381,13 @@
   .tex-karte { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 0 10px 8px 12px; background: rgba(var(--tint), .03); border-radius: 8px; }   /* Band, Grund und Rückgrat: siehe die Regeln oben bei .nach-karte */
   .tex-karte.tex-leer { padding-bottom: 0; }
   .tex-karte.aus > :not(.tex-slot):not(.nach-eigen), .tex-karte.aus .nach-eigen > :not(.tex-slot), .tex-karte.aus select, .tex-karte.aus .tex-kurz, .tex-karte.aus > .tex-slot > .lbl > label { opacity: .45; }   /* ausgeschaltet: gedämpft, Schalter und Knöpfe bleiben klar */
-  .tex-karte.tex-platz { opacity: .25; }   /* die Lücke: der gezogene Eintrag bleibt an Ort und Stelle, nur blass */
-  .tex-karte.tex-schiebt { transition: transform 160ms ease; will-change: transform; }   /* die anderen rücken per transform aus dem Weg */
+  .tex-karte.tex-platz, .stapel-zeile.tex-platz { opacity: .25; }   /* die Lücke: der gezogene Eintrag bleibt an Ort und Stelle, nur blass */
+  .tex-karte.tex-schiebt, .stapel-zeile.tex-schiebt { transition: transform 160ms ease; will-change: transform; }   /* die anderen rücken per transform aus dem Weg */
   .tex-karte.tex-flieger { position: fixed; left: 0; top: 0; z-index: 60; margin: 0; padding: 6px 10px 8px; pointer-events: none; border-left: 2px solid var(--accent); border-radius: 0 8px 8px 0; background: #171a22; box-shadow: 0 12px 30px rgba(0, 0, 0, .55); opacity: .97; will-change: transform; }   /* das Abbild am Zeiger */
   body.tex-ziehen, body.tex-ziehen * { cursor: grabbing !important; user-select: none; }
   .tex-griff:active { cursor: grabbing; }
   .sr-nur { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .tex-slot { display: flex; flex-direction: column; gap: 7px; }
-  .tex-kopf { align-items: center; gap: 6px; min-height: 26px; }
-  .tex-kopf label { flex: 0 0 auto; white-space: nowrap; }
-  .tex-kurz { flex: 1; min-width: 0; color: var(--text); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .tex-kurz .tex-wert { color: var(--faint); font-family: var(--font-mono); font-size: 11.5px; margin-left: 6px; }
-  .tex-kopf button { width: 22px; height: 22px; padding: 0; border: none; border-radius: 5px; background: none; color: var(--muted); font: 11px var(--font-ui); cursor: pointer; }
-  .tex-kopf button:hover, .tex-kopf button:focus-visible { color: var(--text); background: rgba(var(--tint), .08); outline: none; }
-  .tex-griff { cursor: grab; touch-action: none; letter-spacing: -2px; margin-left: -4px; }
-  .tex-klapp { font-size: 12px; }
-  .tex-knoepfe { display: flex; gap: 2px; align-items: center; }
-  .tex-schalter { position: relative; width: 30px; height: 18px; display: inline-block; cursor: pointer; margin-right: 4px; }
-  .tex-schalter input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
-  .tex-schalter span { position: absolute; inset: 0; border-radius: 9px; background: rgba(var(--tint), .14); transition: background .15s; }
-  .tex-schalter span::after { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--muted); transition: transform .15s, background .15s; }
-  .tex-schalter input:checked + span { background: var(--accent); }
-  .tex-schalter input:checked + span::after { transform: translateX(12px); background: var(--schalter-ink); }
-  .tex-schalter input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
   select.tex-neu { color: var(--muted); border-style: dashed; background: transparent; }   /* der nächste freie Platz: „＋ Textur hinzufügen“ */
   /* Paar aus zwei Bahnwerten: je Achse ein Block mit Wert, Faktor, Abzug und Klemme */
   #paarRow { display: flex; flex-direction: column; gap: 6px; }
@@ -380,8 +397,12 @@
   .paar-zeile .chk { flex: none; }
   .paar-ziel { flex: none; color: var(--muted); }   /* Beschriftung vor dem Ziel eines Werts */
   .tex-karte.aus > :not(.tex-slot):not(.nach-eigen), .tex-karte.aus .nach-eigen > :not(.tex-slot), .tex-karte.aus select, .tex-karte.aus .tex-kurz { opacity: .45; }   /* ausgeschaltet: gedämpft, Schalter und Knöpfe bleiben klar */
-  .tex-kopf { align-items: center; gap: 6px; }
+  .tex-kopf { align-items: center; gap: 6px; min-height: 26px; }
   .tex-kopf label { flex: 0 0 auto; white-space: nowrap; }
+  .tex-kurz .tex-wert { color: var(--faint); font-family: var(--font-mono); font-size: 11.5px; margin-left: 6px; }
+  .tex-kopf button { width: 22px; height: 22px; padding: 0; border: none; border-radius: 5px; background: none; color: var(--muted); font: 11px var(--font-ui); cursor: pointer; }
+  .tex-kopf button:hover, .tex-kopf button:focus-visible { color: var(--text); background: rgba(var(--tint), .08); outline: none; }
+  .tex-griff { cursor: grab; touch-action: none; letter-spacing: -2px; margin-left: -4px; }
   .tex-kurz { flex: 1; min-width: 0; font-size: 11.5px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }   /* eingeklappt: Art und Stärke, nimmt den Rest der Zeile */
   .tex-klapp { width: 18px; height: 22px; padding: 0; border: none; background: none; color: var(--muted); font-size: 12px; cursor: pointer; }
   .tex-klapp:hover, .tex-klapp:focus-visible { color: var(--text); outline: none; }
@@ -392,12 +413,13 @@
   .tex-schalter input:checked + span { background: var(--accent); }
   .tex-schalter input:checked + span::after { transform: translateX(12px); background: var(--schalter-ink); }
   .tex-schalter input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .tex-knoepfe { display: flex; gap: 3px; }
+  .tex-knoepfe { display: flex; gap: 3px; align-items: center; }
   .tex-knoepfe button { width: 24px; height: 22px; padding: 0; border: 1px solid var(--line); border-radius: 5px; background: none; color: var(--muted); font: 11px var(--font-ui); cursor: pointer; }
   .tex-knoepfe button:hover, .tex-knoepfe button:focus-visible { color: var(--text); border-color: var(--accent); outline: none; }
   .tex-knoepfe .tex-griff { cursor: grab; touch-action: none; letter-spacing: -2px; }
-  .tex-karte.tex-zieht { opacity: .55; }
-  .tex-karte.tex-ziel { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .tex-karte.tex-zieht, .stapel-zeile.tex-zieht { opacity: .55; }
+  .tex-karte.tex-ziel, .stapel-zeile.tex-ziel { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .stapel-zeile.tex-flieger { position: fixed; left: 0; top: 0; z-index: 60; margin: 0; pointer-events: none; background: var(--panel); border-radius: 0 6px 6px 0; box-shadow: 0 6px 18px rgba(0, 0, 0, .35); }   /* das Abbild der gezogenen Stapelzeile */
   .tex-farben label { flex: 1; display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12.5px; cursor: pointer; }
   .tex-farben input[type=color] { width: 46px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; cursor: pointer; }
   /* Übertragungskurve: Häufigkeiten als Balken, darüber die Kurve mit ziehbaren Punkten */
@@ -704,7 +726,7 @@
       flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
       border: 0; background: none; color: var(--muted); cursor: pointer; font: 500 11px var(--font-ui); letter-spacing: .02em;
     }
-    .tabbar .ico { display: grid; place-items: center; width: 52px; height: 28px; border-radius: 14px; transition: background-color .15s ease, color .15s ease; }
+    .tabbar .ico { display: grid; place-items: center; width: 100%; max-width: 52px; height: 28px; border-radius: 14px; transition: background-color .15s ease, color .15s ease; }
     .tabbar .tab-save .ico { color: var(--accent); }
     .tabbar button.on { color: var(--accent); }
     .tabbar button.on .ico { background: rgba(var(--accent-rgb), .16); }
@@ -789,6 +811,7 @@
 </style>
 
 <div id="stage"></div>
+<div id="fadenkreuz" class="fadenkreuz" hidden></div>   <!-- Fraktal-Ebenen: Fadenkreuz beim Ausrichten -->
 
 <aside id="panel" class="panel">
   <header class="panel-head">
@@ -801,10 +824,15 @@
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5l4.5 4.5L11.5 5"/></svg>
     </button>
   </header>
+  <div id="stapel" class="stapel" hidden>   <!-- Fraktal-Ebenen: der Stapel über allen Bereichen, oberste Ebene zuerst; mit einer Ebene nur die Kopfzeile -->
+    <div class="stapel-kopf"><span class="stapel-titel" id="stapelTitel"></span><button type="button" id="stapelKette" class="stapel-kette" aria-pressed="false" hidden></button><button type="button" id="stapelNeu" class="stapel-plus" data-i18n-title="layers.add" data-i18n-aria-label="layers.add">+</button></div>
+    <div id="stapelZeilen"></div>
+    <p class="hint stapel-hinweis" id="ebenenVoll" hidden data-i18n="layers.full"></p>
+    <div id="ebenenLive" class="sr-nur" aria-live="polite"></div>
+  </div>
   <div class="panel-body" id="panelBody">
     <div class="pane" id="pane-motiv">
       <h2 class="pane-title" data-i18n="misc.subject"></h2>
-      <div class="ebenen-zeile" id="ebenenZeileMotiv" hidden></div>   <!-- Fraktal-Ebenen: welche Ebene die Bereiche Motiv, Farbe und Palette bearbeiten -->
     <section class="row">
       <h2 class="sec-title"><label for="family" data-i18n="subject.fractal"></label></h2>
       <select id="family">
@@ -979,7 +1007,6 @@
 
     <div class="pane" id="pane-farbe" hidden>
       <h2 class="pane-title" data-i18n="colour.colour"></h2>
-      <div class="ebenen-zeile" id="ebenenZeileFarbe" hidden></div>
     <section class="row" id="colorRow">   <!-- Färbung: was gefärbt wird; alles darunter hängt davon ab -->
       <h2 class="sec-title"><label for="mapping" data-i18n="colour.colouring-by"></label></h2>
       <select id="mapping">
@@ -1521,7 +1548,6 @@
 
     <div class="pane" id="pane-palette" hidden>   <!-- Palette: welche Farben an welche Stelle kommen; die Werte dazu liefert der Reiter „Farbe“ -->
       <h2 class="pane-title" data-i18n="pane.palette"></h2>
-      <div class="ebenen-zeile" id="ebenenZeilePalette" hidden></div>
     <section class="row" id="palRow">     <!-- Palette: welche Farben; Art (wo die Färbung zwei Werte liefert), Liste, Editor, Dichte, Versatz -->
       <h2 class="sec-title"><label for="palette" data-i18n="colour.colour-palette"></label></h2>
       <div class="seg" id="palArt" role="group" data-i18n-aria-label="colour.kind-colour-palette" hidden>
@@ -1641,14 +1667,11 @@
 
     </div>
 
-    <div class="pane" id="pane-ebenen" hidden>   <!-- Fraktal-Ebenen: der Mischer — Reihenfolge, Sichtbarkeit, Solo, Mischmodus, Deckkraft, Maske, Ansicht je Ebene; Motiv, Farbe und Palette bearbeiten die gewählte -->
+    <div class="pane" id="pane-ebenen" hidden>   <!-- Fraktal-Ebenen: „Mischen“ der gewählten Ebene (Modus, Deckkraft, Maske, Ansicht, Feinjustierung); Reihenfolge, Sichtbarkeit und Solo stehen im Stapel oben. Früher der Mischer — Reihenfolge, Sichtbarkeit, Solo, Mischmodus, Deckkraft, Maske, Ansicht je Ebene; Motiv, Farbe und Palette bearbeiten die gewählte -->
       <h2 class="pane-title" data-i18n="pane.layers"></h2>
     <section class="row" id="ebenenRow">
       <p class="hint" data-i18n="layers.hint"></p>
       <div id="ebenenStapel" class="nach-stapel"></div>
-      <div class="lbl"><button type="button" id="ebenenNeu" class="ebenen-knopf" data-i18n="layers.add-button"></button></div>
-      <p class="hint" id="ebenenVoll" hidden data-i18n="layers.full"></p>
-      <div id="ebenenLive" class="sr-only" aria-live="polite"></div>
     </section>
     </div>
 
@@ -1680,6 +1703,7 @@
         <div class="lbl wertzeile"><label for="aaSigma" data-i18n="quality.filter-width"></label><input class="val mono wert" id="aaSigmaVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="aaSigma" type="range" min="20" max="100" value="45">
       </div>
+      <p class="hint" id="qualEbenenHinweis" hidden data-i18n="layers.resolution-note"></p>
       <div class="lbl"><label for="quality" data-i18n="quality.resolution"></label>
         <select id="quality" style="width:44%">
           <option value="1" data-i18n="quality.native"></option>
@@ -1801,11 +1825,12 @@
 </aside>
 
 <nav class="rail" id="rail" data-i18n-aria-label="panel.areas">
-  <button type="button" id="railMotiv" data-pane="motiv" class="on" data-i18n-title="misc.subject" data-i18n-aria-label="misc.subject"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.6 A6.4 6.4 0 1 0 8 14.4 A3.2 3.2 0 1 1 8 8 A3.2 3.2 0 1 0 8 1.6Z"/></svg></button>
-  <button type="button" id="railFarbe" data-pane="farbe" data-i18n-title="colour.colour" data-i18n-aria-label="colour.colour"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.2"/><path d="M8 1.8v12.4M2.4 5.4h11.2M2.4 10.6h11.2"/></svg></button>
-  <button type="button" id="railPalette" data-pane="palette" data-i18n-title="pane.palette" data-i18n-aria-label="pane.palette"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.8a6.2 6.2 0 1 0 0 12.4c1.1 0 1.6-.7 1.3-1.6-.3-.9.2-1.6 1.2-1.6h1.3a2.4 2.4 0 0 0 2.4-2.4A6.6 6.6 0 0 0 8 1.8z"/><circle cx="5" cy="6.2" r=".9"/><circle cx="8.2" cy="4.4" r=".9"/><circle cx="11.2" cy="6.2" r=".9"/><circle cx="5.2" cy="9.6" r=".9"/></svg></button>
-  <button type="button" id="railEbenen" data-pane="ebenen" data-i18n-title="pane.layers" data-i18n-aria-label="pane.layers"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.5 14 5.5 8 8.5 2 5.5Z"/><path d="M2 8.5 8 11.5 14 8.5" opacity=".6"/><path d="M2 11.5 8 14.5 14 11.5" opacity=".35"/></svg></button>
-  <button type="button" id="railQualitaet" data-pane="qualitaet" data-i18n-title="quality.quality" data-i18n-aria-label="quality.quality"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 13.5V6M6.2 13.5V3.5M9.8 13.5V8.5M13.5 13.5V5"/></svg></button>
+  <button type="button" id="railMotiv" data-pane="motiv" class="on gruppe-ebene" data-i18n-title="misc.subject" data-i18n-aria-label="misc.subject"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.6 A6.4 6.4 0 1 0 8 14.4 A3.2 3.2 0 1 1 8 8 A3.2 3.2 0 1 0 8 1.6Z"/></svg></button>
+  <button type="button" id="railFarbe" data-pane="farbe" class="gruppe-ebene" data-i18n-title="colour.colour" data-i18n-aria-label="colour.colour"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.2"/><path d="M8 1.8v12.4M2.4 5.4h11.2M2.4 10.6h11.2"/></svg></button>
+  <button type="button" id="railPalette" data-pane="palette" class="gruppe-ebene" data-i18n-title="pane.palette" data-i18n-aria-label="pane.palette"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.8a6.2 6.2 0 1 0 0 12.4c1.1 0 1.6-.7 1.3-1.6-.3-.9.2-1.6 1.2-1.6h1.3a2.4 2.4 0 0 0 2.4-2.4A6.6 6.6 0 0 0 8 1.8z"/><circle cx="5" cy="6.2" r=".9"/><circle cx="8.2" cy="4.4" r=".9"/><circle cx="11.2" cy="6.2" r=".9"/><circle cx="5.2" cy="9.6" r=".9"/></svg></button>
+  <button type="button" id="railQualitaet" data-pane="qualitaet" class="gruppe-ebene" data-i18n-title="quality.quality" data-i18n-aria-label="quality.quality"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 13.5V6M6.2 13.5V3.5M9.8 13.5V8.5M13.5 13.5V5"/></svg></button>
+  <button type="button" id="railEbenen" data-pane="ebenen" class="gruppe-ebene" data-i18n-title="pane.layers" data-i18n-aria-label="pane.layers"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.5 14 5.5 8 8.5 2 5.5Z"/><path d="M2 8.5 8 11.5 14 8.5" opacity=".6"/><path d="M2 11.5 8 14.5 14 11.5" opacity=".35"/></svg></button>
+  <div class="rail-trenner" aria-hidden="true"></div>
   <button type="button" id="railNach" data-pane="nach" data-i18n-title="pane.post" data-i18n-aria-label="pane.post"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 13.5c3-1 4-6 5.5-7s3.5 3 5.5 1.5"/><path d="M2.5 9.5h11M2.5 5.5h11" opacity=".45"/><circle cx="8" cy="6.5" r="1.4"/></svg></button>
   <button type="button" id="railTechnik" data-pane="technik" data-i18n-title="technical.technical" data-i18n-aria-label="technical.technical"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="2.3"/><path d="M8 1.8v2M8 12.2v2M1.8 8h2M12.2 8h2M3.6 3.6l1.4 1.4M11 11l1.4 1.4M12.4 3.6 11 5M5 11l-1.4 1.4"/></svg></button>
   <button type="button" id="panelTab" class="rail-gap" data-i18n-title="misc.show-or-hide-panel" data-i18n-aria-label="misc.show-or-hide-panel" aria-expanded="true" aria-controls="panelBody">
@@ -1832,7 +1857,7 @@
 <!-- Handy: oben eine schmale Leiste (links sitzt der Menü-Knopf), unten die Bereiche als Reiter -->
 <header class="appbar" id="appbar">
   <span class="appbar-title" data-i18n="misc.fractal-renderer"></span>
-  <button type="button" id="mStatus" class="m-status" aria-label="Status" aria-expanded="false" aria-controls="mInfo"><span class="dot" aria-hidden="true"></span><span id="mZoom">Zoom 1,0×</span></button>
+  <button type="button" id="mStatus" class="m-status" data-i18n-aria-label="misc.status" aria-expanded="false" aria-controls="mInfo"><span class="dot" aria-hidden="true"></span><span id="mZoom">Zoom 1,0×</span></button>
 </header>
 <div id="mInfo" class="m-info" role="status" hidden>
   <div class="state" id="mState" data-i18n="technical.ready"></div>
@@ -1844,6 +1869,7 @@
   <button type="button" id="tabFarbe" data-tab="farbe"><span class="ico"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.2"/><path d="M8 1.8v12.4M2.4 5.4h11.2M2.4 10.6h11.2"/></svg></span><span data-i18n="colour.colour"></span></button>
   <button type="button" id="tabPalette" data-tab="palette"><span class="ico"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.8a6.2 6.2 0 1 0 0 12.4c1.1 0 1.6-.7 1.3-1.6-.3-.9.2-1.6 1.2-1.6h1.3a2.4 2.4 0 0 0 2.4-2.4A6.6 6.6 0 0 0 8 1.8z"/><circle cx="5" cy="6.2" r=".9"/><circle cx="8.2" cy="4.4" r=".9"/><circle cx="11.2" cy="6.2" r=".9"/><circle cx="5.2" cy="9.6" r=".9"/></svg></span><span data-i18n="pane.palette"></span></button>
   <button type="button" id="tabQualitaet" data-tab="qualitaet"><span class="ico"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 13.5V6M6.2 13.5V3.5M9.8 13.5V8.5M13.5 13.5V5"/></svg></span><span data-i18n="quality.quality"></span></button>
+  <button type="button" id="tabEbenen" data-tab="ebenen"><span class="ico"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.5 14 5.5 8 8.5 2 5.5Z"/><path d="M2 8.5 8 11.5 14 8.5" opacity=".6"/><path d="M2 11.5 8 14.5 14 11.5" opacity=".35"/></svg></span><span data-i18n="pane.layers"></span></button>
   <button type="button" id="tabNach" data-tab="nach"><span class="ico"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 13.5c3-1 4-6 5.5-7s3.5 3 5.5 1.5"/><circle cx="8" cy="6.5" r="1.4"/></svg></span><span data-i18n="post.tab"></span></button>
   <button type="button" id="tabSave" class="tab-save"><span class="ico"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.3 2.5h7.5l2.7 2.7v7.5a.8.8 0 0 1-.8.8H3.3a.8.8 0 0 1-.8-.8V3.3a.8.8 0 0 1 .8-.8z"/><path d="M5 13.5V9.6c0-.3.2-.5.5-.5h5c.3 0 .5.2.5.5v3.9M5.2 2.5v2.6c0 .3.2.5.5.5h4"/></svg></span><span data-i18n="editor.save"></span></button>
   <button type="button" id="tabMehr" data-tab="technik"><span class="ico"><svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="3.2" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="12.8" cy="8" r="1.3"/></svg></span><span data-i18n="status.more"></span></button>
@@ -1914,6 +1940,15 @@
   </footer>
 </div>
 
+<div id="rueckfrage" class="modal rueckfrage" role="alertdialog" aria-modal="true" aria-labelledby="rueckfrageText" hidden>   <!-- kleine Rückfrage (Ebene löschen); window.confirm kommt in eingebetteten Browserfenstern nicht an -->
+  <div class="modal-card rueckfrage-karte">
+    <p id="rueckfrageText"></p>
+    <div class="btns">
+      <button type="button" class="ghost" id="rueckfrageNein" data-i18n="consent.cancel"></button>
+      <button type="button" class="ghost" id="rueckfrageJa" data-i18n="layers.remove"></button>
+    </div>
+  </div>
+</div>
 <div id="consent" class="modal" role="dialog" aria-modal="true" aria-labelledby="consentTitle" hidden>
   <div class="modal-card consent-card">
     <div class="eyebrow" data-i18n="site.privacy"></div>
@@ -2474,13 +2509,14 @@ const TEXTE = {
   'meta.no-removal': { de: 'Diese App entfernt keine Metadaten aus Dateien. Für ein Bild ohne diese Angaben speichere es hier neu und lasse die Häkchen weg.', en: 'This app removes no metadata from files. For an image without this information, save it here again with the boxes unticked.' },
   'meta.apply': { de: 'Ansicht übernehmen', en: 'Apply this view' },
   'pane.post': { de: 'Nachbearbeitung', en: 'Post-processing' },
-  'pane.layers': { de: 'Ebenen', en: 'Layers' },
-  'layers.hint': { de: 'Mehrere Fraktale übereinander: die unterste Ebene ist der Grund, jede weitere mischt sich mit Modus, Deckkraft und Maske hinein. Motiv, Farbe und Palette bearbeiten die hier gewählte Ebene.', en: 'Several fractals on top of each other: the bottom layer is the ground, every further one blends in with mode, opacity and mask. Motif, Colour and Palette edit the layer selected here.' },
+  'pane.layers': { de: 'Mischen', en: 'Blend' },
+  'layers.stack': { de: 'Ebenen', en: 'Layers' },
+  'layers.one': { de: '1 Ebene', en: '1 layer' },
+  'layers.hint': { de: 'Mischen: wie sich die gewählte Ebene mit den Ebenen darunter mischt (Modus, Deckkraft, Maske) und ob sie der gemeinsamen Ansicht folgt. Reihenfolge, Sichtbarkeit, Solo und Löschen stehen im Stapel oben im Bedienfeld.', en: 'Blend: how the selected layer blends with the layers below it (mode, opacity, mask) and whether it follows the shared view. Order, visibility, solo and removal live in the stack at the top of the panel.' },
   'layers.add': { de: 'Ebene hinzufügen (Kopie der gewählten)', en: 'Add layer (copy of the selected one)' },
-  'layers.add-button': { de: 'Ebene hinzufügen', en: 'Add layer' },
   'layers.full': { de: 'Mehr Ebenen gibt es nicht.', en: 'That is the maximum number of layers.' },
   'layers.remove': { de: 'Ebene löschen', en: 'Remove layer' },
-  'layers.duplicate': { de: 'Kopie darüber anlegen', en: 'Duplicate above' },
+  'layers.remove-confirm': { de: 'Ebene {0} löschen?', en: 'Remove layer {0}?' },
   'layers.select': { de: 'Diese Ebene bearbeiten', en: 'Edit this layer' },
   'layers.name': { de: 'Name', en: 'Name' },
   'layers.visible': { de: 'Sichtbar', en: 'Visible' },
@@ -2490,12 +2526,22 @@ const TEXTE = {
   'layers.linked': { de: 'Mit der Ansicht verbunden', en: 'Linked to the view' },
   'layers.linked-title': { de: 'Verbunden folgt die Ebene der Ansicht der ersten Ebene; gelöst hat sie ihre eigene Mitte und ihren eigenen Zoom, und Gesten bewegen nur sie, wenn sie gewählt ist', en: 'Linked, the layer follows the view of the first layer; unlinked, it has its own centre and zoom, and gestures move only it while it is selected' },
   'layers.align-view': { de: 'Ansicht angleichen', en: 'Align view' },
+  'layers.fine': { de: 'Feinjustierung zum Grund', en: 'Fine alignment to the ground' },
+  'layers.fine-factor': { de: 'Zoomfaktor', en: 'Zoom factor' },
+  'layers.fine-x': { de: 'Versatz x (Pixel, rechts)', en: 'Offset x (pixels, right)' },
+  'layers.fine-y': { de: 'Versatz y (Pixel, oben)', en: 'Offset y (pixels, up)' },
+  'layers.fine-rotation': { de: 'Drehung (Grad)', en: 'Rotation (degrees)' },
+  'layers.fine-snap': { de: 'Auf Verhältnis runden', en: 'Snap to ratio' },
+  'layers.fine-centre': { de: 'Mitte auf Grundmitte', en: 'Centre on the ground' },
+  'layers.fine-align': { de: 'Ausrichten: Differenz zeigen', en: 'Align: show difference' },
+  'layers.fine-align-title': { de: 'Zeigt die Ebene vorübergehend als Differenz mit voller Deckkraft und ein Fadenkreuz in der Mitte; deckungsgleiche Bereiche werden schwarz. Der Link bleibt unverändert.', en: 'Temporarily shows the layer as difference with full opacity plus a crosshair at the centre; matching areas turn black. The link stays unchanged.' },
+  'layers.fine-hint': { de: 'Feine Gesten: Umschalt + Rad oder Ziehen etwa 1 %, Strg + Umschalt etwa 0,1 %. Pfeile mit Umschalt 1 Pixel, mit Alt 0,1 Pixel, mit beiden 10 Pixel. Plus und Minus mit Alt 1 %, mit Alt + Umschalt 0,1 %. Eckige Klammern drehen um 1°, mit Umschalt um 0,1°.', en: 'Fine gestures: Shift + wheel or drag about 1 %, Ctrl + Shift about 0.1 %. Arrows with Shift 1 pixel, with Alt 0.1 pixel, with both 10 pixels. Plus and minus with Alt 1 %, with Alt + Shift 0.1 %. Square brackets rotate by 1°, with Shift by 0.1°.' },
   'layers.base-note': { de: 'Die unterste Ebene ist der Grund: sie mischt sich in nichts.', en: 'The bottom layer is the ground: it blends into nothing.' },
   'layers.layer-n': { de: 'Ebene {0}', en: 'Layer {0}' },
   'layers.layer-moved': { de: 'Ebene an Platz {0} von {1}', en: 'Layer moved to position {0} of {1}' },
   'layers.drag': { de: 'Ebene verschieben (ziehen oder Pfeiltasten)', en: 'Move layer (drag or arrow keys)' },
-  'layers.move': { de: 'Gesten bewegen', en: 'Gestures move' },
-  'layers.move-all': { de: 'Alle bewegen', en: 'Move all' },
+  'layers.resolution-note': { de: 'Die Glättung oben gehört zur gewählten Ebene; die Auflösung darunter gilt für das ganze Bild.', en: 'The smoothing above belongs to the selected layer; the resolution below applies to the whole image.' },
+  'layers.move-all': { de: 'Alle', en: 'All' },
   'layers.move-all-title': { de: 'Ziehen und Zoomen bewegen alle Ebenen zusammen', en: 'Dragging and zooming move all layers together' },
   'layers.move-one': { de: 'Nur diese', en: 'Only this' },
   'layers.move-one-title': { de: 'Ziehen und Zoomen bewegen nur die gewählte Ebene; sie löst sich dabei von der gemeinsamen Ansicht', en: 'Dragging and zooming move only the selected layer; it detaches from the shared view' },
@@ -2925,6 +2971,10 @@ const TEXTE = {
   'status.collecting-m-points-s': { de: 'Sammelt · {0} Mio. Punkte · {1} s', en: 'Collecting · {0} M points · {1} s' },
   'status.done': { de: 'Fertig · {0}', en: 'Done · {0}' },
   'status.post-compiling': { de: 'Ebenen und Masken werden übersetzt …', en: 'Compiling layers and masks …' },
+  'status.render-error': { de: 'Fehler beim Rechnen: {0}', en: 'Error while rendering: {0}' },
+  'status.context-lost': { de: 'Der Grafikkontext ging wiederholt verloren. Bitte die Seite neu laden.', en: 'The graphics context was lost repeatedly. Please reload the page.' },
+  'expr.shader-error': { de: 'Eigener Ausdruck: der Shader meldet {0}', en: 'Custom expression: the shader reports {0}' },
+  'misc.status': { de: 'Status', en: 'Status' },
   'status.done-m-points-s': { de: 'Fertig · {0} Mio. Punkte · {1} s', en: 'Done · {0} M points · {1} s' },
   'status.download': { de: 'Herunterladen', en: 'Download' },
   'status.iterations': { de: ' · {0} Iterationen', en: ' · {0} iterations' },
@@ -3384,7 +3434,6 @@ const AUSDRUCK = (() => {
         const a = R(ast.a), b = R(ast.b), beide = C.ist(a) || C.ist(b);
         if (!beide) {
           if (ast.op === '+') return a + b; if (ast.op === '-') return a - b; if (ast.op === '*') return a * b; if (ast.op === '/') return a / b;
-          if (Number.isInteger(b)) return Math.pow(a, b);
           return Math.pow(a, b);
         }
         const A = C.zu(a), B = C.zu(b);
@@ -3503,8 +3552,11 @@ const MAX_PIXELS = 4.5e6;
 const AA_BUDGET = 512;   // Grafikspeicher für die Glättung in MB, fest und nicht einstellbar: mehr ließ Rechner beim Auslagern hängen
 const AA_BYTES = 16;     // je Probe: zwei Ganzzahlkanäle à 4 Byte, doppelt gepuffert
 const AA_LEVELS = [1, 2, 3, 4, 5, 6, 8, 10, 12, 16];   // Stufen (Proben je Pixel und Richtung); 16 × 16 = 256 Ebenen ist der WebGPU-Deckel
-function aaBytes(w, h, aa) { return w * h * aa * aa * AA_BYTES; }
-function aaFitsAt(w, h, aa) { return aaBytes(w, h, aa) <= AA_BUDGET * 1e6; }   // passt die Stufe bei dieser Fläche ins Budget?
+const AA_BYTES_BREIT = 32;   // rgba32uint (Texturen über einer Statistik): vier Kanäle je Probe
+function aaBreitJetzt() { try { return typeof texturBreit === 'function' && !!texturBreit(); } catch (e) { return false; } }
+function aaEbenenTeiler() { try { if (!ebenen || ebenen.length <= 1) return 1; const solo = ebenenSoloIndex(); return solo >= 0 ? 1 : Math.max(1, ebenen.filter(e => e.sichtbar).length); } catch (e) { return 1; } }   // jede sichtbare Fraktal-Ebene hält einen eigenen Satz (vor der Deklaration von ebenen: 1)
+function aaBytes(w, h, aa, breit = aaBreitJetzt()) { return w * h * aa * aa * (breit ? AA_BYTES_BREIT : AA_BYTES); }
+function aaFitsAt(w, h, aa) { return aaBytes(w, h, aa) * aaEbenenTeiler() <= AA_BUDGET * 1e6; }   // passt die Stufe bei dieser Fläche ins Budget, für alle sichtbaren Ebenen?
 function aaBest(w, h, wish) { let m = 1; for (const v of AA_LEVELS) if (v <= wish && aaFitsAt(w, h, v)) m = v; return m; }   // höchste Stufe bis wish, die ins Budget passt
 function aaSnap(v) { return aaBest(0, 0, +v || 1); }   // auf eine angebotene Stufe abrunden
 // Adaptive Glättung, Regler: Restrauschen (Standardfehler der mittleren Helligkeit, 0,2 % … 5 %, logarithmisch), Proben je Pixel
@@ -8104,6 +8156,9 @@ function palPrefix(lut) {   // Stammfunktion der stückweise linearen 256er-Tabe
 }
 function fastPath(p) { return p.formula === 0 && p.power === 2 && !p.startC && !p.hybrid && !p.lyap && !p.winkel && !p.stat && !p.stat2 && !p.paar && !p.fluchtForm && !p.fluchtRadius && !p.biomorph && !p.abb && p.needDE !== 1 && p.needInt !== 1 && p.cycle !== 1 && p.bla !== 1 && p.invert !== 1 && p.flip !== 1 && S.z0[0] === 0 && S.z0[1] === 0; }
 
+function variantenSchluessel(formula, de, ni, cyc, bla, pw, fast, lyap, winkel, stat, stat2, tex1, tex2, form, texz, stat3, stat4, stat5, tex3, tex4, stat6, paar, paarA, paarB, paarVoll, hybrid, eigen, breit) {   // Schlüssel einer Shader-Variante, für beide Renderer derselbe (breit: Iterationstextur rgba32uint, nur WebGPU unterscheidet die Pipeline danach)
+  return formula + '|' + (de ? 1 : 0) + '|' + (ni ? 1 : 0) + '|' + (cyc ? 1 : 0) + '|' + (bla ? 1 : 0) + '|' + pw + '|' + (fast ? 1 : 0) + '|' + lyap + '|' + winkel + '|' + stat + (tex1 || tex2 ? '|' + stat2 + '|' + tex1 + '|' + tex2 : '') + (form ? '|F' + form : '') + (texz ? '|Z' + stat3 : '') + (breit ? '|A' : '') + (stat4 || stat5 || tex3 || tex4 || stat6 ? '|S' + stat4 + '|' + stat5 + '|' + tex3 + '|' + tex4 + '|' + stat6 : '') + (stat2 && !tex1 && !tex2 ? '|s2' + stat2 : '') + (paar ? '|P' + paarA + '|' + paarB + '|' + paarVoll : '') + (hybrid ? '|H' : '') + (eigen ? '|X' + eigen.key : '');
+}
 class GpuRenderer {
   static async create(canvas) {
     if (!navigator.gpu) throw new Error('navigator.gpu fehlt');
@@ -8138,7 +8193,7 @@ class GpuRenderer {
       if (err.length) throw new Error('WGSL: ' + err.map(m => `${m.lineNum}:${m.linePos} ${m.message}`).join('\n'));
       return mod;
     };
-    const [mF, mU, mC, mX, mK] = await Promise.all([mk(WGSL_FRACTAL), mk(WGSL_UPSCALE), mk(WGSL_COLOR_OHNE), mk(WGSL_FILL), mk(WGSL_VERBUND)]);   // Farbe ohne Nachbearbeitung und Texturmasken (siehe _pipeColor); Verbund der Fraktal-Ebenen
+    const [mF, mU, mC, mX, mK] = await Promise.all([mk(WGSL_FRACTAL), mk(WGSL_UPSCALE), mk(WGSL_COLOR_OHNE), mk(WGSL_FILL), mk(WGSL_VERBUND)]);   // Farbe ohne Nachbearbeitung und Texturmasken (siehe _pipeVoll); Verbund der Fraktal-Ebenen
     const F = GPUShaderStage.FRAGMENT;
     this.bglF = d.createBindGroupLayout({ entries: [
       { binding: 0, visibility: F, buffer: { type: 'uniform' } },
@@ -8229,7 +8284,7 @@ class GpuRenderer {
       { binding: 5, resource: this.aa ? this.aa.needView[0] : this.dummyU } ] });
   }
   resize(W, H, L) {   // L Probenebenen (Glättung aa × aa → L = aa²)
-    if (W !== this.W || H !== this.H || L !== this.L) this._slotsAlleLoeschen();   // Fraktal-Ebenen: andere Größe, alle Sätze (und gesicherten Farben) verfallen
+    if (W !== this.W || H !== this.H) this._slotsAlleLoeschen();   // Fraktal-Ebenen: andere Größe, alle Sätze (und gesicherten Farben) verfallen; eine andere Probenzahl betrifft nur den aktiven Satz
     this.W = W; this.H = H; this.L = L;
     this.canvas.width = W; this.canvas.height = H;
     const d = this.device;
@@ -8255,7 +8310,7 @@ class GpuRenderer {
   }
   _rebuildBindGroups() {
     const d = this.device;
-    if (this.postScreen) { this.postScreen.roh.destroy(); this.postScreen.tw.destroy(); this.postScreen = null; }   // die Nachbearbeitung baut ihr Zwischenbild neu (andere Iterationstextur oder Größe)
+    if (this.postScreen) { this._postResFrei(this.postScreen); this.postScreen = null; }   // die Nachbearbeitung baut ihr Zwischenbild neu (andere Iterationstextur oder Größe)
     this.bgU = d.createBindGroup({ layout: this.bglU, entries: [
       { binding: 0, resource: this.previewTex.layer[0] }, { binding: 1, resource: { buffer: this.ubU } } ] });
     this.bgUz = d.createBindGroup({ layout: this.bglU, entries: [
@@ -8326,7 +8381,7 @@ class GpuRenderer {
   }
   _pipeVariant(formula, de, ni, cyc, bla, pw, fast, lyap = 0, winkel = 0, stat = 0, stat2 = 0, tex1 = 0, tex2 = 0, form = 0, texz = 0, stat3 = 0, stat4 = 0, stat5 = 0, tex3 = 0, tex4 = 0, stat6 = 0, paar = 0, paarA = 0, paarB = 0, paarVoll = 0, hybrid = 0, eigen = null) {   // eine Pipeline je Formel, Ableitungsbedarf, Zykluserkennung, BLA, Potenz, schlankem Kern, Lyapunov-Färbung und Winkel (Override-Konstanten)
     const fmt = this.iterFormat || 'rg32uint';
-    const key = formula + '|' + (de ? 1 : 0) + '|' + (ni ? 1 : 0) + '|' + (cyc ? 1 : 0) + '|' + (bla ? 1 : 0) + '|' + pw + '|' + (fast ? 1 : 0) + '|' + lyap + '|' + winkel + '|' + stat + (tex1 || tex2 ? '|' + stat2 + '|' + tex1 + '|' + tex2 : '') + (form ? '|F' + form : '') + (texz ? '|Z' + stat3 : '') + (fmt === 'rgba32uint' ? '|A' : '') + (stat4 || stat5 || tex3 || tex4 || stat6 ? '|S' + stat4 + '|' + stat5 + '|' + tex3 + '|' + tex4 + '|' + stat6 : '') + (stat2 && !tex1 && !tex2 ? '|s2' + stat2 : '') + (paar ? '|P' + paarA + '|' + paarB + '|' + paarVoll : '') + (hybrid ? '|H' : '') + (eigen ? '|X' + eigen.key : '');
+    const key = variantenSchluessel(formula, de, ni, cyc, bla, pw, fast, lyap, winkel, stat, stat2, tex1, tex2, form, texz, stat3, stat4, stat5, tex3, tex4, stat6, paar, paarA, paarB, paarVoll, hybrid, eigen, fmt === 'rgba32uint');
     let pl = this.pipeCache.get(key);
     if (!pl) {
       this.pipeNeu = true;   // die erste Vorlage damit wartet auf das Übersetzen: die Renderschleife wertet ihre Zeit nicht als Durchsatz
@@ -8337,6 +8392,7 @@ class GpuRenderer {
         primitive: { topology: 'triangle-list' },
       });
       this.pipeCache.set(key, pl);
+      if (eigen) { const alt = [...this.pipeCache.keys()].filter(k => k.includes('|X')); if (alt.length > 12) this.pipeCache.delete(alt[0]); }   // je Tippstand eine Pipeline: die ältesten mit eigenem Ausdruck verdrängen
     }
     return pl;
   }
@@ -8344,12 +8400,12 @@ class GpuRenderer {
   // Der Renderer arbeitet immer auf einem Satz (slotAktiv); ebeneWaehlen tauscht ihn, _verbund legt die gesicherten Farben übereinander.
   _slot() { let sl = this.slots.get(this.slotAktiv); if (!sl) { sl = { W: this.W, H: this.H, L: this.L, farbe: null, farbeView: null }; this.slots.set(this.slotAktiv, sl); } return sl; }
   _slotSichern() { const sl = this._slot(); sl.previewTex = this.previewTex; sl.fullTex = this.fullTex; sl.aa = this.aa; sl.iterFormat = this.iterFormat; sl.W = this.W; sl.H = this.H; sl.L = this.L; }
-  _slotNeu() {   // Texturen wie in resize für einen neuen Satz
+  _slotNeu(L = this.L) {   // Texturen wie in resize für einen neuen Satz mit L Probenebenen
     const d = this.device, usage = GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST;
-    const sl = { W: this.W, H: this.H, L: this.L, iterFormat: this.iterFormat, aa: null, farbe: null, farbeView: null };
-    sl.previewTex = this._mkLayers(this.W, this.H, this.L, usage); sl.fullTex = this._mkLayers(this.W, this.H, this.L, usage);
+    const sl = { W: this.W, H: this.H, L, iterFormat: this.iterFormat, aa: null, farbe: null, farbeView: null };
+    sl.previewTex = this._mkLayers(this.W, this.H, L, usage); sl.fullTex = this._mkLayers(this.W, this.H, L, usage);
     const enc = d.createCommandEncoder();
-    for (const t of [sl.previewTex, sl.fullTex]) for (let k = 0; k < this.L; k++) enc.beginRenderPass({ colorAttachments: [{ view: t.layer[k], loadOp: 'clear', storeOp: 'store', clearValue: { r: k ? UNSET : INSIDE, g: 0, b: 0, a: 0 } }] }).end();
+    for (const t of [sl.previewTex, sl.fullTex]) for (let k = 0; k < L; k++) enc.beginRenderPass({ colorAttachments: [{ view: t.layer[k], loadOp: 'clear', storeOp: 'store', clearValue: { r: k ? UNSET : INSIDE, g: 0, b: 0, a: 0 } }] }).end();
     d.queue.submit([enc.finish()]);
     return sl;
   }
@@ -8363,13 +8419,13 @@ class GpuRenderer {
     for (const [k, sl] of this.slots) { if (k === this.slotAktiv) { if (sl.farbe) sl.farbe.destroy(); sl.farbe = sl.farbeView = null; } else this._slotLoeschen(sl); }
     const akt = this.slots.get(this.slotAktiv); this.slots = new Map(); if (akt) this.slots.set(this.slotAktiv, akt);
   }
-  ebeneWaehlen(k) {   // ab jetzt rechnet der Renderer auf dem Satz der Ebene k (neu, wenn er fehlt oder nicht mehr passt)
+  ebeneWaehlen(k, L = this.L, fmt = this.iterFormat) {   // ab jetzt rechnet der Renderer auf dem Satz der Ebene k mit L Probenebenen und dem Texturformat fmt (neu, wenn er fehlt oder nicht mehr passt)
     if (!this.slots) { this.slots = new Map(); this.slotAktiv = 0; }
     if (k === this.slotAktiv) return;
     if (this.slotAktiv >= 0) this._slotSichern();
     let sl = this.slots.get(k);
-    if (!sl || !sl.fullTex || sl.W !== this.W || sl.H !== this.H || sl.L !== this.L) { if (sl) this._slotLoeschen(sl); const neu = this._slotNeu(); if (sl) { neu.farbe = null; } sl = neu; this.slots.set(k, sl); }
-    this.previewTex = sl.previewTex; this.fullTex = sl.fullTex; this.aa = sl.aa; this.iterFormat = sl.iterFormat || this.iterFormat; this.slotAktiv = k;
+    if (!sl || !sl.fullTex || sl.W !== this.W || sl.H !== this.H || sl.L !== L || (sl.iterFormat || 'rg32uint') !== (fmt || 'rg32uint')) { if (sl) this._slotLoeschen(sl); this.iterFormat = fmt || 'rg32uint'; sl = this._slotNeu(L); this.slots.set(k, sl); }
+    this.previewTex = sl.previewTex; this.fullTex = sl.fullTex; this.aa = sl.aa; this.iterFormat = sl.iterFormat || this.iterFormat; this.L = sl.L; this.slotAktiv = k;
     this._rebuildBindGroups(); this._buildBgF();
   }
   ebeneHatFarbe(k) { const sl = this.slots && this.slots.get(k); return !!(sl && sl.farbe && sl.W === this.W && sl.H === this.H); }
@@ -8442,7 +8498,7 @@ class GpuRenderer {
     if (!mod) {
       let code = WGSL_FRACTAL; for (const [re, w] of eigen.ers) code = code.replace(re, () => w);
       mod = this.device.createShaderModule({ code });
-      mod.getCompilationInfo().then(ci => { const err = ci.messages.filter(m => m.type === 'error'); if (err.length) console.error('WGSL (eigener Ausdruck): ' + err.map(m => m.lineNum + ':' + m.linePos + ' ' + m.message).join('\n')); });
+      mod.getCompilationInfo().then(ci => { const err = ci.messages.filter(m => m.type === 'error'); if (err.length) { const text = err.map(m => m.lineNum + ':' + m.linePos + ' ' + m.message).join('\n'); console.error('WGSL (eigener Ausdruck): ' + text); if (this.onAusdruckFehler) this.onAusdruckFehler(text); } });
       if (this.modEigen.size >= 12) this.modEigen.delete(this.modEigen.keys().next().value);
       this.modEigen.set(eigen.key, mod);
     }
@@ -8513,10 +8569,20 @@ class GpuRenderer {
     if (cp.texMaske && this.pipeV1) f.set(cp.texMaske, 448);   // Texturmasken: erst, wenn die Fassung „voll“ mit Masken steht (bis dahin Nullen: Farbpass und Glättung rechnen gleich)
     this.device.queue.writeBuffer(this.ubC, 0, f);
   }
+  async _exportLesen(w, h) {   // die Exportkachel aus exColor lesen (Ebenenverbund, Kachel, Bild aus der Ansicht)
+    const enc = this.device.createCommandEncoder();
+    enc.copyTextureToBuffer({ texture: this.exColor }, { buffer: this.exBuf, bytesPerRow: this.exBpr, rowsPerImage: h }, [w, h]);
+    this.device.queue.submit([enc.finish()]);
+    await this.exBuf.mapAsync(GPUMapMode.READ);
+    const img = this._bufferToImage(new Uint8Array(this.exBuf.getMappedRange()), w, h, this.exBpr);
+    this.exBuf.unmap();
+    return img;
+  }
+  _postResFrei(r) { r.roh.destroy(); r.tw.destroy(); r.la.destroy(); r.lb.destroy(); }   // Zwischenbild samt Leucht-Bildern freigeben
   _postRes(ex, w, h) {   // Zwischenbild und Bindgruppe der Nachbearbeitung, je für Bildschirm und Exportkachel; neu bei anderer Größe oder Iterationstextur
     const d = this.device, iterView = ex ? this.exTex.all : this.fullTex.all, alt = ex ? this.postEx : this.postScreen;
     if (alt && alt.w === w && alt.h === h && alt.iterView === iterView) return alt;
-    if (alt) { alt.roh.destroy(); alt.tw.destroy(); alt.la.destroy(); alt.lb.destroy(); }
+    if (alt) this._postResFrei(alt);
     const usage = GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING;
     const roh = d.createTexture({ size: [w, h], format: this.format, usage }), tw = d.createTexture({ size: [w, h], format: 'rgba8unorm', usage });
     const lw = Math.max(1, Math.ceil(w / 4)), lh = Math.max(1, Math.ceil(h / 4));   // Leuchten: ein Viertel der Größe, zwei Bilder im Wechsel
@@ -8568,7 +8634,7 @@ class GpuRenderer {
   }
   beginExport(tw, th, aa) {
     const d = this.device;
-    this.exTex = this._mkLayers(tw, th, aa * aa, GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING);
+    this.exTex = this._mkLayers(tw, th, aa * aa, GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING); this.exTex.L = aa * aa;
     this.exColor = d.createTexture({ size: [tw, th], format: this.format,
       usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC });
     this.exBgC = d.createBindGroup({ layout: this.bglC, entries: [
@@ -8580,6 +8646,16 @@ class GpuRenderer {
     this.exBuf = d.createBuffer({ size: this.exBpr * th, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
     this.exW = tw; this.exH = th; this.exFarbe = [];   // Fraktal-Ebenen: je Ebene die Farbe der Kachel
   }
+  exportProben(aa) {   // Fraktal-Ebenen: die Kachel-Iterationstextur mit der Probenzahl dieser Ebene (neu, wenn sie abweicht)
+    const L = aa * aa, d = this.device; if (this.exTex && this.exTex.L === L) return;
+    if (this.exTex) this.exTex.destroy();
+    this.exTex = this._mkLayers(this.exW, this.exH, L, GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING); this.exTex.L = L;
+    this.exBgC = d.createBindGroup({ layout: this.bglC, entries: [
+      { binding: 0, resource: this.exTex.all }, { binding: 1, resource: { buffer: this.ubC } },
+      { binding: 2, resource: this.cdfView }, { binding: 3, resource: this.palView },
+      { binding: 4, resource: this.dummyF }, { binding: 5, resource: this.dummyF1 }, { binding: 8, resource: this.palPreView }, { binding: 9, resource: this.pal2View },
+      { binding: 10, resource: this.nachLutView } ] });
+  }
   _exFarbe(k) { if (!this.exFarbe[k]) { const t = this.device.createTexture({ size: [this.exW, this.exH], format: this.format, usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING }); this.exFarbe[k] = { tex: t, view: t.createView() }; } return this.exFarbe[k]; }
   renderExportEbene(params, cp, w, h, k) {   // Fraktal-Ebene k der Kachel: Iterationen (alle Probenebenen) und Farbe mit Maske (der Aufrufer wartete auf _nachBereit)
     params.forEach((p, i) => this.renderFractal('export', [{ x: 0, y: 0, w, h }], p, i));
@@ -8589,13 +8665,7 @@ class GpuRenderer {
   async exportVerbund(cp, w, h) {   // der Verbund der gesicherten Kachelfarben samt Nachbearbeitung, zurückgelesen
     await this._nachBereit(cp);
     this._colorPassEbenen(this.exColor.createView(), cp, w, h, true, k => this.exFarbe[k] ? this.exFarbe[k].view : this.dummyF);
-    const enc = this.device.createCommandEncoder();
-    enc.copyTextureToBuffer({ texture: this.exColor }, { buffer: this.exBuf, bytesPerRow: this.exBpr, rowsPerImage: h }, [w, h]);
-    this.device.queue.submit([enc.finish()]);
-    await this.exBuf.mapAsync(GPUMapMode.READ);
-    const img = this._bufferToImage(new Uint8Array(this.exBuf.getMappedRange()), w, h, this.exBpr);
-    this.exBuf.unmap();
-    return img;
+    return this._exportLesen(w, h);
   }
   _pipeVoll(tm) {   // die Fassung „voll“ des Farbpasses (tm: mit Texturmasken) und die Nachbearbeitung: beim ersten Gebrauch nebenher übersetzt; bis dahin false
     // (wie beim WebGL-Renderer: solange erscheint die Farbe ohne Ebenen und Masken, die Statuszeile sagt es; onBereit stößt danach das Umfärben an)
@@ -8639,20 +8709,14 @@ class GpuRenderer {
     await this._nachBereit(cp);
     params.forEach((p, k) => this.renderFractal('export', [{ x: 0, y: 0, w, h }], p, k));
     this._colorPass(this.exColor.createView(), cp, this.exBgC, w, h);
-    const enc = this.device.createCommandEncoder();
-    enc.copyTextureToBuffer({ texture: this.exColor }, { buffer: this.exBuf, bytesPerRow: this.exBpr, rowsPerImage: h }, [w, h]);
-    this.device.queue.submit([enc.finish()]);
-    await this.exBuf.mapAsync(GPUMapMode.READ);
-    const img = this._bufferToImage(new Uint8Array(this.exBuf.getMappedRange()), w, h, this.exBpr);
-    this.exBuf.unmap();
-    return img;
+    return this._exportLesen(w, h);
   }
   endExport() {
     for (const t of [this.exTex, this.exColor, this.exBuf]) if (t) t.destroy();
     for (const f of this.exFarbe || []) if (f) f.tex.destroy();
     this.exFarbe = [];
     this.exTex = this.exColor = this.exBuf = this.exBgC = null;
-    if (this.postEx) { this.postEx.roh.destroy(); this.postEx.tw.destroy(); this.postEx = null; }
+    if (this.postEx) { this._postResFrei(this.postEx); this.postEx = null; }
   }
   setCdf(data) {
     this.device.queue.writeTexture({ texture: this.cdfTex }, data, { bytesPerRow: CDF_N * 4 }, [CDF_N, 1]);
@@ -8668,7 +8732,7 @@ class GpuRenderer {
   // need[2] (Bedarfsmaske, r8uint), stat (Bedarf je Kachel). Ein Durchlauf liest sum[0]/cnt[0] und schreibt sum[1]/cnt[1]
   // (WebGPU kann eine Textur nicht zugleich lesen und beschreiben); die Rechtecke werden danach zurückkopiert.
   async aaInit() {
-    const d = this.device, W = this.W, H = this.H;
+    const d = this.device, W = this.W, H = this.H, satz = this.slotAktiv;   // satz: der Ebenensatz, für den die Puffer entstehen (Fraktal-Ebenen)
     if (!this.pipeA) {
       const mk = async code => { const mod = d.createShaderModule({ code }); const ci = await mod.getCompilationInfo();
         const err = ci.messages.filter(m => m.type === 'error'); if (err.length) throw new Error('WGSL: ' + err.map(m => m.lineNum + ':' + m.linePos + ' ' + m.message).join('\n')); return mod; };
@@ -8710,7 +8774,7 @@ class GpuRenderer {
     aa.statBuf = d.createBuffer({ size: 256 * TILES_N, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
     const e = await d.popErrorScope();
     if (e) { for (const t of [aa.jit, ...aa.sum, ...aa.cnt, ...aa.need, aa.stat, aa.statBuf]) t.destroy(); throw new Error(e.message); }
-    if (W !== this.W || H !== this.H) { for (const t of [aa.jit, ...aa.sum, ...aa.cnt, ...aa.need, aa.stat, aa.statBuf]) t.destroy(); return; }
+    if (W !== this.W || H !== this.H || this.slotAktiv !== satz || this.aa) { for (const t of [aa.jit, ...aa.sum, ...aa.cnt, ...aa.need, aa.stat, aa.statBuf]) t.destroy(); return; }   // inzwischen andere Größe, anderer Satz oder schon Puffer da: diese verfallen
     this.aa = aa; this._aaViews(); this._rebuildBindGroups(); this._buildBgF();
     this.aaClear([{ x: 0, y: 0, w: W, h: H }]);
   }
@@ -8741,13 +8805,7 @@ class GpuRenderer {
   async exportColorFromScreen(cp, w, h) {   // Kachel aus den Bildschirmpuffern einfärben (adaptiver Export) und zurücklesen
     await this._nachBereit(cp);
     this._colorPass(this.exColor.createView(), cp, this.bgC, w, h);
-    const enc = this.device.createCommandEncoder();
-    enc.copyTextureToBuffer({ texture: this.exColor }, { buffer: this.exBuf, bytesPerRow: this.exBpr, rowsPerImage: h }, [w, h]);
-    this.device.queue.submit([enc.finish()]);
-    await this.exBuf.mapAsync(GPUMapMode.READ);
-    const img = this._bufferToImage(new Uint8Array(this.exBuf.getMappedRange()), w, h, this.exBpr);
-    this.exBuf.unmap();
-    return img;
+    return this._exportLesen(w, h);
   }
   aaRefresh(cp, ap) { this._writeCP(cp); this._aaPass([{ x: 0, y: 0, w: this.W, h: this.H }], aaUniform(ap, 1)); }   // Bedarf nach neuer Toleranz
   aaRefine(rects, p, cp, ap) {   // neue Zufallsprobe rendern (nur Pixel mit Bedarf) und aufsummieren
@@ -8908,7 +8966,7 @@ class GpuRenderer {
     return new ImageData(out, W, H);
   }
   destroy() {
-    this.zerstoert = true;   // eine noch laufende Übersetzung der Farbpipeline mit Ebenen (siehe _pipeColor) verfällt damit
+    this.zerstoert = true;   // eine noch laufende Übersetzung der Farbpipeline mit Ebenen (siehe _pipeVoll) verfällt damit
     try { this.ctx.unconfigure(); } catch (e) { /* egal */ }
     try { this.device.destroy(); } catch (e) { /* egal */ }
   }
@@ -8993,7 +9051,7 @@ class GlRenderer {
     canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); if (this.onLost) this.onLost({ message: 'WebGL-Kontext verloren' }); });
   }
   _progVariant(formula, de, ni, cyc, bla, pw, fast = (formula === 0 && !de && !ni && !cyc && !bla && pw === 2), lyap = 0, winkel = 0, stat = 0, stat2 = 0, tex1 = 0, tex2 = 0, form = 0, texz = 0, stat3 = 0, stat4 = 0, stat5 = 0, tex3 = 0, tex4 = 0, stat6 = 0, paar = 0, paarA = 0, paarB = 0, paarVoll = 0, hybrid = 0, eigen = null) {   // ein Programm je Variante (#define)
-    const key = formula + '|' + (de ? 1 : 0) + '|' + (ni ? 1 : 0) + '|' + (cyc ? 1 : 0) + '|' + (bla ? 1 : 0) + '|' + pw + '|' + (fast ? 1 : 0) + '|' + lyap + '|' + winkel + '|' + stat + (tex1 || tex2 ? '|' + stat2 + '|' + tex1 + '|' + tex2 : '') + (form ? '|F' + form : '') + (texz ? '|Z' + stat3 : '') + (stat4 || stat5 || tex3 || tex4 || stat6 ? '|S' + stat4 + '|' + stat5 + '|' + tex3 + '|' + tex4 + '|' + stat6 : '') + (stat2 && !tex1 && !tex2 ? '|s2' + stat2 : '') + (paar ? '|P' + paarA + '|' + paarB + '|' + paarVoll : '') + (hybrid ? '|H' : ''); + (eigen ? '|X' + eigen.key : '')
+    const key = variantenSchluessel(formula, de, ni, cyc, bla, pw, fast, lyap, winkel, stat, stat2, tex1, tex2, form, texz, stat3, stat4, stat5, tex3, tex4, stat6, paar, paarA, paarB, paarVoll, hybrid, eigen, false);
     let v = this.progCache.get(key);
     if (!v) {
       this.pipeNeu = true;   // wie beim WebGPU-Renderer: der erste Durchlauf mit einem neuen Programm zählt nicht als Durchsatz
@@ -9003,6 +9061,7 @@ class GlRenderer {
       for (const n of ['uOrbit', 'uDcScale', 'uDcOffset', 'uMaxIter', 'uLenA', 'uBaseB', 'uLenB', 'uJulia', 'uTexW', 'uPs', 'uInvert', 'uPRef', 'uCRef', 'uZRef', 'uParam', 'uFlip', 'uSeqBits', 'uSeqLen', 'uBlaR', 'uBlaAB', 'uBlaR4', 'uBlaN', 'uBlaMisc', 'uNeed', 'uJit', 'uAdapt', 'uSigma', 'uLyGrenze', 'uStreifen', 'uVorlauf', 'uGewicht', 'uFluchtRadius', 'uRot', 'uInvM', 'uBiomorph', 'uAbb', 'uAbbRef', 'uRichtungY', 'uAbkl', 'uParam2', 'uOptF', 'uOpt2F', 'uWurzeln', 'uTexInnen', 'uVerbund', 'uVerbundErster', 'uTexP', 'uTexR'])
         u[n] = this.gl.getUniformLocation(prog, n);
       v = { prog, u }; this.progCache.set(key, v);
+      if (eigen) { const alt = [...this.progCache.keys()].filter(k => k.includes('|X')); if (alt.length > 12) { const w = this.progCache.get(alt[0]); if (w && w.prog) this.gl.deleteProgram(w.prog); this.progCache.delete(alt[0]); } }
     }
     return v;
   }
@@ -9055,7 +9114,7 @@ class GlRenderer {
   _delTarget(t) { if (t) { this.gl.deleteTexture(t.tex); for (const fb of [].concat(t.fbo)) this.gl.deleteFramebuffer(fb); } }
   resize(W, H, L) {
     const gl = this.gl;
-    if (W !== this.W || H !== this.H || L !== this.L) this._slotsAlleLoeschen();   // Fraktal-Ebenen: andere Größe, alle Sätze verfallen
+    if (W !== this.W || H !== this.H) this._slotsAlleLoeschen();   // Fraktal-Ebenen: andere Größe, alle Sätze verfallen; eine andere Probenzahl betrifft nur den aktiven Satz
     this.W = W; this.H = H; this.L = L;
     this.canvas.width = W; this.canvas.height = H;
     this.aaDestroy();
@@ -9239,7 +9298,7 @@ class GlRenderer {
   // ---- Fraktal-Ebenen wie im WebGPU-Renderer: je Ebene ein Satz (Iterationen voll und Vorschau, Glättung, gesicherte Farbe)
   _slot() { if (!this.slots) { this.slots = new Map(); this.slotAktiv = 0; } let sl = this.slots.get(this.slotAktiv); if (!sl) { sl = { W: this.W, H: this.H, L: this.L, farbe: null }; this.slots.set(this.slotAktiv, sl); } return sl; }
   _slotSichern() { const sl = this._slot(); sl.preview = this.preview; sl.full = this.full; sl.aa = this.aa; sl.iterFormat = this.iterFormat; sl.W = this.W; sl.H = this.H; sl.L = this.L; }
-  _slotNeu() { const sl = { W: this.W, H: this.H, L: this.L, iterFormat: this.iterFormat, aa: null, farbe: null }; sl.preview = this._iterTarget(this.W, this.H, this.L); sl.full = this._iterTarget(this.W, this.H, this.L); this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null); return sl; }
+  _slotNeu(L = this.L) { const sl = { W: this.W, H: this.H, L, iterFormat: this.iterFormat, aa: null, farbe: null }; sl.preview = this._iterTarget(this.W, this.H, L); sl.full = this._iterTarget(this.W, this.H, L); this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null); return sl; }
   _slotLoeschen(sl) {
     const gl = this.gl;
     if (sl.preview) this._delTarget(sl.preview); if (sl.full) this._delTarget(sl.full);
@@ -9253,13 +9312,13 @@ class GlRenderer {
     for (const [k, sl] of this.slots) { if (k === this.slotAktiv) { if (sl.farbe) { gl.deleteTexture(sl.farbe.tex); gl.deleteFramebuffer(sl.farbe.fbo); } sl.farbe = null; } else this._slotLoeschen(sl); }
     const akt = this.slots.get(this.slotAktiv); this.slots = new Map(); if (akt) this.slots.set(this.slotAktiv, akt);
   }
-  ebeneWaehlen(k) {
+  ebeneWaehlen(k, L = this.L, fmt = this.iterFormat) {
     if (!this.slots) { this.slots = new Map(); this.slotAktiv = 0; }
     if (k === this.slotAktiv) return;
     if (this.slotAktiv >= 0) this._slotSichern();
     let sl = this.slots.get(k);
-    if (!sl || !sl.full || sl.W !== this.W || sl.H !== this.H || sl.L !== this.L) { if (sl) this._slotLoeschen(sl); sl = this._slotNeu(); this.slots.set(k, sl); }
-    this.preview = sl.preview; this.full = sl.full; this.aa = sl.aa; this.iterFormat = sl.iterFormat || this.iterFormat; this.slotAktiv = k;
+    if (!sl || !sl.full || sl.W !== this.W || sl.H !== this.H || sl.L !== L || (sl.iterFormat || 'rg32uint') !== (fmt || 'rg32uint')) { if (sl) this._slotLoeschen(sl); this.iterFormat = fmt || 'rg32uint'; sl = this._slotNeu(L); this.slots.set(k, sl); }
+    this.preview = sl.preview; this.full = sl.full; this.aa = sl.aa; this.iterFormat = sl.iterFormat || this.iterFormat; this.L = sl.L; this.slotAktiv = k;
     if (this.aa) this._aaAttach();
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
   }
@@ -9366,7 +9425,7 @@ class GlRenderer {
     return { tex, fbo };
   }
   async aaInit() {
-    const gl = this.gl, W = this.W, H = this.H;
+    const gl = this.gl, W = this.W, H = this.H, satz = this.slotAktiv;
     if (!gl.getExtension('EXT_color_buffer_float')) throw new Error('EXT_color_buffer_float fehlt');
     if (!this.progA) {
       this.progA = this._program(GLSL_VS, GLSL_AAACC); this.uA = this._colorUniforms(this.progA);
@@ -9385,6 +9444,7 @@ class GlRenderer {
       if (gl.getError() === gl.OUT_OF_MEMORY) throw new Error('WebGL: OUT_OF_MEMORY');
     } catch (e) { this.aa = aa; this.aaDestroy(); throw e; }
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    if (W !== this.W || H !== this.H || this.slotAktiv !== satz || this.aa) { const alt = this.aa; this.aa = aa; this.aaDestroy(); this.aa = alt; return; }   // inzwischen andere Größe, anderer Satz oder schon Puffer da
     this.aa = aa; this._aaAttach();
     this.aaClear([{ x: 0, y: 0, w: W, h: H }]);
   }
@@ -9514,6 +9574,7 @@ class GlRenderer {
     this.exW = tw; this.exH = th; this.exFarbe = [];   // Fraktal-Ebenen: je Ebene die Farbe der Kachel
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
   }
+  exportProben(aa) { const L = aa * aa; if (this.exIter && this.exIter.L === L) return; if (this.exIter) this._delTarget(this.exIter); this.exIter = this._iterTarget(this.exW, this.exH, L); this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null); }
   _exFarbe(k) { if (!this.exFarbe[k]) { this.exFarbe[k] = this._rgbaTarget(this.exW, this.exH); this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null); } return this.exFarbe[k]; }
   renderExportEbene(params, cp, w, h, k) {   // Fraktal-Ebene k der Kachel: Iterationen und Farbe mit Maske
     params.forEach((p, i) => this.renderFractal('export', [{ x: 0, y: 0, w, h }], p, i));
@@ -9539,7 +9600,7 @@ class GlRenderer {
     for (const f of this.exFarbe || []) if (f) { this.gl.deleteTexture(f.tex); this.gl.deleteFramebuffer(f.fbo); }
     this.exFarbe = [];
     this.exIter = this.exColor = null;
-    if (this.postEx) { const gl = this.gl, r = this.postEx; gl.deleteTexture(r.roh); gl.deleteTexture(r.tw); gl.deleteFramebuffer(r.fbo); this.postEx = null; }
+    if (this.postEx) { const gl = this.gl, r = this.postEx; gl.deleteTexture(r.roh); gl.deleteTexture(r.tw); gl.deleteFramebuffer(r.fbo); gl.deleteTexture(r.la); gl.deleteTexture(r.lb); gl.deleteFramebuffer(r.lfboA); gl.deleteFramebuffer(r.lfboB); this.postEx = null; }
   }
   present(cp) { this._colorPass(null, cp); }
   // ---- Akkumulation: Zähltextur aus CPU-Workern, Anzeige per Shader
@@ -9620,7 +9681,7 @@ class GlRenderer {
     return new ImageData(out, W, H);
   }
   destroy() {
-    this.zerstoert = true;   // ein laufendes Warten auf die Übersetzung (siehe _progColor) endet damit
+    this.zerstoert = true;   // ein laufendes Warten auf die Übersetzung (siehe _progVoll) endet damit
     const ext = this.gl.getExtension('WEBGL_lose_context');
     if (ext) ext.loseContext();
   }
@@ -9725,7 +9786,7 @@ try {   // gespeicherte App-Einstellungen nur lesen, wenn die Einwilligung dafü
 let renderer = null, canvas = null, W = 0, H = 0;
 let aaEff = 1, layerOff = [[0, 0]], tilesL0 = 0;   // Glättung: wirksame Stufe, Probenversatz je Ebene (Pixel), Kacheln der Ebene 0
 let aaOn = false, aaBuilt = false, aaInitId = 0;     // adaptive Glättung: Puffer bereit; Puffer für dieses Verfahren angelegt; Zähler der Anläufe
-let aaRound = 0, aaTiles = null, aaTileIdx = 0, aaCounts = null, aaActive = 0, aaStatsBusy = false, aaColorKey = '', cdfVersion = 0, aaT0 = 0;
+let aaRound = 0, aaTiles = null, aaTileIdx = 0, aaCounts = null, aaActive = 0, aaStatsBusy = false, aaStatsId = 0, aaColorKey = '', cdfVersion = 0, aaT0 = 0;   // aaStatsId: laufende Zählung; ältere Antworten (anderer Satz, nach Neustart) zählen nicht
 let tiles = [], tileIdx = 0, phase = 'idle';
 let fractalDirty = true, orbitDirty = true, colorDirty = false, hasImage = false;
 let histDirty = true, deInTexture = false, richtungInTexture = false, intInTexture = false, lyapInTexture = 0, winkelInTexture = 0, statInTexture = 0, stat2InTexture = 0, paarInTexture = ''; // Histogramm veraltet? Abstände / Multiplikatoren / Lyapunov-Werte / Winkel in der Textur?
@@ -9989,6 +10050,7 @@ function formatPruefen() {   // Textur über einer Statistik-Färbung braucht de
 }
 let letzteAenderung = -1e9;   // wann viewChanged zuletzt lief: unterscheidet eine einzelne Änderung von einer Folge (Regler)
 function viewChanged() {
+  bildFehlerZahl = 0;   // eine Eingabe: die Bildschleife darf wieder von vorn
   if (ebenen[ebeneAktiv]) { ebenen[ebeneAktiv].frisch = false; liveZurueck(); }   // Fraktal-Ebenen: die gewählte Ebene ist dran und verfällt
   formatPruefen();
   orbitDirty = true; fractalDirty = true; accDirty = true; nusVeraltet = true; peHistPlan();
@@ -10017,7 +10079,7 @@ function zoomAt(px, py, f) {
   if (S.family === 'escape' && hasImage && !fractalDirty && !panDirty && renderer) {
     // Vorschau aus dem vorhandenen Bild: neue Probe (x, y) → alte Probe (a·x + bx, a·y + by)
     const a = S.ps / oldPs;
-    const dx = dd.sub(S.cx, oldCx)[0] / oldPs, dy = dd.sub(S.cy, oldCy)[0] / oldPs;
+    const [dx, dy] = ansichtVersatz({ cx: oldCx, cy: oldCy, ps: oldPs, dreh: S.dreh }, { cx: S.cx, cy: S.cy });
     const t = { ax: a, ay: a, bx: dx + W / 2 * (1 - a), by: (renderer.yDown ? -dy : dy) + H / 2 * (1 - a) };
     // mehrere Radschritte vor einem Frame: Abbildungen verketten (neuestes Raster → Texturraster)
     zoomPending = (zoomDirty && zoomPending) ? { ax: zoomPending.ax * t.ax, ay: zoomPending.ay * t.ay, bx: zoomPending.ax * t.bx + zoomPending.bx, by: zoomPending.ay * t.by + zoomPending.by } : t;
@@ -10054,6 +10116,16 @@ function pan(dx, dy) {
   scheduleHash();
   if (cropActive) syncCropBox();
   requestFrame();
+}
+function panFein(dx, dy) {   // feines Ziehen (auch um Bruchteile eines Pixels): der genaue Weg mit Neurechnen, nicht der auf Pixel gerasterte
+  liveZurueck(); const vorG = ebenenGesteVor();
+  const [ex, ey] = ebeneVonPixel(-dx * S.ps, dy * S.ps); S.cx = dd.addD(S.cx, ex); S.cy = dd.addD(S.cy, ey);
+  ebenenGesteNach(vorG); viewChanged();
+}
+function drehGeste(d) {   // Drehung als Geste (eckige Klammern): mit „Alle“ drehen die gelösten Ebenen mit
+  liveZurueck(); const vorG = ebenenGesteVor();
+  S.dreh = drehNorm((S.dreh || 0) + d); syncDreh();
+  ebenenGesteNach(vorG); scheduleHash(); viewChanged();
 }
 let panIdleTimer = 0;
 function commitPan() {   // aufgelaufenen Versatz in die Texturen übernehmen: Streifen und Referenzbahn nachrechnen
@@ -10162,7 +10234,7 @@ function colorKey() {   // alles, was die Farbe einer Probe bestimmt: ändert es
 function aaRestart() {   // Akkumulation verwerfen: nach neuem Bild, Zoom oder Farbänderung
   if (!aaOn) return;
   renderer.aaClear([{ x: 0, y: 0, w: W, h: H }]);
-  aaRound = 0; aaTiles = null; aaCounts = null; aaActive = W * H; aaColorKey = colorKey(); aaT0 = performance.now();
+  aaRound = 0; aaTiles = null; aaCounts = null; aaActive = W * H; aaColorKey = colorKey(); aaT0 = performance.now(); aaStatsId++; aaStatsBusy = false;   // eine laufende Zählung zählt nicht mehr
 }
 function aaBegin() {   // Verfeinerung beginnt (nach Ebene 0, Verschieben, Farb- oder Stufenwechsel)
   if (renderMs < 0) renderMs = Math.max(0, performance.now() - renderT0);   // Ebene 0 ist damit fertig: das ist die Renderzeit
@@ -10180,7 +10252,7 @@ async function aaSetup() {   // Puffer der adaptiven Glättung anlegen (asynchro
   }
   if (renderer !== my || id !== aaInitId || !renderer.aa || w !== W || h !== H) return;
   aaOn = true; aaRestart();
-  if (phase === 'idle' && hasImage) aaBegin();
+  if (phase === 'idle' && hasImage && glattStand !== 'vertagt') { if (glattStand === 'wartet') glattStand = 'fertig'; aaBegin(); }   // Fraktal-Ebenen: eine vertagte Glättung beginnt erst, wenn sie an der Reihe ist
   lastStatusKey = ''; colorDirty = true; updateResInfo(); requestFrame();
 }
 function aaFinish() {   // nichts braucht mehr Proben: fertig; die Glättungszeit zählt ab Beginn der Verfeinerung
@@ -10193,16 +10265,17 @@ function aaFinish() {   // nichts braucht mehr Proben: fertig; die Glättungszei
 function aaRequestStats() {   // Bedarf je Kachel zählen lassen; das Ergebnis steuert den nächsten Durchlauf und meldet das Ende
   if (aaStatsBusy || !aaOn || !renderer.aa) return;
   aaStatsBusy = true;
-  const my = renderer;
+  const my = renderer, id = ++aaStatsId;
   let p;
   try { p = renderer.aaStats(); } catch (e) { aaStatsBusy = false; console.warn('Glättung:', e); return; }   // kein Fehler darf die Bildschleife anhalten
   p.then(c => {
+    if (id !== aaStatsId) return;   // inzwischen ein anderer Satz oder ein Neustart: die Antwort gehört nicht mehr hierher
     aaStatsBusy = false;
     if (renderer !== my || !aaOn || !c) return;
     aaCounts = c; aaActive = c.reduce((a, b) => a + b, 0);
     if (aaActive === 0) aaFinish();
     lastStatusKey = ''; syncAaUI(); requestFrame();
-  }).catch(e => { aaStatsBusy = false; console.warn('Glättung:', e); });
+  }).catch(e => { if (id === aaStatsId) aaStatsBusy = false; console.warn('Glättung:', e); });
 }
 function aaRefineStep(maxIter, budget) {   // einen Stapel Kacheln mit je einer neuen Zufallsprobe verfeinern; liefert die geschätzte Arbeit
   if (!aaTiles) {   // neuer Durchlauf: Kacheln mit Bedarf laut letzter Zählung (ohne Zählung alle), von der Mitte nach außen
@@ -10563,9 +10636,23 @@ function stapelMs(now) {   // die geltende Stapelgröße: während im Bedienfeld
 function frame(now) {
   rafId = 0;
   if (!renderer || !W || !H || exporting) return;
-  if (ebenen.length > 1 && S.family === 'escape' && renderer.ebeneWaehlen && !gpuBusy && phase === 'idle' && !fractalDirty && !zoomDirty && !panDirty && hasImage) ebenenWeiter();   // Fraktal-Ebenen: fertige sichern, veraltete rechnen
-  if (renderEbene !== ebeneAktiv && ebenen[renderEbene]) { mitEbene(renderEbene, () => frameKern(now)); updateStatus(); }
-  else frameKern(now);
+  if (ebenen.length > 1 && S.family === 'escape' && renderer.ebeneWaehlen && !gpuBusy && phase === 'idle' && !fractalDirty && !zoomDirty && !panDirty && !pendingSX && !pendingSY && hasImage) {   // Fraktal-Ebenen: fertige sichern, veraltete rechnen
+    const ruhe = interactUntil + 250;   // erst eine Weile nach der letzten Geste, und nie, solange ein Zeiger auf dem Bild liegt: der Wechsel setzt Versatz und Vorschau zurück, und das Nachrechnen belegt die GPU beim Weiterziehen
+    if (!zeigerAktiv && now >= ruhe) ebenenWeiter(); else setTimeout(requestFrame, zeigerAktiv ? 120 : Math.max(20, ruhe - now + 5));
+  }
+  try {
+    if (renderEbene !== ebeneAktiv && ebenen[renderEbene]) { mitEbene(renderEbene, () => frameKern(now)); updateStatus(); }
+    else frameKern(now);
+  } catch (e) { bildFehler(e); }
+}
+let bildFehlerZahl = 0, kontextVerluste = 0;
+function bildFehler(e) {   // Ausnahme in der Bildschleife: melden, Zustand freigeben, nach einer Pause neu versuchen (höchstens dreimal in Folge; jede Eingabe zählt neu)
+  console.error('Bildschleife:', e);
+  gpuBusy = false; phase = 'idle'; stripMode = false; panDirty = false; zoomDirty = false; zoomPending = null; pendingSX = pendingSY = 0; glattStand = null;
+  bildFehlerZahl++;
+  notify('status.render-error', String((e && e.message) || e).slice(0, 160));
+  lastStatusKey = '';
+  if (bildFehlerZahl <= 3) { fractalDirty = true; setTimeout(requestFrame, 800 * bildFehlerZahl); }
 }
 function frameKern(now) {
   if (S.family === 'accum') { accFrame(now); return; }
@@ -10625,7 +10712,7 @@ function frameKern(now) {
       if (s === 1) {
         renderer.renderFractal('full', [{ x: 0, y: 0, w: W, h: H }], fractalParams(1, maxIter, 0), 0);
         lastWork = W * H * maxIter;
-        tileIdx = tilesL0; if (tileIdx < tiles.length) phase = 'tiles'; else if (aaOn) aaBegin(); else phase = 'idle';   // Ebene 0 fertig, dann Verfeinerung
+        tileIdx = tilesL0; glaettungOderIdle();   // Ebene 0 fertig, dann Verfeinerung (oder vertagt, wenn eine andere Fraktal-Ebene wartet)
       } else {
         const pw = Math.ceil(W / s), ph = Math.ceil(H / s);
         renderer.renderFractal('preview', [{ x: 0, y: 0, w: pw, h: ph }], fractalParams(s, maxIter, 0));
@@ -10637,15 +10724,19 @@ function frameKern(now) {
       if (histAktiv()) runHistPass(maxIter);
       submitted = true; hasImage = true; colorDirty = true;
     } else if (phase === 'tiles' && (now >= interactUntil || stripMode)) {
+      if (orbitDirty) { computeOrbits(maxIter); orbitDirty = false; }   // nach einem Ebenenwechsel (vertagte Glättung) gehört die Referenzbahn dieser Ebene
       const t0 = tiles[tileIdx], layer = t0.layer || 0, tilePix = Math.max(1, t0.w * t0.h);
       const budgetMs = now > interactUntil + 400 ? 2 * stapelMs(now) : stapelMs(now);   // im Leerlauf größere Stapel
       let k = clamp(Math.floor(throughput * budgetMs / (tilePix * maxIter)), 1, tiles.length - tileIdx);
       while (k > 1 && (tiles[tileIdx + k - 1].layer || 0) !== layer) k--;      // ein Stapel bleibt in einer Ebene
       renderer.renderFractal('full', tiles.slice(tileIdx, tileIdx + k), fractalParams(1, maxIter, layer), layer);
       tileIdx += k; lastWork = k * tilePix * maxIter;
-      if (tileIdx >= tiles.length) { if (aaOn) aaBegin(); else phase = 'idle'; if (stripMode) { stripMode = false; computeTiles(); } }
+      if (tileIdx >= tiles.length) { if (stripMode) { stripMode = false; computeTiles(); tileIdx = tiles.length; } glaettungOderIdle(); }
+      else if (tileIdx >= tilesL0 && tileIdx - k < tilesL0 && !stripMode) glaettungOderIdle();   // Grundbild eben fertig: Probenebenen anschließen oder vertagen
       submitted = true; colorDirty = true;
+    } else if (phase === 'refine' && aaOn && !renderer.aa) { aaOn = false; phase = 'idle'; aaSetup();   // Puffer fehlen (Satz gewechselt, während sie entstanden): neu anlegen, aaSetup beginnt danach
     } else if (phase === 'refine' && aaOn && now >= interactUntil) {   // adaptive Glättung: so viele Stapel, wie ins Zeitbudget passen
+      if (orbitDirty) { computeOrbits(maxIter); orbitDirty = false; }
       const budget = throughput * (now > interactUntil + 400 ? 2 * stapelMs(now) : stapelMs(now));
       let work = 0, steps = 0;
       while (phase === 'refine' && work < budget && steps < 12) { const w = aaRefineStep(maxIter, budget - work); if (!w) break; work += w; steps++; }
@@ -10694,6 +10785,7 @@ function notify(de, ...werte) {
   setTimeout(() => { lastStatusKey = ''; updateStatus(); }, 2600);
 }
 function updateStatus() {
+  ebenenFeinNachfuehren();
   if (ebeneInS !== ebeneAktiv) return;   // Fraktal-Ebenen: nur aus dem Zustand der gewählten Ebene heraus
   const maxIter = currentMaxIter();
   const lg = Math.log10(S.zoom);
@@ -10764,8 +10856,9 @@ function aaOom(aa, e) {   // Grafikspeicher reicht nicht: nächste Stufe darunte
   notify('quality.not-enough-graphics-memory', aa, lower);
   doResize(); syncAaUI();
 }
-function doResize() {
+function doResize(erzwingen = false) {   // erzwingen: Puffer neu anlegen, auch bei gleicher Größe (anderes Glättungsverfahren)
   if (!renderer || !canvas) return;
+  if (renderer.W && renderer.H) liveZurueck();   // erst mit einer Größe (beim Start wählt initRenderer die Ebene nach dem ersten resize)
   const rect = canvas.getBoundingClientRect();
   if (rect.width < 1 || rect.height < 1) return;
   let scale = (window.devicePixelRatio || 1) * S.quality;
@@ -10775,7 +10868,7 @@ function doResize() {
   const nH = clamp(Math.round(rect.height * scale), 1, renderer.maxDim);
   const adaptive = aaAdaptiv();
   const aa = adaptive ? 1 : aaBest(nW, nH, Math.min(S.aa, aaCap));   // adaptiv: nur Ebene 0 im Raster, die Proben liegen in eigenen Puffern; sonst höchste Stufe im Budget
-  if (nW === W && nH === H && aa === aaEff && adaptive === aaBuilt) return;
+  if (nW === W && nH === H && aa === aaEff && adaptive === aaBuilt && !erzwingen) return;
   W = nW; H = nH; aaEff = aa; layerOff = layerOffsets(aa); aaBuilt = adaptive; aaOn = false;
   renderer.iterFormat = texturBreit() ? 'rgba32uint' : 'rg32uint';   // Kanäle z und w nur für Texturen über einer Statistik-Färbung oder mehr als zwei Texturen
   try { renderer.resize(W, H, aa * aa); }
@@ -10851,12 +10944,14 @@ async function initRenderer() {
   }
   $('fatal').hidden = true;
   badge.textContent = renderer.name; badge.className = 'badge ' + renderer.kind;
-  renderer.onBereit = () => { lastStatusKey = ''; colorDirty = true; requestFrame(); };   // WebGL 2: die Fassung des Farbpasses mit Nachbearbeitung ist übersetzt – umfärben
+  renderer.onBereit = () => { lastStatusKey = ''; colorDirty = true; ebenenMaskenVeraltet(); requestFrame(); };   // WebGL 2: die Fassung des Farbpasses mit Nachbearbeitung ist übersetzt – umfärben
   applyPalette();
   zeigeTechInfo();
   renderer.onOom = msg => aaOom(aaEff || S.aa, new Error(msg));
+  renderer.onAusdruckFehler = text => notify('expr.shader-error', text.slice(0, 160));   // sonst stünde das alte Bild stumm da
   renderer.onLost = i => {
     console.warn('Grafikkontext verloren:', i && i.message);
+    if (++kontextVerluste > 2) { notify('status.context-lost'); return; }   // nicht endlos neu starten
     if (S.rendererPref === 'auto' && renderer && renderer.kind === 'gpu') { S.rendererPref = 'webgl'; $('renderer').value = 'webgl'; }
     initRenderer();
   };
@@ -10884,7 +10979,7 @@ function attachCanvasEvents(c) {
     }
     try { c.setPointerCapture(e.pointerId); } catch (err) { /* egal */ }
     const [x, y] = toCanvas(e);
-    ptrs.set(e.pointerId, { x, y });
+    ptrs.set(e.pointerId, { x, y }); zeigerAktiv = true;
     if (ptrs.size === 1) {
       const now = performance.now();
       if (now - lastTap.t < 320 && Math.hypot(x - lastTap.x, y - lastTap.y) < 0.03 * Math.max(W, H)) { zoomAt(x, y, 2); lastTap.t = 0; }
@@ -10894,7 +10989,8 @@ function attachCanvasEvents(c) {
   c.addEventListener('pointermove', e => {
     const p = ptrs.get(e.pointerId); if (!p) return;
     const [x, y] = toCanvas(e);
-    if (ptrs.size === 1) { if (x !== p.x || y !== p.y) pan(x - p.x, y - p.y); p.x = x; p.y = y; }
+    const fein = e.shiftKey ? (e.ctrlKey ? 0.01 : 0.1) : 1;   // Umschalt: ein Zehntel der Bewegung, Strg + Umschalt: ein Hundertstel (unter einem Pixel, genauer Weg)
+    if (ptrs.size === 1) { if (x !== p.x || y !== p.y) { if (fein < 1) panFein((x - p.x) * fein, (y - p.y) * fein); else pan(x - p.x, y - p.y); } p.x = x; p.y = y; }
     else {
       p.x = x; p.y = y;
       if (ptrs.size === 2 && pinch) {
@@ -10905,27 +11001,31 @@ function attachCanvasEvents(c) {
       }
     }
   });
-  const end = e => { ptrs.delete(e.pointerId); pinch = ptrs.size === 2 ? pinchState() : null; if (ptrs.size === 0) commitPan(); };
+  const end = e => { ptrs.delete(e.pointerId); zeigerAktiv = ptrs.size > 0; pinch = ptrs.size === 2 ? pinchState() : null; if (ptrs.size === 0) { commitPan(); requestFrame(); } };   // losgelassen: übernehmen, und die Ebenenschleife darf weiter
   c.addEventListener('pointerup', end); c.addEventListener('pointercancel', end);
   c.addEventListener('wheel', e => {
     e.preventDefault();
     const [x, y] = toCanvas(e);
     let dy = e.deltaY; if (e.deltaMode === 1) dy *= 33; else if (e.deltaMode === 2) dy *= 400;
-    zoomAt(x, y, Math.exp(-clamp(dy, -400, 400) * 0.0022));
+    const fein = e.shiftKey ? (e.ctrlKey ? 0.004 : 0.04) : 1;   // Umschalt: etwa 1 % je Raster, Strg + Umschalt: etwa 0,1 %
+    zoomAt(x, y, Math.exp(-clamp(dy, -400, 400) * 0.0022 * fein));
   }, { passive: false });
   c.addEventListener('contextmenu', e => e.preventDefault());
 }
 window.addEventListener('keydown', e => {
   if (e.target instanceof Element && e.target.matches('input, select, textarea, button, a')) return;
   if (!renderer || currentPage) return;
-  const step = 0.1;
+  const step = 0.1, fein = e.shiftKey || e.altKey;   // Pfeile: Umschalt 1 px, Alt 0,1 px, beide 10 px; Plus/Minus: Alt 1 %, Alt + Umschalt 0,1 %
+  const px = e.shiftKey && e.altKey ? 10 : e.altKey ? 0.1 : 1, zf = e.altKey ? (e.shiftKey ? 1.001 : 1.01) : 1.5;
   switch (e.key) {
-    case '+': case '=': zoomAt(W / 2, H / 2, 1.5); break;
-    case '-': case '_': zoomAt(W / 2, H / 2, 1 / 1.5); break;
-    case 'ArrowLeft': pan(W * step, 0); break;
-    case 'ArrowRight': pan(-W * step, 0); break;
-    case 'ArrowUp': pan(0, H * step); break;
-    case 'ArrowDown': pan(0, -H * step); break;
+    case '+': case '=': zoomAt(W / 2, H / 2, zf); break;
+    case '-': case '_': zoomAt(W / 2, H / 2, 1 / zf); break;
+    case 'ArrowLeft': if (fein) panFein(px, 0); else pan(W * step, 0); break;
+    case 'ArrowRight': if (fein) panFein(-px, 0); else pan(-W * step, 0); break;
+    case 'ArrowUp': if (fein) panFein(0, px); else pan(0, H * step); break;
+    case 'ArrowDown': if (fein) panFein(0, -px); else pan(0, -H * step); break;
+    case '[': drehGeste(e.shiftKey ? -0.1 : -1); break;
+    case ']': drehGeste(e.shiftKey ? 0.1 : 1); break;
     case 'r': case 'R': resetView(); break;
     case 'h': case 'H': togglePanel(); break;
     default: return;
@@ -10971,11 +11071,38 @@ function ddToString(a, digits = 32) {
 const EBENEN_MAX = 6;
 const EBENE_MODI = ['normal', 'multiply', 'screen', 'overlay', 'darken', 'lighten', 'dodge', 'burn', 'hardlight', 'softlight', 'difference', 'exclusion', 'add', 'subtract', 'hue', 'saturation', 'color', 'luminosity'];
 const EBENE_FARBEN = ['#82cbbe', '#e0a050', '#5fa8e0', '#c98ad8', '#e06868', '#a9c85a'];   // Farbmarke je Ebene (Pille, Karte)
-const EBENE_GLOBAL = new Set(['cx', 'cy', 'zoom', 'ps', 'dreh', 'aa', 'aaMax', 'aaMode', 'aaSigma', 'aaTol', 'quality', 'rendererPref', 'bla', 'cycle', 'stapelMs', 'uiVorrang', 'theme', 'nach', 'family', 'cloudPrm', 'accKind', 'accTarget', 'exposure', 'gamma']);
+const EBENE_GLOBAL = new Set(['cx', 'cy', 'zoom', 'ps', 'dreh', 'quality', 'rendererPref', 'bla', 'cycle', 'stapelMs', 'uiVorrang', 'theme', 'nach', 'family', 'cloudPrm', 'accKind', 'accTarget', 'exposure', 'gamma']);
 const EBENE_LINK_GLOBAL = ['nb', 'page', 'fam', 'ex', 'ga', 'at', 'bla', 'cyc'];   // Adresswerte des Bilds: stehen nicht im Parametersatz einer weiteren Ebene
 const EBENE_LINK_ANSICHT = ['re', 'im', 'z', 'dr'];                                 // die Ansicht: nur bei einer gelösten Ebene im Parametersatz
 let ebenen = [], ebeneAktiv = 0, ebeneInS = 0, ebenenBasisAnsicht = null, ebenenLeseTiefe = 0, ebenenStartAktiv = 0, EBENE_STANDARD = null;   // ebeneInS: welche Ebene gerade in S liegt (mitEbene tauscht vorübergehend)
 let renderEbene = 0;   // welche Ebene der Renderer gerade rechnet (die gewählte, danach der Reihe nach die veralteten)
+let glattStand = null;   // Fraktal-Ebenen: was die Glättung der rechnenden Ebene nach dem Grundbild tat — 'vertagt' (andere Ebene wartet) oder 'fertig' (lief bzw. nichts zu tun)
+window.ebenenProtokoll = [];   // Testhaken: Reihenfolge der Schritte (grund k, vertagt k, glaettung k)
+function texFlagsSichern() { return { de: deInTexture, ri: richtungInTexture, int: intInTexture, ly: lyapInTexture, wi: winkelInTexture, st: statInTexture, st2: stat2InTexture, pa: paarInTexture }; }   // was die Iterationstextur der Ebene trägt
+function texFlagsLaden(f) { if (!f) return; deInTexture = f.de; richtungInTexture = f.ri; intInTexture = f.int; lyapInTexture = f.ly; winkelInTexture = f.wi; statInTexture = f.st; stat2InTexture = f.st2; paarInTexture = f.pa; }
+function ebenenWartet() {   // wartet eine andere sichtbare Ebene auf ihr Grundbild oder ihre Glättung? dann wird die Glättung der rechnenden Ebene vertagt
+  if (ebenen.length <= 1 || S.family !== 'escape') return false;
+  const solo = ebenenSoloIndex();
+  return ebenen.some((e, k) => k !== renderEbene && (solo >= 0 ? k === solo : e.sichtbar) && (ebeneVeraltet(k) || e.glattOffen));
+}
+function glaettungOderIdle() {   // Grundbild fertig: Glättung anschließen — oder vertagen (erst alle Iterationen, dann alle Glättungen)
+  const offen = tileIdx < tiles.length || aaOn || aaAdaptiv();   // Probenebenen ausstehend oder adaptive Verfeinerung (auch wenn ihre Puffer gerade erst entstehen)
+  if (offen && ebenenWartet()) { glattStand = 'vertagt'; phase = 'idle'; if (renderMs < 0) renderMs = Math.max(0, performance.now() - renderT0); window.ebenenProtokoll.push('vertagt ' + (renderEbene + 1)); return; }
+  glattStand = 'fertig';
+  if (tileIdx < tiles.length) phase = 'tiles'; else if (aaOn) aaBegin(); else phase = 'idle';
+}
+function glaettungFortsetzen(k) {   // vertagte Glättung der Ebene k: ihr Satz trägt das Grundbild, es fehlen nur Probenebenen bzw. Verfeinerung
+  const e = ebenen[k]; if (!e || !renderer) return;
+  if (renderEbene !== k) liveWechseln(k, true); else ebenenGlaettungLaden();   // Satz wählen, ohne neu zu rechnen; Kachelplan und Puffer der Ebene liegen danach an
+  texFlagsLaden(e.texFlags);
+  window.ebenenProtokoll.push('glaettung ' + (k + 1));
+  fractalDirty = false; hasImage = true; orbitDirty = true; stripMode = false;
+  renderT0 = performance.now(); renderMs = 0; refineMs = -1;
+  tileIdx = tilesL0; glattStand = 'fertig';
+  if (tileIdx < tiles.length) phase = 'tiles'; else if (aaOn) { aaRestart(); aaBegin(); } else if (aaAdaptiv()) { phase = 'idle'; glattStand = 'wartet'; } else phase = 'idle';   // adaptiv ohne Puffer: aaSetup läuft, danach beginnt die Verfeinerung von selbst
+  colorDirty = true; lastStatusKey = ''; requestFrame();
+}
+let zeigerAktiv = false;   // ein Zeiger liegt auf dem Bild (Ziehen läuft): die anderen Ebenen warten mit dem Nachrechnen, sonst ruckelt das Weiterziehen
 let ebenenNurEine = false;   // Gesten (Ziehen, Zoomen) bewegen nur die gewählte Ebene; sonst alle zusammen
 function ebenenGesteVor() {   // vor einer Geste: „nur diese“ löst die gewählte Ebene (oder alle anderen vom Grund) mit ihrer jetzigen Ansicht; „alle“ merkt den Stand, damit gelöste Ebenen mitgehen
   if (ebenen.length <= 1 || S.family !== 'escape') return null;
@@ -10990,28 +11117,37 @@ function ebenenGesteVor() {   // vor einer Geste: „nur diese“ löst die gew�
 }
 function ebenenGesteNach(vor) {   // nach der Geste („alle“): dieselbe Bewegung auf dem Bildschirm für jede Ebene mit eigener Ansicht, und für den Grund, wenn die gewählte gelöst ist
   if (!vor) return;
-  const nach = ansichtSichern(), f = nach.zoom / vor.zoom, dx = dd.sub(nach.cx, vor.cx)[0] / vor.ps, dy = dd.sub(nach.cy, vor.cy)[0] / vor.ps, dr = (nach.dreh || 0) - (vor.dreh || 0);
-  if (f === 1 && !dx && !dy && !dr) return;
-  const bewege = v => { if (!v) return; v.cx = dd.addD(v.cx, dx * v.ps); v.cy = dd.addD(v.cy, dy * v.ps); v.zoom = clamp(v.zoom * f, MIN_ZOOM, MAX_ZOOM); v.ps = v.ps / f; v.dreh = (v.dreh || 0) + dr; };
+  const nach = ansichtSichern(), f = nach.zoom / vor.zoom, [sx, sy] = ansichtVersatz(vor, nach), dr = (nach.dreh || 0) - (vor.dreh || 0);
+  if (f === 1 && !sx && !sy && !dr) return;
+  const bewege = v => { if (!v) return; const ps = psVonZoom(v.zoom), [ex, ey] = ebeneVonPixelMit(v.dreh, sx * ps, sy * ps); v.cx = dd.addD(v.cx, ex); v.cy = dd.addD(v.cy, ey); v.zoom = clamp(v.zoom * f, MIN_ZOOM, MAX_ZOOM); v.ps = psVonZoom(v.zoom); v.dreh = (v.dreh || 0) + dr; };
   ebenen.forEach((e, k) => { if (k !== ebeneAktiv && k > 0 && !e.verbunden) bewege(e.ansicht); });
   if (!ebeneVerbunden(ebeneAktiv)) bewege(ebenenBasisAnsicht);
 }
+function ebenenSoloIndex() { return ebenen.findIndex(e => e.solo); }   // die Solo-Ebene des Mischers (die erste), −1 ohne
 function ebeneNeu(zustand = null) { return { zustand, ansicht: null, name: '', sichtbar: true, solo: false, modus: 0, deck: 1, maske: maskeNeu(0), verbunden: true, zu: false }; }
 function ebeneKeys() { return Object.keys(S).filter(k => !EBENE_GLOBAL.has(k)); }
 function ebeneSichern() { const z = {}; for (const k of ebeneKeys()) z[k] = S[k]; return z; }
 function ebeneLaden(z) { const voll = EBENE_STANDARD ? Object.assign({}, EBENE_STANDARD, z) : z; for (const k of ebeneKeys()) if (!(k in voll)) delete S[k]; Object.assign(S, voll); }
 function ebeneZustand(k) { return k === ebeneInS ? S : ebenen[k].zustand; }
+function psVonZoom(z) { return 3 / (z * Math.max(1, Math.min(W, H))); }   // Pixelgröße in der Ebene, wie setZoom
+function ansichtKopie(a) { return a ? { cx: a.cx, cy: a.cy, zoom: a.zoom, dreh: a.dreh || 0, ps: psVonZoom(a.zoom) } : a; }   // eigene Kopie: Gesten verändern Ansichten an Ort und Stelle, ein gesicherter Stand darf nicht mitwandern; ps stets aus dem Zoom (vor der ersten Größe gesicherte Ansichten tragen ps = 3)
+function ebeneVonPixelMit(dreh, dx, dy) { if (!dreh) return [dx, dy]; const a = dreh * Math.PI / 180, c = Math.cos(a), si = -Math.sin(a); return [dx * c - dy * si, dx * si + dy * c]; }   // wie ebeneVonPixel, mit gegebener Drehung
+function ansichtVersatz(alt, neu) {   // Verschiebung der Mitte von alt nach neu in Pixeln der alten Ansicht (y nach oben), ihre Drehung herausgerechnet
+  const ox = dd.sub(neu.cx, alt.cx)[0], oy = dd.sub(neu.cy, alt.cy)[0], ps = alt.zoom ? psVonZoom(alt.zoom) : alt.ps, a = (alt.dreh || 0) * Math.PI / 180, c = Math.cos(a), si = -Math.sin(a);
+  return [(ox * c + oy * si) / ps, (-ox * si + oy * c) / ps];
+}
+function zoomText(z) { const kurz = z.toExponential(4); return Math.abs(parseFloat(kurz) / z - 1) < 1e-9 ? kurz : z.toExponential(9); }   // Link: vier Stellen wie bisher; feine Verhältnisse (Feinjustierung) brauchen mehr
 function ansichtSichern() { return { cx: S.cx, cy: S.cy, zoom: S.zoom, dreh: S.dreh || 0, ps: S.ps }; }
 function ansichtLaden(a) { if (!a) return; S.cx = a.cx; S.cy = a.cy; S.dreh = a.dreh || 0; setZoom(a.zoom); }
 function ebeneVerbunden(k) { return k === 0 || ebenen[k].verbunden; }
 function basisAnsicht() {   // die Ansicht der ersten Ebene (und aller verbundenen)
-  if (!ebeneVerbunden(ebeneAktiv)) return ebenenBasisAnsicht;
-  return ebeneInS === ebeneAktiv ? ansichtSichern() : ebenen[ebeneAktiv].ansichtTmp;
+  if (!ebeneVerbunden(ebeneAktiv)) return ansichtKopie(ebenenBasisAnsicht);
+  return ebeneInS === ebeneAktiv ? ansichtSichern() : ansichtKopie(ebenen[ebeneAktiv].ansichtTmp);
 }
 function ebeneAnsicht(k) {   // die Ansicht, in der Ebene k gerechnet wird
   if (k === ebeneInS) return ansichtSichern();
   if (ebeneVerbunden(k)) return basisAnsicht();
-  return k === ebeneAktiv ? ebenen[k].ansichtTmp : (ebenen[k].ansicht || basisAnsicht());
+  return k === ebeneAktiv ? ansichtKopie(ebenen[k].ansichtTmp) : (ansichtKopie(ebenen[k].ansicht) || basisAnsicht());
 }
 function mitEbene(k, fn) {   // fn mit Zustand und Ansicht der Ebene k in S ausführen, danach alles zurück (auch verschachtelt)
   if (k === ebeneInS || !ebenen[k]) return fn();
@@ -11030,8 +11166,9 @@ function ebeneWaehlen(k, still = false) {   // Ebene k in Motiv, Farbe und Palet
     if (altVerb) ebenenBasisAnsicht = ansichtSichern(); else ebenen[alt].ansicht = ansichtSichern();
     ebeneLaden(ebenen[k].zustand); ebenen[k].zustand = null; ebeneAktiv = k; ebeneInS = k;
     ansichtLaden(neuVerb ? ebenenBasisAnsicht : (ebenen[k].ansicht || ebenenBasisAnsicht));
+    if (!still && ebenen[alt].solo && ebenenSoloIndex() === alt) { ebenen[alt].solo = false; ebenen[k].solo = true; }   // „Anzeigen: nur diese“ folgt der Auswahl
   }
-  if (!still) { syncAllUI(); setMode(S.mode, { force: true, view: ansichtSichern() }); }
+  if (!still) { syncAllUI(); setMode(S.mode, { force: true, view: ansichtSichern() }); if (typeof syncAaUI === 'function') syncAaUI(); }   // die Glättung erst nach dem Wechsel des Satzes anzeigen (Stufe, Puffer)
 }
 // ---- Rechnen der Ebenen: die gewählte Ebene rechnet wie bisher (sie ist auch beim Zeigen „live“); ist sie fertig, sichert die
 // Schleife ihre Farbe, wechselt auf die nächste veraltete Ebene, rechnet sie mit deren Zustand (mitEbene je Frame) und sichert
@@ -11041,14 +11178,16 @@ function ebeneStandNeu(e) { e.frisch = false; }
 function ansichtAnders(a, b) { return !a || !b || a.zoom !== b.zoom || (a.dreh || 0) !== (b.dreh || 0) || a.cx[0] !== b.cx[0] || a.cx[1] !== b.cx[1] || a.cy[0] !== b.cy[0] || a.cy[1] !== b.cy[1]; }
 function ebeneVeraltet(k) { const e = ebenen[k]; return !e.frisch || !e.gerendert || ansichtAnders(e.gerendert, ebeneAnsicht(k)) || !(renderer && renderer.ebeneHatFarbe && renderer.ebeneHatFarbe(k)); }
 function ebenenVeraltete() {   // die nächste sichtbare Ebene, deren gesicherte Farbe nicht mehr stimmt (die gewählte zuerst), oder −1
-  const solo = ebenen.findIndex(e => e.solo);
+  const solo = ebenenSoloIndex();
   const reihe = [ebeneAktiv].concat(ebenen.map((e, k) => k).filter(k => k !== ebeneAktiv));
-  for (const k of reihe) { const e = ebenen[k]; if (solo >= 0 ? k !== solo : !e.sichtbar) continue; if (ebeneVeraltet(k)) return k; }
+  const zeigt = k => solo >= 0 ? k === solo : ebenen[k].sichtbar;
+  for (const k of reihe) if (zeigt(k) && ebeneVeraltet(k)) return k;        // erst alle Grundbilder
+  for (const k of reihe) if (zeigt(k) && ebenen[k].glattOffen) return k;    // dann die vertagten Glättungen, die gewählte zuerst
   return -1;
 }
 function ansichtAbbildung(alt, neu) {   // Pixel der jetzigen Ansicht → Pixel der gesicherten Farbe: (a·x + bx, a·y + by), wie die Zoom-Vorschau
-  if (!alt || !neu || !alt.ps || !neu.ps) return [1, 1, 0, 0];
-  const a = neu.ps / alt.ps, dx = dd.sub(neu.cx, alt.cx)[0] / alt.ps, dy = dd.sub(neu.cy, alt.cy)[0] / alt.ps;
+  if (!alt || !neu || !alt.zoom || !neu.zoom) return [1, 1, 0, 0];
+  const a = alt.zoom / neu.zoom, [dx, dy] = ansichtVersatz(alt, neu);   // Pixelgröße ∝ 1/Zoom
   return [a, a, dx + W / 2 * (1 - a), (renderer && renderer.yDown ? -dy : dy) + H / 2 * (1 - a)];
 }
 function verbundParams() {   // die sichtbaren Ebenen von unten nach oben mit Modus, Deckkraft und der Abbildung ihrer gesicherten Farbe in die jetzige Ansicht
@@ -11057,7 +11196,7 @@ function verbundParams() {   // die sichtbaren Ebenen von unten nach oben mit Mo
     if (solo >= 0 ? k !== solo : !e.sichtbar) return;
     const live = k === renderEbene && k === ebeneAktiv;
     const tr = live || !e.gerendert ? [1, 1, 0, 0] : ansichtAbbildung(e.gerendert, ebeneAnsicht(k));
-    list.push({ k, modus: k === 0 ? 0 : e.modus, deck: e.deck, ax: tr[0], ay: tr[1], bx: tr[2], by: tr[3] });
+    list.push({ k, modus: k === 0 ? 0 : (e.ausrichten ? 10 : e.modus), deck: e.ausrichten ? 1 : e.deck, ax: tr[0], ay: tr[1], bx: tr[2], by: tr[3] });   // Ausrichten: Differenz, volle Deckkraft (nur Anzeige)
   });
   return { ebenen: list, liveZeigen: renderEbene === ebeneAktiv };
 }
@@ -11072,22 +11211,36 @@ function praesentParams() {   // Farbsatz fürs Zeigen: bei mehreren Ebenen der 
   const cp = colorParamsEbene(); cp.post = mitEbene(ebeneAktiv, colorParams); cp.verbund = verbundParams();
   return cp;
 }
-function liveWechseln(k, fertig = false) {   // Ebene k rechnet ab jetzt: Texturensatz, Palette, Referenzbahn; fertig: nur zeigen, nichts rechnen
+function ebenenGlaettungLaden() {   // die Glättung der Ebene in S für den aktiven Satz: Probenebenen (Raster) oder adaptive Puffer; Kachelplan dazu
+  if (!renderer || !W || !H) return;
+  const adaptive = aaAdaptiv(), aa = adaptive ? 1 : aaBest(W, H, Math.min(S.aa, aaCap)), L = aa * aa;
+  if (renderer.L !== L) { try { renderer.resize(W, H, L); } catch (e) { aaOom(aa, e); return; } }
+  aaEff = aa; layerOff = layerOffsets(aa); aaBuilt = adaptive; aaOn = adaptive && !!renderer.aa;
+  if (adaptive && !renderer.aa) aaSetup();
+  computeTiles();
+}
+function liveWechseln(k, fertig = false) {   // Ebene k rechnet ab jetzt: Texturensatz (mit ihrer Probenzahl), Palette, Referenzbahn; fertig: nur zeigen, nichts rechnen
   if (!renderer || !renderer.ebeneWaehlen || !ebenen[k]) return;
-  renderEbene = k; renderer.ebeneWaehlen(k);
-  mitEbene(k, () => { applyPalette(); });
-  histDirty = true; orbitDirty = true; aaColorKey = ''; aaTiles = null; aaCounts = null; stripMode = false; pendingSX = pendingSY = 0; panDirty = false; zoomDirty = false; zoomPending = null;
-  aaOn = !!(aaBuilt && renderer.aa); if (aaBuilt && !renderer.aa) aaSetup();
-  if (fertig) { fractalDirty = false; phase = 'idle'; hasImage = true; }
-  else { fractalDirty = true; hasImage = true; }
+  renderEbene = k;
+  mitEbene(k, () => { const adaptive = aaAdaptiv(), aa = adaptive ? 1 : aaBest(W, H, Math.min(S.aa, aaCap)), fmt = texturBreit() ? 'rgba32uint' : 'rg32uint'; renderer.ebeneWaehlen(k, aa * aa, fmt); ebenenGlaettungLaden(); formatPruefen(); applyPalette(); });   // Texturformat der Ebene (Texturen über einer Statistik brauchen z/w)
+  histDirty = true; orbitDirty = true; aaColorKey = ''; aaTiles = null; aaCounts = null; aaStatsId++; aaStatsBusy = false; stripMode = false; pendingSX = pendingSY = 0; panDirty = false; zoomDirty = false; zoomPending = null; glattStand = null;
+  if (fertig) { fractalDirty = false; phase = 'idle'; hasImage = true; texFlagsLaden(ebenen[k].texFlags); }
+  else { fractalDirty = true; hasImage = true; window.ebenenProtokoll.push('grund ' + (k + 1)); }
   colorDirty = true; lastStatusKey = '';
 }
+window.ebenenStand = () => ({ renderEbene, ebeneAktiv, phase, glattStand, aaEff, aaOn, tiles: tiles.length, tilesL0, tileIdx, zeigerAktiv, ebenen: ebenen.map(e => ({ frisch: !!e.frisch, glattOffen: !!e.glattOffen, sichtbar: e.sichtbar, solo: e.solo, verbunden: e.verbunden, modus: e.modus, deck: e.deck, name: e.name })) });   // Testhaken (Cypress): Stand der Ebenenschleife
 function liveZurueck() { if (renderEbene !== ebeneAktiv && ebenen[ebeneAktiv]) liveWechseln(ebeneAktiv, !ebeneVeraltet(ebeneAktiv)); }   // Bedienung: die gewählte Ebene ist wieder dran
 function ebenenWeiter() {   // die rechnende Ebene ist fertig: ihre Farbe sichern, dann die nächste veraltete rechnen (oder zurück zur gewählten)
+  if (glattStand === 'wartet') return;   // die Puffer der adaptiven Glättung entstehen gerade; aaSetup beginnt danach die Verfeinerung
   const e = ebenen[renderEbene];
-  if (e) { mitEbene(renderEbene, () => renderer.farbeSichern(colorParamsEbene())); e.frisch = true; e.gerendert = ebeneAnsicht(renderEbene); }
+  if (e) {
+    mitEbene(renderEbene, () => renderer.farbeSichern(colorParamsEbene())); e.frisch = true; e.gerendert = ebeneAnsicht(renderEbene); e.texFlags = texFlagsSichern();
+    if (glattStand === 'vertagt') e.glattOffen = true; else if (glattStand === 'fertig') e.glattOffen = false;   // null: nur gezeigt, der Stand bleibt
+    glattStand = null;
+  }
   const k = ebenenVeraltete();
-  if (k >= 0 && k !== renderEbene) liveWechseln(k);
+  if (k >= 0 && k !== renderEbene) { if (!ebeneVeraltet(k) && ebenen[k].glattOffen) glaettungFortsetzen(k); else liveWechseln(k); }
+  else if (k === renderEbene && ebenen[k].glattOffen) glaettungFortsetzen(k);
   else if (k < 0 && renderEbene !== ebeneAktiv) liveWechseln(ebeneAktiv, true);
 }
 function ebenenNormieren() {   // die erste Ebene ist der Grund: verbunden, ohne Mischen; ihre eigene Ansicht wird zur Ansicht des Bilds
@@ -11111,11 +11264,26 @@ function ebenenSaetzeUmordnen(folge) {   // die Sätze im Renderer folgen den ne
   const neu = folge.indexOf(renderEbene); renderEbene = neu >= 0 ? neu : ebeneAktiv;
   if (renderer && renderer.ebeneWaehlen && (neu < 0 || renderer.slotAktiv !== renderEbene)) liveWechseln(ebeneAktiv, !ebeneVeraltet(ebeneAktiv));
 }
-function ebeneLoeschen(k) {
+function rueckfrage(text) {   // kleine Rückfrage in der App: löst mit true (Enter, Knopf) oder false (Escape, Abbrechen, Klick daneben) auf
+  return new Promise(res => {
+    const box = $('rueckfrage'), ja = $('rueckfrageJa'), nein = $('rueckfrageNein');
+    $('rueckfrageText').textContent = text; box.hidden = false;
+    const zu = wert => { box.hidden = true; ja.onclick = nein.onclick = box.onclick = null; document.removeEventListener('keydown', taste, true); res(wert); };
+    const taste = ev => { if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); zu(false); } else if (ev.key === 'Enter') { ev.preventDefault(); ev.stopPropagation(); zu(true); } };
+    ja.onclick = () => zu(true); nein.onclick = () => zu(false); box.onclick = ev => { if (ev.target === box) zu(false); };
+    document.addEventListener('keydown', taste, true);
+    ja.focus();
+  });
+}
+function ebeneLoeschen(k) {   // mit Rückfrage (Pille und Mischer)
+  if (ebenen.length <= 1 || k < 0 || k >= ebenen.length) return;
+  rueckfrage(t('layers.remove-confirm', (k + 1) + ' ' + ebeneName(k))).then(ok => { if (ok) ebeneLoeschenJetzt(k); });
+}
+function ebeneLoeschenJetzt(k) {
   if (ebenen.length <= 1 || k < 0 || k >= ebenen.length) return;
   if (k === ebeneAktiv) ebeneWaehlen(k > 0 ? k - 1 : 1, true);   // erst die Nachbarin wählen, dann fällt k weg
   const folge = ebenen.map((x, i) => i).filter(i => i !== k);
-  ebenen.splice(k, 1); if (ebeneAktiv > k) ebeneAktiv--; ebeneInS = ebeneAktiv;
+  ebenen.splice(k, 1); if (ebeneAktiv > k) ebeneAktiv--; ebeneInS = ebeneAktiv; fadenkreuzZeigen();
   ebenenSaetzeUmordnen(folge);
   ebenenNormieren(); syncAllUI(); setMode(S.mode, { force: true, view: ansichtSichern() });
 }
@@ -11128,12 +11296,23 @@ function ebeneVerschieben(von, nach) {   // 0-basiert
   ebenenAenderung(false);
 }
 function ebeneName(k) { const e = ebenen[k]; if (e.name) return e.name; const z = ebeneZustand(k); return (S.family === 'escape' && FORMULAS[z.formula] ? t(FORMULAS[z.formula].name).replace(/\s*\(.*\)\s*$/, '') : '') + (z.mode === 'julia' ? ' · Julia' : ''); }   // ohne den Klammerzusatz der Formel
-function ebeneMischSchreiben(e) { return [e.modus, +e.deck.toFixed(3), e.sichtbar ? 1 : 0, e.solo ? 1 : 0, e.verbunden ? 1 : 0, encodeURIComponent(e.name || '')].join(':'); }
+const EBENE_AA = ['aa', 'aaMode', 'aaTol', 'aaMax', 'aaSigma'];   // die Glättung der Ebene (die der ersten Ebene ist Browser-Einstellung, weitere tragen ihre im Mischsatz)
+function ebeneMischSchreiben(e, k = 1) {
+  const t2 = [e.modus, +e.deck.toFixed(3), e.sichtbar ? 1 : 0, e.solo ? 1 : 0, e.verbunden ? 1 : 0, encodeURIComponent(e.name || '')];
+  if (k > 0) { const z = ebeneZustand(k), b = ebeneZustand(0); if (EBENE_AA.some(key => z[key] !== b[key])) t2.push(z.aa, z.aaMode, +z.aaTol.toFixed(4), z.aaMax, +z.aaSigma.toFixed(2)); }   // nur abweichend von der ersten Ebene
+  return t2.join(':');
+}
 function ebeneMischLesen(e, text) {
   const f = (text || '').split(':'), m = parseInt(f[0], 10), d = parseFloat(f[1]);
   if (m >= 0 && m < EBENE_MODI.length) e.modus = m; if (Number.isFinite(d)) e.deck = clamp(d, 0, 1);
   e.sichtbar = f[2] !== '0'; e.solo = f[3] === '1'; e.verbunden = f[4] !== '0';
   try { e.name = decodeURIComponent(f[5] || '').slice(0, 40); } catch (x) { e.name = ''; }
+  if (e.zustand && f.length >= 11) {   // eigene Glättung der Ebene
+    const z = e.zustand, aa = parseInt(f[6], 10), tol = parseFloat(f[8]), mx = parseInt(f[9], 10), sg = parseFloat(f[10]);
+    e.aaEigen = true;   // sonst folgt die Ebene der Glättung des Grunds (auch wenn die erst später gesetzt wird, siehe applyState)
+    if (aa >= 1) z.aa = aaSnap(aa); if (AA_MODI.includes(f[7])) z.aaMode = f[7];
+    if (tol >= AA_TOL.min && tol <= AA_TOL.max) z.aaTol = tol; if (mx >= 8 && mx <= 4096) z.aaMax = aaPosToMax(aaMaxToPos(mx)); if (sg >= AA_SIGMA.min && sg <= AA_SIGMA.max) z.aaSigma = sg;
+  }
 }
 function ebenenParams(k) {   // der Parametersatz einer weiteren Ebene: wie der Link, ohne das, was dem Bild gehört; die Ansicht nur bei gelöster Ebene
   const q = mitEbene(k, () => buildParamsRoh());
@@ -11144,11 +11323,18 @@ function ebenenParams(k) {   // der Parametersatz einer weiteren Ebene: wie der 
 function buildParams() {   // der Link: die erste Ebene oben, jede weitere als eigener Satz
   const p = mitEbene(0, () => buildParamsRoh());
   if (ebenen.length > 1) {
-    for (let k = 1; k < ebenen.length; k++) { const e = ebenen[k]; p.set('l' + (k + 1), ebenenParams(k)); p.set('lm' + (k + 1), ebeneMischSchreiben(e)); if (e.maske && e.maske.art) p.set('lu' + (k + 1), maskeSchreiben(e.maske)); }
-    const e0 = ebenen[0]; if (e0.name || !e0.sichtbar || e0.solo) p.set('lm1', ebeneMischSchreiben(e0));
+    for (let k = 1; k < ebenen.length; k++) { const e = ebenen[k]; p.set('l' + (k + 1), ebenenParams(k)); p.set('lm' + (k + 1), ebeneMischSchreiben(e, k)); if (e.maske && e.maske.art) p.set('lu' + (k + 1), maskeSchreiben(e.maske)); }
+    const e0 = ebenen[0]; if (e0.name || !e0.sichtbar || e0.solo) p.set('lm1', ebeneMischSchreiben(e0, 0));
     if (ebeneAktiv) p.set('la', String(ebeneAktiv + 1));
   }
   return p;
+}
+function ebenenMaskenVeraltet() {   // die Fassung mit Masken ist eben übersetzt: andere Ebenen mit Maske wurden bis dahin ohne sie gesichert
+  ebenen.forEach((e, k) => { if (k !== renderEbene && maskeWirkt(e.maske)) e.frisch = false; });
+}
+function ebenenGlaettungErben() {   // Ebenen ohne eigene Glättung (kein Feld im Mischsatz) tragen die des Grunds
+  const b = ebeneZustand(0);
+  ebenen.forEach((e, k) => { if (k > 0 && !e.aaEigen) { const z = ebeneZustand(k); for (const key of EBENE_AA) z[key] = b[key]; } });
 }
 function ebenenAusLink(h) {   // weitere Ebenen aus dem Link (l2 …), nachdem die erste gelesen ist; der Stapel wird neu aufgebaut
   ebenen = [ebeneNeu()]; ebeneAktiv = 0; ebeneInS = 0; renderEbene = 0; ebenenBasisAnsicht = null; ebenenStartAktiv = 0;
@@ -11161,7 +11347,7 @@ function ebenenAusLink(h) {   // weitere Ebenen aus dem Link (l2 …), nachdem d
     ebenenLeseTiefe++;
     try {
       resetState(); const v = readHash(sub);
-      if (v) { S.mode = v.mode; e = ebeneNeu(ebeneSichern()); ebeneMischLesen(e, h.get('lm' + nr)); if (h.has('lu' + nr)) e.maske = maskeLesen(h.get('lu' + nr)); if (!e.verbunden) e.ansicht = { cx: v.cx, cy: v.cy, zoom: v.zoom, dreh: S.dreh || 0 }; }
+      if (v) { S.mode = v.mode; e = ebeneNeu(ebeneSichern()); for (const key of EBENE_AA) e.zustand[key] = alles[key]; ebeneMischLesen(e, h.get('lm' + nr)); if (h.has('lu' + nr)) e.maske = maskeLesen(h.get('lu' + nr)); if (!e.verbunden) e.ansicht = { cx: v.cx, cy: v.cy, zoom: v.zoom, dreh: S.dreh || 0 }; }
     } finally { ebenenLeseTiefe--; for (const k of Object.keys(S)) if (!(k in alles)) delete S[k]; Object.assign(S, alles); }
     if (e) ebenen.push(e);
   }
@@ -11308,7 +11494,7 @@ let hashTimer = 0;
 function scheduleHash() { clearTimeout(hashTimer); hashTimer = setTimeout(writeHash, 400); }
 function buildParamsRoh() {   // die Adresswerte der Ebene in S samt Ansicht und Bild (buildParams setzt daraus den Link zusammen)
   const p = new URLSearchParams();
-  p.set('mode', S.mode); p.set('re', ddToString(S.cx)); p.set('im', ddToString(S.cy)); p.set('z', S.zoom.toExponential(4));
+  p.set('mode', S.mode); p.set('re', ddToString(S.cx)); p.set('im', ddToString(S.cy)); p.set('z', zoomText(S.zoom));
   if (S.mode === 'julia') { p.set('jre', String(S.jc[0])); p.set('jim', String(S.jc[1])); }
   if (S.z0[0] || S.z0[1]) { p.set('z0r', String(S.z0[0])); p.set('z0i', String(S.z0[1])); }
   if (S.startC && startMoeglich()) p.set('zc', '1');
@@ -11350,7 +11536,9 @@ function buildParamsRoh() {   // die Adresswerte der Ebene in S samt Ansicht und
     if (S.texAn === false) p.set('ta', '0');   // ausgeschaltet, Einstellungen bleiben
     if (texZielWirkt(S.texZiel) !== TEX_ZIEL_VOR) p.set('tz', String(S.texZiel));   // Ziel nur abseits der Helligkeit
     if ((S.texWo || TEX_WO_VOR) !== TEX_WO_VOR) p.set('tw', String(S.texWo));   // wo der Platz wirkt, nur abseits von außen
-    for (let n = 2; n <= texturBelegt(); n++) {   // die weiteren Plätze des Stapels (leere Plätze fehlen im Link und bleiben so leer)
+  }
+  {   // die weiteren Plätze des Stapels, auch wenn Platz 1 leer ist (der Shader rechnet sie trotzdem; leere Plätze fehlen im Link und bleiben so leer)
+    for (let n = 2; n <= texturBelegt(); n++) {
       const t = texSlot(n), q = 't' + n;
       if (t.art === 0) continue;
       p.set(q, String(t.art));
@@ -11499,7 +11687,7 @@ function storeAllowed() { return !!(consent && consent.settings); }
 function lsSet(key, value) { scheduleHash();   // jede abgelegte Einstellung gehört zum Zustand: die Adresse zieht nach, dabei merkt sich Rückgängig den Schritt
   if (!storeAllowed()) return false; try { localStorage.setItem(key, value); return true; } catch (e) { return false; } }
 function persistSettings() {   // nach erteilter Einwilligung die aktuellen Einstellungen ablegen
-  lsSet('fractal.aa', String(S.aa)); lsSet('fractal.aamode', S.aaMode); lsSet('fractal.aatol', String(S.aaTol)); lsSet('fractal.aamax', String(S.aaMax)); lsSet('fractal.aasigma', String(S.aaSigma)); lsSet('fractal.palfilter', S.palFilter ? '1' : '0'); lsSet('fractal.palfilterk', String(S.palFilterK)); lsSet('fractal.cycle', S.cycle); lsSet('fractal.bla', S.bla);
+  { const z = ebeneZustand(0) || S; lsSet('fractal.aa', String(z.aa)); lsSet('fractal.aamode', z.aaMode); lsSet('fractal.aatol', String(z.aaTol)); lsSet('fractal.aamax', String(z.aaMax)); lsSet('fractal.aasigma', String(z.aaSigma)); } /* die Glättung der ersten Ebene */ lsSet('fractal.palfilter', S.palFilter ? '1' : '0'); lsSet('fractal.palfilterk', String(S.palFilterK)); lsSet('fractal.cycle', S.cycle); lsSet('fractal.bla', S.bla);
   lsSet('fractal.renderer', S.rendererPref); lsSet('fractal.quality', String(S.quality)); lsSet('fractal.stapelms', String(S.stapelMs)); lsSet('fractal.uivorrang', S.uiVorrang ? '1' : '0'); lsSet('fractal.theme', S.theme); lsSet('fractal.meta', JSON.stringify(META));
   if (customPalettes.length) lsSet('fractal.palettes', JSON.stringify(customPalettes));
   if (eigene2.length) lsSet('fractal.palettes2', JSON.stringify(eigene2));
@@ -11538,7 +11726,7 @@ if (!consent) showConsent(); else if (consent.marketing) loadMarketingPixels();
 //  Bedienfeld
 // ============================================================
 // Bereiche: die Leiste am rechten Rand zeigt immer genau einen; die Statuszeile bleibt darunter sichtbar
-const PANES = [['motiv', 'misc.subject'], ['farbe', 'colour.colour'], ['palette', 'pane.palette'], ['ebenen', 'pane.layers'], ['qualitaet', 'quality.quality'], ['nach', 'pane.post'], ['technik', 'technical.technical']];
+const PANES = [['motiv', 'misc.subject'], ['farbe', 'colour.colour'], ['palette', 'pane.palette'], ['qualitaet', 'quality.quality'], ['ebenen', 'pane.layers'], ['nach', 'pane.post'], ['technik', 'technical.technical']];   // die ersten vier gehören der gewählten Fraktal-Ebene, dann der Mischer, dann das Bild
 const mobileNarrow = () => window.matchMedia('(max-width: 640px)').matches;   // Handy: Reiter unten statt Leiste rechts
 let curPane = 'motiv';
 function setPane(name, open = true) {
@@ -13140,7 +13328,7 @@ function griffBinden(griff, n, st) {
   griff.addEventListener('pointerup', () => { const z = texZieh; if (z && z.n === n) texZiehEnde(z, true); });
   griff.addEventListener('pointercancel', () => { const z = texZieh; if (z && z.n === n) texZiehEnde(z, false); });
   griff.addEventListener('keydown', e => {   // Tastatur: Pfeil auf und ab verschieben um einen Platz, mit Ansage
-    const d = e.key === 'ArrowUp' ? -1 : e.key === 'ArrowDown' ? 1 : 0; if (!d) return;
+    const d = (e.key === 'ArrowUp' ? -1 : e.key === 'ArrowDown' ? 1 : 0) * (st.umgekehrt ? -1 : 1); if (!d) return;   // umgekehrt: die Liste zeigt die letzte Nummer zuoberst
     e.preventDefault(); const ziel = n + d; if (ziel < 1 || ziel > st.anzahl()) return;
     st.verschieben(n, ziel); st.live(t(st.textBewegt, ziel, st.anzahl())); const g2 = st.griff(ziel); if (g2) g2.focus();
   });
@@ -13289,45 +13477,45 @@ const kartenSig = e => e.art + (e.m && e.m.art ? 'm' + e.m.art : '') + '|' + LAN
 // ---- Bedienung der Fraktal-Ebenen: die Ebenenzeile oben in Motiv, Farbe und Palette (Auswahl, +, ×) und der Mischer (Bereich „Ebenen“)
 const EBENE_MASKE_ARTEN = MASKE_ARTEN.filter(a => a.art !== 11 && a.art !== 13);   // Kanten entstehen erst im Nachbearbeitungspass, Ebenen-Zustand gehört zu den Effektebenen
 function ebeneFarbe(k) { return EBENE_FARBEN[k % EBENE_FARBEN.length]; }
-function syncEbenenUI() { ebenenZeileBauen(); ebenenKartenBauen(); }
-function ebenenZeileBauen() {
-  const mehrere = ebenen.length > 1, moeglich = S.family === 'escape';
-  for (const id of ['ebenenZeileMotiv', 'ebenenZeileFarbe', 'ebenenZeilePalette']) {
-    const box = $(id); if (!box) continue;
-    box.hidden = !moeglich; box.classList.toggle('einzeln', !mehrere);
-    box.replaceChildren();
-    if (mehrere) ebenen.forEach((e, k) => {
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'ebenen-pille' + (k === ebeneAktiv ? ' on' : '') + (e.sichtbar ? '' : ' aus'); b.title = t('layers.select'); b.dataset.ebene = String(k + 1);
-      const punkt = document.createElement('span'); punkt.className = 'ebenen-punkt'; punkt.style.background = ebeneFarbe(k);
-      const name = document.createElement('span'); name.className = 'ebenen-name'; name.textContent = (k + 1) + ' ' + ebeneName(k); b.title = (k + 1) + ' ' + ebeneName(k) + ' · ' + t('layers.select');
-      b.append(punkt, name);
-      if (k === ebeneAktiv) { const weg = document.createElement('span'); weg.className = 'ebenen-weg'; weg.textContent = '×'; weg.title = t('layers.remove'); weg.setAttribute('role', 'button'); weg.setAttribute('aria-label', t('layers.remove')); weg.addEventListener('click', ev => { ev.stopPropagation(); ebeneLoeschen(k); }); b.append(weg); }
-      b.addEventListener('click', () => ebeneWaehlen(k));
-      box.append(b);
-    });
-    const plus = document.createElement('button'); plus.type = 'button'; plus.className = 'ebenen-plus'; plus.textContent = '+'; plus.title = t('layers.add'); plus.setAttribute('aria-label', t('layers.add')); plus.disabled = ebenen.length >= EBENEN_MAX;
-    plus.addEventListener('click', ebeneHinzufuegen); box.append(plus);
-    if (mehrere) {   // Gesten: alle Ebenen zusammen oder nur die gewählte
-      const sw = document.createElement('span'); sw.className = 'ebenen-modus'; sw.setAttribute('role', 'group'); sw.setAttribute('aria-label', t('layers.move'));
-      for (const [wert, key, titel] of [[false, 'layers.move-all', 'layers.move-all-title'], [true, 'layers.move-one', 'layers.move-one-title']]) {
-        const b = document.createElement('button'); b.type = 'button'; b.className = 'ebenen-modus-knopf' + (ebenenNurEine === wert ? ' on' : ''); b.textContent = t(key); b.title = t(titel); b.setAttribute('aria-pressed', ebenenNurEine === wert ? 'true' : 'false');
-        b.addEventListener('click', () => { ebenenNurEine = wert; syncEbenenUI(); });
-        sw.append(b);
-      }
-      box.append(sw);
-    }
+function syncEbenenUI() { stapelBauen(); ebenenKartenBauen(); }
+function stapelBauen() {   // der Ebenenstapel über allen Bereichen: oberste Ebene zuerst; mit einer Ebene nur die Kopfzeile („1 Ebene“ und +)
+  const box = $('stapel'), zeilen = $('stapelZeilen'); if (!box) return;
+  const mehrere = ebenen.length > 1, moeglich = S.family === 'escape', aktiv = mehrere && moeglich;
+  box.hidden = !moeglich;
+  $('stapelTitel').textContent = mehrere ? t('layers.stack') : t('layers.one');
+  const kette = $('stapelKette'); kette.hidden = !mehrere; kette.textContent = t(ebenenNurEine ? 'layers.move-one' : 'layers.move-all'); kette.title = t(ebenenNurEine ? 'layers.move-one-title' : 'layers.move-all-title'); kette.setAttribute('aria-pressed', ebenenNurEine ? 'true' : 'false');
+  $('stapelNeu').disabled = ebenen.length >= EBENEN_MAX || !moeglich; $('ebenenVoll').hidden = ebenen.length < EBENEN_MAX;
+  zeilen.replaceChildren();
+  if (mehrere) for (let k = ebenen.length - 1; k >= 0; k--) {
+    const e = ebenen[k], nr = k + 1, z = document.createElement('div');
+    z.className = 'stapel-zeile' + (k === ebeneAktiv ? ' on' : '') + (e.sichtbar ? '' : ' aus'); z.id = 'stZeile' + nr; z.dataset.i = String(nr); z.dataset.ebene = String(nr); z.style.setProperty('--ebene', ebeneFarbe(k));
+    const wahl = document.createElement('button'); wahl.type = 'button'; wahl.className = 'stapel-wahl'; wahl.id = 'stWahl' + nr; wahl.title = t('layers.select');
+    const punkt = document.createElement('span'); punkt.className = 'ebenen-punkt'; punkt.style.background = ebeneFarbe(k);
+    const name = document.createElement('span'); name.textContent = nr + ' ' + ebeneName(k); wahl.append(punkt, name);
+    wahl.addEventListener('click', () => ebeneWaehlen(k));
+    wahl.addEventListener('keydown', ev => { if (ev.key === 'Delete') { ev.preventDefault(); ebeneLoeschen(k); } });
+    const auge = document.createElement('label'); auge.className = 'stapel-auge'; auge.title = t('layers.visible');
+    const an = document.createElement('input'); an.type = 'checkbox'; an.id = 'stAuge' + nr; an.checked = e.sichtbar; an.setAttribute('aria-label', t('layers.visible'));
+    an.addEventListener('change', () => { e.sichtbar = an.checked; ebenenAenderung(false); });
+    auge.append(an, document.createElement('span'));
+    const solo = document.createElement('button'); solo.type = 'button'; solo.className = 'stapel-solo' + (e.solo ? ' on' : ''); solo.id = 'stSolo' + nr; solo.textContent = 'S'; solo.title = t('layers.solo'); solo.setAttribute('aria-label', t('layers.solo')); solo.setAttribute('aria-pressed', e.solo ? 'true' : 'false');
+    solo.addEventListener('click', () => { e.solo = !e.solo; ebenenAenderung(false); });
+    const griff = document.createElement('button'); griff.type = 'button'; griff.className = 'tex-griff'; griff.id = 'stGriff' + nr; griff.textContent = '⋮⋮'; griff.title = t('layers.drag'); griff.setAttribute('aria-label', t('layers.drag'));
+    griffBinden(griff, nr, EBENEN_STAPEL);
+    const weg = document.createElement('button'); weg.type = 'button'; weg.className = 'stapel-weg'; weg.id = 'stWeg' + nr; weg.textContent = '×'; weg.title = t('layers.remove'); weg.setAttribute('aria-label', t('layers.remove'));
+    weg.addEventListener('click', () => ebeneLoeschen(k));
+    z.append(wahl, auge, solo, griff, weg); zeilen.append(z);
   }
-  for (const [id, key] of [['pane-motiv', 'misc.subject'], ['pane-farbe', 'colour.colour'], ['pane-palette', 'pane.palette']]) {   // Titel: „Farbe · Ebene 2“
-    const h2 = document.querySelector('#' + id + ' > .pane-title'); if (h2) h2.textContent = t(key) + (mehrere && moeglich ? ' · ' + t('layers.layer-n', ebeneAktiv + 1) : '');
-  }
+  const farbe = ebeneFarbe(ebeneAktiv);
+  for (const el of [$('panel'), $('rail')]) if (el) { el.style.setProperty('--ebene-farbe', farbe); el.classList.toggle('ebenen-aktiv', aktiv); }
+  const qh = $('qualEbenenHinweis'); if (qh) qh.hidden = !aktiv;
+  for (const [id, key] of [['pane-motiv', 'misc.subject'], ['pane-farbe', 'colour.colour'], ['pane-palette', 'pane.palette'], ['pane-qualitaet', 'quality.quality']]) { const h2 = document.querySelector('#' + id + ' > .pane-title'); if (h2) h2.textContent = t(key); }
 }
 function ebenenKartenBauen() {
   const box = $('ebenenStapel'); if (!box) return;
   const moeglich = S.family === 'escape'; $('ebenenRow').hidden = !moeglich;
-  box.replaceChildren(); ebenen.forEach((e, k) => box.append(ebeneKarte(k)));
+  box.replaceChildren(); if (moeglich && ebenen[ebeneAktiv]) box.append(ebeneKarte(ebeneAktiv, true));   // nur die gewählte Ebene: Mischen ist ihr Bereich
   ebenen.forEach((e, k) => ebeneKarteWerte(k));
-  $('ebenenNeu').disabled = ebenen.length >= EBENEN_MAX || !moeglich;
-  $('ebenenVoll').hidden = ebenen.length < EBENEN_MAX;
 }
 function ebeneZahlZeile(id, textKey, min, max, schritt, wert, setzen) {   // Schieber mit getipptem Wert (wie in den Karten der Nachbearbeitung)
   const wrap = document.createElement('div'), zeile = document.createElement('div'); zeile.className = 'lbl wertzeile';
@@ -13337,13 +13525,13 @@ function ebeneZahlZeile(id, textKey, min, max, schritt, wert, setzen) {   // Sch
   const reg = document.createElement('input'); reg.id = id; reg.type = 'range'; reg.min = String(min); reg.max = String(max); reg.step = String(schritt); reg.value = String(wert); reg.setAttribute('aria-label', t(textKey));
   feld.value = fmtZahl(wert, 2);
   reg.addEventListener('input', () => { feld.value = fmtZahl(parseFloat(reg.value), 2); setzen(parseFloat(reg.value)); });
-  wertFeld(feld, reg, () => [min, max], v => v, v => setzen(v));
+  wertFeld(feld, reg, () => [min, max], v => v, v => { reg.value = String(v); feld.value = fmtZahl(v, 2); setzen(v); });   // getippt: Regler und Feld folgen (die Karte wird dabei nicht neu gebaut)
   wrap.append(zeile, reg);
   return wrap;
 }
-function ebeneKarte(k) {
+function ebeneKarte(k, ohneKopf = false) {   // ohneKopf: im Bereich „Mischen“ (Auswahl, Auge, Solo, Griff und × stehen im Stapel)
   const e = ebenen[k], karte = document.createElement('div');
-  karte.className = 'tex-karte nach-karte ebene-karte' + (k === ebeneAktiv ? ' on' : '') + (e.zu ? ' nach-zu' : '') + (e.sichtbar ? '' : ' aus'); karte.id = 'ebeneKarte' + (k + 1); karte.dataset.i = String(k + 1); karte.style.setProperty('--ebene', ebeneFarbe(k));
+  karte.className = 'tex-karte nach-karte ebene-karte' + (k === ebeneAktiv ? ' on' : '') + (e.zu && !ohneKopf ? ' nach-zu' : '') + (e.sichtbar ? '' : ' aus'); karte.id = 'ebeneKarte' + (k + 1); karte.dataset.i = String(k + 1); karte.style.setProperty('--ebene', ebeneFarbe(k));
   const kopf = document.createElement('div'); kopf.className = 'lbl tex-kopf';
   const griff = document.createElement('button'); griff.type = 'button'; griff.className = 'tex-griff'; griff.textContent = '⋮⋮'; griff.title = t('layers.drag'); griff.setAttribute('aria-label', t('layers.drag'));
   const zu = document.createElement('button'); zu.type = 'button'; zu.className = 'nach-zu'; zu.id = 'ebeneZu' + (k + 1); zu.textContent = e.zu ? '▸' : '▾'; zu.title = t(e.zu ? 'post.expand' : 'post.collapse'); zu.setAttribute('aria-label', zu.title);
@@ -13361,7 +13549,7 @@ function ebeneKarte(k) {
   sch.append(an, document.createElement('span'));
   const weg = document.createElement('button'); weg.type = 'button'; weg.className = 'tex-weg'; weg.id = 'ebeneWeg' + (k + 1); weg.textContent = '×'; weg.title = t('layers.remove'); weg.setAttribute('aria-label', t('layers.remove')); weg.disabled = ebenen.length <= 1;
   weg.addEventListener('click', () => ebeneLoeschen(k));
-  kn.append(solo, sch, weg); kopf.append(griff, zu, wahl, kn); karte.append(kopf);
+  kn.append(solo, sch, weg); kopf.append(griff, zu, wahl, kn); if (!ohneKopf) karte.append(kopf);
   const regler = document.createElement('div'); regler.className = 'nach-regler'; regler.id = 'ebeneRegler' + (k + 1);
   const eigen = document.createElement('div'); eigen.className = 'nach-eigen';
   { const zeile = document.createElement('div'); zeile.className = 'lbl'; const lab = document.createElement('label'); lab.htmlFor = 'ebeneName' + (k + 1); lab.textContent = t('layers.name');
@@ -13378,9 +13566,8 @@ function ebeneKarte(k) {
     const verb = document.createElement('label'); verb.className = 'chk'; verb.title = t('layers.linked-title'); const vc = document.createElement('input'); vc.type = 'checkbox'; vc.id = 'ebeneVerb' + (k + 1); vc.checked = e.verbunden;
     vc.addEventListener('change', () => { ebeneVerbindung(k, vc.checked); });
     verb.append(vc, ' ' + t('layers.linked')); eigen.append(verb);
-    if (!e.verbunden) { const b = document.createElement('button'); b.type = 'button'; b.className = 'ebenen-knopf'; b.id = 'ebeneAngleichen' + (k + 1); b.textContent = t('layers.align-view'); b.addEventListener('click', () => ebeneAnsichtAngleichen(k)); eigen.append(b); }
+    if (!e.verbunden) { const b = document.createElement('button'); b.type = 'button'; b.className = 'ebenen-knopf'; b.id = 'ebeneAngleichen' + (k + 1); b.textContent = t('layers.align-view'); b.addEventListener('click', () => ebeneAnsichtAngleichen(k)); eigen.append(b); eigen.append(ebeneFeinBlock(k)); }
   } else { const p = document.createElement('p'); p.className = 'hint'; p.textContent = t('layers.base-note'); eigen.append(p); }
-  { const b = document.createElement('button'); b.type = 'button'; b.className = 'ebenen-knopf'; b.id = 'ebeneKopie' + (k + 1); b.textContent = t('layers.duplicate'); b.disabled = ebenen.length >= EBENEN_MAX; b.addEventListener('click', () => { ebeneWaehlen(k, true); ebeneHinzufuegen(); }); eigen.append(b); }
   regler.append(eigen);
   if (k > 0) {   // Maske: Auswahl der Art, dann deren Regler, weicher Rand, umkehren
     const mbox = document.createElement('div'); mbox.className = 'nach-maske'; mbox.id = 'ebeneMaske' + (k + 1);
@@ -13421,9 +13608,55 @@ function ebeneKarteWerte(k) {   // Werte der Maskenregler aus dem Zustand (nach 
 function ebeneMaskeSetzen(k, slot, v) { const m = ebenen[k] && ebenen[k].maske; if (!m) return; if (slot === MASKE_WEICH_SLOT) m.weich = clamp(v, 0, 1); else m.p[slot] = v; ebenenAenderung(false, false); }
 function ebeneVerbindung(k, verbunden) {   // Ansicht verbinden oder lösen; gelöst behält die Ebene die Ansicht, die sie gerade hat
   const e = ebenen[k]; if (!e || k === 0 || e.verbunden === verbunden) return;
+  if (verbunden) { e.ausrichten = false; fadenkreuzZeigen(); }   // verbunden gibt es nichts auszurichten
   if (k === ebeneAktiv) { if (verbunden) { e.verbunden = true; ansichtLaden(ebenenBasisAnsicht); ebenenBasisAnsicht = null; e.ansicht = null; } else { ebenenBasisAnsicht = ansichtSichern(); e.verbunden = false; } ebenenAenderung(true); return; }
   if (verbunden) { e.ansicht = null; e.verbunden = true; } else { e.ansicht = basisAnsicht(); e.verbunden = false; }
   ebenenAenderung(true);
+}
+function ebeneRelativ(k) {   // Lage der Ebene k relativ zum Grund: Zoomfaktor, Versatz in Pixeln des Grunds (x rechts, y oben), Drehung in Grad
+  const b = basisAnsicht(), v = ebeneAnsicht(k); if (!b || !v) return { faktor: 1, x: 0, y: 0, dreh: 0 };
+  const [x, y] = ansichtVersatz(b, v); return { faktor: v.zoom / b.zoom, x, y, dreh: (v.dreh || 0) - (b.dreh || 0) };
+}
+function ebeneRelativSetzen(k, rel) {   // umgekehrt: die Ansicht der Ebene k aus Faktor, Versatz und Drehung zum Grund
+  const b = basisAnsicht(), e = ebenen[k]; if (!b || !e || e.verbunden) return;
+  const ps = psVonZoom(b.zoom), [ex, ey] = ebeneVonPixelMit(b.dreh || 0, rel.x * ps, rel.y * ps);
+  const v = { cx: dd.addD(b.cx, ex), cy: dd.addD(b.cy, ey), zoom: clamp(b.zoom * rel.faktor, MIN_ZOOM, MAX_ZOOM), dreh: drehNorm((b.dreh || 0) + rel.dreh), ps: 0 }; v.ps = psVonZoom(v.zoom);
+  if (k === ebeneAktiv) { liveZurueck(); ansichtLaden(v); syncDreh(); scheduleHash(); viewChanged(); ebenenFeinNachfuehren(); }
+  else { e.ansicht = v; ebenenAenderung(true); }
+}
+function feinVerhaeltnis(f) { const k = [0.125, 0.25, 0.5, 1, 2, 3, 4, 8]; return k.reduce((b, v) => Math.abs(Math.log(v / f)) < Math.abs(Math.log(b / f)) ? v : b, 1); }   // das nächste glatte Verhältnis
+function ebeneFeinBlock(k) {   // Feinjustierung einer gelösten Ebene: Werte zum Grund, Stoßknöpfe, Runden, Mitte, Ausrichten
+  const n = k + 1, e = ebenen[k], box = document.createElement('div'); box.className = 'ebene-fein'; box.id = 'ebeneFein' + n;
+  const titel = document.createElement('div'); titel.className = 'lbl'; const tl = document.createElement('label'); tl.textContent = t('layers.fine'); titel.append(tl); box.append(titel);
+  const rel = () => ebeneRelativ(k), setze = aend => ebeneRelativSetzen(k, Object.assign(rel(), aend));
+  const zeile = (key, feldId, wert, stellen, stoesse, setzer) => {
+    const z = document.createElement('div'); z.className = 'ebene-fein-zeile';
+    const lab = document.createElement('label'); lab.htmlFor = feldId; lab.textContent = t(key);
+    const inp = document.createElement('input'); inp.type = 'text'; inp.id = feldId; inp.className = 'val mono wert'; inp.inputMode = 'decimal'; inp.spellcheck = false; inp.autocomplete = 'off'; inp.value = fmtZahl(wert, stellen);
+    inp.addEventListener('change', () => { const v = leseZahl(inp.value); if (isFinite(v)) setzer(v); else inp.value = fmtZahl(wert, stellen); });
+    inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') inp.blur(); ev.stopPropagation(); });
+    z.append(lab, inp);
+    for (const [text, fn] of stoesse) { const b = document.createElement('button'); b.type = 'button'; b.className = 'ebenen-knopf ebene-fein-knopf'; b.textContent = text; b.addEventListener('click', fn); z.append(b); }
+    box.append(z);
+  };
+  zeile('layers.fine-factor', 'ebFein' + n + '_f', rel().faktor, 6, [['×2', () => setze({ faktor: rel().faktor * 2 })], ['÷2', () => setze({ faktor: rel().faktor / 2 })], ['=1', () => setze({ faktor: 1 })]], v => setze({ faktor: clamp(v, 1e-6, 1e6) }));
+  zeile('layers.fine-x', 'ebFein' + n + '_x', rel().x, 2, [['−1', () => setze({ x: rel().x - 1 })], ['+1', () => setze({ x: rel().x + 1 })], ['−0,1', () => setze({ x: rel().x - 0.1 })], ['+0,1', () => setze({ x: rel().x + 0.1 })]], v => setze({ x: v }));
+  zeile('layers.fine-y', 'ebFein' + n + '_y', rel().y, 2, [['−1', () => setze({ y: rel().y - 1 })], ['+1', () => setze({ y: rel().y + 1 })], ['−0,1', () => setze({ y: rel().y - 0.1 })], ['+0,1', () => setze({ y: rel().y + 0.1 })]], v => setze({ y: v }));
+  zeile('layers.fine-rotation', 'ebFein' + n + '_d', rel().dreh, 1, [['−1°', () => setze({ dreh: rel().dreh - 1 })], ['+1°', () => setze({ dreh: rel().dreh + 1 })], ['−0,1°', () => setze({ dreh: rel().dreh - 0.1 })], ['+0,1°', () => setze({ dreh: rel().dreh + 0.1 })]], v => setze({ dreh: v }));
+  const kn = document.createElement('div'); kn.className = 'ebene-fein-knoepfe';
+  for (const [key, id, fn] of [['layers.fine-snap', 'ebFein' + n + '_runden', () => setze({ faktor: feinVerhaeltnis(rel().faktor) })], ['layers.fine-centre', 'ebFein' + n + '_mitte', () => setze({ x: 0, y: 0 })]]) { const b = document.createElement('button'); b.type = 'button'; b.className = 'ebenen-knopf'; b.id = id; b.textContent = t(key); b.addEventListener('click', fn); kn.append(b); }
+  box.append(kn);
+  const aus = document.createElement('label'); aus.className = 'chk'; aus.title = t('layers.fine-align-title'); const ac = document.createElement('input'); ac.type = 'checkbox'; ac.id = 'ebFein' + n + '_ausrichten'; ac.checked = !!e.ausrichten; ac.addEventListener('change', () => ebeneAusrichten(k, ac.checked)); aus.append(ac, ' ' + t('layers.fine-align')); box.append(aus);
+  const hint = document.createElement('p'); hint.className = 'hint'; hint.textContent = t('layers.fine-hint'); box.append(hint);
+  return box;
+}
+function ebenenFeinNachfuehren() {   // Anzeige der Feinjustierung nach Gesten nachführen, ohne ein Feld zu stören, in dem getippt wird
+  ebenen.forEach((e, k) => { const n = k + 1; if (!$('ebFein' + n + '_f')) return; const r = ebeneRelativ(k);
+    for (const [id, v, st] of [['_f', r.faktor, 6], ['_x', r.x, 2], ['_y', r.y, 2], ['_d', r.dreh, 1]]) { const el = $('ebFein' + n + id); if (el && document.activeElement !== el) el.value = fmtZahl(v, st); } });
+}
+function fadenkreuzZeigen() { const fk = $('fadenkreuz'); if (fk) fk.hidden = !ebenen.some(x => x.ausrichten); }
+function ebeneAusrichten(k, an) {   // Ausrichten: die Ebene erscheint als Differenz mit voller Deckkraft (nur in der Anzeige, der Link bleibt), dazu das Fadenkreuz
+  const e = ebenen[k]; if (!e) return; e.ausrichten = !!an; fadenkreuzZeigen(); ebenenAenderung(false, false);
 }
 function ebeneAnsichtAngleichen(k) {   // eine gelöste Ebene auf die Ansicht der ersten setzen
   const e = ebenen[k]; if (!e || e.verbunden) return;
@@ -13431,10 +13664,11 @@ function ebeneAnsichtAngleichen(k) {   // eine gelöste Ebene auf die Ansicht de
   ebenenAenderung(true);
 }
 function ebenenLive(text) { const l = $('ebenenLive'); if (l) { l.textContent = ''; setTimeout(() => { l.textContent = text; }, 30); } }
-const EBENEN_STAPEL = { karten: () => [...document.querySelectorAll('#ebenenStapel .ebene-karte')], nr: k => +k.dataset.i, karte: m => $('ebeneKarte' + m), griff: m => { const k = $('ebeneKarte' + m); return k ? k.querySelector('.tex-griff') : null; },
-  anzahl: () => ebenen.length, verschieben: (von, nach) => ebeneVerschieben(von - 1, nach - 1), live: ebenenLive, textBewegt: 'layers.layer-moved',
-  uebernehmen: folge => { const alt = ebenen, aktiv = alt[ebeneAktiv]; ebenen = folge.map(m => alt[m - 1]); ebeneAktiv = ebenen.indexOf(aktiv); ebeneInS = ebeneAktiv; ebenenSaetzeUmordnen(folge.map(m => m - 1)); ebenenAenderung(false); } };
-$('ebenenNeu').addEventListener('click', ebeneHinzufuegen);
+const EBENEN_STAPEL = { karten: () => [...document.querySelectorAll('#stapelZeilen .stapel-zeile')], nr: k => +k.dataset.i, karte: m => $('stZeile' + m), griff: m => $('stGriff' + m),
+  anzahl: () => ebenen.length, verschieben: (von, nach) => ebeneVerschieben(von - 1, nach - 1), live: ebenenLive, textBewegt: 'layers.layer-moved', umgekehrt: true,   // im Stapel steht die oberste Ebene zuerst
+  uebernehmen: folge => { const reihe = folge.slice().reverse(), alt = ebenen, aktiv = alt[ebeneAktiv]; ebenen = reihe.map(m => alt[m - 1]); ebeneAktiv = ebenen.indexOf(aktiv); ebeneInS = ebeneAktiv; ebenenSaetzeUmordnen(reihe.map(m => m - 1)); ebenenAenderung(false); } };
+$('stapelNeu').addEventListener('click', ebeneHinzufuegen);
+$('stapelKette').addEventListener('click', () => { ebenenNurEine = !ebenenNurEine; stapelBauen(); });
 function nachKartenBauen() {   // neu gebaut bei anderer Zahl, Art, Reihenfolge oder Sprache; sonst nur die Werte
   const box = $('nachStapel'); if (!box) return;
   const wolke = S.family === 'accum';
@@ -13976,19 +14210,20 @@ function syncAaUI() {
 }
 aaSel.addEventListener('change', () => {
   S.aa = aaSnap(parseInt(aaSel.value, 10));
-  lsSet('fractal.aa', String(S.aa));
+  aaLs('fractal.aa', String(S.aa));
   doResize();
   syncAaUI();
 });
 aaModeSel.addEventListener('change', () => {   // Verfahren wechseln: Puffer neu anlegen, Bild neu rechnen
   S.aaMode = AA_MODI.includes(aaModeSel.value) ? aaModeSel.value : 'grid';
-  lsSet('fractal.aamode', S.aaMode);
-  W = 0; doResize(); syncAaUI();
+  aaLs('fractal.aamode', S.aaMode);
+  doResize(true); syncAaUI();
 });
 // Restrauschen, Obergrenze oder Filterbreite geändert. Strenger (weniger Rauschen, mehr Proben): Bedarf neu bewerten, die
 // vorhandenen Proben bleiben und es kommen welche dazu. Lockerer oder andere Filterbreite: neu beginnen. Sonst behielte der
 // Bildschirm die Proben der strengeren Einstellung, am Bild änderte sich nichts, und der Export sähe anders aus.
 function aaRetune(neu) {
+  liveZurueck(); scheduleHash();
   if (aaOn && hasImage) {
     if (neu) aaRestart();
     else { renderer.aaRefresh(colorParams(), aaParams()); aaTiles = null; aaCounts = null; aaActive = W * H; }
@@ -13997,12 +14232,13 @@ function aaRetune(neu) {
   }
   updateResInfo(); syncAaUI();
 }
-const setzeToleranz = v => { const alt = S.aaTol; S.aaTol = v; aaTolEl.value = aaTolToPos(v); lsSet('fractal.aatol', String(v)); aaRetune(v > alt); };
+const aaLs = (k, v) => { if (ebeneAktiv === 0) lsSet(k, v); };   // Fraktal-Ebenen: nur die Glättung der ersten Ebene ist Browser-Einstellung
+const setzeToleranz = v => { const alt = S.aaTol; S.aaTol = v; aaTolEl.value = aaTolToPos(v); aaLs('fractal.aatol', String(v)); aaRetune(v > alt); };
 aaTolEl.addEventListener('input', () => setzeToleranz(aaPosToTol(+aaTolEl.value)));
-aaMaxEl.addEventListener('input', () => { const alt = S.aaMax; S.aaMax = aaPosToMax(+aaMaxEl.value); lsSet('fractal.aamax', String(S.aaMax)); aaRetune(S.aaMax < alt); });
+aaMaxEl.addEventListener('input', () => { const alt = S.aaMax; S.aaMax = aaPosToMax(+aaMaxEl.value); aaLs('fractal.aamax', String(S.aaMax)); aaRetune(S.aaMax < alt); });
 const setzeFilterbreite = v => {   // andere Verteilung: vorhandene Proben passen nicht mehr dazu
   S.aaSigma = clamp(v, AA_SIGMA.min, AA_SIGMA.max); aaSigmaEl.value = Math.round(S.aaSigma * 100);
-  lsSet('fractal.aasigma', String(S.aaSigma));
+  aaLs('fractal.aasigma', String(S.aaSigma));
   aaRetune(true);
 };
 aaSigmaEl.addEventListener('input', () => setzeFilterbreite(+aaSigmaEl.value / 100));
@@ -14014,7 +14250,7 @@ for (const b of document.querySelectorAll('#aaPresets button')) b.addEventListen
   const p = AA_PRESETS[b.dataset.preset]; if (!p) return;
   const neu = p.tol > S.aaTol || p.max < S.aaMax || Math.abs(S.aaSigma - AA_SIGMA.def) > 1e-9;
   S.aaTol = p.tol; S.aaMax = p.max; S.aaSigma = AA_SIGMA.def;
-  lsSet('fractal.aatol', String(S.aaTol)); lsSet('fractal.aamax', String(S.aaMax)); lsSet('fractal.aasigma', String(S.aaSigma));
+  aaLs('fractal.aatol', String(S.aaTol)); aaLs('fractal.aamax', String(S.aaMax)); aaLs('fractal.aasigma', String(S.aaSigma));
   aaRetune(neu);
 });
 syncAaUI();
@@ -14308,6 +14544,7 @@ function applyState(obj) {   // Zustand aus einer Datei übernehmen und rendern
   accStopWorkers();
   syncAllUI();
   if (S.family === 'accum') { accReady = false; accSetup(); }
+  ebenenGlaettungErben();   // Fraktal-Ebenen ohne eigene Glättung folgen dem Grund, dessen Glättung eben aus extra kam
   doResize();
   setMode(v.mode, { force: true, view: v.hasView ? v : centeredDefault(familyView()) });
   if (ebenenStartAktiv) ebeneWaehlen(ebenenStartAktiv);   // Fraktal-Ebenen: die gespeicherte Wahl
@@ -15035,13 +15272,14 @@ async function exportPoster() {
       ebenen.forEach((e, k) => { if (solo >= 0 ? k !== solo : !e.sichtbar) return; list.push({ k, modus: k === 0 ? 0 : e.modus, deck: e.deck, ax: 1, ay: 1, bx: 0, by: 0 }); });
       for (const e of list) {
         const vor = mitEbene(e.k, () => {   // alles, was den Zustand der Ebene braucht, hier — das Rechnen danach kommt ohne ihn aus
+          const adaptivK = aaAdaptiv(), aaK = adaptivK ? 1 : clamp(aaSnap(S.aa), 1, 16);   // die Glättung dieser Ebene
           const g = kachelGeometrie(), mi = currentMaxIter(); computeOrbits(mi, g.dcMax);
-          const c = Object.assign(colorParamsEbene(), { layers: adaptiv ? 0 : aa * aa, shift: [0, 0], ps: g.psX, nachBild: cp.nachBild });
-          return { params: kachel(g, mi), cp: c, ap: aaParams(), sigma: S.aaSigma };
+          const c = Object.assign(colorParamsEbene(), { layers: adaptivK ? 0 : aaK * aaK, shift: [0, 0], ps: g.psX, nachBild: cp.nachBild });
+          return { params: kachel(g, mi, layerOffsets(aaK)), cp: c, ap: aaParams(), sigma: S.aaSigma, adaptiv: adaptivK, aa: aaK };
         });
         if (renderer._nachBereit) await renderer._nachBereit(vor.cp);
-        if (adaptiv) { renderer.ebeneWaehlen(e.k); if (!renderer.aa) await renderer.aaInit(); await renderAdaptiveEbene(vor.params[0], vor.cp, rw, rh, vor.ap, vor.sigma); renderer.exportFarbeVomSchirm(vor.cp, rw, rh, e.k); }
-        else renderer.renderExportEbene(vor.params, vor.cp, rw, rh, e.k);
+        if (vor.adaptiv) { renderer.ebeneWaehlen(e.k, 1); if (!renderer.aa) await renderer.aaInit(); await renderAdaptiveEbene(vor.params[0], vor.cp, rw, rh, vor.ap, vor.sigma); renderer.exportFarbeVomSchirm(vor.cp, rw, rh, e.k); }
+        else { renderer.exportProben(vor.aa); renderer.renderExportEbene(vor.params, vor.cp, rw, rh, e.k); }
       }
       orbitDirty = true;
       return renderer.exportVerbund(Object.assign({}, cp, { verbund: { ebenen: list, liveZeigen: false } }), rw, rh);
@@ -15062,14 +15300,14 @@ async function exportPoster() {
       for (let tx = 0; tx < Wp && !exportCancel; tx += schrittX) {
         const w = Math.min(schrittX, Wp - tx), h = Math.min(schrittY, Hp - ty);
         const mx0 = Math.min(rand, tx), mx1 = Math.min(rand, Wp - tx - w), my0 = Math.min(rand, ty), my1 = Math.min(rand, Hp - ty - h), rw = w + mx0 + mx1, rh = h + my0 + my1;   // Rand nur, wo Bild ist
-        const kachel = (g, mi) => {   // die Parametersätze der Kachel (je Probenebene) für die Ebene in S: Geometrie g, Iterationen mi
+        const kachel = (g, mi, offsK = offs) => {   // die Parametersätze der Kachel (je Probenebene) für die Ebene in S: Geometrie g, Iterationen mi, Probenversatz offsK
             const base = Object.assign({
             dcScale: [g.psX, yd ? -g.psY : g.psY],
             maxIter: mi, lenA: orbitLenA, baseB: orbitBaseB, lenB: orbitLenB,
             isJulia: S.mode === 'julia' ? 1 : 0, needDE: brauchtAbstand() ? 1 : 0, ps: g.psX, cycle: cycleOn(mi) && !hybridAktiv(), lyap: lyapModus(), winkel: winkelModus(), texP: texWerteSammler(), texW: texWertePlaetze(), texInnen: texInnenIrgend() && texturZahl() > 0 ? 1 : 0, verbund: verbundK(), verbundMaske: verbundMaske(), verbundErster: verbundErster(), stat: statPipeline(), stat2: statPipeline2(), stat3: statPipeline3(), stat4: statPipeline4(), stat5: statPipeline5(), stat6: statPipeline6(), ...paarPipeline(), texz: texturZ(), ...texArtenParam(), lyGrenze: S.lyGrenze, streifen: S.streifen, vorlauf: S.vorlauf, gewicht: S.gewicht, fluchtForm: S.fluchtForm, fluchtRadius: S.fluchtRadius || (FORMULAS[S.formula].bail || 0),
             power: potenzEff(), invert: S.invert ? 1 : 0, needInt: brauchtInnen() ? 1 : 0, pRef: [g.pr[0], g.pi[0]], rotC: drehCS()[0], rotS: drehCS()[1], invM: S.invM, biomorph: S.biomorph ? 1 : 0, richtungY: richtungModus(), abkl: 1 - S.abklingen, param2: [...S.param2, S.zweig || 0],
           }, directParams(g.pr, g.pi), blaParams());
-            const params = offs.map(([ox, oy]) => Object.assign({}, base, {   // ein Parametersatz je Probenebene
+            const params = offsK.map(([ox, oy]) => Object.assign({}, base, {   // ein Parametersatz je Probenebene
             dcOffset: drehOffset((tx - mx0 + ox - Wp / 2) * g.psX, yd ? (Hp / 2 - (ty - my0) - oy) * g.psY : (Hp / 2 - (ty - my0) - rh + oy) * g.psY, [g.shift[0] - g.dx, g.shift[1] - g.dy]) }));   // gedreht wie am Bildschirm; der Rahmenversatz dx, dy liegt schon in der Ebene; mit Rand
           return params;
         };
@@ -15170,7 +15408,7 @@ const LEGAL = {
     <p>Ein Sammler rechnet je Bahnschritt erst die Zustandszeile <code>s = …</code>, dann den Wert; die Zusammenfassung (Mittel, Minimum, Maximum, Summe, letzter Wert, Schritt des Minimums) macht daraus einen Wert je Bildpunkt, gefärbt wie das Streifenmittel, innen wie außen. Gewichtung und Abklingen gelten für das Mittel; als Textur wird ein Wert zwischen 0 und 1 erwartet.</p>
     <p>Die eigene Formel rechnet in fp32 (Zoom bis 10<sup>5</sup>); Faltung, Gedächtnis und Start im Bildpunkt wirken wie bei den anderen direkten Formeln, die Ableitungen für Abstandsschätzung und Beleuchtung entstehen von selbst. Beispiele: <code>cosh(z) + c</code>, <code>sin(z)^2 + c</code>, <code>z^2 + c/z</code> mit Start im Bildpunkt; Sammler <code>min(|z - 1|, |z + 1|)</code> und <code>|re z im z|</code> (je Minimum); Abbildung <code>c/(1 + c^2)</code>. Mehr dazu in <code>docs/expressions.md</code> im Quelltext.</p>
     <h3>Ebenen</h3>
-    <p>Mehrere Fraktale übereinander: die Ebenenzeile oben in Motiv, Farbe und Palette wählt, welche Ebene diese Bereiche bearbeiten („+“ legt eine Kopie darüber an, „×“ löscht die gewählte). Der Bereich „Ebenen“ ist der Mischer: Reihenfolge, Sichtbarkeit, Solo, Mischmodus (Multiplizieren, Negativ multiplizieren, Überlagern, Differenz, Farbton, Luminanz …), Deckkraft und Maske je Ebene, dazu ob die Ebene der gemeinsamen Ansicht folgt oder ihre eigene Mitte und ihren eigenen Zoom hat. Die unterste Ebene ist der Grund, die Nachbearbeitung wirkt auf das Ergebnis. Mehr dazu in <code>docs/layers.md</code> im Quelltext.</p>
+    <p>Mehrere Fraktale übereinander: der Ebenenstapel oben im Bedienfeld wählt, welche Ebene die Bereiche Motiv, Farbe, Palette und Qualität bearbeiten („+“ legt eine Kopie darüber an, „×“ löscht die gewählte). Der Bereich „Mischen“ gehört der gewählten Ebene: Reihenfolge, Sichtbarkeit, Solo, Mischmodus (Multiplizieren, Negativ multiplizieren, Überlagern, Differenz, Farbton, Luminanz …), Deckkraft und Maske je Ebene, dazu ob die Ebene der gemeinsamen Ansicht folgt oder ihre eigene Mitte und ihren eigenen Zoom hat. Im Stapelkopf schaltet „Bewegen“ zwischen allen Ebenen und nur der gewählten; Auge und S in der Stapelzeile blenden eine Ebene aus oder zeigen nur sie. Eine gelöste Ebene lässt sich im Mischer fein zum Grund justieren (Zoomfaktor, Versatz in Pixeln, Drehung, Differenz zum Ausrichten); Umschalt, Strg und Alt machen Rad, Ziehen und Tasten fein. Die unterste Ebene ist der Grund, die Nachbearbeitung wirkt auf das Ergebnis. Jede Ebene glättet mit ihren eigenen Einstellungen (Verfahren, Proben, Toleranz), die Auflösung gilt fürs ganze Bild. Mehr dazu in <code>docs/layers.md</code> im Quelltext.</p>
     <h3>Quelltext</h3>
     <p>Der vollständige Quelltext liegt auf GitHub: <a href="https://github.com/tobias74/fractal-renderer" target="_blank" rel="noopener">github.com/tobias74/fractal-renderer</a>. Klonen und selbst ausprobieren.</p>` },
   impressum: { eyebrow: 'Rechtliches', title: 'Impressum', html: `
@@ -15495,7 +15733,7 @@ const LEGAL_EN = {
     <p>Each orbit step, a collector first evaluates the state line <code>s = …</code>, then the value; the aggregation (mean, minimum, maximum, sum, last value, step of the minimum) turns the steps into one value per pixel, coloured like the stripe average, inside as well as outside. Weighting and decay apply to the mean; as a texture a value between 0 and 1 is expected.</p>
     <p>The custom formula is computed in fp32 (zoom up to 10<sup>5</sup>); fold per step, memory and start at the pixel apply as for the other direct formulas, and the derivatives for distance estimation and lighting are generated automatically. Examples: <code>cosh(z) + c</code>, <code>sin(z)^2 + c</code>, <code>z^2 + c/z</code> with start at the pixel; collectors <code>min(|z - 1|, |z + 1|)</code> and <code>|re z im z|</code> (minimum each); mapping <code>c/(1 + c^2)</code>. More in <code>docs/expressions.md</code> in the source code.</p>
     <h3>Layers</h3>
-    <p>Several fractals on top of each other: the layer row at the top of Motif, Colour and Palette selects which layer those panels edit (“+” adds a copy above, “×” removes the selected one). The “Layers” panel is the mixer: order, visibility, solo, blend mode (multiply, screen, overlay, difference, hue, luminosity …), opacity and mask per layer, and whether a layer follows the shared view or keeps its own centre and zoom. The bottom layer is the ground; post-processing works on the result. More in <code>docs/layers.md</code> in the source code.</p>
+    <p>Several fractals on top of each other: the layer stack at the top of the panel selects which layer the panels Motif, Colour, Palette and Quality edit (“+” adds a copy above, “×” removes the selected one). The “Blend” panel belongs to the selected layer: order, visibility, solo, blend mode (multiply, screen, overlay, difference, hue, luminosity …), opacity and mask per layer, and whether a layer follows the shared view or keeps its own centre and zoom. In the stack header, “Move” switches between all layers and only the selected one; the eye and S in a stack row hide a layer or show only it. An unlinked layer can be aligned finely to the ground in the mixer (zoom factor, offset in pixels, rotation, difference view for aligning); Shift, Ctrl and Alt make wheel, drag and keys fine. The bottom layer is the ground; post-processing works on the result. Each layer smooths with its own settings (method, samples, tolerance); the resolution applies to the whole image. More in <code>docs/layers.md</code> in the source code.</p>
     <h3>Source code</h3>
     <p>The complete source code is on GitHub: <a href="https://github.com/tobias74/fractal-renderer" target="_blank" rel="noopener">github.com/tobias74/fractal-renderer</a>. Clone it and try it yourself.</p>` },
   impressum: { eyebrow: 'Legal', title: 'Imprint', html: `

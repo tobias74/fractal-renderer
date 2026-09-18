@@ -36,7 +36,7 @@ describe('Menüs je Variante', () => {
   });
 
   it('Potenz d nur bei den z^d-Formeln und bei Newton/Nova', () => {
-    for (const [f, an] of [[0, true], [1, true], [6, true], [7, false], [8, false], [9, false], [10, false], [11, true], [12, false], [13, false], [23, true]]) {
+    for (const [f, an] of [[0, true], [1, true], [6, true], [7, true], [8, false], [9, false], [10, false], [11, true], [12, false], [13, false], [23, true]]) {
       formel(f);
       sichtbar('#power', an);
     }

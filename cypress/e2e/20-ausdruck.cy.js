@@ -44,7 +44,11 @@ describe('Eigene Ausdrücke', () => {
         cy.get('#formelEigenText').should('have.class', 'fehler').and('contain.text', 'Stelle 6');
         cy.expectHash('xf', 'z^3 + c');
         cy.visitApp('mode=mandel&f=37&xf=z%5E3+%2B+c', { storage: { 'fractal.renderer': 'webgl' } }); cy.waitRender();
-        cy.shotStats('xf-webgl').then(gl => gleich(k3, gl, 'WebGL 2 rechnet dasselbe Bild'));
+        cy.shotStats('xf-webgl').then(gl => {
+          gleich(k3, gl, 'WebGL 2 rechnet dasselbe Bild');
+          cy.get('#formelEigen').clear().type('z^4 + c{enter}'); cy.waitRender(); cy.wait(400);   // geänderter Ausdruck: WebGL 2 muss neu übersetzen, nicht das alte Programm aus dem Cache nehmen
+          cy.shotStats('xf-webgl-4').then(gl4 => cy.task('pngDiff', { a: gl.file, b: gl4.file, region: IMAGE_REGION }).then(x => expect(x.meanDiff, 'WebGL 2 übersetzt den geänderten Ausdruck neu').to.be.greaterThan(3)));
+        });
       });
     });
     cy.visitApp('mode=mandel&f=37&xf=z%5E2+%2B+q');   // ungültig im Link: die Vorgabe

@@ -8,7 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const GEBAUT = ['quilez.slider.'];   // Schlüssel, die der Code zusammensetzt: nicht als Zeichenkette zu finden
+const GEBAUT = ['quilez.slider.', 'layers.mode.'];   // Schlüssel, die der Code zusammensetzt: nicht als Zeichenkette zu finden
 
 function pruefeI18n(datei) {
   const quelle = fs.readFileSync(datei || path.join(__dirname, '..', 'index.html'), 'utf8');

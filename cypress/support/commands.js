@@ -112,3 +112,15 @@ Cypress.Commands.add('shotStats', (name, region = IMAGE_REGION) => {
   cy.screenshot(name, { capture: 'viewport', overwrite: true, onAfterScreenshot: (_el, props) => { file = props.path; } });
   return cy.then(() => cy.task('pngStats', { file, region }).then(stats => ({ ...stats, file })));
 });
+
+// Fraktal-Ebenen: warten, bis jede sichtbare Ebene gerechnet und geglättet ist (bei einer Ebene: bis „Fertig“); liefert die Zeit in ms seit dem Laden, −1 bei Zeitüberschreitung
+Cypress.Commands.add('alleEbenenFertig', (timeout = 60000) => cy.window({ timeout }).then({ timeout }, win => new Promise(res => {
+  const t0 = Date.now();
+  const pruefe = () => {
+    const z = win.ebenenStand ? win.ebenenStand() : null, st = win.document.getElementById('state').textContent;
+    const solo = z ? z.ebenen.findIndex(e => e.solo) : -1;
+    const offen = !!z && z.ebenen.length > 1 && (z.phase !== 'idle' || z.renderEbene !== z.ebeneAktiv || z.ebenen.some((e, k) => (solo >= 0 ? k === solo : e.sichtbar) && (!e.frisch || e.glattOffen)));
+    if (/Fertig|Done/.test(st) && !offen) res(win.performance.now()); else if (Date.now() - t0 > timeout - 500) res(-1); else setTimeout(pruefe, 50);
+  };
+  setTimeout(pruefe, 120);   // ein Bild abwarten: die Statuszeile kann noch das alte „Fertig“ zeigen
+})));
