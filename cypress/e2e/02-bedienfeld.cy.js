@@ -19,7 +19,7 @@ describe('Bedienfeld: Schublade und Bereichsleiste am PC', () => {
       expect(r.right, 'Leiste am rechten Rand').to.eq(1280);
       expect(r.width, 'Breite der Leiste').to.eq(RAIL);
     });
-    cy.get('#rail button[data-pane]').should('have.length', 6);   // Motiv, Farbe, Palette, Qualität, Nachbearbeitung, Technik
+    cy.get('#rail button[data-pane]').should('have.length', 7);   // Motiv, Farbe, Palette, Ebenen, Qualität, Nachbearbeitung, Technik
     cy.get('#rail button[data-pane="motiv"]').should('have.class', 'on');
     cy.get('#panelTab').should('be.visible').and('have.attr', 'aria-expanded', 'true');
     cy.get('#burger').then($b => { const b = $b[0].getBoundingClientRect(); expect(b.top).to.be.closeTo(14, 1); expect(b.left, 'Menü-Knopf links').to.be.closeTo(14, 1); });
@@ -64,9 +64,10 @@ describe('Bedienfeld: Schublade und Bereichsleiste am PC', () => {
   // etwas höher als das Bedienfeld und rollt ein Stück; mit Textur-Auswahl und „Gestuft“ zwei Zeilen mehr (gewollt: lieber
   // rollen als enger stellen). Weit darüber hinaus darf kein Bereich wachsen.
   it('kein Bereich läuft weit über das Bedienfeld hinaus', () => {
-    for (const p of ['motiv', 'farbe', 'palette', 'qualitaet', 'nach', 'technik']) {
+    for (const p of ['motiv', 'farbe', 'palette', 'ebenen', 'qualitaet', 'nach', 'technik']) {
       cy.get('#rail button[data-pane="' + p + '"]').click();
-      cy.get('#panelBody').should($b => expect($b[0].scrollHeight, p + ' passt').to.be.at.most($b[0].clientHeight + 180));
+      const spiel = p === 'motiv' ? 440 : 180;   // Motiv: „Weitere Einstellungen“ steht immer offen (gewollt), dafür rollt der Bereich
+      cy.get('#panelBody').should($b => expect($b[0].scrollHeight, p + ' passt').to.be.at.most($b[0].clientHeight + spiel));
     }
   });
 

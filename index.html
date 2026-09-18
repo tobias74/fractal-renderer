@@ -271,6 +271,32 @@
   .meta-dl { display: grid; grid-template-columns: max-content 1fr; gap: 3px 12px; margin: 0; font-size: 12px; }
   .meta-dl dt { color: var(--muted); } .meta-dl dd { margin: 0; word-break: break-all; } .meta-dl dd.mono { font: 11px var(--font-mono); }
   .nach-stapel { display: flex; flex-direction: column; gap: 14px; }   /* Nachbearbeitung: Ebenenstapel */
+  /* Fraktal-Ebenen: die Ebenenzeile oben in Motiv, Farbe und Palette; der Mischer als Karten */
+  .ebenen-zeile { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: -6px 0 10px; }
+  .ebenen-pille { max-width: 100%; white-space: nowrap; }
+  .ebenen-pille .ebenen-name { overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+  .ebenen-modus { display: inline-flex; margin-left: auto; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; }
+  .ebenen-modus-knopf { border: 0; background: none; color: var(--muted); font: inherit; font-size: 11.5px; padding: 3px 8px; cursor: pointer; }
+  .ebenen-modus-knopf.on { background: rgba(var(--accent-rgb), .18); color: var(--text); }
+  .immer-offen > summary { pointer-events: none; cursor: default; }
+  .immer-offen > summary::before { display: none; }
+  .ebenen-zeile.einzeln { justify-content: flex-end; margin: -2px 0 8px; }   /* eine Ebene: nur das Plus, rechts unter dem Titel */
+  .ebenen-pille { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line-strong); border-radius: 999px; padding: 3px 9px; font: inherit; font-size: 12px; color: var(--text); background: rgba(var(--tint), .05); cursor: pointer; }
+  .ebenen-pille.on { background: rgba(var(--accent-rgb), .16); border-color: var(--accent); }
+  .ebenen-pille.aus .ebenen-name { opacity: .5; text-decoration: line-through; }
+  .ebenen-punkt { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .ebenen-weg { margin-left: 2px; padding: 0 2px; color: var(--muted); font-size: 13px; line-height: 1; }
+  .ebenen-weg:hover { color: var(--bad); }
+  .ebenen-plus, .ebenen-knopf { border: 1px solid var(--line-strong); border-radius: 8px; background: rgba(var(--tint), .06); color: var(--text); font: inherit; font-size: 12px; padding: 3px 9px; cursor: pointer; }
+  .ebenen-plus { border-radius: 999px; padding: 2px 9px; font-size: 14px; line-height: 1; }
+  .ebenen-plus:disabled, .ebenen-knopf:disabled { opacity: .4; cursor: default; }
+  .ebene-karte { --ebene: var(--accent); }
+  .ebene-karte.on .tex-kopf { box-shadow: inset 3px 0 0 var(--ebene); }
+  .ebene-karte .ebene-wahl { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; color: var(--text); font: inherit; font-weight: 600; cursor: pointer; padding: 0 4px; text-align: left; }
+  .ebene-karte .ebene-solo { border: 1px solid var(--line-strong); border-radius: 6px; background: none; color: var(--muted); font: inherit; font-size: 11px; font-weight: 700; width: 22px; height: 22px; cursor: pointer; }
+  .ebene-karte .ebene-solo.on { background: var(--accent); color: var(--accent-ink, #000); border-color: var(--accent); }
+  .ebene-karte .ebene-name { width: 56%; }
+  .ebene-karte .ebenen-knopf { align-self: flex-start; }
   .nach-karte .nach-regler { display: flex; flex-direction: column; gap: 7px; padding: 2px 0 2px; }
   .nach-karte.nach-inaktiv .nach-regler { opacity: .5; }
   .nach-karte.nach-zu > .nach-regler { display: none; }   /* zugeklappt: nur der Kopf */
@@ -778,6 +804,7 @@
   <div class="panel-body" id="panelBody">
     <div class="pane" id="pane-motiv">
       <h2 class="pane-title" data-i18n="misc.subject"></h2>
+      <div class="ebenen-zeile" id="ebenenZeileMotiv" hidden></div>   <!-- Fraktal-Ebenen: welche Ebene die Bereiche Motiv, Farbe und Palette bearbeiten -->
     <section class="row">
       <h2 class="sec-title"><label for="family" data-i18n="subject.fractal"></label></h2>
       <select id="family">
@@ -821,7 +848,7 @@
             <option value="3" data-i18n="subject.inverted-mirrored"></option>
           </select></div>
       </div>
-      <details id="motivMehr" class="pe2-mehr">   <!-- selten gebraucht: sonst läuft der Bereich weit über das Bedienfeld hinaus -->
+      <details id="motivMehr" class="pe2-mehr immer-offen" open>   <!-- immer offen: die Überschrift bleibt, das Zuklappen entfällt -->
       <summary data-i18n="subject.more-settings"></summary>
       <div id="abbRow"><div class="lbl"><label for="abbildung" data-i18n-title="subject.mapping-title" data-i18n="subject.mapping"></label></div>
         <select id="abbildung">
@@ -952,6 +979,7 @@
 
     <div class="pane" id="pane-farbe" hidden>
       <h2 class="pane-title" data-i18n="colour.colour"></h2>
+      <div class="ebenen-zeile" id="ebenenZeileFarbe" hidden></div>
     <section class="row" id="colorRow">   <!-- Färbung: was gefärbt wird; alles darunter hängt davon ab -->
       <h2 class="sec-title"><label for="mapping" data-i18n="colour.colouring-by"></label></h2>
       <select id="mapping">
@@ -1493,6 +1521,7 @@
 
     <div class="pane" id="pane-palette" hidden>   <!-- Palette: welche Farben an welche Stelle kommen; die Werte dazu liefert der Reiter „Farbe“ -->
       <h2 class="pane-title" data-i18n="pane.palette"></h2>
+      <div class="ebenen-zeile" id="ebenenZeilePalette" hidden></div>
     <section class="row" id="palRow">     <!-- Palette: welche Farben; Art (wo die Färbung zwei Werte liefert), Liste, Editor, Dichte, Versatz -->
       <h2 class="sec-title"><label for="palette" data-i18n="colour.colour-palette"></label></h2>
       <div class="seg" id="palArt" role="group" data-i18n-aria-label="colour.kind-colour-palette" hidden>
@@ -1610,6 +1639,17 @@
 
     </section>
 
+    </div>
+
+    <div class="pane" id="pane-ebenen" hidden>   <!-- Fraktal-Ebenen: der Mischer — Reihenfolge, Sichtbarkeit, Solo, Mischmodus, Deckkraft, Maske, Ansicht je Ebene; Motiv, Farbe und Palette bearbeiten die gewählte -->
+      <h2 class="pane-title" data-i18n="pane.layers"></h2>
+    <section class="row" id="ebenenRow">
+      <p class="hint" data-i18n="layers.hint"></p>
+      <div id="ebenenStapel" class="nach-stapel"></div>
+      <div class="lbl"><button type="button" id="ebenenNeu" class="ebenen-knopf" data-i18n="layers.add-button"></button></div>
+      <p class="hint" id="ebenenVoll" hidden data-i18n="layers.full"></p>
+      <div id="ebenenLive" class="sr-only" aria-live="polite"></div>
+    </section>
     </div>
 
     <div class="pane" id="pane-qualitaet" hidden>
@@ -1764,6 +1804,7 @@
   <button type="button" id="railMotiv" data-pane="motiv" class="on" data-i18n-title="misc.subject" data-i18n-aria-label="misc.subject"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.6 A6.4 6.4 0 1 0 8 14.4 A3.2 3.2 0 1 1 8 8 A3.2 3.2 0 1 0 8 1.6Z"/></svg></button>
   <button type="button" id="railFarbe" data-pane="farbe" data-i18n-title="colour.colour" data-i18n-aria-label="colour.colour"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.2"/><path d="M8 1.8v12.4M2.4 5.4h11.2M2.4 10.6h11.2"/></svg></button>
   <button type="button" id="railPalette" data-pane="palette" data-i18n-title="pane.palette" data-i18n-aria-label="pane.palette"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.8a6.2 6.2 0 1 0 0 12.4c1.1 0 1.6-.7 1.3-1.6-.3-.9.2-1.6 1.2-1.6h1.3a2.4 2.4 0 0 0 2.4-2.4A6.6 6.6 0 0 0 8 1.8z"/><circle cx="5" cy="6.2" r=".9"/><circle cx="8.2" cy="4.4" r=".9"/><circle cx="11.2" cy="6.2" r=".9"/><circle cx="5.2" cy="9.6" r=".9"/></svg></button>
+  <button type="button" id="railEbenen" data-pane="ebenen" data-i18n-title="pane.layers" data-i18n-aria-label="pane.layers"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.5 14 5.5 8 8.5 2 5.5Z"/><path d="M2 8.5 8 11.5 14 8.5" opacity=".6"/><path d="M2 11.5 8 14.5 14 11.5" opacity=".35"/></svg></button>
   <button type="button" id="railQualitaet" data-pane="qualitaet" data-i18n-title="quality.quality" data-i18n-aria-label="quality.quality"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 13.5V6M6.2 13.5V3.5M9.8 13.5V8.5M13.5 13.5V5"/></svg></button>
   <button type="button" id="railNach" data-pane="nach" data-i18n-title="pane.post" data-i18n-aria-label="pane.post"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 13.5c3-1 4-6 5.5-7s3.5 3 5.5 1.5"/><path d="M2.5 9.5h11M2.5 5.5h11" opacity=".45"/><circle cx="8" cy="6.5" r="1.4"/></svg></button>
   <button type="button" id="railTechnik" data-pane="technik" data-i18n-title="technical.technical" data-i18n-aria-label="technical.technical"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="2.3"/><path d="M8 1.8v2M8 12.2v2M1.8 8h2M12.2 8h2M3.6 3.6l1.4 1.4M11 11l1.4 1.4M12.4 3.6 11 5M5 11l-1.4 1.4"/></svg></button>
@@ -2433,6 +2474,49 @@ const TEXTE = {
   'meta.no-removal': { de: 'Diese App entfernt keine Metadaten aus Dateien. Für ein Bild ohne diese Angaben speichere es hier neu und lasse die Häkchen weg.', en: 'This app removes no metadata from files. For an image without this information, save it here again with the boxes unticked.' },
   'meta.apply': { de: 'Ansicht übernehmen', en: 'Apply this view' },
   'pane.post': { de: 'Nachbearbeitung', en: 'Post-processing' },
+  'pane.layers': { de: 'Ebenen', en: 'Layers' },
+  'layers.hint': { de: 'Mehrere Fraktale übereinander: die unterste Ebene ist der Grund, jede weitere mischt sich mit Modus, Deckkraft und Maske hinein. Motiv, Farbe und Palette bearbeiten die hier gewählte Ebene.', en: 'Several fractals on top of each other: the bottom layer is the ground, every further one blends in with mode, opacity and mask. Motif, Colour and Palette edit the layer selected here.' },
+  'layers.add': { de: 'Ebene hinzufügen (Kopie der gewählten)', en: 'Add layer (copy of the selected one)' },
+  'layers.add-button': { de: 'Ebene hinzufügen', en: 'Add layer' },
+  'layers.full': { de: 'Mehr Ebenen gibt es nicht.', en: 'That is the maximum number of layers.' },
+  'layers.remove': { de: 'Ebene löschen', en: 'Remove layer' },
+  'layers.duplicate': { de: 'Kopie darüber anlegen', en: 'Duplicate above' },
+  'layers.select': { de: 'Diese Ebene bearbeiten', en: 'Edit this layer' },
+  'layers.name': { de: 'Name', en: 'Name' },
+  'layers.visible': { de: 'Sichtbar', en: 'Visible' },
+  'layers.solo': { de: 'Solo: nur diese Ebene zeigen', en: 'Solo: show only this layer' },
+  'layers.blend': { de: 'Mischmodus', en: 'Blend mode' },
+  'layers.opacity': { de: 'Deckkraft', en: 'Opacity' },
+  'layers.linked': { de: 'Mit der Ansicht verbunden', en: 'Linked to the view' },
+  'layers.linked-title': { de: 'Verbunden folgt die Ebene der Ansicht der ersten Ebene; gelöst hat sie ihre eigene Mitte und ihren eigenen Zoom, und Gesten bewegen nur sie, wenn sie gewählt ist', en: 'Linked, the layer follows the view of the first layer; unlinked, it has its own centre and zoom, and gestures move only it while it is selected' },
+  'layers.align-view': { de: 'Ansicht angleichen', en: 'Align view' },
+  'layers.base-note': { de: 'Die unterste Ebene ist der Grund: sie mischt sich in nichts.', en: 'The bottom layer is the ground: it blends into nothing.' },
+  'layers.layer-n': { de: 'Ebene {0}', en: 'Layer {0}' },
+  'layers.layer-moved': { de: 'Ebene an Platz {0} von {1}', en: 'Layer moved to position {0} of {1}' },
+  'layers.drag': { de: 'Ebene verschieben (ziehen oder Pfeiltasten)', en: 'Move layer (drag or arrow keys)' },
+  'layers.move': { de: 'Gesten bewegen', en: 'Gestures move' },
+  'layers.move-all': { de: 'Alle bewegen', en: 'Move all' },
+  'layers.move-all-title': { de: 'Ziehen und Zoomen bewegen alle Ebenen zusammen', en: 'Dragging and zooming move all layers together' },
+  'layers.move-one': { de: 'Nur diese', en: 'Only this' },
+  'layers.move-one-title': { de: 'Ziehen und Zoomen bewegen nur die gewählte Ebene; sie löst sich dabei von der gemeinsamen Ansicht', en: 'Dragging and zooming move only the selected layer; it detaches from the shared view' },
+  'layers.mode.normal': { de: 'Normal', en: 'Normal' },
+  'layers.mode.multiply': { de: 'Multiplizieren', en: 'Multiply' },
+  'layers.mode.screen': { de: 'Negativ multiplizieren', en: 'Screen' },
+  'layers.mode.overlay': { de: 'Überlagern', en: 'Overlay' },
+  'layers.mode.darken': { de: 'Abdunkeln', en: 'Darken' },
+  'layers.mode.lighten': { de: 'Aufhellen', en: 'Lighten' },
+  'layers.mode.dodge': { de: 'Farbig abwedeln', en: 'Colour dodge' },
+  'layers.mode.burn': { de: 'Farbig nachbelichten', en: 'Colour burn' },
+  'layers.mode.hardlight': { de: 'Hartes Licht', en: 'Hard light' },
+  'layers.mode.softlight': { de: 'Weiches Licht', en: 'Soft light' },
+  'layers.mode.difference': { de: 'Differenz', en: 'Difference' },
+  'layers.mode.exclusion': { de: 'Ausschluss', en: 'Exclusion' },
+  'layers.mode.add': { de: 'Addieren', en: 'Add' },
+  'layers.mode.subtract': { de: 'Subtrahieren', en: 'Subtract' },
+  'layers.mode.hue': { de: 'Farbton', en: 'Hue' },
+  'layers.mode.saturation': { de: 'Sättigung', en: 'Saturation' },
+  'layers.mode.color': { de: 'Farbe', en: 'Colour' },
+  'layers.mode.luminosity': { de: 'Luminanz', en: 'Luminosity' },
   'post.tab': { de: 'Effekte', en: 'Effects' },
   'post.hint': { de: 'Einstellungsebenen wirken von oben nach unten auf die fertige Farbe, ohne Neurechnen, auch im Export. Weichzeichnen, Schärfen, Relief und Konturen lesen Nachbarpixel; von ihnen wirkt die oberste eingeschaltete.', en: 'Adjustment layers act on the finished colour from top to bottom, without recomputing, also in the export. Blur, sharpen, emboss and edges read neighbouring pixels; of these the topmost active one takes effect.' },
   'post.add': { de: 'Ebene hinzufügen', en: 'Add a layer' },
@@ -5939,6 +6023,95 @@ fn farbeRoh(xyS: vec2i, rdims: vec2i) -> vec3f { return textureLoad(roh, clamp(x
 // Adaptive Glättung: neue Probe einfärben und aufsummieren, Bedarf nach Standardfehler des Mittelwerts neu bewerten.
 // A.a = (Toleranz, höchste Probenzahl, kleinste Probenzahl, Modus: 0 Probe hinzufügen, 1 nur Bedarf neu bewerten,
 // 2 zurücksetzen, 3 als fertig markieren), A.b = (schnelles Verfahren, Faktor der Sichtbarkeitsschwelle, 0, 0)
+// Fraktal-Ebenen: die fertige Farbe einer Ebene mit ihrer Maske als Alpha (liest das Zwischenbild des Farbpasses „voll“ und die
+// Iterationstextur der Ebene; die Maske steht im Platz 7 der Maskenwerte, C.maske[24].w sagt, ob eine wirkt)
+const WGSL_EBENE = WGSL_POST.slice(0, WGSL_POST.indexOf('@fragment fn fs(')) + /* wgsl */`
+@fragment fn fs(@builtin(position) pos: vec4f) -> @location(0) vec4f {
+  let xyS = vec2i(pos.xy); let rdims = vec2i(textureDimensions(roh).xy); let dims = vec2i(textureDimensions(iter).xy);
+  let c = farbeRoh(xyS, rdims);
+  var m = 1.0;
+  if (C.maske[24].w > 0.5) { maskeLaden(xyS, dims, rdims); m = nMaske(7u, xyS - vec2i(C.shift.xy), c, 0.0); }
+  return vec4f(c, m);
+}`;
+// Der Verbund: die gesicherten Farben der Ebenen von unten nach oben, je mit Mischmodus, Deckkraft (× Maske) und der Abbildung
+// ihrer Ansicht in die jetzige (a·x + b, wie die Zoom-Vorschau). Die Mischmodi rechnen im sRGB der fertigen Farben wie in der
+// Bildbearbeitung (W3C Compositing): Multiplizieren, Negativ multiplizieren, Überlagern … bis Farbton, Sättigung, Farbe, Luminanz.
+const WGSL_VERBUND = /* wgsl */`
+struct VB { n: vec4f, e: array<vec4f, 12> }   // n = (Zahl, –, Breite, Höhe); je Ebene (Modus, Deckkraft, –, –) und (ax, ay, bx, by)
+@group(0) @binding(0) var<uniform> V: VB;
+@group(0) @binding(1) var e0: texture_2d<f32>;
+@group(0) @binding(2) var e1: texture_2d<f32>;
+@group(0) @binding(3) var e2: texture_2d<f32>;
+@group(0) @binding(4) var e3: texture_2d<f32>;
+@group(0) @binding(5) var e4: texture_2d<f32>;
+@group(0) @binding(6) var e5: texture_2d<f32>;
+@vertex fn vs(@builtin(vertex_index) i: u32) -> @builtin(position) vec4f { var p = array<vec2f, 3>(vec2f(-1.0, -1.0), vec2f(3.0, -1.0), vec2f(-1.0, 3.0)); return vec4f(p[i], 0.0, 1.0); }
+fn hole(k: u32, q: vec2i) -> vec4f {
+  switch k {
+    case 0u: { return textureLoad(e0, clamp(q, vec2i(0), vec2i(textureDimensions(e0).xy) - vec2i(1)), 0); }
+    case 1u: { return textureLoad(e1, clamp(q, vec2i(0), vec2i(textureDimensions(e1).xy) - vec2i(1)), 0); }
+    case 2u: { return textureLoad(e2, clamp(q, vec2i(0), vec2i(textureDimensions(e2).xy) - vec2i(1)), 0); }
+    case 3u: { return textureLoad(e3, clamp(q, vec2i(0), vec2i(textureDimensions(e3).xy) - vec2i(1)), 0); }
+    case 4u: { return textureLoad(e4, clamp(q, vec2i(0), vec2i(textureDimensions(e4).xy) - vec2i(1)), 0); }
+    default: { return textureLoad(e5, clamp(q, vec2i(0), vec2i(textureDimensions(e5).xy) - vec2i(1)), 0); }
+  }
+}
+fn vLum(c: vec3f) -> f32 { return dot(c, vec3f(0.3, 0.59, 0.11)); }
+fn vClip(c: vec3f) -> vec3f {
+  let l = vLum(c); let mn = min(c.x, min(c.y, c.z)); let mx = max(c.x, max(c.y, c.z)); var r = c;
+  if (mn < 0.0) { r = l + (r - l) * l / max(l - mn, 1.0e-6); }
+  if (mx > 1.0) { r = l + (r - l) * (1.0 - l) / max(mx - l, 1.0e-6); }
+  return r;
+}
+fn vSetLum(c: vec3f, l: f32) -> vec3f { return vClip(c + (l - vLum(c))); }
+fn vSat(c: vec3f) -> f32 { return max(c.x, max(c.y, c.z)) - min(c.x, min(c.y, c.z)); }
+fn vSetSat(c: vec3f, s: f32) -> vec3f {
+  let mx = max(c.x, max(c.y, c.z)); let mn = min(c.x, min(c.y, c.z));
+  if (mx <= mn) { return vec3f(0.0); }
+  return (c - mn) * s / (mx - mn);
+}
+fn vHard(b: f32, s: f32) -> f32 { return select(1.0 - 2.0 * (1.0 - b) * (1.0 - s), 2.0 * b * s, s <= 0.5); }   // hartes Licht je Kanal
+fn vSoft(b: f32, s: f32) -> f32 {
+  let d = select(sqrt(b), ((16.0 * b - 12.0) * b + 4.0) * b, b <= 0.25);
+  return select(b + (2.0 * s - 1.0) * (d - b), b - (1.0 - 2.0 * s) * b * (1.0 - b), s <= 0.5);
+}
+fn vDodge(b: f32, s: f32) -> f32 { return select(select(min(1.0, b / max(1.0 - s, 1.0e-6)), 1.0, s >= 1.0), 0.0, b <= 0.0); }
+fn vBurn(b: f32, s: f32) -> f32 { return select(select(1.0 - min(1.0, (1.0 - b) / max(s, 1.0e-6)), 0.0, s <= 0.0), 1.0, b >= 1.0); }
+fn mische(b: vec3f, s: vec3f, modus: u32) -> vec3f {   // b: was unten liegt, s: die Ebene
+  switch modus {
+    case 1u: { return b * s; }
+    case 2u: { return b + s - b * s; }
+    case 3u: { return vec3f(vHard(s.x, b.x), vHard(s.y, b.y), vHard(s.z, b.z)); }   // Überlagern = hartes Licht mit vertauschten Rollen
+    case 4u: { return min(b, s); }
+    case 5u: { return max(b, s); }
+    case 6u: { return vec3f(vDodge(b.x, s.x), vDodge(b.y, s.y), vDodge(b.z, s.z)); }
+    case 7u: { return vec3f(vBurn(b.x, s.x), vBurn(b.y, s.y), vBurn(b.z, s.z)); }
+    case 8u: { return vec3f(vHard(b.x, s.x), vHard(b.y, s.y), vHard(b.z, s.z)); }
+    case 9u: { return vec3f(vSoft(b.x, s.x), vSoft(b.y, s.y), vSoft(b.z, s.z)); }
+    case 10u: { return abs(b - s); }
+    case 11u: { return b + s - 2.0 * b * s; }
+    case 12u: { return min(vec3f(1.0), b + s); }
+    case 13u: { return max(vec3f(0.0), b - s); }
+    case 14u: { return vSetLum(vSetSat(s, vSat(b)), vLum(b)); }   // Farbton
+    case 15u: { return vSetLum(vSetSat(b, vSat(s)), vLum(b)); }   // Sättigung
+    case 16u: { return vSetLum(s, vLum(b)); }                     // Farbe
+    case 17u: { return vSetLum(b, vLum(s)); }                     // Luminanz
+    default: { return s; }
+  }
+}
+@fragment fn fs(@builtin(position) pos: vec4f) -> @location(0) vec4f {
+  var col = vec3f(0.043, 0.051, 0.071); var erst = true;
+  let zahl = u32(V.n.x);
+  for (var k = 0u; k < zahl; k++) {
+    let a = V.e[2u * k]; let tr = V.e[2u * k + 1u];
+    let q = vec2f(pos.xy) * tr.xy + tr.zw;   // Pixel der jetzigen Ansicht → Pixel der gesicherten Farbe
+    let c = hole(k, vec2i(floor(q)));
+    if (erst) { col = c.xyz; erst = false; continue; }
+    let m = mische(col, c.xyz, u32(a.x));
+    col = mix(col, m, clamp(a.y * c.w, 0.0, 1.0));
+  }
+  return vec4f(clamp(col, vec3f(0.0), vec3f(1.0)), 1.0);
+}`;
 const WGSL_AAACC = WGSL_COLOR_LIB + /* wgsl */`
 @group(0) @binding(6) var jit: texture_2d<u32>;
 struct AAP { a: vec4f, b: vec4f };
@@ -7817,6 +7990,74 @@ void main() {
 }`;
 
 // Adaptive Glättung: Zufallsprobe einfärben und aufsummieren, Bedarf neu bewerten (uAP wie A im WGSL-Gegenstück)
+// Fraktal-Ebenen (WebGL 2): die Farbe einer Ebene mit ihrer Maske als Alpha, und der Verbund — wie im WGSL-Shader
+const GLSL_EBENE = GLSL_POST.slice(0, GLSL_POST.indexOf('void main() {')) + `void main() {
+  ivec2 xyS = ivec2(gl_FragCoord.xy); ivec2 rdims = textureSize(uRoh, 0), dims = textureSize(uIter, 0).xy;
+  vec3 c = farbeRoh(xyS, rdims);
+  float m = 1.0;
+  if (uMaske[24].w > 0.5) { maskeLaden(xyS, dims, rdims); m = nMaske(7, xyS - ivec2(uShift), c, 0.0); }
+  outColor = vec4(c, m);
+}`;
+const GLSL_VERBUND = `#version 300 es
+precision highp float; precision highp int; precision highp sampler2D;
+uniform sampler2D uE0; uniform sampler2D uE1; uniform sampler2D uE2; uniform sampler2D uE3; uniform sampler2D uE4; uniform sampler2D uE5;
+uniform vec4 uV[13];   // [0] = (Zahl, –, Breite, Höhe); je Ebene (Modus, Deckkraft, –, –) und (ax, ay, bx, by)
+out vec4 outColor;
+vec4 hole(int k, ivec2 q) {
+  if (k == 0) return texelFetch(uE0, clamp(q, ivec2(0), textureSize(uE0, 0) - 1), 0);
+  if (k == 1) return texelFetch(uE1, clamp(q, ivec2(0), textureSize(uE1, 0) - 1), 0);
+  if (k == 2) return texelFetch(uE2, clamp(q, ivec2(0), textureSize(uE2, 0) - 1), 0);
+  if (k == 3) return texelFetch(uE3, clamp(q, ivec2(0), textureSize(uE3, 0) - 1), 0);
+  if (k == 4) return texelFetch(uE4, clamp(q, ivec2(0), textureSize(uE4, 0) - 1), 0);
+  return texelFetch(uE5, clamp(q, ivec2(0), textureSize(uE5, 0) - 1), 0);
+}
+float vLum(vec3 c) { return dot(c, vec3(0.3, 0.59, 0.11)); }
+vec3 vClip(vec3 c) {
+  float l = vLum(c), mn = min(c.x, min(c.y, c.z)), mx = max(c.x, max(c.y, c.z)); vec3 r = c;
+  if (mn < 0.0) r = l + (r - l) * l / max(l - mn, 1.0e-6);
+  if (mx > 1.0) r = l + (r - l) * (1.0 - l) / max(mx - l, 1.0e-6);
+  return r;
+}
+vec3 vSetLum(vec3 c, float l) { return vClip(c + (l - vLum(c))); }
+float vSat(vec3 c) { return max(c.x, max(c.y, c.z)) - min(c.x, min(c.y, c.z)); }
+vec3 vSetSat(vec3 c, float s) { float mx = max(c.x, max(c.y, c.z)), mn = min(c.x, min(c.y, c.z)); if (mx <= mn) return vec3(0.0); return (c - mn) * s / (mx - mn); }
+float vHard(float b, float s) { return s <= 0.5 ? 2.0 * b * s : 1.0 - 2.0 * (1.0 - b) * (1.0 - s); }
+float vSoft(float b, float s) { float d = b <= 0.25 ? ((16.0 * b - 12.0) * b + 4.0) * b : sqrt(b); return s <= 0.5 ? b - (1.0 - 2.0 * s) * b * (1.0 - b) : b + (2.0 * s - 1.0) * (d - b); }
+float vDodge(float b, float s) { return b <= 0.0 ? 0.0 : (s >= 1.0 ? 1.0 : min(1.0, b / max(1.0 - s, 1.0e-6))); }
+float vBurn(float b, float s) { return b >= 1.0 ? 1.0 : (s <= 0.0 ? 0.0 : 1.0 - min(1.0, (1.0 - b) / max(s, 1.0e-6))); }
+vec3 mische(vec3 b, vec3 s, int modus) {
+  if (modus == 1) return b * s;
+  if (modus == 2) return b + s - b * s;
+  if (modus == 3) return vec3(vHard(s.x, b.x), vHard(s.y, b.y), vHard(s.z, b.z));
+  if (modus == 4) return min(b, s);
+  if (modus == 5) return max(b, s);
+  if (modus == 6) return vec3(vDodge(b.x, s.x), vDodge(b.y, s.y), vDodge(b.z, s.z));
+  if (modus == 7) return vec3(vBurn(b.x, s.x), vBurn(b.y, s.y), vBurn(b.z, s.z));
+  if (modus == 8) return vec3(vHard(b.x, s.x), vHard(b.y, s.y), vHard(b.z, s.z));
+  if (modus == 9) return vec3(vSoft(b.x, s.x), vSoft(b.y, s.y), vSoft(b.z, s.z));
+  if (modus == 10) return abs(b - s);
+  if (modus == 11) return b + s - 2.0 * b * s;
+  if (modus == 12) return min(vec3(1.0), b + s);
+  if (modus == 13) return max(vec3(0.0), b - s);
+  if (modus == 14) return vSetLum(vSetSat(s, vSat(b)), vLum(b));
+  if (modus == 15) return vSetLum(vSetSat(b, vSat(s)), vLum(b));
+  if (modus == 16) return vSetLum(s, vLum(b));
+  if (modus == 17) return vSetLum(b, vLum(s));
+  return s;
+}
+void main() {
+  vec3 col = vec3(0.043, 0.051, 0.071); bool erst = true; int zahl = int(uV[0].x);
+  for (int k = 0; k < 6; k++) {
+    if (k >= zahl) break;
+    vec4 a = uV[1 + 2 * k]; vec4 tr = uV[2 + 2 * k];
+    vec2 q = gl_FragCoord.xy * tr.xy + tr.zw;
+    vec4 c = hole(k, ivec2(floor(q)));
+    if (erst) { col = c.rgb; erst = false; continue; }
+    vec3 m = mische(col, c.rgb, int(a.x));
+    col = mix(col, m, clamp(a.y * c.a, 0.0, 1.0));
+  }
+  outColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+}`;
 const GLSL_AAACC = GLSL_COLOR_LIB + `
 uniform usampler2DArray uJit; uniform vec4 uAP; uniform vec4 uAQ;   // uAQ = (schnelles Verfahren, Faktor der Sichtbarkeitsschwelle, 0, 0)
 layout(location = 0) out vec4 oSum; layout(location = 1) out vec4 oCnt; layout(location = 2) out uvec4 oNeed;
@@ -7897,7 +8138,7 @@ class GpuRenderer {
       if (err.length) throw new Error('WGSL: ' + err.map(m => `${m.lineNum}:${m.linePos} ${m.message}`).join('\n'));
       return mod;
     };
-    const [mF, mU, mC, mX] = await Promise.all([mk(WGSL_FRACTAL), mk(WGSL_UPSCALE), mk(WGSL_COLOR_OHNE), mk(WGSL_FILL)]);   // Farbe ohne Nachbearbeitung und Texturmasken (siehe _pipeColor)
+    const [mF, mU, mC, mX, mK] = await Promise.all([mk(WGSL_FRACTAL), mk(WGSL_UPSCALE), mk(WGSL_COLOR_OHNE), mk(WGSL_FILL), mk(WGSL_VERBUND)]);   // Farbe ohne Nachbearbeitung und Texturmasken (siehe _pipeColor); Verbund der Fraktal-Ebenen
     const F = GPUShaderStage.FRAGMENT;
     this.bglF = d.createBindGroupLayout({ entries: [
       { binding: 0, visibility: F, buffer: { type: 'uniform' } },
@@ -7960,6 +8201,10 @@ class GpuRenderer {
     this.ubF = d.createBuffer({ size: 464, usage: U });   // FP samt texP (6 vec4), texW (4 vec4), Inversionsmitte und Ebenenabbildung
     this.ubU = d.createBuffer({ size: 16, usage: U });
     this.ubC = d.createBuffer({ size: 2032, usage: U });
+    this.bglK = d.createBindGroupLayout({ entries: [{ binding: 0, visibility: F, buffer: { type: 'uniform' } }].concat([1, 2, 3, 4, 5, 6].map(b => ({ binding: b, visibility: F, texture: { sampleType: 'unfilterable-float', viewDimension: '2d' } }))) });   // Verbund: bis zu sechs Ebenen
+    this.pipeK = await d.createRenderPipelineAsync({ layout: d.createPipelineLayout({ bindGroupLayouts: [this.bglK] }), vertex: { module: mK, entryPoint: 'vs' }, fragment: { module: mK, entryPoint: 'fs', targets: [{ format: this.format }] }, primitive: { topology: 'triangle-list' } });
+    this.ubK = d.createBuffer({ size: 208, usage: U });
+    this.slots = new Map(); this.slotAktiv = 0; this.pipeM = null;   // Fraktal-Ebenen: Texturensätze je Ebene, Pipeline der Ebenenmaske (mit dem Farbpass „voll“ übersetzt)
     this.orbitTex = d.createTexture({ size: [TW, ROWS], format: 'rg32float',
       usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST });
     this.blaRTex = d.createTexture({ size: [TW, ROWS_BLA], format: 'r32float',
@@ -7984,6 +8229,7 @@ class GpuRenderer {
       { binding: 5, resource: this.aa ? this.aa.needView[0] : this.dummyU } ] });
   }
   resize(W, H, L) {   // L Probenebenen (Glättung aa × aa → L = aa²)
+    if (W !== this.W || H !== this.H || L !== this.L) this._slotsAlleLoeschen();   // Fraktal-Ebenen: andere Größe, alle Sätze (und gesicherten Farben) verfallen
     this.W = W; this.H = H; this.L = L;
     this.canvas.width = W; this.canvas.height = H;
     const d = this.device;
@@ -8094,6 +8340,102 @@ class GpuRenderer {
     }
     return pl;
   }
+  // ---- Fraktal-Ebenen: je Ebene ein Satz Texturen (Iterationen voll und Vorschau, Glättung, die gesicherte Farbe mit Maske als Alpha).
+  // Der Renderer arbeitet immer auf einem Satz (slotAktiv); ebeneWaehlen tauscht ihn, _verbund legt die gesicherten Farben übereinander.
+  _slot() { let sl = this.slots.get(this.slotAktiv); if (!sl) { sl = { W: this.W, H: this.H, L: this.L, farbe: null, farbeView: null }; this.slots.set(this.slotAktiv, sl); } return sl; }
+  _slotSichern() { const sl = this._slot(); sl.previewTex = this.previewTex; sl.fullTex = this.fullTex; sl.aa = this.aa; sl.iterFormat = this.iterFormat; sl.W = this.W; sl.H = this.H; sl.L = this.L; }
+  _slotNeu() {   // Texturen wie in resize für einen neuen Satz
+    const d = this.device, usage = GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST;
+    const sl = { W: this.W, H: this.H, L: this.L, iterFormat: this.iterFormat, aa: null, farbe: null, farbeView: null };
+    sl.previewTex = this._mkLayers(this.W, this.H, this.L, usage); sl.fullTex = this._mkLayers(this.W, this.H, this.L, usage);
+    const enc = d.createCommandEncoder();
+    for (const t of [sl.previewTex, sl.fullTex]) for (let k = 0; k < this.L; k++) enc.beginRenderPass({ colorAttachments: [{ view: t.layer[k], loadOp: 'clear', storeOp: 'store', clearValue: { r: k ? UNSET : INSIDE, g: 0, b: 0, a: 0 } }] }).end();
+    d.queue.submit([enc.finish()]);
+    return sl;
+  }
+  _slotLoeschen(sl) {
+    for (const t of [sl.previewTex, sl.fullTex, sl.farbe]) if (t) t.destroy();
+    if (sl.aa) for (const t of [sl.aa.jit, ...sl.aa.sum, ...sl.aa.cnt, ...sl.aa.need, sl.aa.stat, sl.aa.statBuf]) if (t) t.destroy();
+    sl.previewTex = sl.fullTex = sl.farbe = sl.farbeView = sl.aa = null;
+  }
+  _slotsAlleLoeschen() {   // andere Größe: alle Sätze außer den Texturen des aktiven (die tauscht resize selbst)
+    if (!this.slots) return;
+    for (const [k, sl] of this.slots) { if (k === this.slotAktiv) { if (sl.farbe) sl.farbe.destroy(); sl.farbe = sl.farbeView = null; } else this._slotLoeschen(sl); }
+    const akt = this.slots.get(this.slotAktiv); this.slots = new Map(); if (akt) this.slots.set(this.slotAktiv, akt);
+  }
+  ebeneWaehlen(k) {   // ab jetzt rechnet der Renderer auf dem Satz der Ebene k (neu, wenn er fehlt oder nicht mehr passt)
+    if (!this.slots) { this.slots = new Map(); this.slotAktiv = 0; }
+    if (k === this.slotAktiv) return;
+    if (this.slotAktiv >= 0) this._slotSichern();
+    let sl = this.slots.get(k);
+    if (!sl || !sl.fullTex || sl.W !== this.W || sl.H !== this.H || sl.L !== this.L) { if (sl) this._slotLoeschen(sl); const neu = this._slotNeu(); if (sl) { neu.farbe = null; } sl = neu; this.slots.set(k, sl); }
+    this.previewTex = sl.previewTex; this.fullTex = sl.fullTex; this.aa = sl.aa; this.iterFormat = sl.iterFormat || this.iterFormat; this.slotAktiv = k;
+    this._rebuildBindGroups(); this._buildBgF();
+  }
+  ebeneHatFarbe(k) { const sl = this.slots && this.slots.get(k); return !!(sl && sl.farbe && sl.W === this.W && sl.H === this.H); }
+  slotsUmordnen(folge) {   // die Sätze folgen neuen Nummern (folge[neu] = alte Nummer, −1 = ohne Satz); ein verschwundener aktiver Satz wird freigegeben
+    if (!this.slots) return;
+    if (this.slotAktiv >= 0) this._slotSichern();
+    const neu = new Map(); folge.forEach((alt, i) => { if (alt >= 0 && this.slots.has(alt)) neu.set(i, this.slots.get(alt)); });
+    for (const [k, sl] of this.slots) if (!folge.includes(k)) this._slotLoeschen(sl);
+    this.slots = neu; this.slotAktiv = folge.indexOf(this.slotAktiv);
+  }
+  farbeSichern(cp) {   // die fertige Farbe des aktiven Satzes (mit der Maske der Ebene als Alpha) in seine Farbtextur
+    const sl = this._slot(), d = this.device;
+    if (!sl.farbe || sl.farbe.width !== this.W || sl.farbe.height !== this.H) { if (sl.farbe) sl.farbe.destroy(); sl.farbe = d.createTexture({ size: [this.W, this.H], format: this.format, usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING }); sl.farbeView = sl.farbe.createView(); sl.W = this.W; sl.H = this.H; }
+    this._ebenePass(sl.farbeView, cp);
+  }
+  _ebenePass(view, cp, ex = false, vw, vh) {   // Farbpass der aktiven Ebene (ex: der Exportkachel) ins Ziel: mit Maske oder Texturmasken über das Zwischenbild und die Ebenenmaske, sonst direkt
+    this._writeCP(cp);
+    const d = this.device, tm = texMaskeAktiv(cp), maske = !!(cp.maske && cp.maske[99] > 0.5), voll = (tm || maske) && this._pipeVoll(tm) && this.pipeM, bg = ex ? this.exBgC : this.bgC;
+    const bereich = pass => { if (vw) { pass.setViewport(0, 0, vw, vh, 0, 1); pass.setScissorRect(0, 0, vw, vh); } };
+    const enc = d.createCommandEncoder();
+    if (!voll) {
+      const pass = enc.beginRenderPass({ colorAttachments: [{ view, loadOp: 'clear', storeOp: 'store', clearValue: { r: 0, g: 0, b: 0, a: 1 } }] });
+      pass.setPipeline(this.pipeC); pass.setBindGroup(0, bg); bereich(pass); pass.draw(3); pass.end();
+    } else {
+      const res = this._postRes(ex, vw || this.W, vh || this.H);
+      const p1 = enc.beginRenderPass({ colorAttachments: [
+        { view: res.rohView, loadOp: 'clear', storeOp: 'store', clearValue: { r: 0, g: 0, b: 0, a: 1 } }, { view: res.twView, loadOp: 'clear', storeOp: 'store', clearValue: { r: 0, g: 0, b: 0, a: 1 } } ] });
+      p1.setPipeline(tm ? this.pipeV1 : this.pipeV0); p1.setBindGroup(0, bg); bereich(p1); p1.draw(3); p1.end();
+      const p2 = enc.beginRenderPass({ colorAttachments: [{ view, loadOp: 'clear', storeOp: 'store', clearValue: { r: 0, g: 0, b: 0, a: 1 } }] });
+      p2.setPipeline(this.pipeM); p2.setBindGroup(0, res.bg); bereich(p2); p2.draw(3); p2.end();
+    }
+    d.queue.submit([enc.finish()]);
+  }
+  _verbund(view, vb, vw, vh, hole = null) {   // die gesicherten Farben der Ebenen (unten zuerst) übereinander ins Ziel; hole(k): andere Quelle (Export)
+    const d = this.device, f = new Float32Array(52), eb = vb.ebenen.slice(0, 6), views = [];
+    f[0] = eb.length; f[2] = vw || this.W; f[3] = vh || this.H;
+    eb.forEach((e, i) => { const sl = this.slots.get(e.k), b = 4 + 8 * i; f[b] = e.modus; f[b + 1] = e.deck; f[b + 4] = e.ax; f[b + 5] = e.ay; f[b + 6] = e.bx; f[b + 7] = e.by; views.push(hole ? hole(e.k) : (sl && sl.farbeView ? sl.farbeView : this.dummyF)); });
+    while (views.length < 6) views.push(this.dummyF);
+    d.queue.writeBuffer(this.ubK, 0, f);
+    const bg = d.createBindGroup({ layout: this.bglK, entries: [{ binding: 0, resource: { buffer: this.ubK } }].concat(views.map((v, i) => ({ binding: i + 1, resource: v }))) });
+    const enc = d.createCommandEncoder();
+    const pass = enc.beginRenderPass({ colorAttachments: [{ view, loadOp: 'clear', storeOp: 'store', clearValue: { r: 0, g: 0, b: 0, a: 1 } }] });
+    pass.setPipeline(this.pipeK); pass.setBindGroup(0, bg); if (vw) { pass.setViewport(0, 0, vw, vh, 0, 1); pass.setScissorRect(0, 0, vw, vh); } pass.draw(3); pass.end();
+    d.queue.submit([enc.finish()]);
+  }
+  _colorPassEbenen(view, cp, vw, vh, ex = false, hole = null) {   // mehrere Fraktal-Ebenen: die rechnende Ebene frisch sichern (wenn sie die gewählte ist), dann der Verbund, dann die Nachbearbeitung
+    const vb = cp.verbund, post = cp.post || cp;
+    if (vb.liveZeigen && !ex) this.farbeSichern(cp);
+    const voll = nachAktiv(post) && this._pipeVoll(texMaskeAktiv(post));
+    if (!voll) { this._verbund(view, vb, vw, vh, hole); return; }
+    const res = this._postRes(ex, vw || this.W, vh || this.H);
+    this._verbund(res.rohView, vb, vw, vh, hole);
+    this._writeCP(post);
+    const d = this.device, enc = d.createCommandEncoder();
+    if (post.leucht && this.pipeL) {
+      const ziele = [res.laView, res.lbView, res.laView];
+      for (let k = 0; k < 3; k++) {
+        d.queue.writeBuffer(this.ubL[k], 0, new Float32Array([post.leucht.schwelle, post.leucht.radius / 4, k, 4]));
+        const pl = enc.beginRenderPass({ colorAttachments: [{ view: ziele[k], loadOp: 'clear', storeOp: 'store', clearValue: { r: 0, g: 0, b: 0, a: 1 } }] });
+        pl.setPipeline(this.pipeL); pl.setBindGroup(0, res.bgL[k]); pl.setViewport(0, 0, res.lw, res.lh, 0, 1); pl.setScissorRect(0, 0, res.lw, res.lh); pl.draw(3); pl.end();
+      }
+    }
+    const p2 = enc.beginRenderPass({ colorAttachments: [{ view, loadOp: 'clear', storeOp: 'store', clearValue: { r: 0, g: 0, b: 0, a: 1 } }] });
+    p2.setPipeline(this.pipeP); p2.setBindGroup(0, res.bg); if (vw) { p2.setViewport(0, 0, vw, vh, 0, 1); p2.setScissorRect(0, 0, vw, vh); } p2.draw(3); p2.end();
+    d.queue.submit([enc.finish()]);
+  }
   _modEigen(eigen) {   // Fraktal-Shader mit den eigenen Ausdrücken (Marken ersetzt), je Stand einmal übersetzt; Fehler landen in der Konsole
     if (!this.modEigen) this.modEigen = new Map();
     let mod = this.modEigen.get(eigen.key);
@@ -8187,6 +8529,7 @@ class GpuRenderer {
     return res;
   }
   _colorPass(view, cp, bg, vw, vh) {
+    if (cp.verbund && !bg) { this._colorPassEbenen(view, cp, vw, vh); return; }   // Fraktal-Ebenen (Bildschirm und Bild aus der Ansicht)
     this._writeCP(cp);
     const enc = this.device.createCommandEncoder(), tm = texMaskeAktiv(cp), voll = (nachAktiv(cp) || tm) && this._pipeVoll(tm);
     const bereich = pass => { if (vw) { pass.setViewport(0, 0, vw, vh, 0, 1); pass.setScissorRect(0, 0, vw, vh); } };
@@ -8235,6 +8578,24 @@ class GpuRenderer {
       { binding: 10, resource: this.nachLutView } ] });   // 10: Gradationskurven der Nachbearbeitung (wie bgC)
     this.exBpr = Math.ceil(tw * 4 / 256) * 256;
     this.exBuf = d.createBuffer({ size: this.exBpr * th, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
+    this.exW = tw; this.exH = th; this.exFarbe = [];   // Fraktal-Ebenen: je Ebene die Farbe der Kachel
+  }
+  _exFarbe(k) { if (!this.exFarbe[k]) { const t = this.device.createTexture({ size: [this.exW, this.exH], format: this.format, usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING }); this.exFarbe[k] = { tex: t, view: t.createView() }; } return this.exFarbe[k]; }
+  renderExportEbene(params, cp, w, h, k) {   // Fraktal-Ebene k der Kachel: Iterationen (alle Probenebenen) und Farbe mit Maske (der Aufrufer wartete auf _nachBereit)
+    params.forEach((p, i) => this.renderFractal('export', [{ x: 0, y: 0, w, h }], p, i));
+    this._ebenePass(this._exFarbe(k).view, cp, true, w, h);
+  }
+  exportFarbeVomSchirm(cp, w, h, k) { this._ebenePass(this._exFarbe(k).view, cp, false, w, h); }   // adaptiv: aus den Bildschirmpuffern des aktiven Satzes
+  async exportVerbund(cp, w, h) {   // der Verbund der gesicherten Kachelfarben samt Nachbearbeitung, zurückgelesen
+    await this._nachBereit(cp);
+    this._colorPassEbenen(this.exColor.createView(), cp, w, h, true, k => this.exFarbe[k] ? this.exFarbe[k].view : this.dummyF);
+    const enc = this.device.createCommandEncoder();
+    enc.copyTextureToBuffer({ texture: this.exColor }, { buffer: this.exBuf, bytesPerRow: this.exBpr, rowsPerImage: h }, [w, h]);
+    this.device.queue.submit([enc.finish()]);
+    await this.exBuf.mapAsync(GPUMapMode.READ);
+    const img = this._bufferToImage(new Uint8Array(this.exBuf.getMappedRange()), w, h, this.exBpr);
+    this.exBuf.unmap();
+    return img;
   }
   _pipeVoll(tm) {   // die Fassung „voll“ des Farbpasses (tm: mit Texturmasken) und die Nachbearbeitung: beim ersten Gebrauch nebenher übersetzt; bis dahin false
     // (wie beim WebGL-Renderer: solange erscheint die Farbe ohne Ebenen und Masken, die Statuszeile sagt es; onBereit stößt danach das Umfärben an)
@@ -8260,6 +8621,11 @@ class GpuRenderer {
           this.pipeP = await d.createRenderPipelineAsync({ layout: d.createPipelineLayout({ bindGroupLayouts: [this.bglP] }), vertex: { module: mP, entryPoint: 'vs' },
             fragment: { module: mP, entryPoint: 'fs', targets: [{ format: this.format }] }, primitive: prim });
         }
+        if (!this.pipeM) {   // Fraktal-Ebenen: die Farbe einer Ebene mit ihrer Maske als Alpha
+          const mM = await mk(WGSL_EBENE);
+          this.pipeM = await d.createRenderPipelineAsync({ layout: d.createPipelineLayout({ bindGroupLayouts: [this.bglP] }), vertex: { module: mM, entryPoint: 'vs' },
+            fragment: { module: mM, entryPoint: 'fs', targets: [{ format: this.format }] }, primitive: prim });
+        }
         if (this.zerstoert) return;
         if (tm) this.pipeV1 = pV; else this.pipeV0 = pV;
         this.nachWartet = false; this.pipeNeu = true;   // der erste Durchlauf damit zählt nicht als Durchsatz
@@ -8283,6 +8649,8 @@ class GpuRenderer {
   }
   endExport() {
     for (const t of [this.exTex, this.exColor, this.exBuf]) if (t) t.destroy();
+    for (const f of this.exFarbe || []) if (f) f.tex.destroy();
+    this.exFarbe = [];
     this.exTex = this.exColor = this.exBuf = this.exBgC = null;
     if (this.postEx) { this.postEx.roh.destroy(); this.postEx.tw.destroy(); this.postEx = null; }
   }
@@ -8687,6 +9055,7 @@ class GlRenderer {
   _delTarget(t) { if (t) { this.gl.deleteTexture(t.tex); for (const fb of [].concat(t.fbo)) this.gl.deleteFramebuffer(fb); } }
   resize(W, H, L) {
     const gl = this.gl;
+    if (W !== this.W || H !== this.H || L !== this.L) this._slotsAlleLoeschen();   // Fraktal-Ebenen: andere Größe, alle Sätze verfallen
     this.W = W; this.H = H; this.L = L;
     this.canvas.width = W; this.canvas.height = H;
     this.aaDestroy();
@@ -8821,23 +9190,24 @@ class GlRenderer {
     const gl = this.gl, key = tm ? 'progV1' : 'progV0';
     if (!this[key]) this[key] = { prog: this._programStart(GLSL_VS, GLSL_COLOR.replace('#define MRT 0', '#define MRT 1').replace('#define TEXMASKE 1', tm ? '#define TEXMASKE 1' : '#define TEXMASKE 0')), u: null, wacht: false };
     if (!this.progP) this.progP = { prog: this._programStart(GLSL_VS, GLSL_POST), u: null };
+    if (!this.progM) this.progM = { prog: this._programStart(GLSL_VS, GLSL_EBENE), u: null };   // Fraktal-Ebenen: Farbe mit Maske als Alpha
     const pv = this[key];
-    if (pv.u && this.progP.u) return true;
+    if (pv.u && this.progP.u && this.progM.u) return true;
     const fertig = p => gl.getProgramParameter(p.prog, this.parallel.COMPLETION_STATUS_KHR);
-    if (!sofort && this.parallel && !(fertig(pv) && fertig(this.progP))) {
+    if (!sofort && this.parallel && !(fertig(pv) && fertig(this.progP) && fertig(this.progM))) {
       this.nachWartet = true;
       if (!pv.wacht) {
         pv.wacht = true;
         const pruefen = () => {
           if (this.zerstoert || gl.isContextLost()) return;
-          if (!(fertig(pv) && fertig(this.progP))) { setTimeout(pruefen, 100); return; }
+          if (!(fertig(pv) && fertig(this.progP) && fertig(this.progM))) { setTimeout(pruefen, 100); return; }
           pv.wacht = false; this.nachWartet = false; if (this.onBereit) this.onBereit();
         };
         setTimeout(pruefen, 100);
       }
       return false;
     }
-    for (const p of [pv, this.progP]) {
+    for (const p of [pv, this.progP, this.progM]) {
       if (!gl.getProgramParameter(p.prog, gl.LINK_STATUS)) throw new Error('GLSL-Link: ' + gl.getProgramInfoLog(p.prog) + ' ' + gl.getAttachedShaders(p.prog).map(sh => gl.getShaderInfoLog(sh)).join(' '));
       if (!p.u) p.u = this._colorUniforms(p.prog);
     }
@@ -8866,8 +9236,97 @@ class GlRenderer {
     if (!this.progL) { const prog = this._program(GLSL_VS, GLSL_LEUCHT); this.progL = { prog, uQuelle: this.gl.getUniformLocation(prog, 'uQuelle'), uL: this.gl.getUniformLocation(prog, 'uL') }; }
     return this.progL;
   }
+  // ---- Fraktal-Ebenen wie im WebGPU-Renderer: je Ebene ein Satz (Iterationen voll und Vorschau, Glättung, gesicherte Farbe)
+  _slot() { if (!this.slots) { this.slots = new Map(); this.slotAktiv = 0; } let sl = this.slots.get(this.slotAktiv); if (!sl) { sl = { W: this.W, H: this.H, L: this.L, farbe: null }; this.slots.set(this.slotAktiv, sl); } return sl; }
+  _slotSichern() { const sl = this._slot(); sl.preview = this.preview; sl.full = this.full; sl.aa = this.aa; sl.iterFormat = this.iterFormat; sl.W = this.W; sl.H = this.H; sl.L = this.L; }
+  _slotNeu() { const sl = { W: this.W, H: this.H, L: this.L, iterFormat: this.iterFormat, aa: null, farbe: null }; sl.preview = this._iterTarget(this.W, this.H, this.L); sl.full = this._iterTarget(this.W, this.H, this.L); this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null); return sl; }
+  _slotLoeschen(sl) {
+    const gl = this.gl;
+    if (sl.preview) this._delTarget(sl.preview); if (sl.full) this._delTarget(sl.full);
+    if (sl.farbe) { gl.deleteTexture(sl.farbe.tex); gl.deleteFramebuffer(sl.farbe.fbo); }
+    if (sl.aa) { const alt = this.aa; this.aa = sl.aa; this.aaDestroy(); this.aa = alt; }
+    sl.preview = sl.full = sl.farbe = sl.aa = null;
+  }
+  _slotsAlleLoeschen() {
+    if (!this.slots) return;
+    const gl = this.gl;
+    for (const [k, sl] of this.slots) { if (k === this.slotAktiv) { if (sl.farbe) { gl.deleteTexture(sl.farbe.tex); gl.deleteFramebuffer(sl.farbe.fbo); } sl.farbe = null; } else this._slotLoeschen(sl); }
+    const akt = this.slots.get(this.slotAktiv); this.slots = new Map(); if (akt) this.slots.set(this.slotAktiv, akt);
+  }
+  ebeneWaehlen(k) {
+    if (!this.slots) { this.slots = new Map(); this.slotAktiv = 0; }
+    if (k === this.slotAktiv) return;
+    if (this.slotAktiv >= 0) this._slotSichern();
+    let sl = this.slots.get(k);
+    if (!sl || !sl.full || sl.W !== this.W || sl.H !== this.H || sl.L !== this.L) { if (sl) this._slotLoeschen(sl); sl = this._slotNeu(); this.slots.set(k, sl); }
+    this.preview = sl.preview; this.full = sl.full; this.aa = sl.aa; this.iterFormat = sl.iterFormat || this.iterFormat; this.slotAktiv = k;
+    if (this.aa) this._aaAttach();
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+  }
+  ebeneHatFarbe(k) { const sl = this.slots && this.slots.get(k); return !!(sl && sl.farbe && sl.W === this.W && sl.H === this.H); }
+  slotsUmordnen(folge) {   // wie im WebGPU-Renderer
+    if (!this.slots) return;
+    if (this.slotAktiv >= 0) this._slotSichern();
+    const neu = new Map(); folge.forEach((alt, i) => { if (alt >= 0 && this.slots.has(alt)) neu.set(i, this.slots.get(alt)); });
+    for (const [k, sl] of this.slots) if (!folge.includes(k)) this._slotLoeschen(sl);
+    this.slots = neu; this.slotAktiv = folge.indexOf(this.slotAktiv);
+  }
+  farbeSichern(cp) {
+    const sl = this._slot(), gl = this.gl;
+    if (!sl.farbe || sl.fW !== this.W || sl.fH !== this.H) { if (sl.farbe) { gl.deleteTexture(sl.farbe.tex); gl.deleteFramebuffer(sl.farbe.fbo); } sl.farbe = this._rgbaTarget(this.W, this.H); sl.fW = this.W; sl.fH = this.H; sl.W = this.W; sl.H = this.H; }
+    this._ebenePass(sl.farbe.fbo, cp);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  }
+  _ebenePass(fbo, cp, srcTex = null, vw, vh, ex = false) {   // Farbpass der aktiven Ebene (oder der Exportkachel srcTex) ins Ziel, mit Maske (oder Texturmasken) über das Zwischenbild, sonst direkt
+    const gl = this.gl, w = vw || this.W, h = vh || this.H, tm = texMaskeAktiv(cp), maske = !!(cp.maske && cp.maske[99] > 0.5);
+    const voll = (tm || maske) && this._progVoll(ex, tm) && this.progM && this.progM.u, pv = tm ? this.progV1 : this.progV0;
+    if (!voll) {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fbo); gl.viewport(0, 0, w, h);
+      gl.useProgram(this.progC); gl.bindVertexArray(this.vao); this._setColorUniforms(this.uC, cp, srcTex); gl.drawArrays(gl.TRIANGLES, 0, 3);
+      return;
+    }
+    const res = this._postRes(ex, w, h);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, res.fbo); gl.viewport(0, 0, w, h);
+    gl.useProgram(pv.prog); gl.bindVertexArray(this.vao); this._setColorUniforms(pv.u, cp, srcTex); gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo); gl.viewport(0, 0, w, h);
+    gl.useProgram(this.progM.prog); this._setColorUniforms(this.progM.u, cp, srcTex);
+    gl.activeTexture(gl.TEXTURE9); gl.bindTexture(gl.TEXTURE_2D, res.roh); gl.uniform1i(this.progM.u.uRoh, 9);
+    gl.activeTexture(gl.TEXTURE10); gl.bindTexture(gl.TEXTURE_2D, res.tw); gl.uniform1i(this.progM.u.uRohTW, 10);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+  _verbund(fbo, vb, w, h, hole = null) {   // die gesicherten Farben der Ebenen (unten zuerst) übereinander ins Ziel; hole(k): andere Quelle (Export)
+    const gl = this.gl; if (!this.slots) { this.slots = new Map(); this.slotAktiv = 0; }
+    if (!this.progK) { this.progK = this._program(GLSL_VS, GLSL_VERBUND); this.uK = { uV: gl.getUniformLocation(this.progK, 'uV'), e: [0, 1, 2, 3, 4, 5].map(i => gl.getUniformLocation(this.progK, 'uE' + i)) }; }
+    const f = new Float32Array(52), eb = vb.ebenen.slice(0, 6); f[0] = eb.length; f[2] = w; f[3] = h;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo); gl.viewport(0, 0, w, h);
+    gl.useProgram(this.progK); gl.bindVertexArray(this.vao);
+    for (let i = 0; i < 6; i++) { const e = eb[i], sl = e ? this.slots.get(e.k) : null; if (e) { const b = 4 + 8 * i; f[b] = e.modus; f[b + 1] = e.deck; f[b + 4] = e.ax; f[b + 5] = e.ay; f[b + 6] = e.bx; f[b + 7] = e.by; } gl.activeTexture(gl.TEXTURE0 + i); gl.bindTexture(gl.TEXTURE_2D, e && hole ? hole(e.k) : (sl && sl.farbe ? sl.farbe.tex : this.dummyF)); gl.uniform1i(this.uK.e[i], i); }
+    gl.uniform4fv(this.uK.uV, f);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+  _colorPassEbenen(fbo, cp, w, h, ex = false, hole = null) {   // mehrere Fraktal-Ebenen: die rechnende Ebene sichern (wenn sie die gewählte ist), dann Verbund und Nachbearbeitung
+    const gl = this.gl, vb = cp.verbund, post = cp.post || cp;
+    if (vb.liveZeigen && !ex) this.farbeSichern(cp);
+    const tm = texMaskeAktiv(post), voll = nachAktiv(post) && this._progVoll(fbo !== null || ex, tm);
+    if (!voll) { this._verbund(fbo, vb, w, h, hole); return; }
+    const res = this._postRes(ex, w, h);
+    this._verbund(res.fbo, vb, w, h, hole);
+    if (post.leucht) {
+      const L = this._progLeucht(); gl.useProgram(L.prog);
+      const lauf = (ziel, tex, schritt) => { gl.bindFramebuffer(gl.FRAMEBUFFER, ziel); gl.viewport(0, 0, res.lw, res.lh); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex); gl.uniform1i(L.uQuelle, 0); gl.uniform4f(L.uL, post.leucht.schwelle, post.leucht.radius / 4, schritt, 4); gl.drawArrays(gl.TRIANGLES, 0, 3); };
+      lauf(res.lfboA, res.roh, 0); lauf(res.lfboB, res.la, 1); lauf(res.lfboA, res.lb, 2);
+    }
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo); gl.viewport(0, 0, w, h);
+    gl.useProgram(this.progP.prog); gl.bindVertexArray(this.vao);
+    this._setColorUniforms(this.progP.u, post);
+    gl.activeTexture(gl.TEXTURE9); gl.bindTexture(gl.TEXTURE_2D, res.roh); gl.uniform1i(this.progP.u.uRoh, 9);
+    gl.activeTexture(gl.TEXTURE10); gl.bindTexture(gl.TEXTURE_2D, res.tw); gl.uniform1i(this.progP.u.uRohTW, 10);
+    gl.activeTexture(gl.TEXTURE11); gl.bindTexture(gl.TEXTURE_2D, res.la); gl.uniform1i(this.progP.u.uLeucht, 11);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
   _colorPass(fbo, cp, srcTex, vw, vh) {
     const gl = this.gl, w = vw || this.W, h = vh || this.H;
+    if (cp.verbund && !srcTex) { this._colorPassEbenen(fbo, cp, w, h); return; }   // Fraktal-Ebenen (Bildschirm und Bild aus der Ansicht)
     const tm = texMaskeAktiv(cp), voll = (nachAktiv(cp) || tm) && this._progVoll(fbo !== null, tm), pv = tm ? this.progV1 : this.progV0;   // Bildschirm: nebenher übersetzen; Speichern: warten
     if (!voll) {   // wie bisher: ein Durchlauf, das Programm vom Start
       gl.bindFramebuffer(gl.FRAMEBUFFER, fbo); gl.viewport(0, 0, w, h);
@@ -9052,7 +9511,21 @@ class GlRenderer {
   beginExport(tw, th, aa) {
     this.exIter = this._iterTarget(tw, th, aa * aa);
     this.exColor = this._rgbaTarget(tw, th);
+    this.exW = tw; this.exH = th; this.exFarbe = [];   // Fraktal-Ebenen: je Ebene die Farbe der Kachel
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+  }
+  _exFarbe(k) { if (!this.exFarbe[k]) { this.exFarbe[k] = this._rgbaTarget(this.exW, this.exH); this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null); } return this.exFarbe[k]; }
+  renderExportEbene(params, cp, w, h, k) {   // Fraktal-Ebene k der Kachel: Iterationen und Farbe mit Maske
+    params.forEach((p, i) => this.renderFractal('export', [{ x: 0, y: 0, w, h }], p, i));
+    this._ebenePass(this._exFarbe(k).fbo, cp, this.exIter.tex, w, h, true);
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+  }
+  exportFarbeVomSchirm(cp, w, h, k) { this._ebenePass(this._exFarbe(k).fbo, cp, null, w, h, true); this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null); }
+  exportVerbund(cp, w, h) {
+    this._colorPassEbenen(this.exColor.fbo, cp, w, h, true, k => this.exFarbe[k] ? this.exFarbe[k].tex : this.dummyF);
+    const img = this._readFlipped(w, h);
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+    return Promise.resolve(img);
   }
   renderExportTile(params, cp, w, h) {   // params: ein Parametersatz je Probenebene
     params.forEach((p, k) => this.renderFractal('export', [{ x: 0, y: 0, w, h }], p, k));
@@ -9063,6 +9536,8 @@ class GlRenderer {
   }
   endExport() {
     this._delTarget(this.exIter); this._delTarget(this.exColor);
+    for (const f of this.exFarbe || []) if (f) { this.gl.deleteTexture(f.tex); this.gl.deleteFramebuffer(f.fbo); }
+    this.exFarbe = [];
     this.exIter = this.exColor = null;
     if (this.postEx) { const gl = this.gl, r = this.postEx; gl.deleteTexture(r.roh); gl.deleteTexture(r.tw); gl.deleteFramebuffer(r.fbo); this.postEx = null; }
   }
@@ -9514,6 +9989,7 @@ function formatPruefen() {   // Textur über einer Statistik-Färbung braucht de
 }
 let letzteAenderung = -1e9;   // wann viewChanged zuletzt lief: unterscheidet eine einzelne Änderung von einer Folge (Regler)
 function viewChanged() {
+  if (ebenen[ebeneAktiv]) { ebenen[ebeneAktiv].frisch = false; liveZurueck(); }   // Fraktal-Ebenen: die gewählte Ebene ist dran und verfällt
   formatPruefen();
   orbitDirty = true; fractalDirty = true; accDirty = true; nusVeraltet = true; peHistPlan();
   pendingSX = pendingSY = 0; panDirty = false; panCarryX = panCarryY = 0; zoomDirty = false; zoomPending = null;
@@ -9528,12 +10004,15 @@ function viewChanged() {
 }
 let zoomPending = null, zoomDirty = false;
 function zoomAt(px, py, f) {
+  liveZurueck();
+  const vorG = ebenenGesteVor();
   const [ox, oy] = ebeneVonPixel((px - W / 2) * S.ps, (H / 2 - py) * S.ps);   // der Punkt unter dem Zeiger, in der Ebene
   const oldPs = S.ps, oldCx = S.cx, oldCy = S.cy;
   setZoom(S.zoom * f);
   const fr = oldPs / S.ps;
   S.cx = dd.addD(S.cx, ox * (1 - 1 / fr));
   S.cy = dd.addD(S.cy, oy * (1 - 1 / fr));
+  ebenenGesteNach(vorG);
   if (pendingSX || pendingSY) commitPan();          // Ziehen zuerst übernehmen, dann zoomen
   if (S.family === 'escape' && hasImage && !fractalDirty && !panDirty && renderer) {
     // Vorschau aus dem vorhandenen Bild: neue Probe (x, y) → alte Probe (a·x + bx, a·y + by)
@@ -9554,8 +10033,11 @@ function zoomAt(px, py, f) {
 let panCarryX = 0, panCarryY = 0, pendingSX = 0, pendingSY = 0, panDirty = false;
 let stripMode = false;
 function pan(dx, dy) {
+  liveZurueck();
+  const vorG = ebenenGesteVor();
   if (S.family !== 'escape' || !hasImage || fractalDirty) {
     const [ex, ey] = ebeneVonPixel(-dx * S.ps, dy * S.ps); S.cx = dd.addD(S.cx, ex); S.cy = dd.addD(S.cy, ey);
+    ebenenGesteNach(vorG);
     viewChanged(); return;
   }
   // auf ganze Pixel rastern, damit die vorhandenen Probenebenen exakt weiterverwendet werden können
@@ -9564,6 +10046,7 @@ function pan(dx, dy) {
   panCarryX = fx - kx; panCarryY = fy - ky;
   if (!kx && !ky) return;
   const [ex, ey] = ebeneVonPixel(-kx * S.ps, ky * S.ps); S.cx = dd.addD(S.cx, ex); S.cy = dd.addD(S.cy, ey);   // das Bild rückt um ganze Pixel, die Mitte um den gedrehten Versatz
+  ebenenGesteNach(vorG);
   pendingSX += kx; pendingSY += ky;
   colorDirty = true;                                 // das vorhandene Bild versetzt zeigen, mehr passiert beim Ziehen nicht
   interactUntil = performance.now() + 150;
@@ -9575,6 +10058,7 @@ function pan(dx, dy) {
 let panIdleTimer = 0;
 function commitPan() {   // aufgelaufenen Versatz in die Texturen übernehmen: Streifen und Referenzbahn nachrechnen
   clearTimeout(panIdleTimer); panIdleTimer = 0;
+  liveZurueck();
   if (!pendingSX && !pendingSY) return;
   if (S.family !== 'escape' || !hasImage || fractalDirty) { pendingSX = pendingSY = 0; viewChanged(); return; }
   panDirty = true; orbitDirty = true;
@@ -9967,12 +10451,14 @@ function runHistPass(maxIter) {          // kleines Abbild der Ansicht rendern u
   const hw = Math.ceil(W / sH), hh = Math.ceil(H / sH);
   renderer.renderFractal('preview', [{ x: 0, y: 0, w: hw, h: hh }], fractalParams(sH, maxIter));
   histDirty = false;
-  const my = renderer;
+  const my = renderer, eb = ebeneInS;
   renderer.readRegion(hw, hh).then(vals => {
-    if (renderer !== my) return;
-    lastVerteilung = buildCdf(vals, maxIter);   // Verteilungsfunktion der Ansicht (die Kurve kann davon ausgehen)
-    lastCdf = S.mapping === 28 ? kurveTabelle() : lastVerteilung; renderer.setCdf(lastCdf); cdfVersion++;
-    if (S.mapping === 28) zeichneKurve();
+    if (renderer !== my || eb !== renderEbene) return;
+    mitEbene(eb, () => {   // die Rückgabe gehört der Ebene, die gerechnet hat
+      lastVerteilung = buildCdf(vals, maxIter);   // Verteilungsfunktion der Ansicht (die Kurve kann davon ausgehen)
+      lastCdf = S.mapping === 28 ? kurveTabelle() : lastVerteilung; renderer.setCdf(lastCdf); cdfVersion++;
+      if (S.mapping === 28 && eb === ebeneAktiv) zeichneKurve();
+    });
     colorDirty = true; requestFrame();
   }).catch(e => console.warn('Histogramm:', e));
 }
@@ -10077,6 +10563,11 @@ function stapelMs(now) {   // die geltende Stapelgröße: während im Bedienfeld
 function frame(now) {
   rafId = 0;
   if (!renderer || !W || !H || exporting) return;
+  if (ebenen.length > 1 && S.family === 'escape' && renderer.ebeneWaehlen && !gpuBusy && phase === 'idle' && !fractalDirty && !zoomDirty && !panDirty && hasImage) ebenenWeiter();   // Fraktal-Ebenen: fertige sichern, veraltete rechnen
+  if (renderEbene !== ebeneAktiv && ebenen[renderEbene]) { mitEbene(renderEbene, () => frameKern(now)); updateStatus(); }
+  else frameKern(now);
+}
+function frameKern(now) {
   if (S.family === 'accum') { accFrame(now); return; }
   if (S.animate) { S.offset = (S.offset + 0.0012) % 1; colorDirty = true; $('offset').value = Math.round(S.offset * 1000); }
   if (aaOn && hasImage && !fractalDirty && !S.animate && aaColorKey !== colorKey()) { aaRestart(); if (phase === 'idle') aaBegin(); }   // Farbe geändert: Proben neu einfärben
@@ -10162,14 +10653,14 @@ function frame(now) {
     } else if (histDirty && histAktiv() && hasImage) {
       runHistPass(maxIter);
       submitted = true;
-    } else if ((werteWunsch.length || (S.logDichteMit && S.mapping === 2 && nusVeraltet)) && !wertePending && hasImage) {   // Werteprobe, wenn jemand darauf wartet oder die Dichte mitgeführt wird
+    } else if (renderEbene === ebeneAktiv && (werteWunsch.length || (S.logDichteMit && S.mapping === 2 && nusVeraltet)) && !wertePending && hasImage) {   // Werteprobe, wenn jemand darauf wartet oder die Dichte mitgeführt wird
       runWerteProbe(maxIter); submitted = true;
-    } else if (!anchorPending && (anchorProbe || (S.anchorAuto && S.colAnchor === null && ankerVonSelbst())) && hasImage && ankerWirkt()) {   // Anker lesen: auf Wunsch oder als Standard beim ersten Bild
+    } else if (renderEbene === ebeneAktiv && !anchorPending && (anchorProbe || (S.anchorAuto && S.colAnchor === null && ankerVonSelbst())) && hasImage && ankerWirkt()) {   // Anker lesen: auf Wunsch oder als Standard beim ersten Bild
       const ankerVonSelber = !anchorProbe;   // ohne ausdrücklichen Wunsch: die App verankert von sich aus
       anchorProbe = false; runAnchorProbe(maxIter, ankerVonSelber);   // eigene Rückleseschleife, nicht als Bildarbeit zählen (sonst erschiene sie als Glättungszeit)
     }
   }
-  if (colorDirty && hasImage) { renderer.present(colorParams()); colorDirty = false; }
+  if (colorDirty && hasImage) { renderer.present(praesentParams()); colorDirty = false; }
   if (submitted) {
     gpuBusy = true; gpuT0 = performance.now();
     const myRenderer = renderer;
@@ -10203,6 +10694,7 @@ function notify(de, ...werte) {
   setTimeout(() => { lastStatusKey = ''; updateStatus(); }, 2600);
 }
 function updateStatus() {
+  if (ebeneInS !== ebeneAktiv) return;   // Fraktal-Ebenen: nur aus dem Zustand der gewählten Ebene heraus
   const maxIter = currentMaxIter();
   const lg = Math.log10(S.zoom);
   let zoomTxt;
@@ -10221,6 +10713,7 @@ function updateStatus() {
   else if (gpuBusy || renderMs < 0) stateTxt = t('status.rendering-2');
   else if (renderer && renderer.nachWartet) stateTxt = t('status.post-compiling');   // WebGL 2: die Ebenen erscheinen, sobald ihr Programm übersetzt ist
   else stateTxt = t('status.done', fmtMs(renderMs)) + (refineMs > renderMs + 1 ? t('status.smoothing-2', fmtMs(refineMs - renderMs)) : '') + t('status.iterations', fmtGanz(maxIter)) + (blaActive ? ' · BLA' : '');
+  if (ebenen.length > 1 && renderEbene !== ebeneAktiv && (phase !== 'idle' || gpuBusy)) stateTxt += ' · ' + t('layers.layer-n', renderEbene + 1);   // welche Ebene gerade nachrechnet
   if (performance.now() < noticeUntil) stateTxt = t(...noticeText);
   const digits = clamp(3 + Math.ceil(Math.max(0, lg)), 3, 16);
   const key = zoomTxt + '|' + stateTxt + '|' + digits + '|' + S.cx[0] + '|' + S.cy[0] + '|' + maxIter;
@@ -10287,6 +10780,7 @@ function doResize() {
   renderer.iterFormat = texturBreit() ? 'rgba32uint' : 'rg32uint';   // Kanäle z und w nur für Texturen über einer Statistik-Färbung oder mehr als zwei Texturen
   try { renderer.resize(W, H, aa * aa); }
   catch (e) { aaOom(aa, e); return; }
+  for (const e of ebenen) e.frisch = false;   // Fraktal-Ebenen: andere Größe, alle neu
   if (adaptive) aaSetup();
   computeTiles();
   updateResInfo();
@@ -10369,6 +10863,7 @@ async function initRenderer() {
   attachCanvasEvents(canvas);
   throughput = renderer.kind === 'gpu' ? 8e6 : 5e6;
   doResize();
+  renderEbene = 0; if (ebeneAktiv !== 0 && ebenen.length > 1) liveWechseln(ebeneAktiv);   // Fraktal-Ebenen: der neue Renderer rechnet zuerst die gewählte Ebene, in ihrem eigenen Satz
 }
 
 // ============================================================
@@ -10467,6 +10962,210 @@ function ddToString(a, digits = 32) {
   let s = (((neg ? -big : big) * 10n ** BigInt(digits)) >> PREC).toString().padStart(digits + 1, '0');
   s = (s.slice(0, -digits) + '.' + s.slice(-digits)).replace(/0+$/, '').replace(/\.$/, '');
   return (neg ? '-' : '') + s;
+}
+// ---- Fraktal-Ebenen: mehrere Fraktale übereinander. S trägt immer die gewählte Ebene (Motiv, Farbe, Palette); die anderen liegen in
+// ebenen[k].zustand. Ansicht, Qualität, Nachbearbeitung und Technik gelten dem ganzen Bild (EBENE_GLOBAL). Jede Ebene außer der ersten
+// mischt sich mit Modus, Deckkraft und Maske in das, was unter ihr liegt; „verbunden“ heißt: sie folgt der Ansicht der ersten, sonst
+// hat sie ihre eigene (ansicht). Im Link steht die erste Ebene wie bisher, jede weitere als eigener Parametersatz (l2 …), ihr Mischen
+// in lm2 …, ihre Maske in lu2 …, die gewählte in la.
+const EBENEN_MAX = 6;
+const EBENE_MODI = ['normal', 'multiply', 'screen', 'overlay', 'darken', 'lighten', 'dodge', 'burn', 'hardlight', 'softlight', 'difference', 'exclusion', 'add', 'subtract', 'hue', 'saturation', 'color', 'luminosity'];
+const EBENE_FARBEN = ['#82cbbe', '#e0a050', '#5fa8e0', '#c98ad8', '#e06868', '#a9c85a'];   // Farbmarke je Ebene (Pille, Karte)
+const EBENE_GLOBAL = new Set(['cx', 'cy', 'zoom', 'ps', 'dreh', 'aa', 'aaMax', 'aaMode', 'aaSigma', 'aaTol', 'quality', 'rendererPref', 'bla', 'cycle', 'stapelMs', 'uiVorrang', 'theme', 'nach', 'family', 'cloudPrm', 'accKind', 'accTarget', 'exposure', 'gamma']);
+const EBENE_LINK_GLOBAL = ['nb', 'page', 'fam', 'ex', 'ga', 'at', 'bla', 'cyc'];   // Adresswerte des Bilds: stehen nicht im Parametersatz einer weiteren Ebene
+const EBENE_LINK_ANSICHT = ['re', 'im', 'z', 'dr'];                                 // die Ansicht: nur bei einer gelösten Ebene im Parametersatz
+let ebenen = [], ebeneAktiv = 0, ebeneInS = 0, ebenenBasisAnsicht = null, ebenenLeseTiefe = 0, ebenenStartAktiv = 0, EBENE_STANDARD = null;   // ebeneInS: welche Ebene gerade in S liegt (mitEbene tauscht vorübergehend)
+let renderEbene = 0;   // welche Ebene der Renderer gerade rechnet (die gewählte, danach der Reihe nach die veralteten)
+let ebenenNurEine = false;   // Gesten (Ziehen, Zoomen) bewegen nur die gewählte Ebene; sonst alle zusammen
+function ebenenGesteVor() {   // vor einer Geste: „nur diese“ löst die gewählte Ebene (oder alle anderen vom Grund) mit ihrer jetzigen Ansicht; „alle“ merkt den Stand, damit gelöste Ebenen mitgehen
+  if (ebenen.length <= 1 || S.family !== 'escape') return null;
+  if (ebenenNurEine) {
+    let geloest = false;
+    if (ebeneAktiv === 0) { for (let j = 1; j < ebenen.length; j++) if (ebenen[j].verbunden) { ebenen[j].ansicht = ansichtSichern(); ebenen[j].verbunden = false; geloest = true; } }
+    else if (ebenen[ebeneAktiv].verbunden) { ebenenBasisAnsicht = ansichtSichern(); ebenen[ebeneAktiv].verbunden = false; geloest = true; }
+    if (geloest) { syncEbenenUI(); scheduleHash(); }
+    return null;
+  }
+  return ansichtSichern();
+}
+function ebenenGesteNach(vor) {   // nach der Geste („alle“): dieselbe Bewegung auf dem Bildschirm für jede Ebene mit eigener Ansicht, und für den Grund, wenn die gewählte gelöst ist
+  if (!vor) return;
+  const nach = ansichtSichern(), f = nach.zoom / vor.zoom, dx = dd.sub(nach.cx, vor.cx)[0] / vor.ps, dy = dd.sub(nach.cy, vor.cy)[0] / vor.ps, dr = (nach.dreh || 0) - (vor.dreh || 0);
+  if (f === 1 && !dx && !dy && !dr) return;
+  const bewege = v => { if (!v) return; v.cx = dd.addD(v.cx, dx * v.ps); v.cy = dd.addD(v.cy, dy * v.ps); v.zoom = clamp(v.zoom * f, MIN_ZOOM, MAX_ZOOM); v.ps = v.ps / f; v.dreh = (v.dreh || 0) + dr; };
+  ebenen.forEach((e, k) => { if (k !== ebeneAktiv && k > 0 && !e.verbunden) bewege(e.ansicht); });
+  if (!ebeneVerbunden(ebeneAktiv)) bewege(ebenenBasisAnsicht);
+}
+function ebeneNeu(zustand = null) { return { zustand, ansicht: null, name: '', sichtbar: true, solo: false, modus: 0, deck: 1, maske: maskeNeu(0), verbunden: true, zu: false }; }
+function ebeneKeys() { return Object.keys(S).filter(k => !EBENE_GLOBAL.has(k)); }
+function ebeneSichern() { const z = {}; for (const k of ebeneKeys()) z[k] = S[k]; return z; }
+function ebeneLaden(z) { const voll = EBENE_STANDARD ? Object.assign({}, EBENE_STANDARD, z) : z; for (const k of ebeneKeys()) if (!(k in voll)) delete S[k]; Object.assign(S, voll); }
+function ebeneZustand(k) { return k === ebeneInS ? S : ebenen[k].zustand; }
+function ansichtSichern() { return { cx: S.cx, cy: S.cy, zoom: S.zoom, dreh: S.dreh || 0, ps: S.ps }; }
+function ansichtLaden(a) { if (!a) return; S.cx = a.cx; S.cy = a.cy; S.dreh = a.dreh || 0; setZoom(a.zoom); }
+function ebeneVerbunden(k) { return k === 0 || ebenen[k].verbunden; }
+function basisAnsicht() {   // die Ansicht der ersten Ebene (und aller verbundenen)
+  if (!ebeneVerbunden(ebeneAktiv)) return ebenenBasisAnsicht;
+  return ebeneInS === ebeneAktiv ? ansichtSichern() : ebenen[ebeneAktiv].ansichtTmp;
+}
+function ebeneAnsicht(k) {   // die Ansicht, in der Ebene k gerechnet wird
+  if (k === ebeneInS) return ansichtSichern();
+  if (ebeneVerbunden(k)) return basisAnsicht();
+  return k === ebeneAktiv ? ebenen[k].ansichtTmp : (ebenen[k].ansicht || basisAnsicht());
+}
+function mitEbene(k, fn) {   // fn mit Zustand und Ansicht der Ebene k in S ausführen, danach alles zurück (auch verschachtelt)
+  if (k === ebeneInS || !ebenen[k]) return fn();
+  const alt = ebeneInS;
+  ebenen[alt].zustand = ebeneSichern(); ebenen[alt].ansichtTmp = ansichtSichern();
+  const ansicht = ebeneAnsicht(k);   // vor dem Tausch bestimmen: danach läge die Ansicht der alten Ebene in S
+  ebeneLaden(ebenen[k].zustand); ebenen[k].zustand = null; ebeneInS = k; ansichtLaden(ansicht);
+  try { return fn(); }
+  finally { ebenen[k].zustand = ebeneSichern(); ebeneLaden(ebenen[alt].zustand); ebenen[alt].zustand = null; ebeneInS = alt; ansichtLaden(ebenen[alt].ansichtTmp); ebenen[alt].ansichtTmp = null; }
+}
+function ebeneWaehlen(k, still = false) {   // Ebene k in Motiv, Farbe und Palette bearbeiten; still: nur der Zustand, ohne Bedienfeld und Neurechnen
+  if (k < 0 || k >= ebenen.length || (k === ebeneAktiv && !still)) return;
+  if (k !== ebeneAktiv) {
+    const alt = ebeneAktiv, altVerb = ebeneVerbunden(alt), neuVerb = ebeneVerbunden(k);
+    ebenen[alt].zustand = ebeneSichern();
+    if (altVerb) ebenenBasisAnsicht = ansichtSichern(); else ebenen[alt].ansicht = ansichtSichern();
+    ebeneLaden(ebenen[k].zustand); ebenen[k].zustand = null; ebeneAktiv = k; ebeneInS = k;
+    ansichtLaden(neuVerb ? ebenenBasisAnsicht : (ebenen[k].ansicht || ebenenBasisAnsicht));
+  }
+  if (!still) { syncAllUI(); setMode(S.mode, { force: true, view: ansichtSichern() }); }
+}
+// ---- Rechnen der Ebenen: die gewählte Ebene rechnet wie bisher (sie ist auch beim Zeigen „live“); ist sie fertig, sichert die
+// Schleife ihre Farbe, wechselt auf die nächste veraltete Ebene, rechnet sie mit deren Zustand (mitEbene je Frame) und sichert
+// auch sie. Beim Zeigen legt der Verbund die gesicherten Farben übereinander; eine verbundene Ebene, deren Ansicht sich seit
+// ihrer Sicherung verschob, erscheint bis zum Nachrechnen verschoben und skaliert (wie die Zoom-Vorschau).
+function ebeneStandNeu(e) { e.frisch = false; }
+function ansichtAnders(a, b) { return !a || !b || a.zoom !== b.zoom || (a.dreh || 0) !== (b.dreh || 0) || a.cx[0] !== b.cx[0] || a.cx[1] !== b.cx[1] || a.cy[0] !== b.cy[0] || a.cy[1] !== b.cy[1]; }
+function ebeneVeraltet(k) { const e = ebenen[k]; return !e.frisch || !e.gerendert || ansichtAnders(e.gerendert, ebeneAnsicht(k)) || !(renderer && renderer.ebeneHatFarbe && renderer.ebeneHatFarbe(k)); }
+function ebenenVeraltete() {   // die nächste sichtbare Ebene, deren gesicherte Farbe nicht mehr stimmt (die gewählte zuerst), oder −1
+  const solo = ebenen.findIndex(e => e.solo);
+  const reihe = [ebeneAktiv].concat(ebenen.map((e, k) => k).filter(k => k !== ebeneAktiv));
+  for (const k of reihe) { const e = ebenen[k]; if (solo >= 0 ? k !== solo : !e.sichtbar) continue; if (ebeneVeraltet(k)) return k; }
+  return -1;
+}
+function ansichtAbbildung(alt, neu) {   // Pixel der jetzigen Ansicht → Pixel der gesicherten Farbe: (a·x + bx, a·y + by), wie die Zoom-Vorschau
+  if (!alt || !neu || !alt.ps || !neu.ps) return [1, 1, 0, 0];
+  const a = neu.ps / alt.ps, dx = dd.sub(neu.cx, alt.cx)[0] / alt.ps, dy = dd.sub(neu.cy, alt.cy)[0] / alt.ps;
+  return [a, a, dx + W / 2 * (1 - a), (renderer && renderer.yDown ? -dy : dy) + H / 2 * (1 - a)];
+}
+function verbundParams() {   // die sichtbaren Ebenen von unten nach oben mit Modus, Deckkraft und der Abbildung ihrer gesicherten Farbe in die jetzige Ansicht
+  const solo = ebenen.findIndex(e => e.solo), list = [];
+  ebenen.forEach((e, k) => {
+    if (solo >= 0 ? k !== solo : !e.sichtbar) return;
+    const live = k === renderEbene && k === ebeneAktiv;
+    const tr = live || !e.gerendert ? [1, 1, 0, 0] : ansichtAbbildung(e.gerendert, ebeneAnsicht(k));
+    list.push({ k, modus: k === 0 ? 0 : e.modus, deck: e.deck, ax: tr[0], ay: tr[1], bx: tr[2], by: tr[3] });
+  });
+  return { ebenen: list, liveZeigen: renderEbene === ebeneAktiv };
+}
+function maskeMitEbene(a, m) {   // die Maske der Ebene im Platz 7 der Maskenwerte, [24].w = wirkt
+  const b = a.slice ? a.slice() : new Float32Array(a);
+  if (maskeWirkt(m)) { const o = 84; b[o] = m.art; b[o + 1] = m.inv ? 1 : 0; b[o + 2] = 0; b[o + 3] = m.weich; for (let j = 0; j < 8; j++) b[o + 4 + j] = m.p[j] || 0; b[99] = 1; } else b[99] = 0;
+  return b;
+}
+function colorParamsEbene() { const cp = colorParams(); cp.maske = maskeMitEbene(cp.maske, ebenen[ebeneInS].maske); return cp; }   // Farbsatz der Ebene in S samt ihrer Maske
+function praesentParams() {   // Farbsatz fürs Zeigen: bei mehreren Ebenen der der rechnenden Ebene plus Verbund und Nachbearbeitung der gewählten
+  if (ebenen.length <= 1 || S.family !== 'escape' || !renderer || !renderer.ebeneWaehlen) return colorParams();
+  const cp = colorParamsEbene(); cp.post = mitEbene(ebeneAktiv, colorParams); cp.verbund = verbundParams();
+  return cp;
+}
+function liveWechseln(k, fertig = false) {   // Ebene k rechnet ab jetzt: Texturensatz, Palette, Referenzbahn; fertig: nur zeigen, nichts rechnen
+  if (!renderer || !renderer.ebeneWaehlen || !ebenen[k]) return;
+  renderEbene = k; renderer.ebeneWaehlen(k);
+  mitEbene(k, () => { applyPalette(); });
+  histDirty = true; orbitDirty = true; aaColorKey = ''; aaTiles = null; aaCounts = null; stripMode = false; pendingSX = pendingSY = 0; panDirty = false; zoomDirty = false; zoomPending = null;
+  aaOn = !!(aaBuilt && renderer.aa); if (aaBuilt && !renderer.aa) aaSetup();
+  if (fertig) { fractalDirty = false; phase = 'idle'; hasImage = true; }
+  else { fractalDirty = true; hasImage = true; }
+  colorDirty = true; lastStatusKey = '';
+}
+function liveZurueck() { if (renderEbene !== ebeneAktiv && ebenen[ebeneAktiv]) liveWechseln(ebeneAktiv, !ebeneVeraltet(ebeneAktiv)); }   // Bedienung: die gewählte Ebene ist wieder dran
+function ebenenWeiter() {   // die rechnende Ebene ist fertig: ihre Farbe sichern, dann die nächste veraltete rechnen (oder zurück zur gewählten)
+  const e = ebenen[renderEbene];
+  if (e) { mitEbene(renderEbene, () => renderer.farbeSichern(colorParamsEbene())); e.frisch = true; e.gerendert = ebeneAnsicht(renderEbene); }
+  const k = ebenenVeraltete();
+  if (k >= 0 && k !== renderEbene) liveWechseln(k);
+  else if (k < 0 && renderEbene !== ebeneAktiv) liveWechseln(ebeneAktiv, true);
+}
+function ebenenNormieren() {   // die erste Ebene ist der Grund: verbunden, ohne Mischen; ihre eigene Ansicht wird zur Ansicht des Bilds
+  const e0 = ebenen[0]; e0.modus = 0; e0.deck = 1;
+  if (!e0.verbunden) { e0.verbunden = true; if (ebeneAktiv !== 0 && e0.ansicht) ebenenBasisAnsicht = e0.ansicht; e0.ansicht = null; }
+}
+function ebenenAenderung(neu, bauen = true) { ebenenNormieren(); if (bauen) syncEbenenUI(); scheduleHash(); if (neu) viewChanged(); else { colorDirty = true; requestFrame(); } }
+function ebeneHinzufuegen() {   // eine Kopie der gewählten Ebene darüber, und gleich gewählt
+  if (S.family !== 'escape' || ebenen.length >= EBENEN_MAX) return;
+  const alt = ebenen[ebeneAktiv], e = ebeneNeu(structuredClone(ebeneSichern()));
+  e.maske = structuredClone(alt.maske); e.modus = alt.modus; e.deck = alt.deck; e.verbunden = ebeneVerbunden(ebeneAktiv);
+  if (!e.verbunden) e.ansicht = ansichtSichern();
+  const folge = ebenen.map((x, i) => i); folge.splice(ebeneAktiv + 1, 0, -1);
+  ebenen.splice(ebeneAktiv + 1, 0, e);
+  ebenenSaetzeUmordnen(folge);
+  ebeneWaehlen(ebeneAktiv + 1);
+  scheduleHash();
+}
+function ebenenSaetzeUmordnen(folge) {   // die Sätze im Renderer folgen den neuen Nummern (folge[neu] = alte Nummer, −1 = neue Ebene); nichts muss neu gerechnet werden
+  if (renderer && renderer.slotsUmordnen) renderer.slotsUmordnen(folge);
+  const neu = folge.indexOf(renderEbene); renderEbene = neu >= 0 ? neu : ebeneAktiv;
+  if (renderer && renderer.ebeneWaehlen && (neu < 0 || renderer.slotAktiv !== renderEbene)) liveWechseln(ebeneAktiv, !ebeneVeraltet(ebeneAktiv));
+}
+function ebeneLoeschen(k) {
+  if (ebenen.length <= 1 || k < 0 || k >= ebenen.length) return;
+  if (k === ebeneAktiv) ebeneWaehlen(k > 0 ? k - 1 : 1, true);   // erst die Nachbarin wählen, dann fällt k weg
+  const folge = ebenen.map((x, i) => i).filter(i => i !== k);
+  ebenen.splice(k, 1); if (ebeneAktiv > k) ebeneAktiv--; ebeneInS = ebeneAktiv;
+  ebenenSaetzeUmordnen(folge);
+  ebenenNormieren(); syncAllUI(); setMode(S.mode, { force: true, view: ansichtSichern() });
+}
+function ebeneVerschieben(von, nach) {   // 0-basiert
+  if (von === nach || von < 0 || nach < 0 || von >= ebenen.length || nach >= ebenen.length) return;
+  const folge = ebenen.map((x, i) => i); const [f] = folge.splice(von, 1); folge.splice(nach, 0, f);
+  const [e] = ebenen.splice(von, 1); ebenen.splice(nach, 0, e);
+  if (ebeneAktiv === von) ebeneAktiv = nach; else if (von < ebeneAktiv && nach >= ebeneAktiv) ebeneAktiv--; else if (von > ebeneAktiv && nach <= ebeneAktiv) ebeneAktiv++;
+  ebeneInS = ebeneAktiv; ebenenSaetzeUmordnen(folge);
+  ebenenAenderung(false);
+}
+function ebeneName(k) { const e = ebenen[k]; if (e.name) return e.name; const z = ebeneZustand(k); return (S.family === 'escape' && FORMULAS[z.formula] ? t(FORMULAS[z.formula].name).replace(/\s*\(.*\)\s*$/, '') : '') + (z.mode === 'julia' ? ' · Julia' : ''); }   // ohne den Klammerzusatz der Formel
+function ebeneMischSchreiben(e) { return [e.modus, +e.deck.toFixed(3), e.sichtbar ? 1 : 0, e.solo ? 1 : 0, e.verbunden ? 1 : 0, encodeURIComponent(e.name || '')].join(':'); }
+function ebeneMischLesen(e, text) {
+  const f = (text || '').split(':'), m = parseInt(f[0], 10), d = parseFloat(f[1]);
+  if (m >= 0 && m < EBENE_MODI.length) e.modus = m; if (Number.isFinite(d)) e.deck = clamp(d, 0, 1);
+  e.sichtbar = f[2] !== '0'; e.solo = f[3] === '1'; e.verbunden = f[4] !== '0';
+  try { e.name = decodeURIComponent(f[5] || '').slice(0, 40); } catch (x) { e.name = ''; }
+}
+function ebenenParams(k) {   // der Parametersatz einer weiteren Ebene: wie der Link, ohne das, was dem Bild gehört; die Ansicht nur bei gelöster Ebene
+  const q = mitEbene(k, () => buildParamsRoh());
+  for (const key of EBENE_LINK_GLOBAL) q.delete(key);
+  if (ebeneVerbunden(k)) for (const key of EBENE_LINK_ANSICHT) q.delete(key);
+  return q.toString();
+}
+function buildParams() {   // der Link: die erste Ebene oben, jede weitere als eigener Satz
+  const p = mitEbene(0, () => buildParamsRoh());
+  if (ebenen.length > 1) {
+    for (let k = 1; k < ebenen.length; k++) { const e = ebenen[k]; p.set('l' + (k + 1), ebenenParams(k)); p.set('lm' + (k + 1), ebeneMischSchreiben(e)); if (e.maske && e.maske.art) p.set('lu' + (k + 1), maskeSchreiben(e.maske)); }
+    const e0 = ebenen[0]; if (e0.name || !e0.sichtbar || e0.solo) p.set('lm1', ebeneMischSchreiben(e0));
+    if (ebeneAktiv) p.set('la', String(ebeneAktiv + 1));
+  }
+  return p;
+}
+function ebenenAusLink(h) {   // weitere Ebenen aus dem Link (l2 …), nachdem die erste gelesen ist; der Stapel wird neu aufgebaut
+  ebenen = [ebeneNeu()]; ebeneAktiv = 0; ebeneInS = 0; renderEbene = 0; ebenenBasisAnsicht = null; ebenenStartAktiv = 0;
+  if (renderer && renderer._slotsAlleLoeschen) renderer._slotsAlleLoeschen();
+  if (h.has('lm1')) ebeneMischLesen(ebenen[0], h.get('lm1'));
+  if (!EBENE_STANDARD) EBENE_STANDARD = structuredClone(ebeneSichern());
+  for (let nr = 2; nr <= EBENEN_MAX; nr++) {
+    const sub = h.get('l' + nr); if (sub === null) break;
+    const alles = Object.assign({}, S); let e = null;
+    ebenenLeseTiefe++;
+    try {
+      resetState(); const v = readHash(sub);
+      if (v) { S.mode = v.mode; e = ebeneNeu(ebeneSichern()); ebeneMischLesen(e, h.get('lm' + nr)); if (h.has('lu' + nr)) e.maske = maskeLesen(h.get('lu' + nr)); if (!e.verbunden) e.ansicht = { cx: v.cx, cy: v.cy, zoom: v.zoom, dreh: S.dreh || 0 }; }
+    } finally { ebenenLeseTiefe--; for (const k of Object.keys(S)) if (!(k in alles)) delete S[k]; Object.assign(S, alles); }
+    if (e) ebenen.push(e);
+  }
+  const la = parseInt(h.get('la'), 10); if (la >= 2 && la <= ebenen.length) ebenenStartAktiv = la - 1;
 }
 function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus einem gespeicherten Parameterstring
   let h;
@@ -10600,13 +11299,14 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
     if (r === -1 && p2 !== 'n') r = pal2Start(q2);   // unbekannt oder entfernt: die Vorgabe der Färbung
     S.pal2[q2] = r;
   }
+  if (ebenenLeseTiefe === 0) ebenenAusLink(h);   // Fraktal-Ebenen (l2 …); im Parametersatz einer Ebene steckt keine weitere
   v.hasView = h.has('z');                   // ohne Ausschnitt: Standardansicht der gewählten Familie
   if (v.hasView && !h.has('re') && !h.has('im')) v.cx = centeredDefault({ cx: v.cx, cy: v.cy, zoom: v.zoom }).cx;   // Zoom ohne Position: Standardmitte neben dem Bedienfeld
   return v;
 }
 let hashTimer = 0;
 function scheduleHash() { clearTimeout(hashTimer); hashTimer = setTimeout(writeHash, 400); }
-function buildParams() {
+function buildParamsRoh() {   // die Adresswerte der Ebene in S samt Ansicht und Bild (buildParams setzt daraus den Link zusammen)
   const p = new URLSearchParams();
   p.set('mode', S.mode); p.set('re', ddToString(S.cx)); p.set('im', ddToString(S.cy)); p.set('z', S.zoom.toExponential(4));
   if (S.mode === 'julia') { p.set('jre', String(S.jc[0])); p.set('jim', String(S.jc[1])); }
@@ -10838,7 +11538,7 @@ if (!consent) showConsent(); else if (consent.marketing) loadMarketingPixels();
 //  Bedienfeld
 // ============================================================
 // Bereiche: die Leiste am rechten Rand zeigt immer genau einen; die Statuszeile bleibt darunter sichtbar
-const PANES = [['motiv', 'misc.subject'], ['farbe', 'colour.colour'], ['palette', 'pane.palette'], ['qualitaet', 'quality.quality'], ['nach', 'pane.post'], ['technik', 'technical.technical']];
+const PANES = [['motiv', 'misc.subject'], ['farbe', 'colour.colour'], ['palette', 'pane.palette'], ['ebenen', 'pane.layers'], ['qualitaet', 'quality.quality'], ['nach', 'pane.post'], ['technik', 'technical.technical']];
 const mobileNarrow = () => window.matchMedia('(max-width: 640px)').matches;   // Handy: Reiter unten statt Leiste rechts
 let curPane = 'motiv';
 function setPane(name, open = true) {
@@ -12586,6 +13286,155 @@ const NACH_STAPEL = { karten: () => [...document.querySelectorAll('#nachStapel .
   anzahl: () => S.nach.length, verschieben: nachVerschieben, live: nachLive, textBewegt: 'post.layer-moved',
   uebernehmen: folge => { S.nach = folge.map(m => S.nach[m - 1]); nachAenderung(); nachKartenBauen(); } };
 const kartenSig = e => e.art + (e.m && e.m.art ? 'm' + e.m.art : '') + '|' + LANG;   // andere Art oder Maskenart: andere Regler, also neu bauen
+// ---- Bedienung der Fraktal-Ebenen: die Ebenenzeile oben in Motiv, Farbe und Palette (Auswahl, +, ×) und der Mischer (Bereich „Ebenen“)
+const EBENE_MASKE_ARTEN = MASKE_ARTEN.filter(a => a.art !== 11 && a.art !== 13);   // Kanten entstehen erst im Nachbearbeitungspass, Ebenen-Zustand gehört zu den Effektebenen
+function ebeneFarbe(k) { return EBENE_FARBEN[k % EBENE_FARBEN.length]; }
+function syncEbenenUI() { ebenenZeileBauen(); ebenenKartenBauen(); }
+function ebenenZeileBauen() {
+  const mehrere = ebenen.length > 1, moeglich = S.family === 'escape';
+  for (const id of ['ebenenZeileMotiv', 'ebenenZeileFarbe', 'ebenenZeilePalette']) {
+    const box = $(id); if (!box) continue;
+    box.hidden = !moeglich; box.classList.toggle('einzeln', !mehrere);
+    box.replaceChildren();
+    if (mehrere) ebenen.forEach((e, k) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'ebenen-pille' + (k === ebeneAktiv ? ' on' : '') + (e.sichtbar ? '' : ' aus'); b.title = t('layers.select'); b.dataset.ebene = String(k + 1);
+      const punkt = document.createElement('span'); punkt.className = 'ebenen-punkt'; punkt.style.background = ebeneFarbe(k);
+      const name = document.createElement('span'); name.className = 'ebenen-name'; name.textContent = (k + 1) + ' ' + ebeneName(k); b.title = (k + 1) + ' ' + ebeneName(k) + ' · ' + t('layers.select');
+      b.append(punkt, name);
+      if (k === ebeneAktiv) { const weg = document.createElement('span'); weg.className = 'ebenen-weg'; weg.textContent = '×'; weg.title = t('layers.remove'); weg.setAttribute('role', 'button'); weg.setAttribute('aria-label', t('layers.remove')); weg.addEventListener('click', ev => { ev.stopPropagation(); ebeneLoeschen(k); }); b.append(weg); }
+      b.addEventListener('click', () => ebeneWaehlen(k));
+      box.append(b);
+    });
+    const plus = document.createElement('button'); plus.type = 'button'; plus.className = 'ebenen-plus'; plus.textContent = '+'; plus.title = t('layers.add'); plus.setAttribute('aria-label', t('layers.add')); plus.disabled = ebenen.length >= EBENEN_MAX;
+    plus.addEventListener('click', ebeneHinzufuegen); box.append(plus);
+    if (mehrere) {   // Gesten: alle Ebenen zusammen oder nur die gewählte
+      const sw = document.createElement('span'); sw.className = 'ebenen-modus'; sw.setAttribute('role', 'group'); sw.setAttribute('aria-label', t('layers.move'));
+      for (const [wert, key, titel] of [[false, 'layers.move-all', 'layers.move-all-title'], [true, 'layers.move-one', 'layers.move-one-title']]) {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'ebenen-modus-knopf' + (ebenenNurEine === wert ? ' on' : ''); b.textContent = t(key); b.title = t(titel); b.setAttribute('aria-pressed', ebenenNurEine === wert ? 'true' : 'false');
+        b.addEventListener('click', () => { ebenenNurEine = wert; syncEbenenUI(); });
+        sw.append(b);
+      }
+      box.append(sw);
+    }
+  }
+  for (const [id, key] of [['pane-motiv', 'misc.subject'], ['pane-farbe', 'colour.colour'], ['pane-palette', 'pane.palette']]) {   // Titel: „Farbe · Ebene 2“
+    const h2 = document.querySelector('#' + id + ' > .pane-title'); if (h2) h2.textContent = t(key) + (mehrere && moeglich ? ' · ' + t('layers.layer-n', ebeneAktiv + 1) : '');
+  }
+}
+function ebenenKartenBauen() {
+  const box = $('ebenenStapel'); if (!box) return;
+  const moeglich = S.family === 'escape'; $('ebenenRow').hidden = !moeglich;
+  box.replaceChildren(); ebenen.forEach((e, k) => box.append(ebeneKarte(k)));
+  ebenen.forEach((e, k) => ebeneKarteWerte(k));
+  $('ebenenNeu').disabled = ebenen.length >= EBENEN_MAX || !moeglich;
+  $('ebenenVoll').hidden = ebenen.length < EBENEN_MAX;
+}
+function ebeneZahlZeile(id, textKey, min, max, schritt, wert, setzen) {   // Schieber mit getipptem Wert (wie in den Karten der Nachbearbeitung)
+  const wrap = document.createElement('div'), zeile = document.createElement('div'); zeile.className = 'lbl wertzeile';
+  const lab = document.createElement('label'); lab.htmlFor = id; lab.textContent = t(textKey);
+  const feld = document.createElement('input'); feld.className = 'val mono wert'; feld.id = id + 'Val'; feld.type = 'text'; feld.inputMode = 'decimal'; feld.spellcheck = false; feld.autocomplete = 'off'; feld.setAttribute('aria-label', t(textKey));
+  zeile.append(lab, feld);
+  const reg = document.createElement('input'); reg.id = id; reg.type = 'range'; reg.min = String(min); reg.max = String(max); reg.step = String(schritt); reg.value = String(wert); reg.setAttribute('aria-label', t(textKey));
+  feld.value = fmtZahl(wert, 2);
+  reg.addEventListener('input', () => { feld.value = fmtZahl(parseFloat(reg.value), 2); setzen(parseFloat(reg.value)); });
+  wertFeld(feld, reg, () => [min, max], v => v, v => setzen(v));
+  wrap.append(zeile, reg);
+  return wrap;
+}
+function ebeneKarte(k) {
+  const e = ebenen[k], karte = document.createElement('div');
+  karte.className = 'tex-karte nach-karte ebene-karte' + (k === ebeneAktiv ? ' on' : '') + (e.zu ? ' nach-zu' : '') + (e.sichtbar ? '' : ' aus'); karte.id = 'ebeneKarte' + (k + 1); karte.dataset.i = String(k + 1); karte.style.setProperty('--ebene', ebeneFarbe(k));
+  const kopf = document.createElement('div'); kopf.className = 'lbl tex-kopf';
+  const griff = document.createElement('button'); griff.type = 'button'; griff.className = 'tex-griff'; griff.textContent = '⋮⋮'; griff.title = t('layers.drag'); griff.setAttribute('aria-label', t('layers.drag'));
+  const zu = document.createElement('button'); zu.type = 'button'; zu.className = 'nach-zu'; zu.id = 'ebeneZu' + (k + 1); zu.textContent = e.zu ? '▸' : '▾'; zu.title = t(e.zu ? 'post.expand' : 'post.collapse'); zu.setAttribute('aria-label', zu.title);
+  zu.addEventListener('click', () => { e.zu = !e.zu; ebenenKartenBauen(); });
+  const wahl = document.createElement('button'); wahl.type = 'button'; wahl.className = 'ebene-wahl tex-kurz'; wahl.id = 'ebeneWahl' + (k + 1); wahl.title = t('layers.select');
+  const punkt = document.createElement('span'); punkt.className = 'ebenen-punkt'; punkt.style.background = ebeneFarbe(k);
+  const name = document.createElement('span'); name.textContent = (k + 1) + ' ' + ebeneName(k);
+  wahl.append(punkt, name); wahl.addEventListener('click', () => ebeneWaehlen(k));
+  const kn = document.createElement('span'); kn.className = 'tex-knoepfe';
+  const solo = document.createElement('button'); solo.type = 'button'; solo.className = 'ebene-solo' + (e.solo ? ' on' : ''); solo.id = 'ebeneSolo' + (k + 1); solo.textContent = 'S'; solo.title = t('layers.solo'); solo.setAttribute('aria-label', t('layers.solo')); solo.setAttribute('aria-pressed', e.solo ? 'true' : 'false');
+  solo.addEventListener('click', () => { e.solo = !e.solo; ebenenAenderung(false); });
+  const sch = document.createElement('label'); sch.className = 'tex-schalter'; sch.title = t('layers.visible');
+  const an = document.createElement('input'); an.type = 'checkbox'; an.id = 'ebeneAn' + (k + 1); an.checked = e.sichtbar; an.setAttribute('aria-label', t('layers.visible'));
+  an.addEventListener('change', () => { e.sichtbar = an.checked; ebenenAenderung(false); });
+  sch.append(an, document.createElement('span'));
+  const weg = document.createElement('button'); weg.type = 'button'; weg.className = 'tex-weg'; weg.id = 'ebeneWeg' + (k + 1); weg.textContent = '×'; weg.title = t('layers.remove'); weg.setAttribute('aria-label', t('layers.remove')); weg.disabled = ebenen.length <= 1;
+  weg.addEventListener('click', () => ebeneLoeschen(k));
+  kn.append(solo, sch, weg); kopf.append(griff, zu, wahl, kn); karte.append(kopf);
+  const regler = document.createElement('div'); regler.className = 'nach-regler'; regler.id = 'ebeneRegler' + (k + 1);
+  const eigen = document.createElement('div'); eigen.className = 'nach-eigen';
+  { const zeile = document.createElement('div'); zeile.className = 'lbl'; const lab = document.createElement('label'); lab.htmlFor = 'ebeneName' + (k + 1); lab.textContent = t('layers.name');
+    const inp = document.createElement('input'); inp.type = 'text'; inp.id = 'ebeneName' + (k + 1); inp.className = 'ebene-name'; inp.maxLength = 40; inp.value = e.name; inp.placeholder = ebeneName(k); inp.spellcheck = false;
+    inp.addEventListener('change', () => { e.name = inp.value.trim().slice(0, 40); ebenenAenderung(false); });
+    zeile.append(lab, inp); eigen.append(zeile); }
+  if (k > 0) {
+    const zeile = document.createElement('div'); zeile.className = 'lbl'; const lab = document.createElement('label'); lab.htmlFor = 'ebeneModus' + (k + 1); lab.textContent = t('layers.blend');
+    const sel = document.createElement('select'); sel.id = 'ebeneModus' + (k + 1);
+    EBENE_MODI.forEach((m, i) => { const o = document.createElement('option'); o.value = String(i); o.textContent = t('layers.mode.' + m); sel.append(o); });
+    sel.value = String(e.modus); sel.addEventListener('change', () => { e.modus = clamp(parseInt(sel.value, 10) || 0, 0, EBENE_MODI.length - 1); ebenenAenderung(false, false); });
+    zeile.append(lab); eigen.append(zeile, sel); enhanceSelect(sel);
+    eigen.append(ebeneZahlZeile('ebeneDeck' + (k + 1), 'layers.opacity', 0, 1, 0.01, e.deck, v => { e.deck = clamp(v, 0, 1); ebenenAenderung(false, false); }));
+    const verb = document.createElement('label'); verb.className = 'chk'; verb.title = t('layers.linked-title'); const vc = document.createElement('input'); vc.type = 'checkbox'; vc.id = 'ebeneVerb' + (k + 1); vc.checked = e.verbunden;
+    vc.addEventListener('change', () => { ebeneVerbindung(k, vc.checked); });
+    verb.append(vc, ' ' + t('layers.linked')); eigen.append(verb);
+    if (!e.verbunden) { const b = document.createElement('button'); b.type = 'button'; b.className = 'ebenen-knopf'; b.id = 'ebeneAngleichen' + (k + 1); b.textContent = t('layers.align-view'); b.addEventListener('click', () => ebeneAnsichtAngleichen(k)); eigen.append(b); }
+  } else { const p = document.createElement('p'); p.className = 'hint'; p.textContent = t('layers.base-note'); eigen.append(p); }
+  { const b = document.createElement('button'); b.type = 'button'; b.className = 'ebenen-knopf'; b.id = 'ebeneKopie' + (k + 1); b.textContent = t('layers.duplicate'); b.disabled = ebenen.length >= EBENEN_MAX; b.addEventListener('click', () => { ebeneWaehlen(k, true); ebeneHinzufuegen(); }); eigen.append(b); }
+  regler.append(eigen);
+  if (k > 0) {   // Maske: Auswahl der Art, dann deren Regler, weicher Rand, umkehren
+    const mbox = document.createElement('div'); mbox.className = 'nach-maske'; mbox.id = 'ebeneMaske' + (k + 1);
+    const mz = document.createElement('div'); mz.className = 'lbl'; const ml = document.createElement('label'); ml.htmlFor = 'ebM' + (k + 1) + '_art'; ml.textContent = t('mask.mask'); mz.append(ml);
+    const msel = document.createElement('select'); msel.id = 'ebM' + (k + 1) + '_art';
+    const o0 = document.createElement('option'); o0.value = '0'; o0.textContent = t('mask.none'); msel.append(o0);
+    for (const md of EBENE_MASKE_ARTEN) { const o = document.createElement('option'); o.value = String(md.art); o.textContent = t(md.text); msel.append(o); }
+    msel.value = String(e.maske ? e.maske.art : 0);
+    msel.addEventListener('change', () => { e.maske = maskeNeu(parseInt(msel.value, 10) || 0); ebenenAenderung(false); });
+    mbox.append(mz, msel); enhanceSelect(msel);
+    const md = e.maske ? maskeArt(e.maske.art) : null;
+    if (md) {
+      let ms = 0; for (const r of md.regler) { mbox.append(nachReglerElement(k, ms, r, 'e')); ms += nachBreite(r); }
+      if (md.weich !== false) mbox.append(nachZahlZeile(k, MASKE_WEICH_SLOT, MASKE_WEICH, 'e'));
+      const lab = document.createElement('label'); lab.className = 'chk'; const cb = document.createElement('input'); cb.type = 'checkbox'; cb.id = 'ebM' + (k + 1) + '_inv'; cb.checked = !!e.maske.inv;
+      cb.addEventListener('change', () => { e.maske.inv = cb.checked; ebenenAenderung(false, false); });
+      lab.append(cb, ' ' + t('mask.invert')); mbox.append(lab);
+      if (md.hinweis) { const p = document.createElement('p'); p.className = 'hint'; p.textContent = t(md.hinweis); mbox.append(p); }
+    }
+    regler.append(mbox);
+  }
+  karte.append(regler);
+  griffBinden(griff, k + 1, EBENEN_STAPEL);
+  return karte;
+}
+function ebeneKarteWerte(k) {   // Werte der Maskenregler aus dem Zustand (nach dem Bau der Karte)
+  const e = ebenen[k], md = e.maske ? maskeArt(e.maske.art) : null; if (!md) return;
+  let slot = 0;
+  for (const r of md.regler) {
+    const id = nachId(k, slot, 'e');
+    if (r.typ === 'zahl') { const reg = $(id), feld = $(id + 'Val'); if (reg) reg.value = String(e.maske.p[slot]); if (feld) feld.value = fmtZahl(e.maske.p[slot], r.schritt < 0.01 ? 3 : r.schritt < 1 ? 2 : 0); }
+    else if (r.typ === 'wahl') { const sel = $(id); if (sel) { sel.value = String(e.maske.p[slot]); if (sel._sync) sel._sync(); } }
+    else if (r.typ === 'schalter') { const cb = $(id); if (cb) cb.checked = e.maske.p[slot] > 0.5; }
+    slot += nachBreite(r);
+  }
+  if (md.weich !== false) { const id = nachId(k, MASKE_WEICH_SLOT, 'e'), reg = $(id), feld = $(id + 'Val'); if (reg) reg.value = String(e.maske.weich); if (feld) feld.value = fmtZahl(e.maske.weich, 2); }
+}
+function ebeneMaskeSetzen(k, slot, v) { const m = ebenen[k] && ebenen[k].maske; if (!m) return; if (slot === MASKE_WEICH_SLOT) m.weich = clamp(v, 0, 1); else m.p[slot] = v; ebenenAenderung(false, false); }
+function ebeneVerbindung(k, verbunden) {   // Ansicht verbinden oder lösen; gelöst behält die Ebene die Ansicht, die sie gerade hat
+  const e = ebenen[k]; if (!e || k === 0 || e.verbunden === verbunden) return;
+  if (k === ebeneAktiv) { if (verbunden) { e.verbunden = true; ansichtLaden(ebenenBasisAnsicht); ebenenBasisAnsicht = null; e.ansicht = null; } else { ebenenBasisAnsicht = ansichtSichern(); e.verbunden = false; } ebenenAenderung(true); return; }
+  if (verbunden) { e.ansicht = null; e.verbunden = true; } else { e.ansicht = basisAnsicht(); e.verbunden = false; }
+  ebenenAenderung(true);
+}
+function ebeneAnsichtAngleichen(k) {   // eine gelöste Ebene auf die Ansicht der ersten setzen
+  const e = ebenen[k]; if (!e || e.verbunden) return;
+  if (k === ebeneAktiv) ansichtLaden(ebenenBasisAnsicht); else e.ansicht = basisAnsicht();
+  ebenenAenderung(true);
+}
+function ebenenLive(text) { const l = $('ebenenLive'); if (l) { l.textContent = ''; setTimeout(() => { l.textContent = text; }, 30); } }
+const EBENEN_STAPEL = { karten: () => [...document.querySelectorAll('#ebenenStapel .ebene-karte')], nr: k => +k.dataset.i, karte: m => $('ebeneKarte' + m), griff: m => { const k = $('ebeneKarte' + m); return k ? k.querySelector('.tex-griff') : null; },
+  anzahl: () => ebenen.length, verschieben: (von, nach) => ebeneVerschieben(von - 1, nach - 1), live: ebenenLive, textBewegt: 'layers.layer-moved',
+  uebernehmen: folge => { const alt = ebenen, aktiv = alt[ebeneAktiv]; ebenen = folge.map(m => alt[m - 1]); ebeneAktiv = ebenen.indexOf(aktiv); ebeneInS = ebeneAktiv; ebenenSaetzeUmordnen(folge.map(m => m - 1)); ebenenAenderung(false); } };
+$('ebenenNeu').addEventListener('click', ebeneHinzufuegen);
 function nachKartenBauen() {   // neu gebaut bei anderer Zahl, Art, Reihenfolge oder Sprache; sonst nur die Werte
   const box = $('nachStapel'); if (!box) return;
   const wolke = S.family === 'accum';
@@ -12600,8 +13449,8 @@ function nachKartenBauen() {   // neu gebaut bei anderer Zahl, Art, Reihenfolge 
   S.nach.forEach((e, i) => nachKarteWerte(i));
   const sel = $('nachNeu'); sel.value = '0'; if (sel._sync) sel._sync(); sel.disabled = S.nach.length >= NACH_MAX; $('nachVoll').hidden = S.nach.length < NACH_MAX;
 }
-function nachId(i, slot, ziel = 'p') { return (ziel === 't' ? 'texM' : ziel === 'm' ? 'nachM' : 'nachW') + (i + 1) + '_' + (slot < 0 ? 'deck' : slot); }   // ziel: p = Regler der Ebene, m = Maske der Ebene, t = Maske des Texturplatzes i + 1
-function nachWertSetzen(i, slot, v, ziel) { if (ziel === 't') texMaskeSetzen(i + 1, slot, v); else if (ziel === 'm') nachMaskeSetzen(i, slot, v); else nachSetzen(i, slot, v); }
+function nachId(i, slot, ziel = 'p') { return (ziel === 't' ? 'texM' : ziel === 'm' ? 'nachM' : ziel === 'e' ? 'ebM' : 'nachW') + (i + 1) + '_' + (slot < 0 ? 'deck' : slot); }   // ziel: p = Regler der Ebene, m = Maske der Ebene, t = Maske des Texturplatzes i + 1
+function nachWertSetzen(i, slot, v, ziel) { if (ziel === 't') texMaskeSetzen(i + 1, slot, v); else if (ziel === 'm') nachMaskeSetzen(i, slot, v); else if (ziel === 'e') ebeneMaskeSetzen(i, slot, v); else nachSetzen(i, slot, v); }
 function nachMaskeSetzen(i, slot, v) { const m = S.nach[i] && S.nach[i].m; if (!m) return; if (slot === MASKE_WEICH_SLOT) m.weich = clamp(v, 0, 1); else m.p[slot] = v; nachAenderung(); nachKarteWerte(i); }   // wie nachSetzen: das Wertfeld folgt dem Schieber
 function nachArtSetzen(i, art) {   // andere Art an Ort und Stelle: was nicht an der Art hängt, bleibt stehen
   const alt = S.nach[i], d = nachArt(art); if (!alt || !d) return;
@@ -13322,6 +14171,7 @@ function resetState() {   // Zustandsfelder auf Standard (Familie und Mandelbrot
 }
 function syncAllUI() {   // Bedienfeld vollständig an den Zustand angleichen
   nachKartenBauen();   // Nachbearbeitung: die Karten des Stapels
+  if (typeof syncEbenenUI === 'function') syncEbenenUI();   // Fraktal-Ebenen: Zeile und Mischer
   cycleSel.value = S.cycle; blaSel.value = S.bla; qualSel.value = String(S.quality); syncStapel(); $('themeSel').value = S.theme;
   histDirty = true; lastStatusKey = '';
   powSel.value = String(S.power); syncPlaneUI(); syncFormulaUI();
@@ -13460,6 +14310,7 @@ function applyState(obj) {   // Zustand aus einer Datei übernehmen und rendern
   if (S.family === 'accum') { accReady = false; accSetup(); }
   doResize();
   setMode(v.mode, { force: true, view: v.hasView ? v : centeredDefault(familyView()) });
+  if (ebenenStartAktiv) ebeneWaehlen(ebenenStartAktiv);   // Fraktal-Ebenen: die gespeicherte Wahl
   return true;
 }
 // PNG: iTXt-Chunk mit Schlüsselwort vor IEND; JPEG: Kommentarsegment nach SOI
@@ -14061,6 +14912,16 @@ window.addEventListener('keydown', e => {
 
 // Eine Exportkachel adaptiv rechnen, mit demselben Kriterium wie am Bildschirm. Die Kachel liegt dabei in der linken
 // oberen Ecke der Bildschirmpuffer; das Bild am Bildschirm wird danach ohnehin neu gerechnet.
+async function renderAdaptiveEbene(p, cp, w, h, ap, sigma) {   // wie renderAdaptiveTile für eine Fraktal-Ebene: die Proben bleiben in den Bildschirmpuffern ihres Satzes (kein Zustand nötig)
+  renderer.renderFractal('full', [{ x: 0, y: 0, w, h }], p, 0);
+  renderer.aaDone([{ x: 0, y: 0, w: W, h: H }]);
+  renderer.aaClear([{ x: 0, y: 0, w, h }]);
+  const rects = [{ x: 0, y: 0, w, h }];
+  for (let runde = 1; runde <= ap.maxN && !exportCancel; runde++) {
+    renderer.aaRefine(rects, Object.assign({}, p, { jit: runde, adapt: ap.schnell ? 2 : 1, sigma }), cp, ap);
+    if (runde % 8 === 0 || runde === ap.maxN) { const c = await renderer.aaStats(); if (c && c.reduce((a, b) => a + b, 0) === 0) break; }
+  }
+}
 async function renderAdaptiveTile(p, cp, w, h) {
   const ap = aaParams();
   renderer.renderFractal('full', [{ x: 0, y: 0, w, h }], p, 0);   // Ebene 0 der Kachel
@@ -14082,7 +14943,8 @@ async function saveScreenShot() {   // die Ansicht so speichern, wie sie zu sehe
   $('posterStart').disabled = true; posterKnopf.ende = 'editor.close'; zeigePosterKnoepfe();
   posterZustand('export.creating-file');
   try {
-    const img = S.family === 'accum' ? await renderer.accReadImage(accDisplayParams()) : await renderer.readImage(colorParams());
+    liveZurueck();
+    const img = S.family === 'accum' ? await renderer.accReadImage(accDisplayParams()) : await renderer.readImage(praesentParams());
     const c2 = document.createElement('canvas'); c2.width = img.width; c2.height = img.height;
     c2.getContext('2d').putImageData(img, 0, 0);
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
@@ -14155,15 +15017,35 @@ async function exportPoster() {
     if (adaptiv) tile = clamp(Math.min(tile, W, H), 64, 1024);
     renderer.beginExport(tile, tile, aa);
     const cp = Object.assign(colorParams(), { layers: adaptiv ? 0 : aa * aa, shift: [0, 0] });
-    // Ausschnitt in der Ebene: Rahmen oder Bildschirm (kürzere Seite wie am Bildschirm)
-    let cw, ch, dx = 0, dy = 0;
-    if (posterCrop) { cw = posterCrop.w; ch = posterCrop.h; dx = dd.sub(posterCrop.cx, S.cx)[0]; dy = dd.sub(posterCrop.cy, S.cy)[0]; }
-    else { const psS = 3 / (S.zoom * Math.min(Wp, Hp)); cw = Wp * psS; ch = Hp * psS; }
-    const psX = cw / Wp, psY = ch / Hp;                          // Pixelgröße in der Ebene
-    cp.ps = psX;                                                 // Abstands-Verlauf: Farbe nach Ebenen-Abstand, unabhängig von der Exportauflösung
+    const mehrere = ebenen.length > 1 && S.family === 'escape' && !!renderer.renderExportEbene;   // Fraktal-Ebenen: je Kachel jede sichtbare Ebene, dann der Verbund
+    // Ausschnitt in der Ebene der Ebene in S: Rahmen (nur bei verbundener Ansicht) oder Bildschirm (kürzere Seite wie am Bildschirm)
+    const kachelGeometrie = () => {
+      let cw, ch, dx = 0, dy = 0;
+      if (posterCrop && ebeneVerbunden(ebeneInS)) { cw = posterCrop.w; ch = posterCrop.h; dx = dd.sub(posterCrop.cx, S.cx)[0]; dy = dd.sub(posterCrop.cy, S.cy)[0]; }
+      else { const psS = 3 / (S.zoom * Math.min(Wp, Hp)); cw = Wp * psS; ch = Hp * psS; }
+      const psX = cw / Wp, psY = ch / Hp, [pr, pi, shift] = refPoint();   // Pixelgröße in der Ebene
+      return { cw, ch, dx, dy, psX, psY, pr, pi, shift, dcMax: Math.hypot(dx, dy) + Math.hypot(cw / 2, ch / 2) + 2 * Math.max(psX, psY) };
+    };
+    const geo = mitEbene(0, kachelGeometrie);   // die erste Ebene bestimmt den Ausschnitt
+    cp.ps = geo.psX;                                             // Abstands-Verlauf: Farbe nach Ebenen-Abstand, unabhängig von der Exportauflösung
     const yd = renderer.yDown, offs = layerOffsets(aa);
-    const [pr, pi, shift] = refPoint();
-    computeOrbits(maxIter, Math.hypot(dx, dy) + Math.hypot(cw / 2, ch / 2) + 2 * Math.max(psX, psY)); orbitDirty = true;
+    if (!mehrere) { computeOrbits(maxIter, geo.dcMax); orbitDirty = true; }
+    async function exportKachelEbenen(kachel, rw, rh) {   // eine Kachel mit allen sichtbaren Ebenen: je Ebene rechnen und ihre Farbe sichern, dann der Verbund
+      const solo = ebenen.findIndex(e => e.solo), list = [];
+      ebenen.forEach((e, k) => { if (solo >= 0 ? k !== solo : !e.sichtbar) return; list.push({ k, modus: k === 0 ? 0 : e.modus, deck: e.deck, ax: 1, ay: 1, bx: 0, by: 0 }); });
+      for (const e of list) {
+        const vor = mitEbene(e.k, () => {   // alles, was den Zustand der Ebene braucht, hier — das Rechnen danach kommt ohne ihn aus
+          const g = kachelGeometrie(), mi = currentMaxIter(); computeOrbits(mi, g.dcMax);
+          const c = Object.assign(colorParamsEbene(), { layers: adaptiv ? 0 : aa * aa, shift: [0, 0], ps: g.psX, nachBild: cp.nachBild });
+          return { params: kachel(g, mi), cp: c, ap: aaParams(), sigma: S.aaSigma };
+        });
+        if (renderer._nachBereit) await renderer._nachBereit(vor.cp);
+        if (adaptiv) { renderer.ebeneWaehlen(e.k); if (!renderer.aa) await renderer.aaInit(); await renderAdaptiveEbene(vor.params[0], vor.cp, rw, rh, vor.ap, vor.sigma); renderer.exportFarbeVomSchirm(vor.cp, rw, rh, e.k); }
+        else renderer.renderExportEbene(vor.params, vor.cp, rw, rh, e.k);
+      }
+      orbitDirty = true;
+      return renderer.exportVerbund(Object.assign({}, cp, { verbund: { ebenen: list, liveZeigen: false } }), rw, rh);
+    }
     // Beim Streifenschreiben ist die Streifenhöhe so gewählt, dass ein Streifen klein bleibt (rund 4 Mio. Pixel)
     const stripH = streamPng ? clamp(Math.floor(4e6 / Wp), 1, tile) : tile;
     let streifen = null, strip = null, sctx = null, schreibt = null;   // schreibt: der noch laufende Schreibvorgang des vorigen Streifens
@@ -14180,16 +15062,20 @@ async function exportPoster() {
       for (let tx = 0; tx < Wp && !exportCancel; tx += schrittX) {
         const w = Math.min(schrittX, Wp - tx), h = Math.min(schrittY, Hp - ty);
         const mx0 = Math.min(rand, tx), mx1 = Math.min(rand, Wp - tx - w), my0 = Math.min(rand, ty), my1 = Math.min(rand, Hp - ty - h), rw = w + mx0 + mx1, rh = h + my0 + my1;   // Rand nur, wo Bild ist
-        const base = Object.assign({
-          dcScale: [psX, yd ? -psY : psY],
-          maxIter, lenA: orbitLenA, baseB: orbitBaseB, lenB: orbitLenB,
-          isJulia: S.mode === 'julia' ? 1 : 0, needDE: brauchtAbstand() ? 1 : 0, ps: psX, cycle: cycleOn(maxIter) && !hybridAktiv(), lyap: lyapModus(), winkel: winkelModus(), texP: texWerteSammler(), texW: texWertePlaetze(), texInnen: texInnenIrgend() && texturZahl() > 0 ? 1 : 0, verbund: verbundK(), verbundMaske: verbundMaske(), verbundErster: verbundErster(), stat: statPipeline(), stat2: statPipeline2(), stat3: statPipeline3(), stat4: statPipeline4(), stat5: statPipeline5(), stat6: statPipeline6(), ...paarPipeline(), texz: texturZ(), ...texArtenParam(), lyGrenze: S.lyGrenze, streifen: S.streifen, vorlauf: S.vorlauf, gewicht: S.gewicht, fluchtForm: S.fluchtForm, fluchtRadius: S.fluchtRadius || (FORMULAS[S.formula].bail || 0),
-          power: potenzEff(), invert: S.invert ? 1 : 0, needInt: brauchtInnen() ? 1 : 0, pRef: [pr[0], pi[0]], rotC: drehCS()[0], rotS: drehCS()[1], invM: S.invM, biomorph: S.biomorph ? 1 : 0, richtungY: richtungModus(), abkl: 1 - S.abklingen, param2: [...S.param2, S.zweig || 0],
-        }, directParams(pr, pi), blaParams());
-        const params = offs.map(([ox, oy]) => Object.assign({}, base, {   // ein Parametersatz je Probenebene
-          dcOffset: drehOffset((tx - mx0 + ox - Wp / 2) * psX, yd ? (Hp / 2 - (ty - my0) - oy) * psY : (Hp / 2 - (ty - my0) - rh + oy) * psY, [shift[0] - dx, shift[1] - dy]) }));   // gedreht wie am Bildschirm; der Rahmenversatz dx, dy liegt schon in der Ebene; mit Rand
+        const kachel = (g, mi) => {   // die Parametersätze der Kachel (je Probenebene) für die Ebene in S: Geometrie g, Iterationen mi
+            const base = Object.assign({
+            dcScale: [g.psX, yd ? -g.psY : g.psY],
+            maxIter: mi, lenA: orbitLenA, baseB: orbitBaseB, lenB: orbitLenB,
+            isJulia: S.mode === 'julia' ? 1 : 0, needDE: brauchtAbstand() ? 1 : 0, ps: g.psX, cycle: cycleOn(mi) && !hybridAktiv(), lyap: lyapModus(), winkel: winkelModus(), texP: texWerteSammler(), texW: texWertePlaetze(), texInnen: texInnenIrgend() && texturZahl() > 0 ? 1 : 0, verbund: verbundK(), verbundMaske: verbundMaske(), verbundErster: verbundErster(), stat: statPipeline(), stat2: statPipeline2(), stat3: statPipeline3(), stat4: statPipeline4(), stat5: statPipeline5(), stat6: statPipeline6(), ...paarPipeline(), texz: texturZ(), ...texArtenParam(), lyGrenze: S.lyGrenze, streifen: S.streifen, vorlauf: S.vorlauf, gewicht: S.gewicht, fluchtForm: S.fluchtForm, fluchtRadius: S.fluchtRadius || (FORMULAS[S.formula].bail || 0),
+            power: potenzEff(), invert: S.invert ? 1 : 0, needInt: brauchtInnen() ? 1 : 0, pRef: [g.pr[0], g.pi[0]], rotC: drehCS()[0], rotS: drehCS()[1], invM: S.invM, biomorph: S.biomorph ? 1 : 0, richtungY: richtungModus(), abkl: 1 - S.abklingen, param2: [...S.param2, S.zweig || 0],
+          }, directParams(g.pr, g.pi), blaParams());
+            const params = offs.map(([ox, oy]) => Object.assign({}, base, {   // ein Parametersatz je Probenebene
+            dcOffset: drehOffset((tx - mx0 + ox - Wp / 2) * g.psX, yd ? (Hp / 2 - (ty - my0) - oy) * g.psY : (Hp / 2 - (ty - my0) - rh + oy) * g.psY, [g.shift[0] - g.dx, g.shift[1] - g.dy]) }));   // gedreht wie am Bildschirm; der Rahmenversatz dx, dy liegt schon in der Ebene; mit Rand
+          return params;
+        };
+        const params = kachel(geo, maxIter);
         cp.nachBild = [tx - mx0, yd ? ty - my0 : ty + h + my1 - 1, Wp, Hp];   // Nachbearbeitung: Lage der Kachel (mit Rand) im ganzen Bild (Vignette)
-        let img = adaptiv ? await renderAdaptiveTile(params[0], cp, rw, rh) : await renderer.renderExportTile(params, cp, rw, rh);
+        let img = mehrere ? await exportKachelEbenen(kachel, rw, rh) : adaptiv ? await renderAdaptiveTile(params[0], cp, rw, rh) : await renderer.renderExportTile(params, cp, rw, rh);
         if (rw !== w || rh !== h) img = kachelBeschneiden(img, mx0, my0, w, h);   // der Rand fällt weg
         if (streamPng) for (let y = 0; y < h; y++) streifen.set(img.data.subarray(y * w * 4, (y + 1) * w * 4), (y * Wp + tx) * 4);   // Kachel in den Streifen
         else { ctx.putImageData(img, tx, ty); notePut(img, tx, ty, w, h); }
@@ -14247,7 +15133,7 @@ async function exportPoster() {
     exporting = false; exportCancel = false;
     if (png) png.verwerfen();   // nach Abbruch oder Fehler läuft sonst der Packfaden weiter
     big = null;
-    if (adaptiv) { fractalDirty = true; orbitDirty = true; }   // die Bildschirmpuffer trugen zuletzt Exportkacheln
+    if (adaptiv || ebenen.length > 1) { fractalDirty = true; orbitDirty = true; for (const e of ebenen) e.frisch = false; if (ebenen.length > 1 && renderer && renderer.ebeneWaehlen) liveWechseln(ebeneAktiv); }   // die Bildschirmpuffer trugen zuletzt Exportkacheln
     $('posterStart').disabled = false; posterKnopf.start = 'export.render-again'; posterKnopf.ende = 'editor.close';
     posterUpdateInfo();
     requestFrame();
@@ -14283,6 +15169,8 @@ const LEGAL = {
     </table>
     <p>Ein Sammler rechnet je Bahnschritt erst die Zustandszeile <code>s = …</code>, dann den Wert; die Zusammenfassung (Mittel, Minimum, Maximum, Summe, letzter Wert, Schritt des Minimums) macht daraus einen Wert je Bildpunkt, gefärbt wie das Streifenmittel, innen wie außen. Gewichtung und Abklingen gelten für das Mittel; als Textur wird ein Wert zwischen 0 und 1 erwartet.</p>
     <p>Die eigene Formel rechnet in fp32 (Zoom bis 10<sup>5</sup>); Faltung, Gedächtnis und Start im Bildpunkt wirken wie bei den anderen direkten Formeln, die Ableitungen für Abstandsschätzung und Beleuchtung entstehen von selbst. Beispiele: <code>cosh(z) + c</code>, <code>sin(z)^2 + c</code>, <code>z^2 + c/z</code> mit Start im Bildpunkt; Sammler <code>min(|z - 1|, |z + 1|)</code> und <code>|re z im z|</code> (je Minimum); Abbildung <code>c/(1 + c^2)</code>. Mehr dazu in <code>docs/expressions.md</code> im Quelltext.</p>
+    <h3>Ebenen</h3>
+    <p>Mehrere Fraktale übereinander: die Ebenenzeile oben in Motiv, Farbe und Palette wählt, welche Ebene diese Bereiche bearbeiten („+“ legt eine Kopie darüber an, „×“ löscht die gewählte). Der Bereich „Ebenen“ ist der Mischer: Reihenfolge, Sichtbarkeit, Solo, Mischmodus (Multiplizieren, Negativ multiplizieren, Überlagern, Differenz, Farbton, Luminanz …), Deckkraft und Maske je Ebene, dazu ob die Ebene der gemeinsamen Ansicht folgt oder ihre eigene Mitte und ihren eigenen Zoom hat. Die unterste Ebene ist der Grund, die Nachbearbeitung wirkt auf das Ergebnis. Mehr dazu in <code>docs/layers.md</code> im Quelltext.</p>
     <h3>Quelltext</h3>
     <p>Der vollständige Quelltext liegt auf GitHub: <a href="https://github.com/tobias74/fractal-renderer" target="_blank" rel="noopener">github.com/tobias74/fractal-renderer</a>. Klonen und selbst ausprobieren.</p>` },
   impressum: { eyebrow: 'Rechtliches', title: 'Impressum', html: `
@@ -14606,6 +15494,8 @@ const LEGAL_EN = {
     </table>
     <p>Each orbit step, a collector first evaluates the state line <code>s = …</code>, then the value; the aggregation (mean, minimum, maximum, sum, last value, step of the minimum) turns the steps into one value per pixel, coloured like the stripe average, inside as well as outside. Weighting and decay apply to the mean; as a texture a value between 0 and 1 is expected.</p>
     <p>The custom formula is computed in fp32 (zoom up to 10<sup>5</sup>); fold per step, memory and start at the pixel apply as for the other direct formulas, and the derivatives for distance estimation and lighting are generated automatically. Examples: <code>cosh(z) + c</code>, <code>sin(z)^2 + c</code>, <code>z^2 + c/z</code> with start at the pixel; collectors <code>min(|z - 1|, |z + 1|)</code> and <code>|re z im z|</code> (minimum each); mapping <code>c/(1 + c^2)</code>. More in <code>docs/expressions.md</code> in the source code.</p>
+    <h3>Layers</h3>
+    <p>Several fractals on top of each other: the layer row at the top of Motif, Colour and Palette selects which layer those panels edit (“+” adds a copy above, “×” removes the selected one). The “Layers” panel is the mixer: order, visibility, solo, blend mode (multiply, screen, overlay, difference, hue, luminosity …), opacity and mask per layer, and whether a layer follows the shared view or keeps its own centre and zoom. The bottom layer is the ground; post-processing works on the result. More in <code>docs/layers.md</code> in the source code.</p>
     <h3>Source code</h3>
     <p>The complete source code is on GitHub: <a href="https://github.com/tobias74/fractal-renderer" target="_blank" rel="noopener">github.com/tobias74/fractal-renderer</a>. Clone it and try it yourself.</p>` },
   impressum: { eyebrow: 'Legal', title: 'Imprint', html: `
@@ -14918,6 +15808,7 @@ buildPalSelect();
 densEl.value = densToPos(S.density); showDens();
 iterAuto.checked = S.autoIter;
 syncIterUI();
+if (ebenenStartAktiv) ebeneWaehlen(ebenenStartAktiv); else syncEbenenUI();   // Fraktal-Ebenen: die im Link gewählte
 undoMerken();   // Ausgangsstand für Rückgängig; die erste Änderung wird damit ein Schritt
 initRenderer();
 })();
