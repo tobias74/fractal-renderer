@@ -10,7 +10,7 @@ describe('Ebenenmischer', () => {
   const DREI = 'mode=mandel&l2=f%3D1&l3=f%3D2&lm2=2:0.7:1:0:1:&lm3=10:0.5:1:0:1:&la=3';    // dazu Tricorn (Differenz, 50 %), Ebene 3 gewählt
   const fertig = () => cy.alleEbenenFertig().then(ms => expect(ms, 'fertig').to.be.greaterThan(0));
   const stand = () => cy.window().then(win => win.ebenenStand());
-  const uebersetzt = () => { cy.get('#state', { timeout: 30000 }).invoke('text').should('not.match', /übersetzt|Compiling/); cy.wait(600); };   // die Fassung mit Masken wird beim ersten Gebrauch nebenher übersetzt
+  const uebersetzt = () => { cy.get('#state').invoke({ timeout: 60000 }, 'text').should('not.match', /übersetzt|Compiling/); cy.wait(600); };   /* die Frist muss am letzten Glied der Kette stehen; kalt braucht Electron 118 für die Fassung mit Masken rund 17 s (warm aus dem Shader-Cache unter 1 s); die Fassung mit Masken wird beim ersten Gebrauch nebenher übersetzt */
   const alleFertig = (timeout = 60000) => cy.alleEbenenFertig(timeout);
   // Ziehen im Fenster der App: n Schritte im Abstand von 16 ms, dazwischen die Lücken zwischen den Bildern messen
   const ziehen = (win, n = 40, pause = 0) => new Promise(res => {

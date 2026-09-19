@@ -11,7 +11,7 @@ describe('Ebenen: alle Auswahlen und Kombinationen', () => {
   const DREI = 'mode=mandel&l2=f%3D1&l3=f%3D2&lm2=2:0.7:1:0:1:&lm3=10:0.5:1:0:1:&la=3';
   const spion = { onBeforeLoad: win => { cy.spy(win.console, 'error').as('konsole'); } };
   const fertig = () => cy.alleEbenenFertig().then(ms => expect(ms, 'fertig').to.be.greaterThan(0));
-  const uebersetzt = () => { cy.get('#state', { timeout: 30000 }).invoke('text').should('not.match', /übersetzt|Compiling/); cy.wait(500); };
+  const uebersetzt = () => { cy.get('#state').invoke({ timeout: 60000 }, 'text').should('not.match', /übersetzt|Compiling/); cy.wait(500); };   /* die Frist muss am letzten Glied der Kette stehen; kalt braucht Electron 118 für die Fassung mit Masken rund 17 s (warm aus dem Shader-Cache unter 1 s) */
   const alleFertig = (timeout = 60000) => cy.alleEbenenFertig(timeout);
   const optionen = id => cy.get('#' + id + ' option').then($o => [...$o].filter(o => !o.hidden && !o.disabled).map(o => o.value));   // nur, was das Menü gerade anbietet (versteckte Einträge gehören zu anderen Formeln oder Familien)
 

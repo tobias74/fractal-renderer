@@ -242,6 +242,17 @@
   .state.uebersetzt::after { content: ''; display: block; height: 2px; margin-top: 5px; border-radius: 1px; background: linear-gradient(90deg, transparent, var(--accent) 50%, transparent); background-size: 50% 100%; background-repeat: no-repeat; animation: uebersetzt 1.4s ease-in-out infinite; }
   @keyframes uebersetzt { from { background-position: -50% 0; } to { background-position: 150% 0; } }
   @media (prefers-reduced-motion: reduce) { .state.uebersetzt::after { animation: none; background: var(--accent); opacity: .5; } }
+  /* Hinweis beim Übersetzen: ein Streifen über dem Bild mit Schritt und Sekunden, wegklickbar, in Technik abschaltbar */
+  .toast { position: fixed; left: 0; right: 0; margin: 0 auto; width: fit-content; bottom: 28px; z-index: 40; display: flex; align-items: center; gap: 10px; max-width: min(92vw, 520px); padding: 10px 10px 10px 14px; border-radius: 10px; background: var(--panel); border: 1px solid var(--line-strong); box-shadow: 0 8px 28px rgba(0, 0, 0, .35); color: var(--text); font-size: 12.5px; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+  .toast[hidden] { display: none; }
+  .toast-lauf { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line-strong); border-top-color: var(--accent); animation: toastDreh 1s linear infinite; flex: none; }
+  @keyframes toastDreh { to { transform: rotate(360deg); } }
+  .toast-text { min-width: 0; line-height: 1.4; }
+  .toast-text .mono { color: var(--muted); font-size: 12px; }
+  .toast-weg { border: 0; background: none; color: var(--muted); font: inherit; font-size: 17px; line-height: 1; cursor: pointer; padding: 2px 6px; border-radius: 6px; }
+  .toast-weg:hover { color: var(--text); background: rgba(var(--tint), .08); }
+  @media (prefers-reduced-motion: reduce) { .toast-lauf { animation: none; border-top-color: var(--line-strong); } }
+  @media (max-width: 640px) { .toast { top: calc(var(--appbar) + 10px + env(safe-area-inset-top)); bottom: auto; max-width: calc(100vw - 24px); } }   /* am Handy oben unter der Kopfzeile: unten liegt die Schublade */
   .coords { font-size: 11.5px; color: var(--muted); word-break: break-all; line-height: 1.5; white-space: pre-line; }
 
 
@@ -275,12 +286,22 @@
   details.immer-offen > summary, #motivMehr > summary { display: none !important; }   /* kein Akkordeon mehr: auch keine Überschrift (die Regel der Akkordeons ist spezifischer) */
   #motivMehr > div + div { margin-top: 10px; }   /* die Gruppen darunter mit Luft */
   .immer-offen > summary::before { display: none; }
-  .ebene-fein { display: flex; flex-direction: column; gap: 6px; padding-top: 8px; border-top: 1px dashed var(--line); }
-  .ebene-fein-zeile { display: flex; align-items: center; gap: 4px; }
-  .ebene-fein-zeile label { flex: 1 1 auto; min-width: 0; color: var(--muted); font-size: 12px; }
-  .ebene-fein-zeile input { width: 78px; flex: none; }
-  .ebene-fein-knopf { padding: 2px 6px; font-size: 11px; white-space: nowrap; }
+  .ebene-fein { display: flex; flex-direction: column; gap: 14px; margin-top: 6px; padding-top: 14px; border-top: 1px dashed var(--line); }   /* Feinjustierung: je Wert Beschriftung mit Einheit links, Feld rechts, Stoßknöpfe in voller Breite darunter */
+  .ebene-fein-titel { margin: 0; }
+  .ebene-fein-wert { display: flex; flex-direction: column; gap: 7px; }
+  .ebene-fein-wert .lbl { align-items: center; }
+  .ebene-fein-wert label { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .ebene-fein-einheit { color: var(--faint); font-size: 11px; letter-spacing: 0; }
+  .ebene-fein .ebene-fein-wert .lbl .wert { width: 100px; flex: none; }
+  .ebene-fein-stoesse { display: flex; gap: 6px; }
+  .ebene-fein-stoesse .ebene-fein-knopf { flex: 1 1 0; padding: 5px 0; font-size: 12px; text-align: center; white-space: nowrap; }
   .ebene-fein-knoepfe { display: flex; gap: 6px; flex-wrap: wrap; }
+  .ebene-fein-knoepfe .ebenen-knopf { flex: 1 1 auto; padding: 6px 8px; }
+  .ebene-fein .chk { margin-top: 2px; }
+  .ebene-fein .hint { margin: 0; }
+  #pane-ebenen .tex-karte { padding: 8px 12px 14px 14px; }            /* die Karte im Bereich „Mischen“ bekommt mehr Luft als die Karten der Nachbearbeitung */
+  #pane-ebenen .nach-karte .nach-regler { gap: 14px; }
+  #pane-ebenen .nach-karte .nach-eigen, #pane-ebenen .nach-karte .nach-maske { gap: 10px; }
   .fadenkreuz { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
   .fadenkreuz::before, .fadenkreuz::after { content: ''; position: absolute; background: rgba(255, 255, 255, .55); box-shadow: 0 0 0 1px rgba(0, 0, 0, .35); }
   .fadenkreuz::before { left: 50%; top: 0; bottom: 0; width: 1px; }
@@ -708,6 +729,8 @@
     .m-status sup { font-size: 9px; }
     .m-status .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex: none; }
     .m-status.busy .dot { animation: puls 1.1s ease-in-out infinite; }
+    .m-status .m-kurz { min-width: 0; max-width: 38vw; overflow: hidden; text-overflow: ellipsis; color: var(--muted); }   /* der Zustand, solange gerechnet oder übersetzt wird; sonst leer */
+    .m-status .m-kurz:empty { display: none; }
     @keyframes puls { 50% { opacity: .2; } }
     .m-info {
       position: fixed; z-index: 9; top: calc(var(--appbar) + 2px); right: calc(8px + env(safe-area-inset-right));
@@ -812,6 +835,11 @@
 </style>
 
 <div id="stage"></div>
+<div id="uebersetzenToast" class="toast" role="status" hidden>   <!-- Hinweis beim Übersetzen der Fassung mit Ebenen und Masken: über dem Bild, wegklickbar, in Technik abschaltbar -->
+  <span class="toast-lauf" aria-hidden="true"></span>
+  <span class="toast-text"><span data-i18n="status.post-compiling"></span> <span id="toastDetail" class="mono"></span></span>
+  <button type="button" id="toastWeg" class="toast-weg" data-i18n-aria-label="toast.close" data-i18n-title="toast.close">×</button>
+</div>
 <div id="fadenkreuz" class="fadenkreuz" hidden></div>   <!-- Fraktal-Ebenen: Fadenkreuz beim Ausrichten -->
 
 <aside id="panel" class="panel">
@@ -1817,6 +1845,7 @@
       <div class="lbl wertzeile"><label for="stapelMs" data-i18n-title="technical.batch-title" data-i18n="technical.batch"></label><input class="val mono wert" id="stapelMsVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
       <input id="stapelMs" type="range" min="8" max="120" step="1" value="40">
       <label class="chk" data-i18n-title="technical.ui-first-title"><input type="checkbox" id="uiVorrang" checked> <span data-i18n="technical.ui-first"></span></label>
+      <label class="chk" data-i18n-title="technical.toast-title"><input type="checkbox" id="toastAn" checked> <span data-i18n="technical.toast"></span></label>
       <p class="hint" id="techInfo"></p>
     </section>
     </div>
@@ -1865,7 +1894,7 @@
 <header class="appbar" id="appbar">
   <span class="appbar-title" data-i18n="misc.fractal-renderer"></span>
   <button type="button" id="tabSave" class="appbar-save" data-i18n-title="editor.save" data-i18n-aria-label="editor.save"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.3 2.5h7.5l2.7 2.7v7.5a.8.8 0 0 1-.8.8H3.3a.8.8 0 0 1-.8-.8V3.3a.8.8 0 0 1 .8-.8z"/><path d="M5 13.5V9.6c0-.3.2-.5.5-.5h5c.3 0 .5.2.5.5v3.9M5.2 2.5v2.6c0 .3.2.5.5.5h4"/></svg></button>
-  <button type="button" id="mStatus" class="m-status" data-i18n-aria-label="misc.status" aria-expanded="false" aria-controls="mInfo"><span class="dot" aria-hidden="true"></span><span id="mZoom">Zoom 1,0×</span></button>
+  <button type="button" id="mStatus" class="m-status" data-i18n-aria-label="misc.status" aria-expanded="false" aria-controls="mInfo"><span class="dot" aria-hidden="true"></span><span id="mZoom">Zoom 1,0×</span><span id="mKurz" class="m-kurz"></span></button>
 </header>
 <div id="mInfo" class="m-info" role="status" hidden>
   <div class="state" id="mState" data-i18n="technical.ready"></div>
@@ -2537,9 +2566,13 @@ const TEXTE = {
   'layers.align-view': { de: 'Ansicht angleichen', en: 'Align view' },
   'layers.fine': { de: 'Feinjustierung zum Grund', en: 'Fine alignment to the ground' },
   'layers.fine-factor': { de: 'Zoomfaktor', en: 'Zoom factor' },
-  'layers.fine-x': { de: 'Versatz x (Pixel, rechts)', en: 'Offset x (pixels, right)' },
-  'layers.fine-y': { de: 'Versatz y (Pixel, oben)', en: 'Offset y (pixels, up)' },
-  'layers.fine-rotation': { de: 'Drehung (Grad)', en: 'Rotation (degrees)' },
+  'layers.fine-factor-unit': { de: 'zum Grund', en: 'to the ground' },
+  'layers.fine-x': { de: 'Versatz x', en: 'Offset x' },
+  'layers.fine-x-unit': { de: 'Pixel, nach rechts', en: 'pixels, to the right' },
+  'layers.fine-y': { de: 'Versatz y', en: 'Offset y' },
+  'layers.fine-y-unit': { de: 'Pixel, nach oben', en: 'pixels, up' },
+  'layers.fine-rotation': { de: 'Drehung', en: 'Rotation' },
+  'layers.fine-rotation-unit': { de: 'Grad', en: 'degrees' },
   'layers.fine-snap': { de: 'Auf Verhältnis runden', en: 'Snap to ratio' },
   'layers.fine-centre': { de: 'Mitte auf Grundmitte', en: 'Centre on the ground' },
   'layers.fine-align': { de: 'Ausrichten: Differenz zeigen', en: 'Align: show difference' },
@@ -2980,6 +3013,10 @@ const TEXTE = {
   'status.collecting-m-points-s': { de: 'Sammelt · {0} Mio. Punkte · {1} s', en: 'Collecting · {0} M points · {1} s' },
   'status.done': { de: 'Fertig · {0}', en: 'Done · {0}' },
   'status.post-compiling': { de: 'Ebenen und Masken werden übersetzt …', en: 'Compiling layers and masks …' },
+  'status.post-error': { de: 'Ebenen und Masken nicht übersetzt: {0}', en: 'Layers and masks not compiled: {0}' },
+  'status.compiling-step': { de: 'Schritt {0} von {1} · {2} s', en: 'step {0} of {1} · {2} s' },
+  'status.compiling-seconds': { de: '{0} s', en: '{0} s' },
+  'toast.close': { de: 'Hinweis schließen', en: 'Dismiss notice' },
   'status.render-error': { de: 'Fehler beim Rechnen: {0}', en: 'Error while rendering: {0}' },
   'status.context-lost': { de: 'Der Grafikkontext ging wiederholt verloren. Bitte die Seite neu laden.', en: 'The graphics context was lost repeatedly. Please reload the page.' },
   'expr.shader-error': { de: 'Eigener Ausdruck: der Shader meldet {0}', en: 'Custom expression: the shader reports {0}' },
@@ -3089,6 +3126,8 @@ const TEXTE = {
   'technical.batch': { de: 'Rechenstapel (ms)', en: 'Compute batch (ms)' },
   'technical.batch-title': { de: 'Wie lange die Grafikkarte am Stück am Fraktal rechnet, bevor der Browser wieder zum Zeichnen kommt. Größer heißt schnelleres Bild und zähere Bedienung, kleiner heißt flüssige Bedienung und langsameres Bild.', en: 'How long the graphics card works on the fractal in one go before the browser gets to draw again. Larger means a faster picture and a sluggish interface, smaller means a smooth interface and a slower picture.' },
   'technical.ui-first': { de: 'Bedienung hat Vorrang', en: 'Interface first' },
+  'technical.toast': { de: 'Hinweis beim Übersetzen von Ebenen und Masken', en: 'Notice while layers and masks compile' },
+  'technical.toast-title': { de: 'Ein Streifen über dem Bild zeigt, dass die Fassung mit Ebenen und Masken gerade übersetzt wird, mit Schritt und Sekunden; er lässt sich wegklicken. Die Statuszeile sagt es in jedem Fall.', en: 'A strip above the picture shows that the version with layers and masks is being compiled, with step and seconds; it can be dismissed. The status line says so in any case.' },
   'technical.ui-first-title': { de: 'Sobald du im Bedienfeld klickst, tippst oder ziehst, rechnet die App eine halbe Sekunde lang in einem Drittel der Stapelgröße weiter. Das Bild wird dabei nicht angehalten, nur feiner geschnitten.', en: 'As soon as you click, type or drag in the panel, the app keeps computing at a third of the batch size for half a second. The picture is not paused, only cut into finer slices.' },
   'technical.cycle-detection': { de: 'Zykluserkennung', en: 'Cycle detection' },
   'technical.deep-zoom-by-perturbation': { de: ' Tiefenzoom per Störungstheorie: Referenzbahn in Double-Double auf der CPU, Deltas in fp32 auf der GPU, Rebasing gegen Glitches, bilineare Näherung überspringt Iterationsblöcke.', en: ' Deep zoom by perturbation theory: reference orbit in double-double on the CPU, deltas in fp32 on the GPU, rebasing against glitches, bilinear approximation skips iteration blocks.' },
@@ -8681,35 +8720,45 @@ class GpuRenderer {
     if ((tm ? this.pipeV1 : this.pipeV0) && this.pipeP && this.pipeL) return true;
     const key = tm ? 'vollVersprechen1' : 'vollVersprechen0';
     if (!this[key]) {
-      this.nachWartet = true;
+      this.nachWartet = true; this.nachT0 = performance.now(); this.nachSchritt = 0; this.nachSchritte = 1 + (this.pipeL ? 0 : 1) + (this.pipeP ? 0 : 1) + (this.pipeM ? 0 : 1);   // Fortschritt für die Anzeige: die Programme, die noch entstehen
       const d = this.device;
       const mk = async code => { const mod = d.createShaderModule({ code }); const ci = await mod.getCompilationInfo(), err = ci.messages.filter(m => m.type === 'error');
         if (err.length) throw new Error('WGSL: ' + err.map(m => `${m.lineNum}:${m.linePos} ${m.message}`).join('\n')); return mod; };
       this[key] = (async () => {
         const prim = { topology: 'triangle-list' };
+        while (window.__uebersetzenHalten) await new Promise(r => setTimeout(r, 50));   // Testhaken (Cypress): die Übersetzung wartet, bis der Test sie freigibt
+        if (window.__uebersetzenFehler) throw new Error('Testhaken: Übersetzen schlägt fehl');   // Testhaken (Cypress): der Fehlerpfad
         const mV = await mk(tm ? WGSL_COLOR_VOLL : wgslOhneTexMaske(WGSL_COLOR_VOLL));
         const pV = await d.createRenderPipelineAsync({ layout: d.createPipelineLayout({ bindGroupLayouts: [this.bglC] }), vertex: { module: mV, entryPoint: 'vs' },
           fragment: { module: mV, entryPoint: 'fs', targets: [{ format: this.format }, { format: 'rgba8unorm' }] }, primitive: prim });
+        this.nachSchritt = 1;
         if (!this.pipeL) {
           const mL = await mk(WGSL_LEUCHT);
           this.pipeL = await d.createRenderPipelineAsync({ layout: d.createPipelineLayout({ bindGroupLayouts: [this.bglL] }), vertex: { module: mL, entryPoint: 'vs' },
             fragment: { module: mL, entryPoint: 'fs', targets: [{ format: 'rgba16float' }] }, primitive: prim });
+          this.nachSchritt++;
         }
         if (!this.pipeP) {
           const mP = await mk(WGSL_POST);
           this.pipeP = await d.createRenderPipelineAsync({ layout: d.createPipelineLayout({ bindGroupLayouts: [this.bglP] }), vertex: { module: mP, entryPoint: 'vs' },
             fragment: { module: mP, entryPoint: 'fs', targets: [{ format: this.format }] }, primitive: prim });
+          this.nachSchritt++;
         }
         if (!this.pipeM) {   // Fraktal-Ebenen: die Farbe einer Ebene mit ihrer Maske als Alpha
           const mM = await mk(WGSL_EBENE);
           this.pipeM = await d.createRenderPipelineAsync({ layout: d.createPipelineLayout({ bindGroupLayouts: [this.bglP] }), vertex: { module: mM, entryPoint: 'vs' },
             fragment: { module: mM, entryPoint: 'fs', targets: [{ format: this.format }] }, primitive: prim });
+          this.nachSchritt++;
         }
         if (this.zerstoert) return;
         if (tm) this.pipeV1 = pV; else this.pipeV0 = pV;
         this.nachWartet = false; this.pipeNeu = true;   // der erste Durchlauf damit zählt nicht als Durchsatz
         if (this.onBereit) this.onBereit();
-      })().catch(e => { this.nachWartet = false; console.warn('Nachbearbeitung: Pipelines nicht übersetzt', e); });
+      })().catch(e => {   // gescheitert: melden und Status wie Bild auffrischen; die Fassung ohne Ebenen bleibt, bis eine Änderung sie neu anstößt
+        this.nachWartet = false; this.nachFehler = String((e && e.message) || e).slice(0, 160); console.warn('Nachbearbeitung: Pipelines nicht übersetzt', e);
+        if (this.onNachFehler) this.onNachFehler(this.nachFehler);
+        if (this.onBereit) this.onBereit();
+      });
     }
     return false;
   }
@@ -9265,10 +9314,10 @@ class GlRenderer {
     if (!sofort && this.parallel && !(fertig(pv) && fertig(this.progP) && fertig(this.progM))) {
       this.nachWartet = true;
       if (!pv.wacht) {
-        pv.wacht = true;
+        pv.wacht = true; this.nachT0 = performance.now(); this.nachSchritt = 0; this.nachSchritte = 0;   // Fortschritt: die Programme entstehen parallel, ohne Schritte – die Anzeige zählt Sekunden
         const pruefen = () => {
           if (this.zerstoert || gl.isContextLost()) return;
-          if (!(fertig(pv) && fertig(this.progP) && fertig(this.progM))) { setTimeout(pruefen, 100); return; }
+          if (window.__uebersetzenHalten || !(fertig(pv) && fertig(this.progP) && fertig(this.progM))) { setTimeout(pruefen, 100); return; }   // __uebersetzenHalten: Testhaken (Cypress)
           pv.wacht = false; this.nachWartet = false; if (this.onBereit) this.onBereit();
         };
         setTimeout(pruefen, 100);
@@ -9770,6 +9819,7 @@ const DEFAULT_VIEW = {
 // einzeln abwählbar; Vorgabe = alle drei. Kein Name, kein Datum, kein Link: nichts, was der Nutzer nicht braucht.
 const META_VORGABE = { params: true, colors: true, tech: true };   // die drei Angaben, die das Bild wiederherstellen; jede einzeln abwählbar
 const META = Object.assign({}, META_VORGABE);
+let toastAn = true;   // Hinweis beim Übersetzen (Streifen über dem Bild); Browser-Einstellung fractal.toast, Vorgabe an
 try {   // gespeicherte App-Einstellungen nur lesen, wenn die Einwilligung dafür vorliegt (§ 25 TDDDG gilt auch fürs Lesen)
   localStorage.removeItem('fractal.aamem');   // Schlüssel der früheren, einstellbaren Speichergrenze
   const einw = JSON.parse(localStorage.getItem('fractal.consent') || 'null');
@@ -9778,6 +9828,7 @@ try {   // gespeicherte App-Einstellungen nur lesen, wenn die Einwilligung dafü
     const q = localStorage.getItem('fractal.quality'); if (q) S.quality = parseFloat(q) || 1;
     const sm = localStorage.getItem('fractal.stapelms'); if (sm) S.stapelMs = Math.min(STAPEL_MS.max, Math.max(STAPEL_MS.min, parseInt(sm, 10) || STAPEL_MS.def));   // ohne clamp: das steht erst weiter unten
     const uv = localStorage.getItem('fractal.uivorrang'); if (uv) S.uiVorrang = uv !== '0';
+    const to = localStorage.getItem('fractal.toast'); if (to) toastAn = to !== '0';
     const th = localStorage.getItem('fractal.theme'); if (THEMES.includes(th)) S.theme = th;
     try { const m = JSON.parse(localStorage.getItem('fractal.meta') || 'null'); if (m && typeof m === 'object') for (const k of Object.keys(META)) if (typeof m[k] === 'boolean') META[k] = m[k]; } catch (e) { /* egal */ }   // Metadaten-Wahl
     const a = localStorage.getItem('fractal.aa'); if (a) S.aa = aaSnap(parseInt(a, 10) || DEFAULT_AA);
@@ -10812,9 +10863,10 @@ function updateStatus() {
     stateTxt = renderMs < 0 ? t('status.rendering-2') : t('status.smoothing', fmtMs(renderMs), aaPct()) + (rest > 900 ? t('status.about', fmtMs(rest)) : '');
   }
   else if (gpuBusy || renderMs < 0) stateTxt = t('status.rendering-2');
-  else if (renderer && renderer.nachWartet) stateTxt = t('status.post-compiling');   // WebGL 2: die Ebenen erscheinen, sobald ihr Programm übersetzt ist
+  else if (renderer && renderer.nachWartet) stateTxt = t('status.post-compiling') + ' ' + uebersetzenDetail();   // die Ebenen erscheinen, sobald ihre Fassung übersetzt ist
   else stateTxt = t('status.done', fmtMs(renderMs)) + (refineMs > renderMs + 1 ? t('status.smoothing-2', fmtMs(refineMs - renderMs)) : '') + t('status.iterations', fmtGanz(maxIter)) + (blaActive ? ' · BLA' : '');
   if (ebenen.length > 1 && renderEbene !== ebeneAktiv && (phase !== 'idle' || gpuBusy)) stateTxt += ' · ' + t('layers.layer-n', renderEbene + 1);   // welche Ebene gerade nachrechnet
+  if (renderer && renderer.nachWartet && !stateTxt.startsWith(t('status.post-compiling'))) stateTxt += ' · ' + t('status.post-compiling') + ' ' + uebersetzenDetail();   // auch während Rechnen und Glätten: die Laufleiste allein sagt nicht, worauf sie wartet
   if (performance.now() < noticeUntil) stateTxt = t(...noticeText);
   const digits = clamp(3 + Math.ceil(Math.max(0, lg)), 3, 16);
   const key = zoomTxt + '|' + stateTxt + '|' + digits + '|' + S.cx[0] + '|' + S.cy[0] + '|' + maxIter;
@@ -10831,10 +10883,32 @@ function updateStatus() {
   $('mZoom').innerHTML = zoomTxt; $('mState').textContent = stateTxt; $('mCoords').textContent = $('coords').textContent;
   $('mDepthVal').textContent = $('depthVal').textContent; $('mDepthFill').style.width = $('depthFill').style.width;
   const uebersetzt = !!(renderer && renderer.nachWartet);   // die Fassung mit Ebenen und Masken wird nebenher übersetzt: unbestimmte Laufanzeige
-  $('mStatus').classList.toggle('busy', (S.family === 'accum' ? accRunning : phase !== 'idle' || gpuBusy || renderMs < 0) || uebersetzt);
+  const beschaeftigt = (S.family === 'accum' ? accRunning : phase !== 'idle' || gpuBusy || renderMs < 0) || uebersetzt;
+  $('mStatus').classList.toggle('busy', beschaeftigt);
+  $('mKurz').textContent = beschaeftigt && performance.now() >= noticeUntil ? stateTxt : '';   // Handy: der Zustand im Statusknopf, solange etwas läuft (sonst steckte er hinter dem Aufklapper)
   $('state').classList.toggle('uebersetzt', uebersetzt); $('mState').classList.toggle('uebersetzt', uebersetzt);
+  uebersetzenAnzeige(uebersetzt);
   if (S.autoIter) { $('iterVal').value = fmtGanz(maxIter); $('iterRange').value = iterToPos(maxIter); }
 }
+function uebersetzenDetail() {   // Fortschritt der Übersetzung: Schritt x von y (WebGPU: die Programme entstehen nacheinander) und die Sekunden seit dem Start
+  if (!renderer || !renderer.nachWartet) return '';
+  const sek = Math.max(0, Math.floor((performance.now() - (renderer.nachT0 || performance.now())) / 1000));
+  return renderer.nachSchritte > 0 ? t('status.compiling-step', Math.min(renderer.nachSchritt + 1, renderer.nachSchritte), renderer.nachSchritte, sek) : t('status.compiling-seconds', sek);
+}
+// Hinweis beim Übersetzen: der Streifen über dem Bild (wegklickbar, in Technik abschaltbar) und der Takt, der Sekunden und Schritte auch ohne Bildschleife weiterzählt
+let toastWeg = false, toastSeit = 0, toastTakt = 0;
+function uebersetzenAnzeige(aktiv) {
+  const el = $('uebersetzenToast');
+  if (!aktiv) { toastWeg = false; toastSeit = 0; el.hidden = true; if (toastTakt) { clearInterval(toastTakt); toastTakt = 0; } return; }
+  if (!toastSeit) toastSeit = performance.now();
+  if (!toastTakt) toastTakt = setInterval(() => { lastStatusKey = ''; updateStatus(); }, 500);
+  const zeigen = toastAn && !toastWeg && performance.now() - toastSeit > 400;   // kurze Übersetzungen blitzen nicht auf
+  if (zeigen) $('toastDetail').textContent = uebersetzenDetail();
+  el.hidden = !zeigen;
+}
+$('toastWeg').addEventListener('click', () => { toastWeg = true; $('uebersetzenToast').hidden = true; });
+$('toastAn').checked = toastAn;
+$('toastAn').addEventListener('change', () => { toastAn = $('toastAn').checked; lsSet('fractal.toast', toastAn ? '1' : '0'); lastStatusKey = ''; updateStatus(); });
 const iterToPos = it => Math.round(1000 * Math.log(it / 50) / Math.log(2000));
 const posToIter = p => Math.round(50 * Math.pow(2000, p / 1000));
 
@@ -10954,6 +11028,7 @@ async function initRenderer() {
   $('fatal').hidden = true;
   badge.textContent = renderer.name; badge.className = 'badge ' + renderer.kind;
   renderer.onBereit = () => { lastStatusKey = ''; colorDirty = true; ebenenMaskenVeraltet(); requestFrame(); };   // WebGL 2: die Fassung des Farbpasses mit Nachbearbeitung ist übersetzt – umfärben
+  renderer.onNachFehler = text => notify('status.post-error', text);   // die Fassung ließ sich nicht übersetzen: sagen, statt still ohne Ebenen zu zeichnen
   applyPalette();
   zeigeTechInfo();
   renderer.onOom = msg => aaOom(aaEff || S.aa, new Error(msg));
@@ -11237,7 +11312,7 @@ function liveWechseln(k, fertig = false) {   // Ebene k rechnet ab jetzt: Textur
   else { fractalDirty = true; hasImage = true; window.ebenenProtokoll.push('grund ' + (k + 1)); }
   colorDirty = true; lastStatusKey = '';
 }
-window.ebenenStand = () => ({ renderEbene, ebeneAktiv, phase, glattStand, aaEff, aaOn, tiles: tiles.length, tilesL0, tileIdx, zeigerAktiv, colorDirty, rafId, ebenen: ebenen.map(e => ({ frisch: !!e.frisch, glattOffen: !!e.glattOffen, sichtbar: e.sichtbar, solo: e.solo, verbunden: e.verbunden, modus: e.modus, deck: e.deck, name: e.name })) });   // Testhaken (Cypress): Stand der Ebenenschleife
+window.ebenenStand = () => ({ renderEbene, ebeneAktiv, phase, glattStand, aaEff, aaOn, uebersetzt: !!(renderer && renderer.nachWartet), nachFehler: (renderer && renderer.nachFehler) || '', uebSchritt: (renderer && renderer.nachSchritt) || 0, uebSchritte: (renderer && renderer.nachSchritte) || 0, tiles: tiles.length, tilesL0, tileIdx, zeigerAktiv, colorDirty, rafId, ebenen: ebenen.map(e => ({ frisch: !!e.frisch, glattOffen: !!e.glattOffen, sichtbar: e.sichtbar, solo: e.solo, verbunden: e.verbunden, modus: e.modus, deck: e.deck, name: e.name })) });   // Testhaken (Cypress): Stand der Ebenenschleife
 function liveZurueck() { if (renderEbene !== ebeneAktiv && ebenen[ebeneAktiv]) liveWechseln(ebeneAktiv, !ebeneVeraltet(ebeneAktiv)); }   // Bedienung: die gewählte Ebene ist wieder dran
 function ebenenWeiter() {   // die rechnende Ebene ist fertig: ihre Farbe sichern, dann die nächste veraltete rechnen (oder zurück zur gewählten)
   if (glattStand === 'wartet') return;   // die Puffer der adaptiven Glättung entstehen gerade; aaSetup beginnt danach die Verfeinerung
@@ -11697,6 +11772,7 @@ function lsSet(key, value) { scheduleHash();   // jede abgelegte Einstellung geh
   if (!storeAllowed()) return false; try { localStorage.setItem(key, value); return true; } catch (e) { return false; } }
 function persistSettings() {   // nach erteilter Einwilligung die aktuellen Einstellungen ablegen
   { const z = ebeneZustand(0) || S; lsSet('fractal.aa', String(z.aa)); lsSet('fractal.aamode', z.aaMode); lsSet('fractal.aatol', String(z.aaTol)); lsSet('fractal.aamax', String(z.aaMax)); lsSet('fractal.aasigma', String(z.aaSigma)); } /* die Glättung der ersten Ebene */ lsSet('fractal.palfilter', S.palFilter ? '1' : '0'); lsSet('fractal.palfilterk', String(S.palFilterK)); lsSet('fractal.cycle', S.cycle); lsSet('fractal.bla', S.bla);
+  lsSet('fractal.toast', toastAn ? '1' : '0');
   lsSet('fractal.renderer', S.rendererPref); lsSet('fractal.quality', String(S.quality)); lsSet('fractal.stapelms', String(S.stapelMs)); lsSet('fractal.uivorrang', S.uiVorrang ? '1' : '0'); lsSet('fractal.theme', S.theme); lsSet('fractal.meta', JSON.stringify(META));
   if (customPalettes.length) lsSet('fractal.palettes', JSON.stringify(customPalettes));
   if (eigene2.length) lsSet('fractal.palettes2', JSON.stringify(eigene2));
@@ -13637,22 +13713,25 @@ function ebeneRelativSetzen(k, rel) {   // umgekehrt: die Ansicht der Ebene k au
 function feinVerhaeltnis(f) { const k = [0.125, 0.25, 0.5, 1, 2, 3, 4, 8]; return k.reduce((b, v) => Math.abs(Math.log(v / f)) < Math.abs(Math.log(b / f)) ? v : b, 1); }   // das nächste glatte Verhältnis
 function ebeneFeinBlock(k) {   // Feinjustierung einer gelösten Ebene: Werte zum Grund, Stoßknöpfe, Runden, Mitte, Ausrichten
   const n = k + 1, e = ebenen[k], box = document.createElement('div'); box.className = 'ebene-fein'; box.id = 'ebeneFein' + n;
-  const titel = document.createElement('div'); titel.className = 'lbl'; const tl = document.createElement('label'); tl.textContent = t('layers.fine'); titel.append(tl); box.append(titel);
+  const titel = document.createElement('div'); titel.className = 'sec-title ebene-fein-titel'; const tl = document.createElement('span'); tl.textContent = t('layers.fine'); titel.append(tl); box.append(titel);
   const rel = () => ebeneRelativ(k), setze = aend => ebeneRelativSetzen(k, Object.assign(rel(), aend));
-  const zeile = (key, feldId, wert, stellen, stoesse, setzer) => {
-    const z = document.createElement('div'); z.className = 'ebene-fein-zeile';
+  const zeile = (key, einheitKey, feldId, wert, stellen, stoesse, setzer) => {   // ein Wert: Beschriftung mit Einheit links, Feld rechts; darunter die Stoßknöpfe in voller Breite
+    const z = document.createElement('div'); z.className = 'ebene-fein-wert';
+    const kopf = document.createElement('div'); kopf.className = 'lbl';
     const lab = document.createElement('label'); lab.htmlFor = feldId; lab.textContent = t(key);
+    const einheit = document.createElement('small'); einheit.className = 'ebene-fein-einheit'; einheit.textContent = t(einheitKey); lab.append(einheit);
     const inp = document.createElement('input'); inp.type = 'text'; inp.id = feldId; inp.className = 'val mono wert'; inp.inputMode = 'decimal'; inp.spellcheck = false; inp.autocomplete = 'off'; inp.value = fmtZahl(wert, stellen);
     inp.addEventListener('change', () => { const v = leseZahl(inp.value); if (isFinite(v)) setzer(v); else inp.value = fmtZahl(wert, stellen); });
     inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') inp.blur(); ev.stopPropagation(); });
-    z.append(lab, inp);
-    for (const [text, fn] of stoesse) { const b = document.createElement('button'); b.type = 'button'; b.className = 'ebenen-knopf ebene-fein-knopf'; b.textContent = text; b.addEventListener('click', fn); z.append(b); }
-    box.append(z);
+    kopf.append(lab, inp);
+    const st = document.createElement('div'); st.className = 'ebene-fein-stoesse';
+    for (const [text, fn] of stoesse) { const b = document.createElement('button'); b.type = 'button'; b.className = 'ebenen-knopf ebene-fein-knopf'; b.textContent = text; b.addEventListener('click', fn); st.append(b); }
+    z.append(kopf, st); box.append(z);
   };
-  zeile('layers.fine-factor', 'ebFein' + n + '_f', rel().faktor, 6, [['×2', () => setze({ faktor: rel().faktor * 2 })], ['÷2', () => setze({ faktor: rel().faktor / 2 })], ['=1', () => setze({ faktor: 1 })]], v => setze({ faktor: clamp(v, 1e-6, 1e6) }));
-  zeile('layers.fine-x', 'ebFein' + n + '_x', rel().x, 2, [['−1', () => setze({ x: rel().x - 1 })], ['+1', () => setze({ x: rel().x + 1 })], ['−0,1', () => setze({ x: rel().x - 0.1 })], ['+0,1', () => setze({ x: rel().x + 0.1 })]], v => setze({ x: v }));
-  zeile('layers.fine-y', 'ebFein' + n + '_y', rel().y, 2, [['−1', () => setze({ y: rel().y - 1 })], ['+1', () => setze({ y: rel().y + 1 })], ['−0,1', () => setze({ y: rel().y - 0.1 })], ['+0,1', () => setze({ y: rel().y + 0.1 })]], v => setze({ y: v }));
-  zeile('layers.fine-rotation', 'ebFein' + n + '_d', rel().dreh, 1, [['−1°', () => setze({ dreh: rel().dreh - 1 })], ['+1°', () => setze({ dreh: rel().dreh + 1 })], ['−0,1°', () => setze({ dreh: rel().dreh - 0.1 })], ['+0,1°', () => setze({ dreh: rel().dreh + 0.1 })]], v => setze({ dreh: v }));
+  zeile('layers.fine-factor', 'layers.fine-factor-unit', 'ebFein' + n + '_f', rel().faktor, 6, [['×2', () => setze({ faktor: rel().faktor * 2 })], ['÷2', () => setze({ faktor: rel().faktor / 2 })], ['=1', () => setze({ faktor: 1 })]], v => setze({ faktor: clamp(v, 1e-6, 1e6) }));
+  zeile('layers.fine-x', 'layers.fine-x-unit', 'ebFein' + n + '_x', rel().x, 2, [['−1', () => setze({ x: rel().x - 1 })], ['+1', () => setze({ x: rel().x + 1 })], ['−0,1', () => setze({ x: rel().x - 0.1 })], ['+0,1', () => setze({ x: rel().x + 0.1 })]], v => setze({ x: v }));
+  zeile('layers.fine-y', 'layers.fine-y-unit', 'ebFein' + n + '_y', rel().y, 2, [['−1', () => setze({ y: rel().y - 1 })], ['+1', () => setze({ y: rel().y + 1 })], ['−0,1', () => setze({ y: rel().y - 0.1 })], ['+0,1', () => setze({ y: rel().y + 0.1 })]], v => setze({ y: v }));
+  zeile('layers.fine-rotation', 'layers.fine-rotation-unit', 'ebFein' + n + '_d', rel().dreh, 1, [['−1°', () => setze({ dreh: rel().dreh - 1 })], ['+1°', () => setze({ dreh: rel().dreh + 1 })], ['−0,1°', () => setze({ dreh: rel().dreh - 0.1 })], ['+0,1°', () => setze({ dreh: rel().dreh + 0.1 })]], v => setze({ dreh: v }));
   const kn = document.createElement('div'); kn.className = 'ebene-fein-knoepfe';
   for (const [key, id, fn] of [['layers.fine-snap', 'ebFein' + n + '_runden', () => setze({ faktor: feinVerhaeltnis(rel().faktor) })], ['layers.fine-centre', 'ebFein' + n + '_mitte', () => setze({ x: 0, y: 0 })]]) { const b = document.createElement('button'); b.type = 'button'; b.className = 'ebenen-knopf'; b.id = id; b.textContent = t(key); b.addEventListener('click', fn); kn.append(b); }
   box.append(kn);
@@ -15400,6 +15479,9 @@ const LEGAL = {
     <table>
       <tr><td>Zoomen</td><td>Mausrad, Tasten + und −, zwei Finger</td></tr>
       <tr><td>Verschieben</td><td>Ziehen, Pfeiltasten, ein Finger</td></tr>
+      <tr><td>Fein zoomen</td><td>Umschalt + Mausrad etwa 1 %, Strg + Umschalt etwa 0,1 %; Tasten + und − mit Alt 1 %, mit Alt + Umschalt 0,1 %</td></tr>
+      <tr><td>Fein verschieben</td><td>Umschalt + Ziehen ein Zehntel der Mausbewegung, Strg + Umschalt ein Hundertstel; Pfeiltasten mit Umschalt 1 Pixel, mit Alt 0,1 Pixel, mit beiden 10 Pixel</td></tr>
+      <tr><td>Drehen</td><td>Tasten [ und ] um 1°, mit Umschalt um 0,1°</td></tr>
       <tr><td>2× hineinzoomen</td><td>Doppelklick oder Doppeltipp</td></tr>
       <tr><td>Ansicht zurücksetzen</td><td>Taste R</td></tr>
       <tr><td>Bedienfeld</td><td>Taste H oder der Pfeil unten in der Leiste rechts; am Handy die Reiter am unteren Rand</td></tr>
@@ -15725,6 +15807,9 @@ const LEGAL_EN = {
     <table>
       <tr><td>Zoom</td><td>Mouse wheel, keys + and −, two fingers</td></tr>
       <tr><td>Pan</td><td>Drag, arrow keys, one finger</td></tr>
+      <tr><td>Fine zoom</td><td>Shift + wheel about 1 %, Ctrl + Shift about 0.1 %; keys + and − with Alt 1 %, with Alt + Shift 0.1 %</td></tr>
+      <tr><td>Fine pan</td><td>Shift + drag a tenth of the mouse movement, Ctrl + Shift a hundredth; arrow keys with Shift 1 pixel, with Alt 0.1 pixel, with both 10 pixels</td></tr>
+      <tr><td>Rotate</td><td>Keys [ and ] by 1°, with Shift by 0.1°</td></tr>
       <tr><td>Zoom in 2×</td><td>Double click or double tap</td></tr>
       <tr><td>Reset view</td><td>Key R</td></tr>
       <tr><td>Panel</td><td>Key H or the arrow at the bottom of the bar on the right; on phones, the tabs along the bottom edge</td></tr>
