@@ -481,7 +481,8 @@
   .pe2-st .pe-marken { margin-top: -5px; }
   .poster-card { max-width: 460px; gap: 14px; max-height: calc(100vh - 32px); }   /* passt immer ins Bild: der Metadaten-Abschnitt nimmt den Rest und rollt */
   .poster-card > * { flex-shrink: 0; }
-  .poster-card > .meta-box { flex: 1 1 auto; min-height: 60px; overflow: auto; }
+  .poster-card > .meta-box { flex: 1 1 auto; min-height: 60px; overflow: auto; scrollbar-gutter: stable; }   /* der Platz für die Rollleiste steht von Anfang an: sonst bricht der Text nach ihrem Erscheinen anders um */
+  .poster-card > .meta-box > * { flex-shrink: 0; }   /* sonst drückt der Flex-Container das Textfeld auf die Resthöhe zusammen: overflow hidden, der Abschnitt hat nichts zu rollen, der Rest des Textes ist unerreichbar (19.09.2026) */
   .poster-lauf { display: flex; flex-direction: column; gap: 6px; }
   .poster-datei { align-items: center; }
   /* Auf niedrigen Schirmen (Handy im Artifact-Rahmen) muss die Karte ohne Rollen bedienbar bleiben: Abstände,
@@ -15107,6 +15108,7 @@ function syncMetaUI() {
   const text = metaText();
   const ta = $('metaText'); ta.value = text || t('meta.nothing-written');
   ta.style.height = 'auto'; ta.style.height = (ta.scrollHeight + 4) + 'px';   // ganz zu sehen, auch umgebrochene Zeilen; der Abschnitt rollt (der Dialog ist dabei sichtbar)
+  if (ta.scrollHeight > ta.clientHeight) ta.style.height = (ta.scrollHeight + 4) + 'px';   // zweiter Durchgang: eine Rollleiste, die eben erst erschien, macht das Feld schmaler und den Text länger
   $('metaWo').textContent = t(posterFmt.value === 'jpg' ? 'meta.where-jpg' : 'meta.where-png') + ' ' + t('meta.readable');
 }
 function metaSetzen(aenderung) { Object.assign(META, aenderung); lsSet('fractal.meta', JSON.stringify(META)); syncMetaUI(); }

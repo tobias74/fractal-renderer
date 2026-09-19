@@ -356,4 +356,86 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
     cy.get('#cropCancel').click();
     cy.get('#posterCancel').click();
   });
+
+  // Rollen im Dialog: die Karte passt immer ins Bild, der Metadaten-Abschnitt nimmt die Resthöhe und rollt. Das Textfeld
+  // darf dabei nicht zusammengedrückt werden (overflow hidden: der Rest des Textes wäre unerreichbar) – so war es am
+  // 19.09.2026, weil der Flex-Container das Feld auf die Resthöhe schrumpfte.
+  const rect = $e => $e[0].getBoundingClientRect();
+  const dialogPasst = (hoehe) => {
+    cy.get('#poster').should($m => expect($m[0].scrollHeight, 'der Dialog selbst rollt nicht').to.be.at.most($m[0].clientHeight + 1));
+    for (const id of ['posterTitle', 'cropScreen', 'posterRes', 'posterFmt', 'posterStart', 'posterCancel']) {
+      cy.get('#' + id).should($e => { const r = rect($e); expect(r.top, id + ' oben im Bild').to.be.at.least(0); expect(r.bottom, id + ' unten im Bild').to.be.at.most(hoehe); });
+    }
+  };
+  const textGanzDa = () => cy.get('#metaText').should($t => expect($t[0].scrollHeight, 'das Textfeld zeigt den ganzen Text (nicht zusammengedrückt)').to.be.at.most($t[0].clientHeight + 2));
+  const abschnittRollt = () => {
+    cy.get('#posterMeta').should($m => expect($m[0].scrollHeight, 'der Metadaten-Abschnitt hat etwas zu rollen').to.be.greaterThan($m[0].clientHeight + 20));
+    cy.get('#posterMeta').scrollTo('bottom', { ensureScrollable: true });
+    cy.get('#posterMeta').should($m => expect($m[0].scrollTop, 'gerollt').to.be.greaterThan(0));
+    cy.get('#posterMeta').then($m => cy.get('#metaText').should($t => expect(rect($t).bottom, 'das Ende des Textes ist im Abschnitt zu sehen').to.be.at.most(rect($m).bottom + 1)));
+    cy.get('#posterMeta').scrollTo('top');
+  };
+
+  it('Rollen: am Schreibtisch nimmt der Metadaten-Abschnitt den Rest, zeigt das ganze Textfeld und rollt bis zum Ende; Knöpfe und Regler bleiben stehen', () => {
+    cy.get('#save').click(); cy.get('#poster').should('be.visible');
+    cy.get('#metaParams').check(); cy.get('#metaColors').check(); cy.get('#metaTech').check();
+    cy.get('#metaText').invoke('val').should('match', /"palette"/);   // langer Text: alle drei Angaben
+    dialogPasst(720); textGanzDa(); abschnittRollt();
+    cy.get('#posterMeta').scrollTo('bottom');
+    dialogPasst(720);   // gerollt im Abschnitt: Titel, Regler und Knöpfe stehen weiter an ihrem Platz
+    cy.get('#posterMeta').should($m => { const r = rect($m); expect(r.top, 'der Abschnitt beginnt unter der Infozeile').to.be.greaterThan(100); expect(r.bottom, 'und endet über den Knöpfen').to.be.lessThan(700); });
+    cy.get('#posterCancel').click();
+  });
+
+  it('Rollen: weniger Angaben, weniger Text – ohne Farbschemata reicht der Platz meist, ohne alles steht nur ein Satz', () => {
+    cy.get('#save').click(); cy.get('#poster').should('be.visible');
+    cy.get('#metaParams').check(); cy.get('#metaColors').check(); cy.get('#metaTech').check();
+    cy.get('#posterMeta').then($m => {
+      const voll = $m[0].scrollHeight;
+      cy.get('#metaColors').uncheck();
+      cy.get('#metaText').invoke('val').should('not.match', /"palette"/);
+      textGanzDa();
+      cy.get('#posterMeta').should($n => expect($n[0].scrollHeight, 'kürzer ohne Farbschemata').to.be.lessThan(voll));
+      cy.get('#metaParams').uncheck(); cy.get('#metaTech').uncheck();
+      cy.get('#metaText').invoke('val').should('not.match', /^\{/);   // nichts angehakt: der Hinweis statt JSON
+      textGanzDa();
+      cy.get('#posterMeta').should($n => expect($n[0].scrollHeight, 'nichts zu rollen').to.be.at.most($n[0].clientHeight + 1));
+      cy.get('#metaParams').check(); cy.get('#metaColors').check(); cy.get('#metaTech').check();
+    });
+    cy.get('#posterCancel').click();
+  });
+
+  for (const [w, h] of [[458, 908], [390, 844], [800, 600], [1024, 640]]) {
+    it(`Rollen bei ${w} × ${h}: der Dialog passt, das Textfeld ist ganz da, der Abschnitt rollt bis zum Ende`, () => {
+      cy.viewport(w, h);
+      cy.get(w < 640 ? '#tabSave' : '#save').click({ force: true }); cy.get('#poster').should('be.visible');
+      cy.get('#metaParams').check({ force: true }); cy.get('#metaColors').check({ force: true }); cy.get('#metaTech').check({ force: true });
+      dialogPasst(h); textGanzDa(); abschnittRollt();
+      cy.get('#posterCancel').click();
+    });
+  }
+
+  it('Rollen am niedrigen Schirm: der Abschnitt behält seine Mindesthöhe und bleibt bis zum Ende rollbar', () => {
+    cy.viewport(390, 480);
+    cy.get('#tabSave').click(); cy.get('#poster').should('be.visible');
+    cy.get('#metaParams').check({ force: true }); cy.get('#metaColors').check({ force: true }); cy.get('#metaTech').check({ force: true });
+    dialogPasst(480);
+    cy.get('#posterMeta').should($m => expect($m[0].clientHeight, 'Mindesthöhe').to.be.at.least(60));
+    textGanzDa(); abschnittRollt();
+    cy.get('#posterCancel').click();
+  });
+
+  it('Rollen: der Wechsel zu JPEG ändert nur den Hinweis, der Abschnitt bleibt rollbar; Wiederöffnen beginnt oben', () => {
+    cy.get('#save').click(); cy.get('#poster').should('be.visible');
+    cy.get('#metaParams').check(); cy.get('#metaColors').check(); cy.get('#metaTech').check();
+    cy.get('#posterMeta').scrollTo('bottom', { ensureScrollable: true });
+    cy.pickOption('posterFmt', 'jpg');
+    cy.get('#metaWo').invoke('text').should('match', /JPEG|Kommentar/);
+    textGanzDa(); abschnittRollt();
+    cy.get('#posterCancel').click();
+    cy.get('#save').click(); cy.get('#poster').should('be.visible');
+    cy.get('#posterMeta').should($m => expect($m[0].scrollTop, 'wieder oben').to.eq(0));
+    cy.pickOption('posterFmt', 'png');
+    cy.get('#posterCancel').click();
+  });
 });
