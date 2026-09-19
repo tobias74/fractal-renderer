@@ -300,6 +300,36 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
     cy.get('#posterCancel').click();
   });
 
+  it('Kanten des Rahmens: jede Kante zieht ihre Seite, die Gegenseite steht; mit festem Verhältnis folgt die andere Achse mittig', () => {
+    cy.get('#save').click(); cy.get('#cropPick').click(); cy.get('#cropBox').should('be.visible');
+    for (const k of ['n', 's', 'w', 'e']) cy.get(`#cropBox .h[data-h=${k}]`).should('exist');   // seit 19.09.2026 auch die Kanten, nicht nur die Ecken
+    const zieh = (kante, dx, dy) => cy.get(`#cropBox .h[data-h=${kante}]`).then($h => {
+      const r = $h[0].getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+      cy.wrap($h).trigger('pointerdown', { pointerId: 3, pointerType: 'mouse', button: 0, buttons: 1, clientX: x, clientY: y });
+      cy.get('#cropBox').trigger('pointermove', { pointerId: 3, pointerType: 'mouse', buttons: 1, clientX: x + dx, clientY: y + dy });
+      cy.get('#cropBox').trigger('pointerup', { pointerId: 3, pointerType: 'mouse', button: 0, buttons: 0, clientX: x + dx, clientY: y + dy });
+    });
+    const rahmen = () => cy.get('#cropBox').then($b => $b[0].getBoundingClientRect());
+    cy.pickOption('cropFmt', 'free');
+    rahmen().then(r0 => { zieh('e', 40, 0); rahmen().then(r1 => { expect(r1.right, 'rechte Kante folgt').to.be.closeTo(r0.right + 40, 3); expect(r1.left, 'linke Kante steht').to.be.closeTo(r0.left, 1); expect(r1.height, 'Höhe bleibt (frei)').to.be.closeTo(r0.height, 1); }); });
+    rahmen().then(r0 => { zieh('n', 0, -30); rahmen().then(r1 => { expect(r1.top, 'obere Kante folgt').to.be.closeTo(r0.top - 30, 3); expect(r1.bottom, 'untere Kante steht').to.be.closeTo(r0.bottom, 1); expect(r1.width, 'Breite bleibt').to.be.closeTo(r0.width, 1); }); });
+    rahmen().then(r0 => { zieh('w', 20, 0); rahmen().then(r1 => { expect(r1.left, 'linke Kante folgt nach innen').to.be.closeTo(r0.left + 20, 3); expect(r1.right, 'rechte Kante steht').to.be.closeTo(r0.right, 1); }); });
+    rahmen().then(r0 => { zieh('s', 0, 25); rahmen().then(r1 => { expect(r1.bottom, 'untere Kante folgt').to.be.closeTo(r0.bottom + 25, 3); expect(r1.top, 'obere Kante steht').to.be.closeTo(r0.top, 1); }); });
+    cy.pickOption('cropFmt', '16_9');
+    rahmen().then(r0 => { zieh('e', 64, 0); rahmen().then(r1 => { expect(r1.right, 'rechte Kante folgt').to.be.closeTo(r0.right + 64, 3); expect(r1.left, 'linke Kante steht').to.be.closeTo(r0.left, 1); expect(r1.width / r1.height, '16:9 bleibt').to.be.closeTo(16 / 9, 0.02); expect((r1.top + r1.bottom) / 2, 'senkrecht mittig gewachsen').to.be.closeTo((r0.top + r0.bottom) / 2, 1); }); });
+    rahmen().then(r0 => { zieh('s', 0, 18); rahmen().then(r1 => { expect(r1.bottom, 'untere Kante folgt').to.be.closeTo(r0.bottom + 18, 3); expect(r1.top, 'obere Kante steht').to.be.closeTo(r0.top, 1); expect(r1.width / r1.height, '16:9 bleibt').to.be.closeTo(16 / 9, 0.02); expect((r1.left + r1.right) / 2, 'waagerecht mittig gewachsen').to.be.closeTo((r0.left + r0.right) / 2, 1); }); });
+    cy.get('#cropBox .h[data-h=se]').then($h => {   // die Ecken ziehen weiter wie bisher
+      const r = $h[0].getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+      rahmen().then(r0 => {
+        cy.wrap($h).trigger('pointerdown', { pointerId: 4, pointerType: 'mouse', button: 0, buttons: 1, clientX: x, clientY: y });
+        cy.get('#cropBox').trigger('pointermove', { pointerId: 4, pointerType: 'mouse', buttons: 1, clientX: x - 32, clientY: y - 18 });
+        cy.get('#cropBox').trigger('pointerup', { pointerId: 4, pointerType: 'mouse', button: 0, buttons: 0, clientX: x - 32, clientY: y - 18 });
+        rahmen().then(r1 => { expect(r1.left, 'Gegenecke steht').to.be.closeTo(r0.left, 1); expect(r1.top).to.be.closeTo(r0.top, 1); expect(r1.right, 'Ecke folgt').to.be.closeTo(r0.right - 32, 3); expect(r1.width / r1.height).to.be.closeTo(16 / 9, 0.02); });
+      });
+    });
+    cy.get('#cropCancel').click(); cy.get('#posterCancel').click();
+  });
+
   it('Formen: ein DIN-Eintrag für A, B und C, benannte Formate, jede Form quer und hoch, keine Größen', () => {
     cy.get('#save').click();
     cy.get('#cropEdit').click();

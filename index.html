@@ -526,6 +526,16 @@
   #cropBox .h[data-h=se] { right: -11px; bottom: -11px; cursor: nwse-resize; }
   #cropBox .h[data-h=ne] { right: -11px; top: -11px; cursor: nesw-resize; }
   #cropBox .h[data-h=sw] { left: -11px; bottom: -11px; cursor: nesw-resize; }
+  #cropBox .h.kante { background: none; border: 0; border-radius: 0; }   /* die ganze Kante fasst an; der sichtbare Griff sitzt in ihrer Mitte */
+  #cropBox .h.kante::after { content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); box-sizing: border-box; border: 2px solid #fff; background: rgba(11, 13, 18, .8); border-radius: 3px; }
+  #cropBox .h[data-h=n], #cropBox .h[data-h=s] { left: 14px; right: 14px; width: auto; height: 16px; cursor: ns-resize; }
+  #cropBox .h[data-h=n] { top: -8px; }
+  #cropBox .h[data-h=s] { bottom: -8px; }
+  #cropBox .h[data-h=n]::after, #cropBox .h[data-h=s]::after { width: 36px; height: 12px; }
+  #cropBox .h[data-h=w], #cropBox .h[data-h=e] { top: 14px; bottom: 14px; width: 16px; height: auto; cursor: ew-resize; }
+  #cropBox .h[data-h=w] { left: -8px; }
+  #cropBox .h[data-h=e] { right: -8px; }
+  #cropBox .h[data-h=w]::after, #cropBox .h[data-h=e]::after { width: 12px; height: 36px; }
   .crop-label {
     position: absolute; left: 0; top: 100%; margin-top: 6px; white-space: nowrap;
     font: 11.5px var(--font-mono); color: var(--text); background: rgba(11, 13, 18, .75);
@@ -2020,6 +2030,7 @@
 
 <div id="crop" hidden>
   <div id="cropBox">
+    <div class="h kante" data-h="n"></div><div class="h kante" data-h="s"></div><div class="h kante" data-h="w"></div><div class="h kante" data-h="e"></div>   <!-- Kanten: eine Achse ziehen; die Ecken liegen darüber -->
     <div class="h" data-h="nw"></div><div class="h" data-h="ne"></div>
     <div class="h" data-h="sw"></div><div class="h" data-h="se"></div>
     <div class="crop-label" id="cropLabel"></div>
@@ -15229,6 +15240,17 @@ window.addEventListener('keydown', e => {
     if (!drag || e.pointerId !== drag.id) return;
     const k = cssPerPlane(), dxp = (e.clientX - drag.x) / k, dyp = -(e.clientY - drag.y) / k, c = drag.c;
     if (!drag.hh) { const [ex, ey] = ebeneVonPixel(dxp, dyp); crop.cx = dd.addD(c.cx, ex); crop.cy = dd.addD(c.cy, ey); syncCropBox(); return; }
+    if (drag.hh.length === 1) {   // Kante: eine Achse ziehen, die Gegenkante steht; mit festem Verhältnis folgt die andere Achse und bleibt mittig
+      const waag = drag.hh === 'e' || drag.hh === 'w', kx = drag.hh === 'e' ? 1 : drag.hh === 'w' ? -1 : 0, ky = drag.hh === 's' ? -1 : drag.hh === 'n' ? 1 : 0;
+      const minK = S.ps * Math.min(W, H) * 0.03, ak = cropAspect();
+      let w = c.w, h = c.h;
+      if (waag) { w = Math.max(minK, c.w + kx * dxp); if (ak) h = w / ak; } else { h = Math.max(minK, c.h + ky * dyp); if (ak) w = h * ak; }
+      const fx = c.cx[0] - kx * c.w / 2, fy = c.cy[0] - ky * c.h / 2;   // feste Gegenkante auf der gezogenen Achse
+      crop.w = w; crop.h = h;
+      crop.cx = dd.addD(c.cx, waag ? (fx + kx * w / 2) - c.cx[0] : 0);
+      crop.cy = dd.addD(c.cy, waag ? 0 : (fy + ky * h / 2) - c.cy[0]);
+      syncCropBox(); return;
+    }
     const sx = drag.hh.includes('e') ? 1 : -1, sy = drag.hh.includes('s') ? -1 : 1;
     const minSize = S.ps * Math.min(W, H) * 0.03, a = cropAspect();
     let w = Math.max(minSize, c.w + sx * dxp), h = Math.max(minSize, c.h + sy * dyp);
