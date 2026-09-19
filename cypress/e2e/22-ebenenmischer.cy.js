@@ -224,7 +224,7 @@ describe('Ebenenmischer', () => {
       cy.visitApp(hash.replace(/^#/, '')); fertig(); cy.pane('ebenen');
       cy.get('#ebeneModus2').should('have.value', '10'); cy.get('#ebeneDeck2').should('have.value', '0.3'); cy.get('#ebeneName2').should('have.value', 'Schiff');
       cy.get('#ebM2_art').should('have.value', '1'); cy.get('#ebeneVerb2').should('not.be.checked'); cy.get('#ebeneAngleichen2').should('exist');
-      cy.appState().then(st => expect(st.params, 'Datei trägt den Mischer').to.contain('lm2='));
+      cy.appState().then(st => expect(st.params.lm2, 'Datei trägt den Mischer').to.match(/^10:0\.3:/));   // Version 2: die Parameter als Objekt
     });
   });
 

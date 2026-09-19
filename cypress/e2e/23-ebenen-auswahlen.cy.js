@@ -60,14 +60,14 @@ describe('Ebenen: alle Auswahlen und Kombinationen', () => {
       for (const v of verfahren) {
         cy.pickOption('aaModeSel', v); cy.wait(300); alleFertig().then(ms => expect(ms, 'Verfahren ' + v + ' fertig').to.be.greaterThan(0));
         cy.get('#aaModeSel').should('have.value', v);
-        if (v === 'grid') cy.expectHash('lm2', '2:0.7:1:0:1:'); else cy.expectHash('lm2', x => expect(x, 'eigenes Verfahren im Mischsatz').to.contain(':' + v + ':'));
+        cy.expectHash('lm2', '2:0.7:1:0:1:'); cy.expectHash('l2', x => expect(new URLSearchParams(x).get('aam'), 'eigenes Verfahren im Parametersatz der Ebene').to.eq(v));   // seit 19.09.2026 im Parametersatz, nicht im Mischsatz
       }
       cy.pickOption('aaModeSel', 'grid'); cy.wait(300);
       optionen('aaSel').then(stufen => {
         for (const st of stufen) {
           cy.pickOption('aaSel', st); cy.wait(300); alleFertig().then(ms => expect(ms, 'Stufe ' + st + ' fertig').to.be.greaterThan(0));
-          if (st === '2') cy.expectHash('lm2', '2:0.7:1:0:1:'); else cy.expectHash('lm2', x => expect(x.split(':')[6], 'eigene Stufe im Mischsatz').to.eq(st));
-          cy.window().then(win => expect(win.localStorage.getItem('fractal.aa'), 'die Browser-Einstellung gehört dem Grund').to.eq('2'));
+          cy.expectHash('lm2', '2:0.7:1:0:1:'); cy.expectHash('l2', x => expect(new URLSearchParams(x).get('aa'), 'eigene Stufe im Parametersatz der Ebene').to.eq(st));   // seit 19.09.2026 im Parametersatz
+          cy.window().then(win => expect(win.localStorage.getItem('fractal.aa'), 'die zuletzt eingestellte Stufe ist die Browser-Einstellung').to.eq(st));
         }
       });
     });

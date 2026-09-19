@@ -8,7 +8,7 @@ Several fractals can lie on top of each other. Each layer is a complete fractal 
 |---|---|
 | **Layer stack** at the top of the panel, above every section | Which layer the sections *Motif*, *Colour*, *Textures*, *Palette* and *Quality* edit. One row per layer, the top layer first; the selected row is highlighted and its colour runs as a stripe along the panel and the “Layer” group of the bar. Each row has the eye (visible), S (solo), a grip to reorder (drag or arrow keys), and × to remove (with a confirmation; also the Delete key). `+` in the header adds a copy of the selected layer above it; the header switch decides whether gestures move all layers or only the selected one. With a single layer only the header is shown. |
 | **Blend** section (in the “Layer” group of the bar; on phones the “Blend” tab) | Belongs to the selected layer: name, blend mode, opacity, mask, whether the view is linked, align view, fine alignment. The ground shows a note instead. |
-| *Quality* (smoothing) | Belongs to the selected layer: method, samples, tolerance and filter width. The first layer keeps the browser setting as before; a further layer carries its own values in the link only when they differ from the first layer. |
+| *Quality* (smoothing) | Belongs to the selected layer: method, samples, tolerance and filter width. Every layer carries its own values in its parameter set (`aa`, `aam`, `aat`, `aax`, `aas`); a link without them uses the browser setting, which is the smoothing set last. |
 | *Quality* (resolution), *Post-processing*, *Technical* | Belong to the whole image: the resolution, the post-processing stack (it works on the blended result) and the renderer settings. |
 
 ## Blend modes
@@ -39,4 +39,4 @@ Exports (*Save image*) render every visible layer per tile and blend them like t
 
 ## The link
 
-The first layer is written as before. Every further layer is a parameter set of its own in `l2`, `l3`, …, its mixing in `lm2`, … (`mode:opacity:visible:solo:linked:name`, followed by `samples:method:tolerance:max-samples:filter-width` when the layer's smoothing differs from the first layer), its mask in `lu2`, … and the selected layer in `la`. A linked layer carries no view of its own in its parameter set; an unlinked one does (`re`, `im`, `z`, `dr`). Up to six layers.
+The first layer is written as before, including its smoothing and the values of its palette (`pv`, or `cp` for a custom palette). Every further layer is a parameter set of its own in `l2`, `l3`, … with the same keys, its mixing in `lm2`, … (`mode:opacity:visible:solo:linked:name`; older links may append `samples:method:tolerance:max-samples:filter-width`, which is still read), its mask in `lu2`, … and the selected layer in `la`. A linked layer carries no view of its own in its parameter set; an unlinked one does (`re`, `im`, `z`, `dr`). Up to six layers.

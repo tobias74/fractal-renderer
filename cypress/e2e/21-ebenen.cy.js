@@ -98,7 +98,7 @@ describe('Fraktal-Ebenen', () => {
     });
   });
 
-  it('Glättung je Ebene: der Bereich Qualität bearbeitet die gewählte Ebene, abweichende Werte stehen im Mischsatz, die erste Ebene bleibt Browser-Einstellung', () => {
+  it('Glättung je Ebene: der Bereich Qualität bearbeitet die gewählte Ebene, jede Ebene trägt ihre Werte im eigenen Parametersatz, die zuletzt eingestellte wird Browser-Einstellung', () => {
     cy.visitApp(ZWEI, { aa: '3' }); cy.alleEbenenFertig();
     cy.pane('qualitaet');
     cy.get('#stapelZeilen .stapel-zeile').should('have.length', 2);
@@ -106,8 +106,10 @@ describe('Fraktal-Ebenen', () => {
     cy.get('#qualEbenenHinweis').should('not.have.attr', 'hidden');
     cy.get('#aaSel').should('have.value', '3');
     cy.rerender(() => cy.pickOption('aaSel', 2));   // die zweite Ebene: 2 × 2
-    cy.expectHash('lm2', v => expect(v, 'eigene Glättung im Mischsatz').to.match(/^2:0\.7:1:0:1::2:grid:/));
-    cy.window().then(win => expect(win.localStorage.getItem('fractal.aa'), 'die Browser-Einstellung gehört der ersten Ebene').to.eq('3'));
+    cy.expectHash('lm2', '2:0.7:1:0:1:');   // kein Anhang mehr im Mischsatz (19.09.2026)
+    cy.expectHash('l2', v => expect(new URLSearchParams(v).get('aa'), 'die Glättung der Ebene 2 in ihrem Parametersatz').to.eq('2'));   // der Link folgt mit 400 ms Verzug
+    cy.expectHash('aa', '3');   // die der Ebene 1 im Link
+    cy.window().then(win => expect(win.localStorage.getItem('fractal.aa'), 'die zuletzt eingestellte Glättung ist die Browser-Einstellung (Vorgabe für Links ohne Angabe)').to.eq('2'));
     cy.get('#stWahl1').click(); cy.wait(800);
     cy.get('#aaSel').should('have.value', '3'); cy.get('#pane-qualitaet > .pane-title').should('have.text', 'Qualität');
     cy.get('#stWahl2').click(); cy.wait(800);
@@ -168,6 +170,6 @@ describe('Fraktal-Ebenen', () => {
     cy.get('#stapelZeilen .stapel-zeile').should('have.length', 0);
     cy.get('#redo').click(); cy.wait(600);
     cy.get('#stapelZeilen .stapel-zeile').should('have.length', 2);
-    cy.appState().then(st => { expect(st.params, 'die Ebene steht im Zustand').to.contain('l2='); });
+    cy.appState().then(st => { expect(st.params.l2, 'die Ebene steht im Zustand').to.be.an('object'); });
   });
 });

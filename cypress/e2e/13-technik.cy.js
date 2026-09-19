@@ -131,7 +131,7 @@ describe('Glättung und Technik', () => {
     cy.get('#aaSigmaVal').should('have.value', '0,60 px');
     cy.get('#palFilter').should('be.checked');
     cy.get('#aaVal').should('contain.text', 'bis 256 Proben je Pixel');
-    cy.appState().then(s => { expect(s.extra.aaMax).to.eq(256); expect(s.extra.palFilter).to.be.true; });
+    cy.appState().then(s => { expect(s.params.aax, 'Proben im Parametersatz').to.eq('256'); expect(s.params.pf, 'Vorfilter im Parametersatz').to.eq('1'); });
     cy.pickOption('aaModeSel', 'grid');
     cy.waitRender();
   });
@@ -149,7 +149,7 @@ describe('Glättung und Technik', () => {
     cy.get('#palFilterKVal').should('have.value', '4,00×');
     cy.window().then(win => expect(win.localStorage.getItem('fractal.palfilterk')).to.eq('4'));
     cy.expectHash('pfk', '4.00');
-    cy.appState().then(s => { expect(s.extra.palFilter).to.be.true; expect(s.extra.palFilterK).to.eq(4); });
+    cy.appState().then(s => { expect(s.params.pf).to.eq('1'); expect(parseFloat(s.params.pfk)).to.eq(4); });
     cy.waitRender();
     cy.setRange('palFilterK', 500);
     cy.get('#palFilterKVal').should('have.value', '1,00×');

@@ -301,7 +301,7 @@ describe('Nachbearbeitung: Einstellungsebenen', () => {
     });
     cy.visitApp(B + '&nb=11:1:1:1');
     cy.get('#save').click();
-    cy.get('#metaText').invoke('val').then(text => expect(JSON.parse(text).params, 'die Ebenen stehen in den Bildangaben').to.contain('nb=11'));
+    cy.get('#metaText').invoke('val').then(text => expect(JSON.parse(text).params.nb, 'die Ebenen stehen in den Bildangaben').to.match(/^11:/));   // Version 2: die Parameter als Objekt
     cy.get('#posterCancel').click();
   });
 

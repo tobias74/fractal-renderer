@@ -2061,8 +2061,6 @@
       <p class="hint" id="metaWo"></p>
       <div class="meta-liste">
       <label class="chk" data-i18n-title="meta.params-title"><input type="checkbox" id="metaParams"> <span data-i18n="meta.params"></span></label>
-      <label class="chk" data-i18n-title="meta.colors-title"><input type="checkbox" id="metaColors"> <span data-i18n="meta.colors"></span></label>
-      <label class="chk" data-i18n-title="meta.tech-title"><input type="checkbox" id="metaTech"> <span data-i18n="meta.tech"></span></label>
       </div>
       <div class="lbl"><span data-i18n="meta.exact"></span></div>
       <textarea id="metaText" class="meta-text" readonly rows="3" spellcheck="false"></textarea>
@@ -2510,11 +2508,12 @@ const TEXTE = {
   'file.not-valid-link': { de: 'Kein gültiger Link', en: 'Not a valid link' },
   'file.parameters-saved': { de: 'Parameter gespeichert', en: 'Parameters saved' },
   'meta.params': { de: 'Parameter der Ansicht', en: 'View parameters' },
-  'meta.params-title': { de: 'Fraktal, Ausschnitt, Färbung, Palette und Texturen als Link-Parameter, so wie sie in der Adresszeile stehen', en: 'Fractal, section, colouring, palette and textures as link parameters, as they appear in the address bar' },
+  'meta.params-title': { de: 'Alles, was die Ansicht bestimmt, als Link-Parameter: Fraktal, Ausschnitt, Färbung, Palette mit allen Werten, Texturen, Glättung, Ebenen und Nachbearbeitung', en: 'Everything that defines the view, as link parameters: fractal, section, colouring, palette with all values, textures, smoothing, layers and post-processing' },
   'meta.colors': { de: 'Farbschemata mit allen Werten', en: 'Colour schemes with all values' },
-  'meta.colors-title': { de: 'Die geltenden Farbschemata mit ihren Stützstellen und Namen, auch selbst vergebenen Namen', en: 'The colour schemes in use with their stops and names, including names you typed yourself' },
+  'meta.palette': { de: 'Palette', en: 'palette' },
+  'meta.second-palette': { de: 'zweite Palette', en: 'second palette' },
+  'meta.all-values': { de: 'alle Werte', en: 'all values' },
   'meta.tech': { de: 'Technische Einstellungen', en: 'Technical settings' },
-  'meta.tech-title': { de: 'Glättung, Palettenfilter, Zyklenerkennung, Störungsrechnung, Auflösung', en: 'Smoothing, palette filter, cycle detection, perturbation, resolution' },
   'meta.app': { de: 'Herkunft (Domain)', en: 'Origin (domain)' },
   'meta.date': { de: 'Datum und Uhrzeit', en: 'Date and time' },
   'meta.url': { de: 'Link zur Ansicht', en: 'Link to this view' },
@@ -9821,6 +9820,7 @@ const DEFAULT_VIEW = {
 const META_VORGABE = { params: true, colors: true, tech: true };   // die drei Angaben, die das Bild wiederherstellen; jede einzeln abwählbar
 const META = Object.assign({}, META_VORGABE);
 let toastAn = true;   // Hinweis beim Übersetzen (Streifen über dem Bild); Browser-Einstellung fractal.toast, Vorgabe an
+const GLAETTUNG_VORGABE = { aa: DEFAULT_AA, aaMode: 'grid', aaTol: AA_TOL.def, aaMax: 64, aaSigma: AA_SIGMA.def };   // die Glättung für Links ohne Angabe (jede Ebene für sich); zuletzt eingestellt = Browser-Einstellung
 try {   // gespeicherte App-Einstellungen nur lesen, wenn die Einwilligung dafür vorliegt (§ 25 TDDDG gilt auch fürs Lesen)
   localStorage.removeItem('fractal.aamem');   // Schlüssel der früheren, einstellbaren Speichergrenze
   const einw = JSON.parse(localStorage.getItem('fractal.consent') || 'null');
@@ -9837,6 +9837,7 @@ try {   // gespeicherte App-Einstellungen nur lesen, wenn die Einwilligung dafü
     const at = parseFloat(localStorage.getItem('fractal.aatol')); if (at >= AA_TOL.min && at <= AA_TOL.max) S.aaTol = at;
     const ax = parseInt(localStorage.getItem('fractal.aamax'), 10); if (ax >= 8 && ax <= 4096) S.aaMax = aaPosToMax(aaMaxToPos(ax));
     const as = parseFloat(localStorage.getItem('fractal.aasigma')); if (as >= AA_SIGMA.min && as <= AA_SIGMA.max) S.aaSigma = as;
+    Object.assign(GLAETTUNG_VORGABE, { aa: S.aa, aaMode: S.aaMode, aaTol: S.aaTol, aaMax: S.aaMax, aaSigma: S.aaSigma });
     const pf = localStorage.getItem('fractal.palfilter'); if (pf === '0' || pf === '1') S.palFilter = pf === '1';
     const pk = parseFloat(localStorage.getItem('fractal.palfilterk')); if (pk >= PALK.min && pk <= PALK.max) S.palFilterK = pk;
     const cyc = localStorage.getItem('fractal.cycle'); if (cyc === '0' || cyc === '1' || cyc === 'auto') S.cycle = cyc;
@@ -11381,10 +11382,8 @@ function ebeneVerschieben(von, nach) {   // 0-basiert
   ebenenAenderung(false);
 }
 function ebeneName(k) { const e = ebenen[k]; if (e.name) return e.name; const z = ebeneZustand(k); return (S.family === 'escape' && FORMULAS[z.formula] ? t(FORMULAS[z.formula].name).replace(/\s*\(.*\)\s*$/, '') : '') + (z.mode === 'julia' ? ' · Julia' : ''); }   // ohne den Klammerzusatz der Formel
-const EBENE_AA = ['aa', 'aaMode', 'aaTol', 'aaMax', 'aaSigma'];   // die Glättung der Ebene (die der ersten Ebene ist Browser-Einstellung, weitere tragen ihre im Mischsatz)
 function ebeneMischSchreiben(e, k = 1) {
   const t2 = [e.modus, +e.deck.toFixed(3), e.sichtbar ? 1 : 0, e.solo ? 1 : 0, e.verbunden ? 1 : 0, encodeURIComponent(e.name || '')];
-  if (k > 0) { const z = ebeneZustand(k), b = ebeneZustand(0); if (EBENE_AA.some(key => z[key] !== b[key])) t2.push(z.aa, z.aaMode, +z.aaTol.toFixed(4), z.aaMax, +z.aaSigma.toFixed(2)); }   // nur abweichend von der ersten Ebene
   return t2.join(':');
 }
 function ebeneMischLesen(e, text) {
@@ -11392,9 +11391,8 @@ function ebeneMischLesen(e, text) {
   if (m >= 0 && m < EBENE_MODI.length) e.modus = m; if (Number.isFinite(d)) e.deck = clamp(d, 0, 1);
   e.sichtbar = f[2] !== '0'; e.solo = f[3] === '1'; e.verbunden = f[4] !== '0';
   try { e.name = decodeURIComponent(f[5] || '').slice(0, 40); } catch (x) { e.name = ''; }
-  if (e.zustand && f.length >= 11) {   // eigene Glättung der Ebene
+  if (e.zustand && f.length >= 11) {   // ältere Links: die Glättung der Ebene stand im Mischsatz (heute im Parametersatz l2 …)
     const z = e.zustand, aa = parseInt(f[6], 10), tol = parseFloat(f[8]), mx = parseInt(f[9], 10), sg = parseFloat(f[10]);
-    e.aaEigen = true;   // sonst folgt die Ebene der Glättung des Grunds (auch wenn die erst später gesetzt wird, siehe applyState)
     if (aa >= 1) z.aa = aaSnap(aa); if (AA_MODI.includes(f[7])) z.aaMode = f[7];
     if (tol >= AA_TOL.min && tol <= AA_TOL.max) z.aaTol = tol; if (mx >= 8 && mx <= 4096) z.aaMax = aaPosToMax(aaMaxToPos(mx)); if (sg >= AA_SIGMA.min && sg <= AA_SIGMA.max) z.aaSigma = sg;
   }
@@ -11417,10 +11415,6 @@ function buildParams() {   // der Link: die erste Ebene oben, jede weitere als e
 function ebenenMaskenVeraltet() {   // die Fassung mit Masken ist eben übersetzt: andere Ebenen mit Maske wurden bis dahin ohne sie gesichert
   ebenen.forEach((e, k) => { if (k !== renderEbene && maskeWirkt(e.maske)) e.frisch = false; });
 }
-function ebenenGlaettungErben() {   // Ebenen ohne eigene Glättung (kein Feld im Mischsatz) tragen die des Grunds
-  const b = ebeneZustand(0);
-  ebenen.forEach((e, k) => { if (k > 0 && !e.aaEigen) { const z = ebeneZustand(k); for (const key of EBENE_AA) z[key] = b[key]; } });
-}
 function ebenenAusLink(h) {   // weitere Ebenen aus dem Link (l2 …), nachdem die erste gelesen ist; der Stapel wird neu aufgebaut
   ebenen = [ebeneNeu()]; ebeneAktiv = 0; ebeneInS = 0; renderEbene = 0; ebenenBasisAnsicht = null; ebenenStartAktiv = 0;
   if (renderer && renderer._slotsAlleLoeschen) renderer._slotsAlleLoeschen();
@@ -11432,7 +11426,7 @@ function ebenenAusLink(h) {   // weitere Ebenen aus dem Link (l2 …), nachdem d
     ebenenLeseTiefe++;
     try {
       resetState(); const v = readHash(sub);
-      if (v) { S.mode = v.mode; e = ebeneNeu(ebeneSichern()); for (const key of EBENE_AA) e.zustand[key] = alles[key]; ebeneMischLesen(e, h.get('lm' + nr)); if (h.has('lu' + nr)) e.maske = maskeLesen(h.get('lu' + nr)); if (!e.verbunden) e.ansicht = { cx: v.cx, cy: v.cy, zoom: v.zoom, dreh: S.dreh || 0 }; }
+      if (v) { S.mode = v.mode; e = ebeneNeu(ebeneSichern()); ebeneMischLesen(e, h.get('lm' + nr)); if (h.has('lu' + nr)) e.maske = maskeLesen(h.get('lu' + nr)); if (!e.verbunden) e.ansicht = { cx: v.cx, cy: v.cy, zoom: v.zoom, dreh: S.dreh || 0 }; }
     } finally { ebenenLeseTiefe--; for (const k of Object.keys(S)) if (!(k in alles)) delete S[k]; Object.assign(S, alles); }
     if (e) ebenen.push(e);
   }
@@ -11456,6 +11450,8 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
   const palW = h.get('pal'), pal = palW === null ? -1 : palNr(/^\d+$/.test(palW) ? PAL_ALT[+palW] : palW);   // Kennung, bei alten Links die Nummer
   if (pal >= 0) S.palette = pal;
   const cp = decodePal(h.get('cp')); if (cp) S.customPal = cp;
+  { const pv = decodePal(h.get('pv'));   // die Werte der Palette: weichen sie von der Vorgabe ab (geändert oder entfernt), gelten sie als Schema mit deren Namen
+    if (pv && !S.customPal && validPal(pv)) { const vorgabe = PALETTES[S.palette]; if (!vorgabe || palSchluessel(vorgabe) !== palSchluessel(pv)) S.customPal = Object.assign({ id: 'link', name: vorgabe ? (vorgabe.kennung ? t(vorgabe.name) : vorgabe.name) : 'Aus Link' }, palDaten(pv)); } }
   const den = parseFloat(h.get('den'));
   if (Number.isFinite(den)) S.density = clamp(den, DENS.min, DENS.max);
   const off = parseFloat(h.get('off')); if (Number.isFinite(off)) S.offset = clamp(off, 0, 1);
@@ -11571,6 +11567,11 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
     S.pal2[q2] = r;
   }
   if (ebenenLeseTiefe === 0) ebenenAusLink(h);   // Fraktal-Ebenen (l2 …); im Parametersatz einer Ebene steckt keine weitere
+  { const aa = parseInt(h.get('aa'), 10), am = h.get('aam'), at = parseFloat(h.get('aat')), ax = parseInt(h.get('aax'), 10), sg = parseFloat(h.get('aas')), g = GLAETTUNG_VORGABE;   // Glättung der Ebene; ohne Angabe die Vorgabe
+    S.aa = aa >= 1 ? aaSnap(aa) : g.aa; S.aaMode = AA_MODI.includes(am) ? am : g.aaMode;
+    S.aaTol = at >= AA_TOL.min && at <= AA_TOL.max ? at : g.aaTol; S.aaMax = ax >= 8 && ax <= 4096 ? aaPosToMax(aaMaxToPos(ax)) : g.aaMax; S.aaSigma = sg >= AA_SIGMA.min && sg <= AA_SIGMA.max ? sg : g.aaSigma; }
+  { const pv2 = decodePal2(h.get('pv2')), q = quelle2();   // die Werte der zweiten Palette: weichen sie von der Vorgabe ab, gelten sie als Schema mit deren Namen
+    if (pv2 && q && !S.pal2Eigen && validPal2(pv2)) { const r = pal2Ref(); if (typeof r === 'number' && r >= 0 && PAL2[r] && pal2Schluessel(PAL2[r]) !== pal2Schluessel(pv2)) { S.pal2Eigen = Object.assign(pv2, { id: 'link', name: t(PAL2[r].name) }); S.pal2[q] = 'y:tmp'; } } }
   v.hasView = h.has('z');                   // ohne Ausschnitt: Standardansicht der gewählten Familie
   if (v.hasView && !h.has('re') && !h.has('im')) v.cx = centeredDefault({ cx: v.cx, cy: v.cy, zoom: v.zoom }).cx;   // Zoom ohne Position: Standardmitte neben dem Bedienfeld
   return v;
@@ -11590,13 +11591,16 @@ function buildParamsRoh() {   // die Adresswerte der Ebene in S samt Ansicht und
   if (!S.autoIter) p.set('it', String(S.manualIter));
   if (S.palette) p.set('pal', PALETTES[S.palette].kennung);
   if (S.customPal) p.set('cp', encodePal(S.customPal));
+  else p.set('pv', palWerte(palAktiv()));   // die Werte der Vorgabe: der Link hängt an keiner Vorgabe
   const q2 = quelle2(), r2 = pal2Ref();   // Palette der Färbung mit zwei Werten, falls nicht die Vorgabe: n = gewöhnliche, e = eigenes Schema (cp2)
   if (q2 && r2 !== pal2Start(q2)) { if (typeof r2 === 'number') p.set('p2', r2 < 0 ? 'n' : PAL2[r2].kennung); else if (pal2Objekt()) { p.set('p2', 'e'); p.set('cp2', encodePal2(pal2Objekt())); } }
+  if (q2 && typeof r2 === 'number' && r2 >= 0 && PAL2[r2]) p.set('pv2', pal2Werte(PAL2[r2]));   // die Werte der zweiten Palette, auch der Vorgabe der Färbung
   p.set('den', S.density.toPrecision(3));
   if (S.offset) p.set('off', S.offset.toFixed(3));
   if (S.nach.length) p.set('nb', nachSchreiben());   // Nachbearbeitung: alle Ebenen (nb; pp ist der Formelparameter)
   if (S.animate) p.set('anim', '1');                                    // wandernde Farben gehören zum Bild
   if (S.palFilter) { p.set('pf', '1'); if (Math.abs(S.palFilterK - 1) > 1e-9) p.set('pfk', S.palFilterK.toPrecision(3)); }   // ändert die Farben, muss in den Link
+  p.set('aa', String(S.aa)); p.set('aam', S.aaMode); p.set('aat', String(+S.aaTol.toFixed(4))); p.set('aax', String(S.aaMax)); p.set('aas', String(+S.aaSigma.toFixed(2)));   // die Glättung der Ebene: immer, jede Ebene für sich
   if (S.mapping !== 2) p.set('map', String(S.mapping));   // Standard ist logarithmisch
   if (S.mapping === 11 || S.mapping === 12) p.set('sc', S.comp.toFixed(3));
   if (S.mapping === 14 && S.lyGrenze !== 2) p.set('lg', String(+S.lyGrenze.toPrecision(4)));
@@ -11772,7 +11776,7 @@ function storeAllowed() { return !!(consent && consent.settings); }
 function lsSet(key, value) { scheduleHash();   // jede abgelegte Einstellung gehört zum Zustand: die Adresse zieht nach, dabei merkt sich Rückgängig den Schritt
   if (!storeAllowed()) return false; try { localStorage.setItem(key, value); return true; } catch (e) { return false; } }
 function persistSettings() {   // nach erteilter Einwilligung die aktuellen Einstellungen ablegen
-  { const z = ebeneZustand(0) || S; lsSet('fractal.aa', String(z.aa)); lsSet('fractal.aamode', z.aaMode); lsSet('fractal.aatol', String(z.aaTol)); lsSet('fractal.aamax', String(z.aaMax)); lsSet('fractal.aasigma', String(z.aaSigma)); } /* die Glättung der ersten Ebene */ lsSet('fractal.palfilter', S.palFilter ? '1' : '0'); lsSet('fractal.palfilterk', String(S.palFilterK)); lsSet('fractal.cycle', S.cycle); lsSet('fractal.bla', S.bla);
+  { const z = S; Object.assign(GLAETTUNG_VORGABE, { aa: z.aa, aaMode: z.aaMode, aaTol: z.aaTol, aaMax: z.aaMax, aaSigma: z.aaSigma }); lsSet('fractal.aa', String(z.aa)); lsSet('fractal.aamode', z.aaMode); lsSet('fractal.aatol', String(z.aaTol)); lsSet('fractal.aamax', String(z.aaMax)); lsSet('fractal.aasigma', String(z.aaSigma)); } /* die zuletzt eingestellte Glättung: Vorgabe für Links ohne Angabe */ lsSet('fractal.palfilter', S.palFilter ? '1' : '0'); lsSet('fractal.palfilterk', String(S.palFilterK)); lsSet('fractal.cycle', S.cycle); lsSet('fractal.bla', S.bla);
   lsSet('fractal.toast', toastAn ? '1' : '0');
   lsSet('fractal.renderer', S.rendererPref); lsSet('fractal.quality', String(S.quality)); lsSet('fractal.stapelms', String(S.stapelMs)); lsSet('fractal.uivorrang', S.uiVorrang ? '1' : '0'); lsSet('fractal.theme', S.theme); lsSet('fractal.meta', JSON.stringify(META));
   if (customPalettes.length) lsSet('fractal.palettes', JSON.stringify(customPalettes));
@@ -12550,6 +12554,10 @@ function syncPalSelect(bauen = true) {
     wert = typeof r === 'number' ? 'z:' + r : r !== 'y:tmp' ? r : pal2EntwurfOffen() ? 'y:tmp' : 'y:' + S.pal2Eigen.id;
   } else wert = S.customPal ? ('c:' + (customPalettes.some(p => p.id === S.customPal.id) ? S.customPal.id : 'tmp')) : String(S.palette);
   if (bauen && ![...palSel.options].some(o => o.value === wert)) { buildPalSelect(); return; }   // Schema aus Datei oder Link fehlt noch in der Liste
+  if (bauen && (wert === 'c:tmp' || wert === 'y:tmp')) {   // ein anderes ungespeichertes Schema unter demselben Eintrag (Werte aus der Datei nach dem Link): die Beschriftung zieht nach
+    const o = [...palSel.options].find(o => o.value === wert), name = wert === 'c:tmp' ? S.customPal.name : S.pal2Eigen.name;
+    if (o && o.textContent !== name + ' ' + t('panel.not-saved-2')) { buildPalSelect(); return; }
+  }
   palSel.value = wert;
   syncPalStrip();
 }
@@ -14281,7 +14289,7 @@ function syncAaUI() {
     b.classList.toggle('on', !!p && Math.abs(S.aaTol - p.tol) < 1e-9 && S.aaMax === p.max && Math.abs(S.aaSigma - AA_SIGMA.def) < 1e-9);
   }
   aaTolEl.value = aaTolToPos(S.aaTol); aaMaxEl.value = aaMaxToPos(S.aaMax); aaSigmaEl.value = Math.round(S.aaSigma * 100);
-  $('aaTolVal').value = fmtZahl(S.aaTol * 100, 1) + ' %'; $('aaMaxVal').value = String(S.aaMax); $('aaSigmaVal').value = fmtZahl(S.aaSigma, 2) + ' px';
+  for (const [id, text] of [['aaTolVal', fmtZahl(S.aaTol * 100, 1) + ' %'], ['aaMaxVal', String(S.aaMax)], ['aaSigmaVal', fmtZahl(S.aaSigma, 2) + ' px']]) { const el = $(id); if (document.activeElement !== el) el.value = text; }   // ein Feld, in dem gerade getippt wird, bleibt in Ruhe (sonst überschrieb der Abschluss der Puffer den halb getippten Wert)
   $('aaGridRow').hidden = adaptive; $('aaAdaptRow').hidden = !adaptive;
   buildAaOptions();
   if (adaptive) {
@@ -14322,7 +14330,7 @@ function aaRetune(neu) {
   }
   updateResInfo(); syncAaUI();
 }
-const aaLs = (k, v) => { if (ebeneAktiv === 0) lsSet(k, v); };   // Fraktal-Ebenen: nur die Glättung der ersten Ebene ist Browser-Einstellung
+const aaLs = (k, v) => { lsSet(k, v); GLAETTUNG_VORGABE[{ 'fractal.aa': 'aa', 'fractal.aamode': 'aaMode', 'fractal.aatol': 'aaTol', 'fractal.aamax': 'aaMax', 'fractal.aasigma': 'aaSigma' }[k]] = S[{ 'fractal.aa': 'aa', 'fractal.aamode': 'aaMode', 'fractal.aatol': 'aaTol', 'fractal.aamax': 'aaMax', 'fractal.aasigma': 'aaSigma' }[k]]; };   // die zuletzt eingestellte Glättung ist die Browser-Einstellung (Vorgabe für Links ohne Angabe), gleich für jede Ebene
 const setzeToleranz = v => { const alt = S.aaTol; S.aaTol = v; aaTolEl.value = aaTolToPos(v); aaLs('fractal.aatol', String(v)); aaRetune(v > alt); };
 aaTolEl.addEventListener('input', () => setzeToleranz(aaPosToTol(+aaTolEl.value)));
 aaMaxEl.addEventListener('input', () => { const alt = S.aaMax; S.aaMax = aaPosToMax(+aaMaxEl.value); aaLs('fractal.aamax', String(S.aaMax)); aaRetune(S.aaMax < alt); });
@@ -14513,10 +14521,14 @@ function syncAllUI() {   // Bedienfeld vollständig an den Zustand angleichen
 const UNDO_MAX = 60;   // so viele Schritte hält der Stapel; ältere fallen unten heraus
 let undoStapel = [], redoStapel = [], undoStand = null, undoStandV = null, undoStill = false;
 function undoJetztSchreiben() { clearTimeout(hashTimer); writeHash(); }   // die verzögerte Aufzeichnung sofort nachholen
-function undoStandJetzt() { const o = metaObjekt({ params: true, tech: true, colors: true }); return o ? JSON.stringify(o) : null; }
+function undoStandJetzt() {   // Schnappschuss für Rückgängig: die Parameter (mit Farben und Glättung) und dazu die Gerätewerte, die nicht im Link stehen
+  const o = metaObjekt({ params: true }); if (!o) return null;
+  o.extra = { cycle: S.cycle, bla: S.bla, quality: S.quality };   // applyState liest sie wie aus einer älteren Datei
+  return JSON.stringify(o);
+}
 const UNDO_ANKER = ['ca', 'sa', 'off'];   // diese drei führt die App beim Verankern von selbst nach
 function undoOhne(text, namen) {   // denselben Stand ohne die genannten Adresswerte, zum Vergleichen
-  try { const o = JSON.parse(text); if (typeof o.params === 'string') { const p = new URLSearchParams(o.params); for (const k of namen) { p.delete(k); } o.params = p.toString(); } return JSON.stringify(o); } catch (e) { return text; }
+  try { const o = JSON.parse(text); if (typeof o.params === 'string') { const p = new URLSearchParams(o.params); for (const k of namen) { p.delete(k); } o.params = p.toString(); } else if (o.params && typeof o.params === 'object') { for (const k of namen) { delete o.params[k]; } } return JSON.stringify(o); } catch (e) { return text; }
 }
 function undoVergleich(text) { return S.autoIter ? undoOhne(text, ['it']) : text; }   // die selbst gewählte Iterationszahl hängt an der Ansicht, sie ist kein eigener Schritt
 function undoUebernehmen() {   // die App hat von selbst verankert: der neue Stand gilt, ohne dass daraus ein Schritt wird
@@ -14578,47 +14590,55 @@ function stabil(o) {   // JSON mit sortierten Schlüsseln: gleich ist gleich, eg
 }
 function palDaten(p) { return p.stops ? { cyclic: !!p.cyclic, raum: p.raum, stops: p.stops.map(z => ({ p: +z.p, c: z.c })) } : { a: p.a.slice(), b: p.b.slice(), c: p.c.slice(), d: p.d.slice() }; }   // ohne Name und Nummer
 function pal2Daten(p) { const o = JSON.parse(JSON.stringify(p)); delete o.id; delete o.kennung; delete o.name; delete o.preset; return o; }
-function farbenVoll() {
-  const p1 = palAktiv(), f = { palette: Object.assign({ name: p1.kennung ? t(p1.name) : p1.name, preset: S.customPal ? null : PALETTES[S.palette].kennung }, palDaten(p1)) };
-  const p2 = pal2Objekt(), r2 = pal2Ref();
-  if (p2) f.palette2 = Object.assign({ name: p2.kennung ? t(p2.name) : p2.name, preset: typeof r2 === 'number' ? PAL2[r2].kennung : null }, pal2Daten(p2));
-  return f;
-}
-function farbenLaden(f) {   // nach readHash: weicht eine Vorgabe von den gespeicherten Werten ab, gelten diese als Schema aus der Datei
+function farbenLaden(f) {   // nach readHash: die Werte der Datei gelten in jedem Fall. Hat das geltende Schema (Vorgabe oder eigenes aus dem Link) dieselben Werte, bleibt es samt Name;
+  // gleiche Werte wie die Vorgabe des Links stellen die Vorgabe her; sonst wird es ein Schema „Aus Datei“ mit genau diesen Werten (auch gegen eine andere eigene Palette im Link)
   if (!f || typeof f !== 'object') return;
   const g = f.palette;
-  if (g && typeof g === 'object' && !S.customPal) {
-    const p = Object.assign({ id: 'link', name: String(g.name || 'Aus Datei').slice(0, 40) }, g.stops ? { cyclic: !!g.cyclic, stops: g.stops } : { a: g.a, b: g.b, c: g.c, d: g.d });
-    const vorgabe = PALETTES[S.palette];
-    if (validPal(p) && !(vorgabe && stabil(palDaten(vorgabe)) === stabil(palDaten(p)))) S.customPal = Object.assign({ id: 'link', name: p.name }, palDaten(p));
+  if (g && typeof g === 'object') {
+    const p = Object.assign({ id: 'link', name: String(g.name || 'Aus Datei').slice(0, 40) }, g.stops ? { cyclic: !!g.cyclic, raum: g.raum, stops: g.stops } : { a: g.a, b: g.b, c: g.c, d: g.d });
+    if (validPal(p)) {
+      const werte = stabil(palDaten(p)), akt = palAktiv(), vorgabe = PALETTES[S.palette];
+      if (akt && stabil(palDaten(akt)) === werte) { /* das geltende Schema hat dieselben Werte: es bleibt, samt Name */ }
+      else if (vorgabe && stabil(palDaten(vorgabe)) === werte) S.customPal = null;
+      else S.customPal = Object.assign({ id: 'link', name: p.name }, palDaten(p));
+    }
   }
-  const h = f.palette2, q = quelle2(), r = pal2Ref();
-  if (h && typeof h === 'object' && q && typeof r === 'number' && r >= 0) {
+  const h = f.palette2, q = quelle2();
+  if (h && typeof h === 'object' && q) {
     const p = Object.assign(pal2Daten(h), { id: 'link', name: String(h.name || 'Aus Datei').slice(0, 40) });
-    if (validPal2(p) && !(PAL2[r] && stabil(pal2Daten(PAL2[r])) === stabil(pal2Daten(p)))) { S.pal2Eigen = p; S.pal2[q] = 'y:tmp'; }
+    if (validPal2(p)) {
+      const werte = stabil(pal2Daten(p)), akt = pal2Objekt(), r = pal2Ref();
+      if (akt && stabil(pal2Daten(akt)) === werte) { /* dasselbe Schema: bleibt */ }
+      else if (typeof r !== 'number' && PAL2.some(v => stabil(pal2Daten(v)) === werte)) S.pal2[q] = PAL2.findIndex(v => stabil(pal2Daten(v)) === werte);   // die Werte einer Vorgabe: sie gilt
+      else { S.pal2Eigen = p; S.pal2[q] = 'y:tmp'; }
+    }
   }
 }
-function stateJSON() {   // vollständiger Zustand: Link-Parameter plus Technik-Einstellungen und die Farben in voller Form
-  return JSON.stringify({ app: APP_ID, version: 1, saved: new Date().toISOString(), params: buildParams().toString(),
-    extra: { aa: S.aa, aaMode: S.aaMode, aaTol: S.aaTol, aaMax: S.aaMax, aaSigma: S.aaSigma, palFilter: S.palFilter, palFilterK: S.palFilterK, cycle: S.cycle, bla: S.bla, quality: S.quality },
-    colors: farbenVoll() });
+// Palettenwerte im Link ohne Namen (pv, pv2) und der Vergleich mit einer Vorgabe über dieselbe Rundung wie im Link
+function palWerte(p) { return encodePal(Object.assign({}, p, { name: '' })); }
+function pal2Werte(p) { return encodePal2(Object.assign({}, p, { name: '' })); }
+function palSchluessel(p) { const w = decodePal(encodePal(Object.assign({}, p, { name: 'x' }))); return w ? stabil(palDaten(w)) : ''; }
+function pal2Schluessel(p) { const w = decodePal2(encodePal2(Object.assign({}, p, { name: 'x' }))); return w ? stabil(pal2Daten(w)) : ''; }
+// Die Datei: der Link als lesbares Objekt (Schlüssel → Wert, die Parametersätze weiterer Ebenen verschachtelt) und zurück
+function linkObjekt(p) { const o = {}; for (const [k, v] of p) o[k] = /^l\d+$/.test(k) ? Object.fromEntries(new URLSearchParams(v)) : v; return o; }
+function linkText(o) { const p = new URLSearchParams(); for (const [k, v] of Object.entries(o)) p.set(k, v && typeof v === 'object' ? new URLSearchParams(v).toString() : String(v)); return p.toString(); }
+function linkZeilen(o) { return Object.entries(o).flatMap(([k, v]) => v && typeof v === 'object' ? Object.entries(v).map(([k2, v2]) => k + '.' + k2 + ' = ' + v2) : [k + ' = ' + v]).join(', '); }
+function stateJSON() {   // vollständiger Zustand: der Link als lesbares Objekt (Version 2; Version 1 trug den Link als String samt extra und colors)
+  return JSON.stringify({ app: APP_ID, version: 2, saved: new Date().toISOString(), params: linkObjekt(buildParams()) });
 }
 // Metadaten fürs Bild: nur die angehakten Angaben, genau in dieser Form; nichts angehakt = kein Textblock in der Datei.
 // Ältere Dateien tragen noch Name, Version und Datum; der Leser zeigt sie, geschrieben werden sie nicht mehr.
-function metaObjekt(m = META) {
-  const o = {};
-  if (m.params) o.params = buildParams().toString();
-  if (m.tech) o.extra = { aa: S.aa, aaMode: S.aaMode, aaTol: S.aaTol, aaMax: S.aaMax, aaSigma: S.aaSigma, palFilter: S.palFilter, palFilterK: S.palFilterK, cycle: S.cycle, bla: S.bla, quality: S.quality };
-  if (m.colors) o.colors = farbenVoll();
-  return Object.keys(o).length ? o : null;
+function metaObjekt(m = META) {   // ein Block: die Parameter der Ansicht, vollständig und lesbar (Farben und Glättung stehen darin)
+  return m.params ? { params: linkObjekt(buildParams()) } : null;
 }
 function metaText(m = META) { const o = metaObjekt(m); return o ? JSON.stringify(o, null, 2) : null; }   // eingerückt, damit es auch in der Datei lesbar ist
-function applyState(obj) {   // Zustand aus einer Datei übernehmen und rendern
-  if (!obj || typeof obj.params !== 'string') return false;
+function applyState(obj) {   // Zustand aus einer Datei übernehmen und rendern; params als Objekt (Version 2) oder String (Version 1)
+  const text = obj && (typeof obj.params === 'string' ? obj.params : obj.params && typeof obj.params === 'object' ? linkText(obj.params) : null);
+  if (!text) return false;
   resetState(); peShow(false);
   S.family = 'escape';
-  const v = readHash(obj.params); if (!v) return false;
-  farbenLaden(obj.colors);   // die gespeicherten Werte, falls eine Vorgabe inzwischen anders aussieht oder fehlt
+  const v = readHash(text); if (!v) return false;
+  farbenLaden(obj.colors);   // ältere Dateien (Version 1): die Farben in voller Form; heute stehen die Werte im Link (pv, cp)
   const x = obj.extra || {};
   if (Number.isFinite(+x.aa)) S.aa = aaSnap(+x.aa);
   if (AA_MODI.includes(x.aaMode)) S.aaMode = x.aaMode;
@@ -14634,7 +14654,6 @@ function applyState(obj) {   // Zustand aus einer Datei übernehmen und rendern
   accStopWorkers();
   syncAllUI();
   if (S.family === 'accum') { accReady = false; accSetup(); }
-  ebenenGlaettungErben();   // Fraktal-Ebenen ohne eigene Glättung folgen dem Grund, dessen Glättung eben aus extra kam
   doResize();
   setMode(v.mode, { force: true, view: v.hasView ? v : centeredDefault(familyView()) });
   if (ebenenStartAktiv) ebeneWaehlen(ebenenStartAktiv);   // Fraktal-Ebenen: die gespeicherte Wahl
@@ -14814,7 +14833,7 @@ function parseStateFile(bytes) {
   else if (bytes[0] === 0xFF && bytes[1] === 0xD8) text = jpegExtract(bytes);
   else text = new TextDecoder().decode(bytes);
   if (!text) return null;
-  try { const o = JSON.parse(text); return (o && typeof o.params === 'string') ? o : null; } catch (e) { return null; }   // der Name der App ist abwählbar: es zählen die Parameter
+  try { const o = JSON.parse(text); return (o && (typeof o.params === 'string' || (o.params && typeof o.params === 'object'))) ? o : null; } catch (e) { return null; }   // der Name der App ist abwählbar: es zählen die Parameter (String: Version 1, Objekt: Version 2)
 }
 async function openStateFile(file) {
   try {
@@ -14910,12 +14929,12 @@ function metaBericht(datei, bytes) {
     if (o.app) metaZeile(dl, t('meta.app'), String(o.app) + (o.version ? ' · ' + t('meta.format-version', o.version) : ''));
     if (o.saved) { const d = new Date(o.saved); metaZeile(dl, t('meta.date'), isNaN(d) ? String(o.saved) : d.toLocaleString(LANG === 'de' ? 'de-DE' : 'en-GB') + ' (' + o.saved + ')'); }
     if (o.url) metaZeile(dl, t('meta.url'), String(o.url), true);
-    if (typeof o.params === 'string') metaZeile(dl, t('meta.params'), o.params, true);
+    if (typeof o.params === 'string') metaZeile(dl, t('meta.params'), o.params, true); else if (o.params && typeof o.params === 'object') metaZeile(dl, t('meta.params'), linkZeilen(o.params), true);
     if (o.extra && typeof o.extra === 'object') metaZeile(dl, t('meta.tech'), Object.entries(o.extra).map(([k, v]) => k + ' = ' + v).join(', '), true);
-    if (o.colors && typeof o.colors === 'object') metaZeile(dl, t('meta.colors'), [o.colors.palette, o.colors.palette2].filter(Boolean).map(p => (p.name || '?') + (p.stops ? ' (' + t('meta.n-stops', p.stops.length) + ')' : '')).join(' · '));
+    if (o.colors && typeof o.colors === 'object') metaZeile(dl, t('meta.colors'), [['meta.palette', o.colors.palette], ['meta.second-palette', o.colors.palette2]].filter(([, p]) => p && typeof p === 'object').map(([k, p]) => t(k) + ': ' + (p.stops ? t('meta.n-stops', p.stops.length) : t('meta.all-values'))).join(' · '));   // ohne Namen: die Datei kennt keine
     for (const k of Object.keys(o)) if (!['app', 'version', 'saved', 'url', 'params', 'extra', 'colors'].includes(k)) metaZeile(dl, k, JSON.stringify(o[k]).slice(0, 200), true);
     box.append(dl);
-    if (typeof o.params === 'string') metaGelesen = o;
+    if (typeof o.params === 'string' || (o.params && typeof o.params === 'object')) metaGelesen = o;   // Version 1 (Text) und 2 (Objekt)
   } else { const p = document.createElement('p'); p.className = 'hint'; p.textContent = t('meta.none-from-app'); box.append(p); }
   // alles Weitere in der Datei
   const rest = info.bloecke.filter(b => !((b.type === 'iTXt' || b.type === 'tEXt') && b.key === FILE_KEY) && !(b.type === 'COM' && b.text && b.text.startsWith(FILE_KEY + ':')));
@@ -15102,7 +15121,7 @@ function posterUpdateInfo() {
 }
 for (const el of [posterFmt, $('posterRes')]) el.addEventListener('input', posterUpdateInfo);
 // Metadaten im Speichern-Dialog: Häkchen aus META, Vorschau des genauen Textes, Hinweis, wo er in der Datei liegt
-const META_FELDER = { params: 'metaParams', colors: 'metaColors', tech: 'metaTech' };
+const META_FELDER = { params: 'metaParams' };   // ein Häkchen: die Parameter der Ansicht enthalten Farben und Glättung (Version 2)
 function syncMetaUI() {
   for (const [k, id] of Object.entries(META_FELDER)) $(id).checked = !!META[k];
   const text = metaText();

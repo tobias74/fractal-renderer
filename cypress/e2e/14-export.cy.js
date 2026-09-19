@@ -107,30 +107,28 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
   it('Metadaten: jede Angabe hat ihr Häkchen, der genaue Text ist zu sehen, die Wahl bleibt im Browser', () => {
     cy.get('#save').click();
     cy.get('#posterMeta').should('be.visible');
-    for (const id of ['metaParams', 'metaColors', 'metaTech']) cy.get('#' + id).should('be.checked');
+    cy.get('#metaParams').should('be.checked'); cy.get('#metaColors, #metaTech').should('not.exist');   // ein Häkchen: die Parameter enthalten Farben und Glättung (19.09.2026)
     cy.get('#metaApp, #metaDate, #metaUrl, #metaNone, #metaAll, #posterMetaKurz').should('not.exist');   // kein Name, kein Datum, kein Link, keine Sammelknöpfe
     cy.get('#posterMeta').should('be.visible');   // immer offen
-    cy.get('#metaText').invoke('val').should('match', /^\{\n  "params"/);   // eingerückt, lesbar, ohne Klapper sichtbar
+    cy.get('#metaText').invoke('val').should('match', /^\{\n  "params": \{\n    "mode": "mandel"/);   // eingerückt und lesbar: ein Objekt, keine kodierte Zeile
     cy.get('#metaText').invoke('val').then(text => {   // genau der Text, der in die Datei kommt
       const j = JSON.parse(text);
-      expect(j, 'Angaben').to.have.all.keys('params', 'extra', 'colors');
-      expect(j).to.not.have.any.keys('app', 'version', 'saved', 'url');
+      expect(j, 'Angaben').to.have.all.keys('params');
+      expect(j.params).to.include.keys('mode', 're', 'im', 'z', 'pv', 'aa', 'aam', 'aat', 'aax', 'aas');   // Palette mit Werten und Glättung stehen darin
+      expect(text, 'keine kodierten Zeichen').not.to.match(/%3[AD]|%2C/);
+      expect(j).to.not.have.any.keys('app', 'version', 'saved', 'url', 'extra', 'colors');
     });
     cy.get('#metaWo').should('contain.text', 'iTXt');
     cy.pickOption('posterFmt', 'jpg');
     cy.get('#metaWo').should('contain.text', 'Kommentar');
-    cy.get('#metaColors').uncheck({ force: true });
-    cy.get('#metaText').invoke('val').then(text => expect(JSON.parse(text), 'ohne Farben').to.have.all.keys('params', 'extra'));
-    cy.get('#metaParams').uncheck({ force: true }); cy.get('#metaTech').uncheck({ force: true });   // nichts mehr angehakt
+    cy.get('#metaParams').uncheck({ force: true });   // nichts mehr angehakt
     cy.get('#metaText').invoke('val').should('contain', 'keinen Textblock');
-    cy.get('#metaParams').check({ force: true });
-    cy.window().then(win => expect(JSON.parse(win.localStorage.getItem('fractal.meta')), 'die Wahl im Browser').to.deep.eq({ params: true, colors: false, tech: false }));
-    for (const id of ['metaColors', 'metaTech']) cy.get('#' + id).check({ force: true });
-    for (const id of ['metaParams', 'metaColors', 'metaTech']) cy.get('#' + id).should('be.checked');
+    cy.window().then(win => expect(JSON.parse(win.localStorage.getItem('fractal.meta')).params, 'die Wahl im Browser').to.eq(false));
+    cy.get('#metaParams').check({ force: true }).should('be.checked');
     cy.get('#posterCancel').click();
     cy.visitApp('', { keep: true });   // beim nächsten Besuch gilt die Wahl weiter
     cy.get('#save').click();
-    for (const id of ['metaParams', 'metaColors', 'metaTech']) cy.get('#' + id).should('be.checked');
+    cy.get('#metaParams').should('be.checked');
     cy.get('#posterCancel').click();
   });
 
@@ -179,7 +177,7 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
       }
       cy.task('pngParams', { file: files[0] }).then(t => {
         expect(t, 'Parameter im Bild').to.be.a('string');
-        expect(JSON.parse(t).params).to.contain('p=3');
+        expect(JSON.parse(t).params.p).to.eq('3');
       });
     });
     cy.get('#posterCancel').click();
@@ -361,6 +359,8 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
   // darf dabei nicht zusammengedrückt werden (overflow hidden: der Rest des Textes wäre unerreichbar) – so war es am
   // 19.09.2026, weil der Flex-Container das Feld auf die Resthöhe schrumpfte.
   const rect = $e => $e[0].getBoundingClientRect();
+  const LANG = 'mode=mandel&l2=f%3D1&l3=f%3D2&lm2=2:0.7:1:0:1:&lm3=10:0.5:1:0:1:&nb=11:1:1:1;3:1:1:0.2,0.3&la=3';   // drei Fraktal-Ebenen und zwei Einstellungsebenen: genug Text, dass der Abschnitt rollen muss
+  const langerStand = () => { cy.visitApp(LANG); cy.alleEbenenFertig(); };
   const dialogPasst = (hoehe) => {
     cy.get('#poster').should($m => expect($m[0].scrollHeight, 'der Dialog selbst rollt nicht').to.be.at.most($m[0].clientHeight + 1));
     for (const id of ['posterTitle', 'cropScreen', 'posterRes', 'posterFmt', 'posterStart', 'posterCancel']) {
@@ -377,9 +377,10 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
   };
 
   it('Rollen: am Schreibtisch nimmt der Metadaten-Abschnitt den Rest, zeigt das ganze Textfeld und rollt bis zum Ende; Knöpfe und Regler bleiben stehen', () => {
+    langerStand();
     cy.get('#save').click(); cy.get('#poster').should('be.visible');
-    cy.get('#metaParams').check(); cy.get('#metaColors').check(); cy.get('#metaTech').check();
-    cy.get('#metaText').invoke('val').should('match', /"palette"/);   // langer Text: alle drei Angaben
+    cy.get('#metaParams').check();
+    cy.get('#metaText').invoke('val').should('match', /"l3": \{/);   // langer Text: drei Ebenen und Nachbearbeitung
     dialogPasst(720); textGanzDa(); abschnittRollt();
     cy.get('#posterMeta').scrollTo('bottom');
     dialogPasst(720);   // gerollt im Abschnitt: Titel, Regler und Knöpfe stehen weiter an ihrem Platz
@@ -387,20 +388,22 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
     cy.get('#posterCancel').click();
   });
 
-  it('Rollen: weniger Angaben, weniger Text – ohne Farbschemata reicht der Platz meist, ohne alles steht nur ein Satz', () => {
+  it('Rollen: mehr Ebenen, mehr Text – der Abschnitt wächst mit; ohne Häkchen steht nur ein Satz und nichts rollt', () => {
     cy.get('#save').click(); cy.get('#poster').should('be.visible');
-    cy.get('#metaParams').check(); cy.get('#metaColors').check(); cy.get('#metaTech').check();
+    cy.get('#metaParams').check();
     cy.get('#posterMeta').then($m => {
-      const voll = $m[0].scrollHeight;
-      cy.get('#metaColors').uncheck();
-      cy.get('#metaText').invoke('val').should('not.match', /"palette"/);
+      const ohne = $m[0].scrollHeight;
+      cy.get('#posterCancel').click();
+      cy.visitApp('mode=mandel&l2=f%3D1&lm2=2:0.7:1:0:1:&nb=11:1:1:1&la=2'); cy.alleEbenenFertig();   // eine zweite Fraktal-Ebene und eine Einstellungsebene: der Text wird länger
+      cy.get('#save').click(); cy.get('#poster').should('be.visible');
+      cy.get('#metaText').invoke('val').should('match', /"l2": \{/);   // die Ebene als verschachteltes Objekt
       textGanzDa();
-      cy.get('#posterMeta').should($n => expect($n[0].scrollHeight, 'kürzer ohne Farbschemata').to.be.lessThan(voll));
-      cy.get('#metaParams').uncheck(); cy.get('#metaTech').uncheck();
+      cy.get('#posterMeta').should($n => expect($n[0].scrollHeight, 'länger mit Ebenen').to.be.greaterThan(ohne));
+      cy.get('#metaParams').uncheck({ force: true });
       cy.get('#metaText').invoke('val').should('not.match', /^\{/);   // nichts angehakt: der Hinweis statt JSON
       textGanzDa();
       cy.get('#posterMeta').should($n => expect($n[0].scrollHeight, 'nichts zu rollen').to.be.at.most($n[0].clientHeight + 1));
-      cy.get('#metaParams').check(); cy.get('#metaColors').check(); cy.get('#metaTech').check();
+      cy.get('#metaParams').check({ force: true });
     });
     cy.get('#posterCancel').click();
   });
@@ -408,8 +411,9 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
   for (const [w, h] of [[458, 908], [390, 844], [800, 600], [1024, 640]]) {
     it(`Rollen bei ${w} × ${h}: der Dialog passt, das Textfeld ist ganz da, der Abschnitt rollt bis zum Ende`, () => {
       cy.viewport(w, h);
+      langerStand();
       cy.get(w < 640 ? '#tabSave' : '#save').click({ force: true }); cy.get('#poster').should('be.visible');
-      cy.get('#metaParams').check({ force: true }); cy.get('#metaColors').check({ force: true }); cy.get('#metaTech').check({ force: true });
+      cy.get('#metaParams').check({ force: true });
       dialogPasst(h); textGanzDa(); abschnittRollt();
       cy.get('#posterCancel').click();
     });
@@ -417,8 +421,9 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
 
   it('Rollen am niedrigen Schirm: der Abschnitt behält seine Mindesthöhe und bleibt bis zum Ende rollbar', () => {
     cy.viewport(390, 480);
+    langerStand();
     cy.get('#tabSave').click(); cy.get('#poster').should('be.visible');
-    cy.get('#metaParams').check({ force: true }); cy.get('#metaColors').check({ force: true }); cy.get('#metaTech').check({ force: true });
+    cy.get('#metaParams').check({ force: true });
     dialogPasst(480);
     cy.get('#posterMeta').should($m => expect($m[0].clientHeight, 'Mindesthöhe').to.be.at.least(60));
     textGanzDa(); abschnittRollt();
@@ -426,8 +431,9 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
   });
 
   it('Rollen: der Wechsel zu JPEG ändert nur den Hinweis, der Abschnitt bleibt rollbar; Wiederöffnen beginnt oben', () => {
+    langerStand();
     cy.get('#save').click(); cy.get('#poster').should('be.visible');
-    cy.get('#metaParams').check(); cy.get('#metaColors').check(); cy.get('#metaTech').check();
+    cy.get('#metaParams').check();
     cy.get('#posterMeta').scrollTo('bottom', { ensureScrollable: true });
     cy.pickOption('posterFmt', 'jpg');
     cy.get('#metaWo').invoke('text').should('match', /JPEG|Kommentar/);
