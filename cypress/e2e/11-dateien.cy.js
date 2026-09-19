@@ -122,7 +122,7 @@ describe('Dateien: Parameter und Bilder speichern und wieder öffnen', () => {
   it('Ende zu Ende mit eigener Palette: das PNG trägt sie einmal, lesbar, und öffnet sich mit denselben Farben und ihrem Namen', () => {
     cy.visitApp('mode=mandel&' + LINKSCHEMA);
     cy.gezeichnet(); cy.shotStats('pal-datei-vorher').then(vorher => {
-      cy.get('#save').click(); cy.get('#metaParams').check({ force: true }); cy.get('#posterStart').click();
+      cy.get('#save').click(); cy.get('#posterStart').click();
       cy.get('#modal', { timeout: 60000 }).should('be.visible'); cy.get('#dl').click(); cy.get('#closeModal').click();
       cy.task('waitForDownload', { pattern: '^fraktal-mandel-.*\\.png$' }).then(files => {
         cy.task('pngParams', { file: files[0] }).then(text => { const j = JSON.parse(text); expect(j).to.have.all.keys('params'); expect(j.params.cp, 'die Palette einmal, mit Namen').to.match(/^Linkschema~1~/); expect(text, 'lesbar').not.to.match(/%3[AD]|%2C/); });
@@ -152,19 +152,11 @@ describe('Dateien: Parameter und Bilder speichern und wieder öffnen', () => {
     });
   });
 
-  it('Metadaten nach Wahl: ohne Häkchen kein Textblock im PNG, mit Auswahl nur die gewählten Angaben', () => {
+  it('die Bilddatei trägt die Parameter immer: kein Häkchen, ein Block, und der Dialog zeigt genau diesen Text', () => {
     cy.get('#save').click();
     cy.get('#posterMeta').should('be.visible');
-    cy.get('#metaParams').uncheck({ force: true });   // das eine Häkchen: die Parameter enthalten Farben und Glättung
-    cy.get('#posterStart').click();
-    cy.get('#modal', { timeout: 60000 }).should('be.visible'); cy.get('#dl').click(); cy.get('#closeModal').click();
-    cy.task('waitForDownload', { pattern: '^fraktal-mandel-.*\\.png$' }).then(files => {
-      cy.task('pngParams', { file: files[0] }).then(text => expect(text, 'kein Block „FractalRenderer“').to.be.null);
-      cy.readFile(files[0], null).then(buf => expect(buf.indexOf(Buffer.from('FractalRenderer')), 'auch das Schlüsselwort steht nirgends').to.eq(-1));
-    });
-    cy.task('clearDownloads');
-    cy.get('#save').click();
-    cy.get('#metaParams').check({ force: true });   // mit Häkchen: der eine Block mit den Parametern
+    cy.get('#metaParams, #metaColors, #metaTech').should('not.exist');   // seit 19.09.2026 nichts mehr abzuwählen
+    cy.get('#metaText').invoke('val').should('match', /^\{\n  "params": \{/);
     cy.get('#posterStart').click();
     cy.get('#modal', { timeout: 60000 }).should('be.visible'); cy.get('#dl').click(); cy.get('#closeModal').click();
     cy.task('waitForDownload', { pattern: '^fraktal-mandel-.*\\.png$' }).then(files => {
@@ -184,7 +176,6 @@ describe('Dateien: Parameter und Bilder speichern und wieder öffnen', () => {
     cy.pickOption('power', 5);
     cy.get('#save').click();
     cy.get('#posterMeta').should('be.visible');
-    cy.get('#metaParams').check({ force: true });
     cy.get('#posterStart').click();
     cy.get('#modal', { timeout: 60000 }).should('be.visible'); cy.get('#dl').click(); cy.get('#closeModal').click();
     cy.task('waitForDownload', { pattern: '^fraktal-mandel-.*\\.png$' }).then(files => {

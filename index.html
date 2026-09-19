@@ -273,7 +273,6 @@
   .modal-card img { max-width: 100%; max-height: 68vh; border-radius: 6px; display: block; margin: 0 auto; }
   .modal-card .btns { display: flex; gap: 8px; }
   .meta-box { border: 1px dashed var(--line); border-radius: 8px; padding: 8px 12px 10px; display: flex; flex-direction: column; gap: 8px; }   /* Metadaten im Speichern-Dialog */
-  .meta-box .meta-liste { display: flex; flex-direction: column; gap: 9px; padding: 4px 0 6px; }
   .meta-box .chk { margin: 0; }
   .meta-text { width: 100%; box-sizing: border-box; font: 11px var(--font-mono); background: rgba(var(--tint), .04); color: var(--text); border: 1px solid var(--line-strong); border-radius: 8px; padding: 6px 8px; resize: none; overflow: hidden; word-break: break-all; }
   .meta-card { max-width: min(94vw, 720px); }
@@ -2057,11 +2056,8 @@
         <option value="jpg" data-i18n="export.jpeg-smaller"></option>
       </select></div>
     <p class="hint" id="posterInfo"></p>
-    <div class="meta-box" id="posterMeta">   <!-- was in die Bilddatei kommt: jede Angabe einzeln, mit dem genauen Text; immer offen, der Abschnitt rollt -->
+    <div class="meta-box" id="posterMeta">   <!-- was in die Bilddatei kommt: die Parameter der Ansicht, immer, mit dem genauen Text; der Abschnitt rollt -->
       <p class="hint" id="metaWo"></p>
-      <div class="meta-liste">
-      <label class="chk" data-i18n-title="meta.params-title"><input type="checkbox" id="metaParams"> <span data-i18n="meta.params"></span></label>
-      </div>
       <div class="lbl"><span data-i18n="meta.exact"></span></div>
       <textarea id="metaText" class="meta-text" readonly rows="3" spellcheck="false"></textarea>
     </div>
@@ -2508,7 +2504,6 @@ const TEXTE = {
   'file.not-valid-link': { de: 'Kein gültiger Link', en: 'Not a valid link' },
   'file.parameters-saved': { de: 'Parameter gespeichert', en: 'Parameters saved' },
   'meta.params': { de: 'Parameter der Ansicht', en: 'View parameters' },
-  'meta.params-title': { de: 'Alles, was die Ansicht bestimmt, als Link-Parameter: Fraktal, Ausschnitt, Färbung, Palette mit allen Werten, Texturen, Glättung, Ebenen und Nachbearbeitung', en: 'Everything that defines the view, as link parameters: fractal, section, colouring, palette with all values, textures, smoothing, layers and post-processing' },
   'meta.colors': { de: 'Farbschemata mit allen Werten', en: 'Colour schemes with all values' },
   'meta.palette': { de: 'Palette', en: 'palette' },
   'meta.second-palette': { de: 'zweite Palette', en: 'second palette' },
@@ -2517,7 +2512,6 @@ const TEXTE = {
   'meta.app': { de: 'Herkunft (Domain)', en: 'Origin (domain)' },
   'meta.date': { de: 'Datum und Uhrzeit', en: 'Date and time' },
   'meta.url': { de: 'Link zur Ansicht', en: 'Link to this view' },
-  'meta.nothing-written': { de: 'Die App schreibt keinen Textblock in die Datei.', en: 'The app writes no text block into the file.' },
   'meta.where-png': { de: 'Im PNG steht der Text als Block „FractalRenderer“ (iTXt) vor dem Dateiende.', en: 'In the PNG the text sits in a block named “FractalRenderer” (iTXt) before the end of the file.' },
   'meta.where-jpg': { de: 'Im JPEG steht der Text als Kommentar (COM) direkt nach dem Dateianfang.', en: 'In the JPEG the text sits in a comment segment (COM) right after the start of the file.' },
   'meta.readable': { de: 'Jeder, der die Datei hat, kann ihn lesen.', en: 'Anyone who has the file can read it.' },
@@ -9817,8 +9811,6 @@ const DEFAULT_VIEW = {
 
 // Metadaten in Bilddateien: welche Angaben die App in PNG (iTXt „FractalRenderer“) und JPEG (Kommentar) schreibt. Jede Angabe
 // einzeln abwählbar; Vorgabe = alle drei. Kein Name, kein Datum, kein Link: nichts, was der Nutzer nicht braucht.
-const META_VORGABE = { params: true, colors: true, tech: true };   // die drei Angaben, die das Bild wiederherstellen; jede einzeln abwählbar
-const META = Object.assign({}, META_VORGABE);
 let toastAn = true;   // Hinweis beim Übersetzen (Streifen über dem Bild); Browser-Einstellung fractal.toast, Vorgabe an
 const GLAETTUNG_VORGABE = { aa: DEFAULT_AA, aaMode: 'grid', aaTol: AA_TOL.def, aaMax: 64, aaSigma: AA_SIGMA.def };   // die Glättung für Links ohne Angabe (jede Ebene für sich); zuletzt eingestellt = Browser-Einstellung
 try {   // gespeicherte App-Einstellungen nur lesen, wenn die Einwilligung dafür vorliegt (§ 25 TDDDG gilt auch fürs Lesen)
@@ -9831,7 +9823,6 @@ try {   // gespeicherte App-Einstellungen nur lesen, wenn die Einwilligung dafü
     const uv = localStorage.getItem('fractal.uivorrang'); if (uv) S.uiVorrang = uv !== '0';
     const to = localStorage.getItem('fractal.toast'); if (to) toastAn = to !== '0';
     const th = localStorage.getItem('fractal.theme'); if (THEMES.includes(th)) S.theme = th;
-    try { const m = JSON.parse(localStorage.getItem('fractal.meta') || 'null'); if (m && typeof m === 'object') for (const k of Object.keys(META)) if (typeof m[k] === 'boolean') META[k] = m[k]; } catch (e) { /* egal */ }   // Metadaten-Wahl
     const a = localStorage.getItem('fractal.aa'); if (a) S.aa = aaSnap(parseInt(a, 10) || DEFAULT_AA);
     const am = localStorage.getItem('fractal.aamode'); if (AA_MODI.includes(am)) S.aaMode = am;
     const at = parseFloat(localStorage.getItem('fractal.aatol')); if (at >= AA_TOL.min && at <= AA_TOL.max) S.aaTol = at;
@@ -11778,7 +11769,7 @@ function lsSet(key, value) { scheduleHash();   // jede abgelegte Einstellung geh
 function persistSettings() {   // nach erteilter Einwilligung die aktuellen Einstellungen ablegen
   { const z = S; Object.assign(GLAETTUNG_VORGABE, { aa: z.aa, aaMode: z.aaMode, aaTol: z.aaTol, aaMax: z.aaMax, aaSigma: z.aaSigma }); lsSet('fractal.aa', String(z.aa)); lsSet('fractal.aamode', z.aaMode); lsSet('fractal.aatol', String(z.aaTol)); lsSet('fractal.aamax', String(z.aaMax)); lsSet('fractal.aasigma', String(z.aaSigma)); } /* die zuletzt eingestellte Glättung: Vorgabe für Links ohne Angabe */ lsSet('fractal.palfilter', S.palFilter ? '1' : '0'); lsSet('fractal.palfilterk', String(S.palFilterK)); lsSet('fractal.cycle', S.cycle); lsSet('fractal.bla', S.bla);
   lsSet('fractal.toast', toastAn ? '1' : '0');
-  lsSet('fractal.renderer', S.rendererPref); lsSet('fractal.quality', String(S.quality)); lsSet('fractal.stapelms', String(S.stapelMs)); lsSet('fractal.uivorrang', S.uiVorrang ? '1' : '0'); lsSet('fractal.theme', S.theme); lsSet('fractal.meta', JSON.stringify(META));
+  lsSet('fractal.renderer', S.rendererPref); lsSet('fractal.quality', String(S.quality)); lsSet('fractal.stapelms', String(S.stapelMs)); lsSet('fractal.uivorrang', S.uiVorrang ? '1' : '0'); lsSet('fractal.theme', S.theme);
   if (customPalettes.length) lsSet('fractal.palettes', JSON.stringify(customPalettes));
   if (eigene2.length) lsSet('fractal.palettes2', JSON.stringify(eigene2));
 }
@@ -14522,7 +14513,7 @@ const UNDO_MAX = 60;   // so viele Schritte hält der Stapel; ältere fallen unt
 let undoStapel = [], redoStapel = [], undoStand = null, undoStandV = null, undoStill = false;
 function undoJetztSchreiben() { clearTimeout(hashTimer); writeHash(); }   // die verzögerte Aufzeichnung sofort nachholen
 function undoStandJetzt() {   // Schnappschuss für Rückgängig: die Parameter (mit Farben und Glättung) und dazu die Gerätewerte, die nicht im Link stehen
-  const o = metaObjekt({ params: true }); if (!o) return null;
+  const o = metaObjekt();
   o.extra = { cycle: S.cycle, bla: S.bla, quality: S.quality };   // applyState liest sie wie aus einer älteren Datei
   return JSON.stringify(o);
 }
@@ -14628,10 +14619,10 @@ function stateJSON() {   // vollständiger Zustand: der Link als lesbares Objekt
 }
 // Metadaten fürs Bild: nur die angehakten Angaben, genau in dieser Form; nichts angehakt = kein Textblock in der Datei.
 // Ältere Dateien tragen noch Name, Version und Datum; der Leser zeigt sie, geschrieben werden sie nicht mehr.
-function metaObjekt(m = META) {   // ein Block: die Parameter der Ansicht, vollständig und lesbar (Farben und Glättung stehen darin)
-  return m.params ? { params: linkObjekt(buildParams()) } : null;
+function metaObjekt() {   // ein Block, immer: die Parameter der Ansicht, vollständig und lesbar (Farben und Glättung stehen darin)
+  return { params: linkObjekt(buildParams()) };
 }
-function metaText(m = META) { const o = metaObjekt(m); return o ? JSON.stringify(o, null, 2) : null; }   // eingerückt, damit es auch in der Datei lesbar ist
+function metaText() { return JSON.stringify(metaObjekt(), null, 2); }   // eingerückt, damit es auch in der Datei lesbar ist
 function applyState(obj) {   // Zustand aus einer Datei übernehmen und rendern; params als Objekt (Version 2) oder String (Version 1)
   const text = obj && (typeof obj.params === 'string' ? obj.params : obj.params && typeof obj.params === 'object' ? linkText(obj.params) : null);
   if (!text) return false;
@@ -15120,18 +15111,13 @@ function posterUpdateInfo() {
   syncMetaUI();
 }
 for (const el of [posterFmt, $('posterRes')]) el.addEventListener('input', posterUpdateInfo);
-// Metadaten im Speichern-Dialog: Häkchen aus META, Vorschau des genauen Textes, Hinweis, wo er in der Datei liegt
-const META_FELDER = { params: 'metaParams' };   // ein Häkchen: die Parameter der Ansicht enthalten Farben und Glättung (Version 2)
+// Bildangaben im Speichern-Dialog: der genaue Text, der in die Datei kommt (immer die Parameter), und der Hinweis, wo er liegt
 function syncMetaUI() {
-  for (const [k, id] of Object.entries(META_FELDER)) $(id).checked = !!META[k];
-  const text = metaText();
-  const ta = $('metaText'); ta.value = text || t('meta.nothing-written');
+  const ta = $('metaText'); ta.value = metaText();
   ta.style.height = 'auto'; ta.style.height = (ta.scrollHeight + 4) + 'px';   // ganz zu sehen, auch umgebrochene Zeilen; der Abschnitt rollt (der Dialog ist dabei sichtbar)
   if (ta.scrollHeight > ta.clientHeight) ta.style.height = (ta.scrollHeight + 4) + 'px';   // zweiter Durchgang: eine Rollleiste, die eben erst erschien, macht das Feld schmaler und den Text länger
   $('metaWo').textContent = t(posterFmt.value === 'jpg' ? 'meta.where-jpg' : 'meta.where-png') + ' ' + t('meta.readable');
 }
-function metaSetzen(aenderung) { Object.assign(META, aenderung); lsSet('fractal.meta', JSON.stringify(META)); syncMetaUI(); }
-for (const [k, id] of Object.entries(META_FELDER)) $(id).addEventListener('change', () => metaSetzen({ [k]: $(id).checked }));
 $('cropScreen').addEventListener('click', () => { posterCrop = null; posterUpdateInfo(); });   // „Bildschirm“ verwirft den Rahmen
 // Zustand und Knöpfe des Dialogs als deutscher Text (mit Werten), gezeigt in der gewählten Sprache: so zieht ein Sprachwechsel nach
 let posterZustandJetzt = ['technical.ready'];

@@ -104,10 +104,10 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
     cy.get('#posterCancel').click();
   });
 
-  it('Metadaten: jede Angabe hat ihr Häkchen, der genaue Text ist zu sehen, die Wahl bleibt im Browser', () => {
+  it('Bildangaben: kein Häkchen mehr, die Parameter stehen immer in der Datei, der genaue Text ist zu sehen', () => {
     cy.get('#save').click();
     cy.get('#posterMeta').should('be.visible');
-    cy.get('#metaParams').should('be.checked'); cy.get('#metaColors, #metaTech').should('not.exist');   // ein Häkchen: die Parameter enthalten Farben und Glättung (19.09.2026)
+    cy.get('#metaParams, #metaColors, #metaTech').should('not.exist');   // seit 19.09.2026 nichts mehr abzuwählen: die Parameter enthalten Farben und Glättung
     cy.get('#metaApp, #metaDate, #metaUrl, #metaNone, #metaAll, #posterMetaKurz').should('not.exist');   // kein Name, kein Datum, kein Link, keine Sammelknöpfe
     cy.get('#posterMeta').should('be.visible');   // immer offen
     cy.get('#metaText').invoke('val').should('match', /^\{\n  "params": \{\n    "mode": "mandel"/);   // eingerückt und lesbar: ein Objekt, keine kodierte Zeile
@@ -121,14 +121,8 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
     cy.get('#metaWo').should('contain.text', 'iTXt');
     cy.pickOption('posterFmt', 'jpg');
     cy.get('#metaWo').should('contain.text', 'Kommentar');
-    cy.get('#metaParams').uncheck({ force: true });   // nichts mehr angehakt
-    cy.get('#metaText').invoke('val').should('contain', 'keinen Textblock');
-    cy.window().then(win => expect(JSON.parse(win.localStorage.getItem('fractal.meta')).params, 'die Wahl im Browser').to.eq(false));
-    cy.get('#metaParams').check({ force: true }).should('be.checked');
-    cy.get('#posterCancel').click();
-    cy.visitApp('', { keep: true });   // beim nächsten Besuch gilt die Wahl weiter
-    cy.get('#save').click();
-    cy.get('#metaParams').should('be.checked');
+    cy.get('#metaText').invoke('val').should('match', /^\{\n  "params"/);   // auch bei JPEG derselbe Text
+    cy.window().then(win => expect(win.localStorage.getItem('fractal.meta'), 'keine Wahl mehr im Browser').to.be.null);
     cy.get('#posterCancel').click();
   });
 
@@ -379,7 +373,6 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
   it('Rollen: am Schreibtisch nimmt der Metadaten-Abschnitt den Rest, zeigt das ganze Textfeld und rollt bis zum Ende; Knöpfe und Regler bleiben stehen', () => {
     langerStand();
     cy.get('#save').click(); cy.get('#poster').should('be.visible');
-    cy.get('#metaParams').check();
     cy.get('#metaText').invoke('val').should('match', /"l3": \{/);   // langer Text: drei Ebenen und Nachbearbeitung
     dialogPasst(720); textGanzDa(); abschnittRollt();
     cy.get('#posterMeta').scrollTo('bottom');
@@ -388,9 +381,8 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
     cy.get('#posterCancel').click();
   });
 
-  it('Rollen: mehr Ebenen, mehr Text – der Abschnitt wächst mit; ohne Häkchen steht nur ein Satz und nichts rollt', () => {
+  it('Rollen: mehr Ebenen, mehr Text – der Abschnitt wächst mit, das Textfeld bleibt ganz da', () => {
     cy.get('#save').click(); cy.get('#poster').should('be.visible');
-    cy.get('#metaParams').check();
     cy.get('#posterMeta').then($m => {
       const ohne = $m[0].scrollHeight;
       cy.get('#posterCancel').click();
@@ -399,11 +391,6 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
       cy.get('#metaText').invoke('val').should('match', /"l2": \{/);   // die Ebene als verschachteltes Objekt
       textGanzDa();
       cy.get('#posterMeta').should($n => expect($n[0].scrollHeight, 'länger mit Ebenen').to.be.greaterThan(ohne));
-      cy.get('#metaParams').uncheck({ force: true });
-      cy.get('#metaText').invoke('val').should('not.match', /^\{/);   // nichts angehakt: der Hinweis statt JSON
-      textGanzDa();
-      cy.get('#posterMeta').should($n => expect($n[0].scrollHeight, 'nichts zu rollen').to.be.at.most($n[0].clientHeight + 1));
-      cy.get('#metaParams').check({ force: true });
     });
     cy.get('#posterCancel').click();
   });
@@ -413,7 +400,6 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
       cy.viewport(w, h);
       langerStand();
       cy.get(w < 640 ? '#tabSave' : '#save').click({ force: true }); cy.get('#poster').should('be.visible');
-      cy.get('#metaParams').check({ force: true });
       dialogPasst(h); textGanzDa(); abschnittRollt();
       cy.get('#posterCancel').click();
     });
@@ -423,7 +409,6 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
     cy.viewport(390, 480);
     langerStand();
     cy.get('#tabSave').click(); cy.get('#poster').should('be.visible');
-    cy.get('#metaParams').check({ force: true });
     dialogPasst(480);
     cy.get('#posterMeta').should($m => expect($m[0].clientHeight, 'Mindesthöhe').to.be.at.least(60));
     textGanzDa(); abschnittRollt();
@@ -433,7 +418,6 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
   it('Rollen: der Wechsel zu JPEG ändert nur den Hinweis, der Abschnitt bleibt rollbar; Wiederöffnen beginnt oben', () => {
     langerStand();
     cy.get('#save').click(); cy.get('#poster').should('be.visible');
-    cy.get('#metaParams').check();
     cy.get('#posterMeta').scrollTo('bottom', { ensureScrollable: true });
     cy.pickOption('posterFmt', 'jpg');
     cy.get('#metaWo').invoke('text').should('match', /JPEG|Kommentar/);
