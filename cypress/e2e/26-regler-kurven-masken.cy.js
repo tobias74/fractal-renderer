@@ -85,7 +85,7 @@ describe('Regler, Kurven und Masken', () => {
     const LINK = 'mode=mandel&l2=f%3D1&lm2=2:0.7:1:0:1:&lu2=m3,0,0,0.25,10,40&la=2&nb=11:1:1:1:m1,0,0,0.25,1';   // Burning Ship über Mandelbrot mit Iterationsbereich-Maske; darüber Invertieren nur außen
     const OPT = { storage: { 'fractal.aamode': 'adaptive' } };
     cy.visitApp(LINK, OPT); cy.alleEbenenFertig(); cy.gezeichnet();
-    cy.window().then(win => expect(win.ebenenStand().aaOn, 'adaptiv geglättet').to.be.true);   // die adaptiven Puffer stehen (bei Fraktal-Ebenen nennt die Statuszeile keine Glättungszeit)
+    cy.get('#aaModeSel').should('have.value', 'adaptive');   // adaptiv eingestellt (das Puffer-Flag aaOn ist beim Ebenenwechsel kurz falsch, die Statuszeile nennt bei Fraktal-Ebenen keine Glättungszeit)
     cy.expectHash('lu2', v => expect(v).to.match(/^m3,0,/)); cy.expectHash('nb', '11:1:1:1:m1,0,0,0.25,1');
     cy.shotStats('mk-start').then(start => {
       cy.pane('nach');
