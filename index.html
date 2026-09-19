@@ -947,6 +947,9 @@
           <option value="2" data-i18n="subject.shape-diamond"></option>
           <option value="3" data-i18n="subject.shape-strip-re"></option>
           <option value="4" data-i18n="subject.shape-strip-im"></option>
+          <option value="5" data-i18n="subject.shape-product"></option>
+          <option value="6" data-i18n="subject.shape-diff-squares"></option>
+          <option value="7" data-i18n="subject.shape-diff-abs"></option>
         </select>
         <div class="lbl wertzeile"><label for="fluchtRadius" data-i18n-title="subject.escape-radius-title" data-i18n="subject.escape-radius"></label><input class="val mono wert" id="fluchtRadiusVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="fluchtRadius" type="range" min="0" max="1000" value="0">
@@ -3083,12 +3086,15 @@ const TEXTE = {
   'subject.rotation-title': { de: 'Dreht die Ansicht um die Bildmitte, gegen den Uhrzeigersinn. Die Rechenebene bleibt dieselbe, nur der Blick darauf dreht sich; Zoomen und Schieben folgen der gedrehten Ansicht.', en: 'Turns the view about the image centre, counter-clockwise. The plane stays the same, only the view of it turns; zooming and panning follow the turned view.' },
   'subject.escape-radius-title': { de: 'Ab welchem Abstand ein Punkt als entkommen gilt. Vorgabe: 100 (bei den Bahnmitteln 100 000). Kleine Werte wie 2 zeichnen die Fluchtgrenze in die Bänder, besonders mit „Gestuft“. Unter 2 gelten auch Bahnen als entkommen, die beschränkt blieben: die Menge zerfällt in runde Blasen.', en: 'Beyond which distance a point counts as escaped. Default 100 (100 000 for the orbit averages). Small values such as 2 draw the escape boundary into the bands, especially with “Stepped”. Below 2, orbits that stay bounded count as escaped too: the set breaks into round bubbles.' },
   'subject.escape-shape': { de: 'Fluchtgrenze', en: 'Escape boundary' },
-  'subject.escape-shape-title': { de: 'Die Form des Fluchttests: Kreis (Betrag), Quadrat (größerer Teil), Raute (Summe der Teile) oder ein Streifen nur nach Real- oder Imaginärteil.', en: 'The shape of the escape test: circle (magnitude), square (larger part), diamond (sum of parts) or a strip by real or imaginary part only.' },
+  'subject.escape-shape-title': { de: 'Die Form des Fluchttests: Kreis (Betrag), Quadrat (größerer Teil), Raute (Summe der Beträge), ein Streifen nur nach Real- oder Imaginärteil, das Produkt der Teile (Hyperbeln an den Achsen, nahe einer Achse entkommt nichts), die Differenz der Quadrate (Hyperbeln zu den Diagonalen) oder die Differenz der Beträge (Streifen entlang der Diagonalen). Der Fluchtradius gilt für jede Form als Abstand.', en: 'The shape of the escape test: circle (magnitude), square (larger part), diamond (sum of magnitudes), a strip by the real or imaginary part only, the product of the parts (hyperbolas at the axes, nothing near an axis escapes), the difference of squares (hyperbolas towards the diagonals) or the difference of magnitudes (strips along the diagonals). The escape radius counts as a distance for every shape.' },
   'subject.shape-circle': { de: 'Kreis', en: 'Circle' },
   'subject.shape-diamond': { de: 'Raute', en: 'Diamond' },
   'subject.shape-square': { de: 'Quadrat', en: 'Square' },
   'subject.shape-strip-im': { de: 'Streifen (Im)', en: 'Strip (Im)' },
   'subject.shape-strip-re': { de: 'Streifen (Re)', en: 'Strip (Re)' },
+  'subject.shape-product': { de: 'Produkt |Re·Im|', en: 'Product |Re·Im|' },
+  'subject.shape-diff-squares': { de: 'Differenz der Quadrate |Re² − Im²|', en: 'Difference of squares |Re² − Im²|' },
+  'subject.shape-diff-abs': { de: 'Differenz der Beträge ||Re| − |Im||', en: 'Difference of magnitudes ||Re| − |Im||' },
   'subject.default-radius': { de: 'Vorgabe', en: 'default' },
   'subject.biomorph': { de: 'Biomorph (Nachtest)', en: 'Biomorph (final test)' },
   'subject.biomorph-title': { de: 'Pickovers Nachtest: Bahnen, bei denen beim Ausbruch nur eine Komponente von z die Grenze überschritt, zählen als innen. Mit Fluchtgrenze Quadrat und großem Radius entstehen die zelligen Biomorph-Formen.', en: 'Pickover\'s final test: orbits where only one component of z crossed the boundary at escape count as inside. With the square escape shape and a large radius this gives the cell-like biomorph shapes.' },
@@ -4197,7 +4203,7 @@ override PAARB: u32 = 0u;
 override PAARVOLL: u32 = 0u;
 override HYBRID: u32 = 0u;       // Hybrid-Folge: zwei Formeln im Wechsel, direkt in fp32 (ohne sie bleibt der Schalter auf die Formel A gefaltet)
 override TEXZ: u32 = 0u;         // Textur über einer Statistik-Färbung: die Färbung behält den y-Kanal, die Texturwerte stehen als 16-Bit-Hälften im z-Kanal (rgba32uint)
-override FORM: u32 = 0u;         // Form der Fluchtgrenze: 0 Kreis (|z|), 1 Quadrat (max |Re|, |Im|), 2 Raute (|Re| + |Im|), 3 Streifen |Re|, 4 Streifen |Im|
+override FORM: u32 = 0u;         // Form der Fluchtgrenze: 0 Kreis (|z|), 1 Quadrat (max |Re|, |Im|), 2 Raute (|Re| + |Im|), 3 Streifen |Re|, 4 Streifen |Im|, 5 Produkt |Re·Im|, 6 Differenz der Quadrate |Re² − Im²|, 7 Differenz der Beträge ||Re| − |Im||
 override WINKEL: u32 = 0u;       // Winkel von z in den zweiten Kanal: Bit 0 beim Ausbruch (Färbung nach Fluchtwinkel), Bit 1 innen am Ende (Innen: Winkel); Bit 2: äußerer Winkel sammeln (mit Bit 0 statt des Fluchtwinkels ausgegeben)
 
 @vertex fn vs(@builtin(vertex_index) vi: u32) -> @builtin(position) vec4f {
@@ -4217,6 +4223,9 @@ fn flucht(z: vec2f) -> f32 {   // Maß des Fluchttests, quadriert wie der Radius
   if (FORM == 2u) { let m = abs(z.x) + abs(z.y); return m * m; }
   if (FORM == 3u) { return z.x * z.x; }
   if (FORM == 4u) { return z.y * z.y; }
+  if (FORM == 5u) { return abs(z.x * z.y); }                                   // Produkt der Teile: schon Länge²
+  if (FORM == 6u) { return abs(z.x * z.x - z.y * z.y); }                       // Differenz der Quadrate: Länge²
+  if (FORM == 7u) { let m = abs(abs(z.x) - abs(z.y)); return m * m; }          // Differenz der Beträge: quadriert
   return dot(z, z);
 }
 fn cpow(z: vec2f, n: u32) -> vec2f { var r = vec2f(1.0, 0.0); for (var k = 0u; k < n; k++) { r = cmul(r, z); } return r; }
@@ -6470,6 +6479,9 @@ float flucht(vec2 z) {   // wie im WGSL-Shader
   if (FORM == 2u) { float m = abs(z.x) + abs(z.y); return m * m; }
   if (FORM == 3u) return z.x * z.x;
   if (FORM == 4u) return z.y * z.y;
+  if (FORM == 5u) return abs(z.x * z.y);
+  if (FORM == 6u) return abs(z.x * z.x - z.y * z.y);
+  if (FORM == 7u) { float m = abs(abs(z.x) - abs(z.y)); return m * m; }
   return dot(z, z);
 }
 out uvec4 outIter;   // z: Texturwerte über einer Statistik-Färbung (rgba32uint), sonst ungenutzt
@@ -11537,7 +11549,7 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
   { const fq = FORMULAS[S.formula].param2, tq = (h.get('pq') || '').split(':').map(parseFloat);   // Formel 17: Potenz b, Faktor d, Potenz f
     if (fq) S.param2 = fq.map((q, k) => Number.isFinite(tq[k]) ? clamp(tq[k], q[1], q[2]) : q[3]); }
   { const pk = parseInt(h.get('pk'), 10); S.zweig = FORMULAS[S.formula].param2 && Number.isFinite(pk) ? clamp(pk, -8, 8) : 0; }   // Zweig des kritischen Startwerts
-  const ff = parseInt(h.get('ff'), 10); S.fluchtForm = Number.isFinite(ff) ? clamp(ff, 0, 4) : 0;   // Fluchtgrenze: Form und Radius (0 = Vorgabe)
+  const ff = parseInt(h.get('ff'), 10); S.fluchtForm = Number.isFinite(ff) ? clamp(ff, 0, 7) : 0;   // Fluchtgrenze: Form und Radius (0 = Vorgabe)
   const fr = parseFloat(h.get('fr')); S.fluchtRadius = Number.isFinite(fr) && fr > 0 ? clamp(fr, FLUCHT.min, FLUCHT.max) : 0;
   const dr = parseFloat(h.get('dr')); S.dreh = Number.isFinite(dr) ? drehNorm(dr) : 0;   // Drehung der Ansicht in Grad (0 = keine)
   S.biomorph = h.get('bm') === '1';   // Biomorph-Nachtest
@@ -13100,7 +13112,7 @@ $('dreh').addEventListener('input', () => setzeDreh(+$('dreh').value));
 const setzeFluchtRadius = v => { S.fluchtRadius = v > 0 ? clamp(v, FLUCHT.min, FLUCHT.max) : 0; syncFlucht(); scheduleHash(); viewChanged(); };   // neu rechnen: der Test steckt in der Iteration
 $('fluchtRadius').addEventListener('input', () => setzeFluchtRadius(posToFr(+$('fluchtRadius').value)));
 $('biomorph').addEventListener('change', () => { S.biomorph = $('biomorph').checked; scheduleHash(); viewChanged(); });   // Nachtest: neu rechnen
-$('fluchtForm').addEventListener('change', () => { S.fluchtForm = clamp(parseInt($('fluchtForm').value, 10) || 0, 0, 4); scheduleHash(); viewChanged(); });
+$('fluchtForm').addEventListener('change', () => { S.fluchtForm = clamp(parseInt($('fluchtForm').value, 10) || 0, 0, 7); scheduleHash(); viewChanged(); });
 function syncFnUI() {   // Funktionsauswahl: die Liste der Formel, Wahl aus dem Zustand
   const fl = FORMULAS[S.formula].fn, sel = $('fnSel');
   $('fnRow').hidden = !fl || S.family !== 'escape';
