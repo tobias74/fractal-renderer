@@ -33,7 +33,7 @@ describe('Farbe und Farbschema-Editor', () => {
       cy.revealInDetails('palEdit');
       cy.get('#palEdit').click();
       cy.get('#peArt [data-art="quilez"]').click();
-      cy.get('#peQuilez input').should('have.length', 12);
+      cy.get('#peQuilez input[type=range]').should('have.length', 12); cy.get('#peQuilez input.pe-wert').should('have.length', 12);   // je Regler ein Feld zum Tippen (19.09.2026)
       cy.get('#peStops').should('not.be.visible');
       cy.waitRender();
       cy.shotStats('quilez-klassisch').then(b => {
@@ -41,12 +41,26 @@ describe('Farbe und Farbschema-Editor', () => {
       });
     });
     cy.expectHash('cp', v => expect(v).to.contain('~q~0.5,0.5,0.5,0.5,0.5,0.5,1,1,1,0.5,0.6,0.7'));
-    cy.get('#peQuilez input[data-k="d"][data-i="0"]').invoke('val', 0.2).trigger('input');
+    cy.get('#peQuilez input[type=range][data-k="d"][data-i="0"]').invoke('val', 0.2).trigger('input');
     cy.expectHash('cp', v => expect(v).to.contain(',0.2,0.6,0.7'));
+    cy.get('#peQuilez input.pe-wert[data-k="d"][data-i="0"]').should('have.value', '0,20');   // das Feld folgt dem Regler
     cy.get('#peArt [data-art="stops"]').click();   // als Stützstellen weiterführen, zurück kommt die Formel unverändert
     cy.get('#peStops .pe-stop').should('have.length', 8);
     cy.get('#peArt [data-art="quilez"]').click();
-    cy.get('#peQuilez input[data-k="d"][data-i="0"]').should('have.value', '0.2');
+    cy.get('#peQuilez input[type=range][data-k="d"][data-i="0"]').should('have.value', '0.2');
+    // Getippte Koeffizienten: Enter übernimmt und stellt den Regler, Escape verwirft, Unlesbares stellt zurück, Werte klemmen an den Reglerbereich
+    cy.get('#peQuilez input.pe-wert[data-k="c"][data-i="1"]').clear().type('0,2{enter}');   // c, Grün: eine langsame Welle
+    cy.get('#peQuilez input.pe-wert[data-k="c"][data-i="1"]').should('have.value', '0,20');
+    cy.get('#peQuilez input[type=range][data-k="c"][data-i="1"]').should('have.value', '0.2');
+    cy.expectHash('cp', v => expect(v, 'die Formel im Link').to.contain('~q~0.5,0.5,0.5,0.5,0.5,0.5,1,0.2,1,0.2,0.6,0.7'));
+    cy.get('#peQuilez input.pe-wert[data-k="c"][data-i="1"]').clear().type('9{esc}');   // Escape: der alte Wert bleibt
+    cy.get('#peQuilez input.pe-wert[data-k="c"][data-i="1"]').should('have.value', '0,20');
+    cy.get('#peQuilez input.pe-wert[data-k="c"][data-i="1"]').clear().type('abc{enter}');   // unlesbar: zurück
+    cy.get('#peQuilez input.pe-wert[data-k="c"][data-i="1"]').should('have.value', '0,20');
+    cy.get('#peQuilez input.pe-wert[data-k="c"][data-i="1"]').clear().type('9{enter}');   // über dem Reglerbereich: geklemmt auf 3
+    cy.get('#peQuilez input.pe-wert[data-k="c"][data-i="1"]').should('have.value', '3,00');
+    cy.get('#peQuilez input[type=range][data-k="c"][data-i="1"]').should('have.value', '3');
+    cy.expectHash('cp', v => expect(v).to.contain(',1,3,1,'));
   });
 
   it('Palette, Verlauf, Randlinien und Innen wirken auf Adresse und Bild', () => {
@@ -602,14 +616,28 @@ describe('Zweidimensionale Paletten', () => {
     cy.shotStats('q2-vorher').then(a => {
       editor();
       cy.get('#p2eArt [data-art="formel"]').should('have.class', 'on');
-      cy.get('#p2eRegler input').should('have.length', 15);
+      cy.get('#p2eRegler input[type=range]').should('have.length', 15); cy.get('#p2eRegler input.pe-wert').should('have.length', 15);   // je Regler ein Feld zum Tippen (19.09.2026)
       cy.get('#p2eQuad [data-q="3"]').should('have.class', 'on');
       cy.waitRender();
       cy.shotStats('q2-kopie').then(b => gleich(a, b, 'die Kopie färbt wie das Original'));
       cy.get('#p2eQuad [data-q="0"]').click().should('have.class', 'on');
+      cy.get('#p2eRegler input.pe-wert[data-k="2"][data-i="0"]').clear().type('0,3{enter}');   // getippt im Quadranten „− −“ allein: die anderen bleiben, wie sie sind
+      cy.get('#p2eRegler input.pe-wert[data-k="2"][data-i="0"]').should('have.value', '0,30');
+      cy.get('#p2eRegler input[type=range][data-k="2"][data-i="0"]').should('have.value', '0.3');
+      cy.get('#p2eQuad [data-q="3"]').click(); cy.get('#p2eRegler input.pe-wert[data-k="2"][data-i="0"]').should('not.have.value', '0,30');
+      cy.get('#p2eQuad [data-q="0"]').click().should('have.class', 'on');
       cy.get('#p2eGleich').check({ force: true });                   // alle vier Quadranten wie der gewählte
-      cy.get('#p2eRegler input[data-k="0"][data-i="0"]').invoke('val', 0).trigger('input', { force: true });   // a, Rot: kein Rot mehr
+      cy.get('#p2eRegler input[type=range][data-k="0"][data-i="0"]').invoke('val', 0).trigger('input', { force: true });   // a, Rot: kein Rot mehr
       cy.expectHash('cp2', v => expect(v).to.contain('~f~0,'));
+      cy.get('#p2eRegler input.pe-wert[data-k="0"][data-i="0"]').should('have.value', '0,00');   // das Feld folgt dem Regler
+      cy.get('#p2eRegler input.pe-wert[data-k="2"][data-i="0"]').clear().type('-0,65{enter}');   // cu, Rot getippt: Regler und alle vier Quadranten folgen
+      cy.get('#p2eRegler input.pe-wert[data-k="2"][data-i="0"]').should('have.value', '-0,65');
+      cy.get('#p2eRegler input[type=range][data-k="2"][data-i="0"]').should('have.value', '-0.65');
+      cy.get('#p2eQuad [data-q="2"]').click(); cy.get('#p2eRegler input.pe-wert[data-k="2"][data-i="0"]').should('have.value', '-0,65');   // im anderen Quadranten dasselbe (alle gleich)
+      cy.get('#p2eRegler input.pe-wert[data-k="2"][data-i="0"]').clear().type('7{enter}');   // über dem Reglerbereich: geklemmt auf 4
+      cy.get('#p2eRegler input.pe-wert[data-k="2"][data-i="0"]').should('have.value', '4,00');
+      cy.get('#p2eRegler input[type=range][data-k="2"][data-i="0"]').should('have.value', '4');
+      cy.get('#p2eQuad [data-q="0"]').click();
       cy.waitRender();
       cy.shotStats('q2-geaendert').then(c => anders(a, c, 'andere Farben'));
       cy.get('#p2eReset').click();

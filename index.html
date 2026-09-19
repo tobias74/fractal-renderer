@@ -460,6 +460,11 @@
   .pe-q { display: flex; flex-direction: column; gap: 2px; }
   .pe-rgb { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .pe-rgb input[type=range] { margin: 2px 0 4px; accent-color: var(--kanal); }
+  .pe-q .pe-werte { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 2px; }   /* getippte Koeffizienten: ein Feld je Kanal, über seinem Regler, der linke Rand in der Kanalfarbe */
+  .pe-q .pe-wert { width: 100%; min-width: 0; padding: 2px 5px; font-size: 11px; border-left-width: 3px; }
+  .pe-q .pe-wert[data-i="0"] { border-left-color: #e0625a; }
+  .pe-q .pe-wert[data-i="1"] { border-left-color: #5cc26e; }
+  .pe-q .pe-wert[data-i="2"] { border-left-color: #5b8ee6; }
   .pe-rgb input:nth-child(1) { --kanal: #e0625a; }
   .pe-rgb input:nth-child(2) { --kanal: #5cc26e; }
   .pe-rgb input:nth-child(3) { --kanal: #5b8ee6; }
@@ -3161,6 +3166,7 @@ const TEXTE = {
 };
 for (const k of ['a', 'b', 'c', 'd', 'cu', 'cv']) ['red', 'green', 'blue'].forEach((farbe, i) => {   // Regler der Quilez-Paletten
   TEXTE['quilez.slider.' + k + '.' + farbe] = { de: k + ', ' + ['Rot', 'Grün', 'Blau'][i], en: k + ', ' + farbe };
+  TEXTE['quilez.field.' + k + '.' + farbe] = { de: k + ', ' + ['Rot', 'Grün', 'Blau'][i] + ', Eingabe', en: k + ', ' + farbe + ', input' };
 });
 const FEHLENDE_TEXTE = new Set();   // Schlüssel ohne Eintrag; ein Test prüft, dass diese Liste leer bleibt
 function t(schluessel, ...werte) {   // Text in der gewählten Sprache, Platzhalter {0}, {1} … mit Werten gefüllt
@@ -12672,19 +12678,29 @@ function pePreviewDraw() {
 }
 // Quilez-Palette: Farbe = a + b·cos(2π(c·t + d)) je Kanal; je Größe drei Regler (Rot, Grün, Blau)
 const PE_REGLER = [['a', 'panel.base', 0, 1, 0.01], ['b', 'panel.b-amplitude', 0, 1, 0.01], ['c', 'panel.c-repetitions', 0, 3, 0.05], ['d', 'panel.d-offset', 0, 1, 0.01]];
+function peWertFeld(f, setzen) {   // getippter Koeffizient: Enter oder Verlassen übernimmt (setzen liefert den geklemmten Wert), Escape verwirft, Unlesbares stellt zurück
+  const uebernehmen = () => { if (f.value === f.dataset.vorher) return; const v = leseZahl(f.value); if (isFinite(v)) f.value = fmtZahl(setzen(v), 2); else f.value = f.dataset.vorher || f.value; f.dataset.vorher = f.value; };
+  f.addEventListener('focus', () => { f.dataset.vorher = f.value; f.select(); });
+  f.addEventListener('keydown', e => { if (e.key === 'Escape') { f.value = f.dataset.vorher || f.value; f.blur(); e.preventDefault(); } else if (e.key === 'Enter') { uebernehmen(); f.blur(); } e.stopPropagation(); });   // Tasten bleiben im Feld (keine Zoomtasten)
+  f.addEventListener('change', uebernehmen);
+}
 for (const [k, titel, lo, hi, schritt] of PE_REGLER) {
   const g = document.createElement('div'); g.className = 'pe-q';
-  g.innerHTML = '<div class="lbl"><span></span><span class="val mono"></span></div><div class="pe-rgb"></div>';
+  g.innerHTML = '<div class="lbl"><span></span></div><div class="pe-werte"></div><div class="pe-rgb"></div>';
   festerText(g.querySelector('.lbl span'), titel);
   ['red', 'green', 'blue'].forEach((farbe, i) => {
     const r = document.createElement('input'); r.type = 'range'; r.min = lo; r.max = hi; r.step = schritt; r.dataset.k = k; r.dataset.i = i;
     festesAttribut(r, 'aria-label', 'quilez.slider.' + k + '.' + farbe);
     r.addEventListener('input', () => { peDraft[k][i] = +r.value; peQuilezWerte(); peChanged(); });
     g.querySelector('.pe-rgb').append(r);
+    const f = document.createElement('input'); f.type = 'text'; f.className = 'val mono wert pe-wert'; f.inputMode = 'decimal'; f.spellcheck = false; f.autocomplete = 'off'; f.dataset.k = k; f.dataset.i = i;   // das Feld zum Tippen
+    festesAttribut(f, 'aria-label', 'quilez.field.' + k + '.' + farbe);
+    peWertFeld(f, v => { peDraft[k][i] = clamp(v, lo, hi); r.value = peDraft[k][i]; peQuilezWerte(); peChanged(); return peDraft[k][i]; });
+    g.querySelector('.pe-werte').append(f);
   });
   $('peQuilez').append(g);
 }
-function peQuilezWerte() { for (const g of $('peQuilez').children) { const k = g.querySelector('input').dataset.k; g.querySelector('.val').textContent = peDraft[k].map(v => fmtZahl(v, 2)).join(' · '); } }
+function peQuilezWerte() { for (const f of $('peQuilez').querySelectorAll('input.pe-wert')) if (document.activeElement !== f) f.value = fmtZahl(peDraft[f.dataset.k][+f.dataset.i], 2); }   // ein Feld, in dem getippt wird, bleibt in Ruhe
 let peFormel = null;   // zuletzt eingestellte Formel: Hin- und Herschalten zwischen den Arten verliert sie nicht
 function peArtWechseln(quilez) {
   if (quilez === !!peDraft.a) return;
@@ -12706,7 +12722,7 @@ function peRender() {
   for (const b of $('peArt').querySelectorAll('button')) { const on = (b.dataset.art === 'quilez') === quilez; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); }
   peStops.hidden = quilez; $('peStopKnoepfe').hidden = quilez; $('peCyclic').parentElement.hidden = quilez; $('peRaum').parentElement.hidden = quilez;
   $('peQuilez').hidden = !quilez;
-  if (quilez) { for (const r of $('peQuilez').querySelectorAll('input')) r.value = peDraft[r.dataset.k][+r.dataset.i]; peQuilezWerte(); }
+  if (quilez) { for (const r of $('peQuilez').querySelectorAll('input[type=range]')) r.value = peDraft[r.dataset.k][+r.dataset.i]; peQuilezWerte(); }
   peStops.replaceChildren();
   if (!quilez) peDraft.stops.forEach((st, i) => {
     const row = document.createElement('div'); row.className = 'pe-stop';
@@ -12956,19 +12972,23 @@ $('p2eMitB').addEventListener('change', e => { p2Draft.b = e.target.checked ? JS
 const P2E_REGLER = [['a', 'panel.base', 0, 1, 0.01], ['b', 'panel.b-amplitude', 0, 1, 0.01], ['cu', 'panel.cu-repetitions-along-first', -4, 4, 0.05], ['cv', 'panel.cv-repetitions-along-second', -4, 4, 0.05], ['d', 'panel.d-offset', 0, 1, 0.01]];
 P2E_REGLER.forEach(([buchstabe, titel, lo, hi, schritt], k) => {
   const g = document.createElement('div'); g.className = 'pe-q';
-  g.innerHTML = '<div class="lbl"><span></span><span class="val mono"></span></div><div class="pe-rgb"></div>';
+  g.innerHTML = '<div class="lbl"><span></span></div><div class="pe-werte"></div><div class="pe-rgb"></div>';
   festerText(g.querySelector('.lbl span'), titel);
   ['red', 'green', 'blue'].forEach((farbe, i) => {
     const r = document.createElement('input'); r.type = 'range'; r.min = lo; r.max = hi; r.step = schritt; r.dataset.k = k; r.dataset.i = i;
     festesAttribut(r, 'aria-label', 'quilez.slider.' + buchstabe + '.' + farbe);
     r.addEventListener('input', () => { for (const qi of ($('p2eGleich').checked ? [0, 1, 2, 3] : [p2Quad])) p2Draft.q[qi][i][k] = +r.value; p2eFormelWerte(); p2eChanged(); });
     g.querySelector('.pe-rgb').append(r);
+    const f = document.createElement('input'); f.type = 'text'; f.className = 'val mono wert pe-wert'; f.inputMode = 'decimal'; f.spellcheck = false; f.autocomplete = 'off'; f.dataset.k = k; f.dataset.i = i;   // das Feld zum Tippen
+    festesAttribut(f, 'aria-label', 'quilez.field.' + buchstabe + '.' + farbe);
+    peWertFeld(f, v => { const w = clamp(v, lo, hi); for (const qi of ($('p2eGleich').checked ? [0, 1, 2, 3] : [p2Quad])) p2Draft.q[qi][i][k] = w; p2eFormelWerte(); p2eChanged(); return w; });
+    g.querySelector('.pe-werte').append(f);
   });
   $('p2eRegler').append(g);
 });
 function p2eFormelWerte() {   // Regler und Werte des gewählten Quadranten
-  for (const r of $('p2eRegler').querySelectorAll('input')) r.value = p2Draft.q[p2Quad][+r.dataset.i][+r.dataset.k];
-  [...$('p2eRegler').children].forEach((g, k) => { g.querySelector('.val').textContent = p2Draft.q[p2Quad].map(kan => fmtZahl(kan[k], 2)).join(' · '); });
+  for (const r of $('p2eRegler').querySelectorAll('input[type=range]')) r.value = p2Draft.q[p2Quad][+r.dataset.i][+r.dataset.k];
+  for (const f of $('p2eRegler').querySelectorAll('input.pe-wert')) if (document.activeElement !== f) f.value = fmtZahl(p2Draft.q[p2Quad][+f.dataset.i][+f.dataset.k], 2);   // ein Feld, in dem getippt wird, bleibt in Ruhe
 }
 for (const b of $('p2eQuad').querySelectorAll('button')) b.addEventListener('click', () => { p2Quad = +b.dataset.q; p2eRender(); });
 $('p2eGleich').addEventListener('change', e => {   // alle gleich: der gewählte Quadrant gilt für alle vier
