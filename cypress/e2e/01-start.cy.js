@@ -39,6 +39,20 @@ describe('Start und Grundzustand', () => {
     cy.get('#state').invoke('text').should('match', /Fertig/);
   });
 
+  it('startet nach einem Kontextverlust neu, auch wenn der Grafikprozess erst einen Moment braucht', () => {   // 20.09.2026: am Handy scheiterte der sofortige Wechsel auf WebGL 2 nach VK_ERROR_DEVICE_LOST
+    cy.visitApp('', { storage: { 'fractal.renderer': 'webgl' } });
+    cy.get('#badge').should('have.text', 'WebGL 2'); cy.waitRender();
+    cy.window().then(w => {
+      const gl = w.document.querySelector('#stage canvas').getContext('webgl2');   // der bestehende Kontext, bevor die Attrappe greift
+      const orig = w.HTMLCanvasElement.prototype.getContext; let verweigert = 0;
+      w.HTMLCanvasElement.prototype.getContext = function (...a) { if (a[0] === 'webgl2' && verweigert < 1) { verweigert++; return null; } return orig.apply(this, a); };   // wie ein Grafikprozess, der gerade neu startet: der erste neue Kontext scheitert
+      gl.getExtension('WEBGL_lose_context').loseContext();
+    });
+    cy.get('#badge', { timeout: 15000 }).should('have.text', 'WebGL 2');   // der zweite Anlauf nach der Pause gelingt
+    cy.get('#fatal').should('have.attr', 'hidden');   // nie „keine GPU“
+    cy.waitRender(); cy.gezeichnet().should('eq', true);
+  });
+
   it('zeigt die Bedienhinweise und alle Abschnitte des Bedienfelds', () => {
     cy.visitApp();
     for (const id of ['formula', 'iterRow', 'colorRow', 'aaRow']) cy.rowShown(id, true);
