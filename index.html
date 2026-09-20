@@ -14628,9 +14628,18 @@ function undoMerken() {   // hat sich etwas geändert, wandert der vorige Stand 
   if (undoStand !== null && !undoStill) { undoStapel.push(undoStand); if (undoStapel.length > UNDO_MAX) { undoStapel.shift(); } redoStapel.length = 0; }
   undoStand = jetzt; undoStandV = vergleich; undoKnoepfe();
 }
+function undoEditoren(eins, zwei) {   // den Paletteneditor herrichten, den applyState geschlossen oder mit altem Entwurf stehen gelassen hat
+  if (eins) {
+    if (S.customPal) { peFormel = null; peDraft = JSON.parse(JSON.stringify(S.customPal)); S.customPal = peDraft; peRender(); peShow(true); }
+    else { peOpen(); }   // der Stand kennt kein eigenes Schema: der Entwurf entsteht wie beim Öffnen aus der Vorgabe
+  }
+  if (zwei) { p2eOpen(); }   // dort steckt dieselbe Herleitung des Entwurfs aus dem geltenden Schema
+}
 function undoAnwenden(text) {
+  const edEins = !palEd.hidden, edZwei = !pal2Ed.hidden;   // ein offener Paletteneditor bleibt offen und zeigt danach den wiederhergestellten Stand
   undoStill = true;
   try { applyState(JSON.parse(text)); } catch (e) { /* unlesbarer Schnappschuss: der Stand bleibt, wie er ist */ }
+  undoEditoren(edEins, edZwei);
   undoJetztSchreiben();   // der wiederhergestellte Stand steht damit fest
   undoStill = false; undoStand = undoStandJetzt(); undoStandV = undoStand === null ? null : undoVergleich(undoStand); undoKnoepfe();
 }

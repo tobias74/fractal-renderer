@@ -28,6 +28,26 @@ describe('Farbe und Farbschema-Editor', () => {
     cy.expectHash('pal', 'woodcut');
   });
 
+  it('Rückgängig lässt den offenen Paletteneditor offen und zeigt den Schritt davor', () => {   // 20.09.2026
+    cy.visitApp();
+    cy.revealInDetails('palEdit');
+    cy.get('#palEdit').click();
+    cy.get('#peArt [data-art="quilez"]').click();
+    cy.get('#palEd').should('not.have.attr', 'hidden');
+    cy.get('#peQuilez input[type=range][data-k="d"][data-i="0"]').invoke('val', 0.2).trigger('input');
+    cy.expectHash('cp', v => expect(v).to.contain(',0.2,0.6,0.7'));
+    cy.get('#peQuilez input[type=range][data-k="d"][data-i="1"]').invoke('val', 0.1).trigger('input');
+    cy.expectHash('cp', v => expect(v).to.contain(',0.2,0.1,0.7'));
+    cy.get('#undo').click();
+    cy.get('#palEd').should('not.have.attr', 'hidden');   // der Editor bleibt stehen, statt sich zu schließen
+    cy.get('#peQuilez input[type=range][data-k="d"][data-i="1"]').should('have.value', '0.6');   // und zeigt den Stand davor
+    cy.get('#peQuilez input.pe-wert[data-k="d"][data-i="1"]').should('have.value', '0,60');
+    cy.expectHash('cp', v => expect(v).to.contain(',0.2,0.6,0.7'));
+    cy.get('#redo').click();
+    cy.get('#palEd').should('not.have.attr', 'hidden');
+    cy.get('#peQuilez input[type=range][data-k="d"][data-i="1"]').should('have.value', '0.1');
+  });
+
   it('Quilez-Palette: zwölf Regler, Formel im Link, aus Klassisch dasselbe Bild', () => {
     cy.shotStats('quilez-vorher').then(a => {
       cy.revealInDetails('palEdit');
