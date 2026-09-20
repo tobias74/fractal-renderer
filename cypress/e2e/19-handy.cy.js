@@ -97,7 +97,11 @@ describe('Bedienfeld am Handy', () => {
 
   it('beim Ziehen eines Reglers bleibt nur dieser stehen', () => {
     cy.get('#tabPalette').click();   // Dichte und Versatz stehen im Bereich „Palette“
-    cy.get('#density').trigger('pointerdown').invoke('val', 600).trigger('input');
+    cy.get('#density').trigger('pointerdown', { clientX: 100, clientY: 400 }).invoke('val', 600).trigger('input');   // nur angetippt: das Blatt bleibt stehen (20.09.2026: kein Flackern beim Berühren oder senkrechten Wischen)
+    cy.get('body').should('not.have.class', 'regler-aktiv');
+    cy.get('#density').trigger('pointermove', { clientX: 104, clientY: 440 });   // senkrecht: ein Scrollen, kein Ziehen
+    cy.get('body').should('not.have.class', 'regler-aktiv');
+    cy.get('#density').trigger('pointermove', { clientX: 130, clientY: 402 }).invoke('val', 650).trigger('input');   // waagerecht gezogen: jetzt tritt das Blatt zurück
     cy.get('body').should('have.class', 'regler-aktiv');
     cy.get('#density').should('have.css', 'visibility', 'visible');
     cy.get('#offset').should('have.css', 'visibility', 'hidden');   // der Nachbar im selben Bereich verschwindet

@@ -460,6 +460,7 @@
   .pe-q { display: flex; flex-direction: column; gap: 2px; }
   .pe-rgb { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .pe-rgb input[type=range] { margin: 2px 0 4px; accent-color: var(--kanal); }
+  input[type=range] { touch-action: pan-y; }   /* senkrecht wischen über einen Regler scrollt, waagerecht zieht ihn */
   .pe-q .pe-werte { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 2px; }   /* getippte Koeffizienten: ein Feld je Kanal, über seinem Regler, der linke Rand in der Kanalfarbe */
   .pe-q .pe-wert { width: 100%; min-width: 0; padding: 2px 5px; font-size: 11px; border-left-width: 3px; }
   .pe-q .pe-wert[data-i="0"] { border-left-color: #e0625a; }
@@ -1697,7 +1698,7 @@
           <button type="button" data-q="2" data-i18n-title="editor2.first-value-negative-second-2">− +</button>
           <button type="button" data-q="3" data-i18n-title="editor2.first-value-positive-second-2" class="on">+ +</button>
         </div>
-        <label class="chk"><input type="checkbox" id="p2eGleich"> <span data-i18n="editor2.all-four-quadrants-alike"></span></label>
+        <label class="chk" data-i18n-title="editor2.all-four-quadrants-alike-title"><input type="checkbox" id="p2eGleich"> <span data-i18n="editor2.all-four-quadrants-alike"></span></label>
         <div class="pe-quilez" id="p2eRegler"></div>
       </div>
       <div class="btns">
@@ -2438,6 +2439,7 @@ const TEXTE = {
   // editor2
   'editor2.advanced': { de: 'Erweitert', en: 'Advanced' },
   'editor2.all-four-quadrants-alike': { de: 'alle vier Quadranten gleich', en: 'all four quadrants alike' },
+  'editor2.all-four-quadrants-alike-title': { de: 'Angehakt gilt jede Änderung für alle vier Quadranten; beim Anhaken übernimmt der gewählte Quadrant die drei anderen. Abgehakt gilt sie nur für den gewählten Quadranten, auch wenn alle noch gleich sind.', en: 'Ticked, every change applies to all four quadrants; on ticking, the selected quadrant is copied to the other three. Unticked, a change applies to the selected quadrant only, even while all are still alike.' },
   'editor2.cells-along-first-value': { de: 'Felder über den ersten Wert', en: 'Cells along the first value' },
   'editor2.count': { de: 'Anzahl', en: 'Count' },
   'editor2.first-value-across-second': { de: 'Waagerecht der erste Wert, senkrecht der zweite; links und unten die negativen Werte, wo ihr Vorzeichen zählt.', en: 'First value across, second value up; negative values left and bottom where their sign matters.' },
@@ -11915,18 +11917,25 @@ if (window.matchMedia('(max-width: 640px)').matches) togglePanel();   // am Hand
 })();
 
 // Handy: Solange ein Regler im Blatt gezogen wird, tritt das Blatt zurück, nur der Regler und seine Beschriftung bleiben.
-// Erst die erste Änderung schaltet um, ein bloßes Antippen oder Scrollen über einen Regler hinweg lässt das Blatt stehen.
-let reglerKandidat = null, reglerFokus = null;
-$('panelBody').addEventListener('pointerdown', e => { reglerKandidat = mobileNarrow() && e.target.matches('input[type=range]') ? e.target : null; });
-$('panelBody').addEventListener('input', e => {
-  if (e.target !== reglerKandidat || reglerFokus) return;
+// Erst waagerechtes Ziehen schaltet um (mindestens 8 px, mehr quer als längs): ein Antippen setzt den Regler zwar, lässt das Blatt aber
+// stehen, und ein senkrechtes Wischen über einen Regler hinweg bleibt ein Scrollen – sonst flackerte das Blatt bei jeder Berührung (20.09.2026).
+let reglerKandidat = null, reglerFokus = null, reglerStart = null, reglerZieht = false;
+$('panelBody').addEventListener('pointerdown', e => { reglerKandidat = mobileNarrow() && e.target.matches('input[type=range]') ? e.target : null; reglerStart = { x: e.clientX, y: e.clientY }; reglerZieht = false; });
+$('panelBody').addEventListener('pointermove', e => {
+  if (!reglerKandidat || reglerZieht || !reglerStart) return;
+  const dx = Math.abs(e.clientX - reglerStart.x), dy = Math.abs(e.clientY - reglerStart.y);
+  if (dx >= 8 && dx > dy) { reglerZieht = true; reglerAktivieren(); }
+}, { passive: true });
+function reglerAktivieren() {
+  if (!reglerKandidat || reglerFokus) return;
   const gruppe = reglerKandidat.closest('.pe-q');   // Quilez: die ganze Größe mit ihren drei Reglern bleibt stehen
   reglerFokus = gruppe ? [gruppe] : [reglerKandidat, reglerKandidat.previousElementSibling].filter(Boolean);
   for (const el of reglerFokus) el.classList.add('fokus');
   document.body.classList.add('regler-aktiv');
-});
+}
+$('panelBody').addEventListener('input', e => { if (e.target === reglerKandidat && reglerZieht) reglerAktivieren(); });
 function reglerEnde() {
-  reglerKandidat = null;
+  reglerKandidat = null; reglerStart = null; reglerZieht = false;
   if (!reglerFokus) return;
   for (const el of reglerFokus) el.classList.remove('fokus');
   reglerFokus = null; document.body.classList.remove('regler-aktiv');
@@ -12882,6 +12891,8 @@ for (const b of $('palArt').querySelectorAll('button')) b.addEventListener('clic
 // Er arbeitet auf einem Entwurf (S.pal2Eigen), der sofort färbt; Speichern legt ihn unter „Eigene“ ab.
 const pal2Ed = $('pal2Ed');
 let p2Draft = null, p2Start = '', p2Merk = {}, p2Quad = 3;   // p2Merk: die zuletzt eingestellte Art bleibt beim Hin- und Herschalten erhalten
+let p2Gleich = false;   // Schalter „alle vier Quadranten gleich“: Änderungen wirken auf alle vier; beim Start eines Entwurfs so, wie der Entwurf ist
+const p2eAlleGleich = () => !!p2Draft && !pal2Teilt(p2Draft)[0] && !pal2Teilt(p2Draft)[1];
 const P2E_TEXT = {
   keins: 'panel.only-gradient-along-first',
   linien: 'panel.dark-lines-where-second',
@@ -12977,11 +12988,11 @@ P2E_REGLER.forEach(([buchstabe, titel, lo, hi, schritt], k) => {
   ['red', 'green', 'blue'].forEach((farbe, i) => {
     const r = document.createElement('input'); r.type = 'range'; r.min = lo; r.max = hi; r.step = schritt; r.dataset.k = k; r.dataset.i = i;
     festesAttribut(r, 'aria-label', 'quilez.slider.' + buchstabe + '.' + farbe);
-    r.addEventListener('input', () => { for (const qi of ($('p2eGleich').checked ? [0, 1, 2, 3] : [p2Quad])) p2Draft.q[qi][i][k] = +r.value; p2eFormelWerte(); p2eChanged(); });
+    r.addEventListener('input', () => { for (const qi of (p2Gleich ? [0, 1, 2, 3] : [p2Quad])) p2Draft.q[qi][i][k] = +r.value; p2eFormelWerte(); p2eChanged(); });
     g.querySelector('.pe-rgb').append(r);
     const f = document.createElement('input'); f.type = 'text'; f.className = 'val mono wert pe-wert'; f.inputMode = 'decimal'; f.spellcheck = false; f.autocomplete = 'off'; f.dataset.k = k; f.dataset.i = i;   // das Feld zum Tippen
     festesAttribut(f, 'aria-label', 'quilez.field.' + buchstabe + '.' + farbe);
-    peWertFeld(f, v => { const w = clamp(v, lo, hi); for (const qi of ($('p2eGleich').checked ? [0, 1, 2, 3] : [p2Quad])) p2Draft.q[qi][i][k] = w; p2eFormelWerte(); p2eChanged(); return w; });
+    peWertFeld(f, v => { const w = clamp(v, lo, hi); for (const qi of (p2Gleich ? [0, 1, 2, 3] : [p2Quad])) p2Draft.q[qi][i][k] = w; p2eFormelWerte(); p2eChanged(); return w; });
     g.querySelector('.pe-werte').append(f);
   });
   $('p2eRegler').append(g);
@@ -12991,8 +13002,9 @@ function p2eFormelWerte() {   // Regler und Werte des gewählten Quadranten
   for (const f of $('p2eRegler').querySelectorAll('input.pe-wert')) if (document.activeElement !== f) f.value = fmtZahl(p2Draft.q[p2Quad][+f.dataset.i][+f.dataset.k], 2);   // ein Feld, in dem getippt wird, bleibt in Ruhe
 }
 for (const b of $('p2eQuad').querySelectorAll('button')) b.addEventListener('click', () => { p2Quad = +b.dataset.q; p2eRender(); });
-$('p2eGleich').addEventListener('change', e => {   // alle gleich: der gewählte Quadrant gilt für alle vier
-  if (e.target.checked) { for (let qi = 0; qi < 4; qi++) p2Draft.q[qi] = JSON.parse(JSON.stringify(p2Draft.q[p2Quad])); p2eChanged(); }
+$('p2eGleich').addEventListener('change', e => {   // Schalter: angehakt übernimmt der gewählte Quadrant die drei anderen und Änderungen gelten für alle; abgehakt nur für den gewählten
+  p2Gleich = e.target.checked;
+  if (p2Gleich) { for (let qi = 0; qi < 4; qi++) p2Draft.q[qi] = JSON.parse(JSON.stringify(p2Draft.q[p2Quad])); p2eChanged(); }
   p2eRender();
 });
 function p2eArtWechseln(art) {   // Aus Verläufen ↔ Quilez für zwei Werte; die jeweils letzte Einstellung bleibt erhalten
@@ -13001,6 +13013,7 @@ function p2eArtWechseln(art) {   // Aus Verläufen ↔ Quilez für zwei Werte; d
   p2Merk[p2Draft.art] = JSON.parse(JSON.stringify(p2Draft));
   const start = p2Merk[art] || p2eNormal(JSON.parse(JSON.stringify(PAL2[pal2Nr(art === 'formel' ? 'pastel' : 'field-lines')])));   // Start: Pastell bzw. Feldlinien
   p2Draft = Object.assign(JSON.parse(JSON.stringify(start)), { id, name, leer });
+  p2Gleich = p2eAlleGleich();
   p2eRender(); p2eChanged();
 }
 for (const b of $('p2eArt').querySelectorAll('button')) b.addEventListener('click', () => p2eArtWechseln(b.dataset.art));
@@ -13011,7 +13024,7 @@ function p2eRender() {   // alle Bedienelemente aus dem Entwurf
   $('p2eVerlauf').hidden = formel; $('p2eFormel').hidden = !formel;
   if (formel) {
     for (const b of $('p2eQuad').querySelectorAll('button')) { const on = +b.dataset.q === p2Quad; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); }
-    $('p2eGleich').checked = !pal2Teilt(p2Draft)[0] && !pal2Teilt(p2Draft)[1];
+    $('p2eGleich').checked = p2Gleich;   // der Schalter, nicht der Vergleich der Quadranten
     p2eFormelWerte();
   } else {
     $('p2eMuster').value = m; $('p2eMusterText').textContent = P2E_TEXT[m] ? t(P2E_TEXT[m]) : '';
@@ -13047,7 +13060,7 @@ function p2eOpen() {   // Entwurf aus der geltenden Palette: ein eigenes Schema 
   const p = pal2Objekt() || PAL2[pal2Zwei(q)], eigen = !!p.id && (p.id === 'link' || eigene2.some(e => e.id === p.id));
   p2Draft = p2eNormal(JSON.parse(JSON.stringify(p)));
   if (!eigen) { p2Draft.id = 'q' + Date.now().toString(36); p2Draft.name = (p.kennung ? t(p.name) : p.name) + t('panel.own'); }
-  p2Merk = {}; p2Quad = 3; p2Start = JSON.stringify(p2Draft);
+  p2Merk = {}; p2Quad = 3; p2Start = JSON.stringify(p2Draft); p2Gleich = p2eAlleGleich();
   S.pal2Eigen = p2Draft; S.pal2[q] = 'y:tmp';
   p2eRender(); p2eShow(true); applyPalette(); buildPalSelect();
   pal2Ed.scrollIntoView({ block: 'nearest' });
@@ -13064,7 +13077,7 @@ function p2eStore(asNew) {
 $('p2eName').addEventListener('input', () => { p2eChanged(); buildPalSelect(); });
 $('p2eSave').addEventListener('click', () => p2eStore(false));
 $('p2eSaveNew').addEventListener('click', () => p2eStore(true));
-$('p2eReset').addEventListener('click', () => { p2Draft = JSON.parse(p2Start); p2Merk = {}; p2eRender(); p2eChanged(); buildPalSelect(); });   // wie beim Öffnen oder letzten Speichern
+$('p2eReset').addEventListener('click', () => { p2Draft = JSON.parse(p2Start); p2Merk = {}; p2Gleich = p2eAlleGleich(); p2eRender(); p2eChanged(); buildPalSelect(); });   // wie beim Öffnen oder letzten Speichern
 $('p2eClose').addEventListener('click', () => { p2eShow(false); $('palEdit').focus(); });
 $('p2eDelete').addEventListener('click', () => {   // gelöscht ist gelöscht: kein Entwurf bleibt, die Färbung kehrt zu ihrer ersten zweidimensionalen Palette zurück
   const id = p2Draft.id, q = quelle2();

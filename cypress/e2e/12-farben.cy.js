@@ -637,6 +637,14 @@ describe('Zweidimensionale Paletten', () => {
       cy.get('#p2eRegler input.pe-wert[data-k="2"][data-i="0"]').clear().type('7{enter}');   // über dem Reglerbereich: geklemmt auf 4
       cy.get('#p2eRegler input.pe-wert[data-k="2"][data-i="0"]').should('have.value', '4,00');
       cy.get('#p2eRegler input[type=range][data-k="2"][data-i="0"]').should('have.value', '4');
+      // „alle vier Quadranten gleich“ ist ein Schalter (20.09.2026): abwählbar, auch wenn alle noch gleich sind; danach gilt eine Änderung nur dem gewählten Quadranten
+      cy.get('#p2eGleich').uncheck({ force: true }).should('not.be.checked');
+      cy.get('#p2eQuad [data-q="1"]').click(); cy.get('#p2eGleich').should('not.be.checked');   // bleibt abgewählt, der Zustand springt nicht zurück
+      cy.get('#p2eRegler input.pe-wert[data-k="2"][data-i="0"]').clear().type('1,5{enter}');
+      cy.get('#p2eRegler input.pe-wert[data-k="2"][data-i="0"]').should('have.value', '1,50');
+      cy.get('#p2eQuad [data-q="0"]').click(); cy.get('#p2eRegler input.pe-wert[data-k="2"][data-i="0"]').should('have.value', '4,00');   // der andere Quadrant blieb
+      cy.get('#p2eGleich').check({ force: true });   // anhaken: der gewählte Quadrant (4,00) gilt wieder für alle
+      cy.get('#p2eQuad [data-q="1"]').click(); cy.get('#p2eRegler input.pe-wert[data-k="2"][data-i="0"]').should('have.value', '4,00');
       cy.get('#p2eQuad [data-q="0"]').click();
       cy.waitRender();
       cy.shotStats('q2-geaendert').then(c => anders(a, c, 'andere Farben'));
