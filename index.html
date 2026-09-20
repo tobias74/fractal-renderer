@@ -7895,8 +7895,10 @@ vec3 sampleColor(uvec4 px, ivec2 xy, int k) {   // Farbe einer Probe; k = Ebene,
       if (uMapping == 6 || uMapping == 12) col = reliefLight(xy, k, uintBitsToFloat(px.y), col);
       {   // Textur wie im WGSL-Shader: erst die Werte der Plätze, dann einmal anwenden
         bool gepackt = any(bvec3(uTex2.z > 1.5, uOpt.x > 0.5, int(uTex.x) == 21));
-        float einzeln = mix(texturWert(px), kanteHell(kw, uStapelW[0].x), float(int(uTex.x) == 11));
-        vec4 t = mix(vec4(0.0), mix(vec4(einzeln, 0.0, 0.0, 0.0), texWerte(px.y, px.z, kw), float(gepackt)), float(uTex2.z > 0.5));
+        vec4 t = vec4(0.0);   // ohne wirksamen Platz sind alle Werte null und die Farbe bleibt
+        if (uTex2.z > 0.5) {   // echte Auswahl statt mix(): gepackte Bits als Zahl gelesen sind oft NaN, und mix() trüge das NaN in die Farbe; die Bedingungen hängen nur an Uniforms
+          t = gepackt ? texWerte(px.y, px.z, kw) : vec4(int(uTex.x) == 11 ? kanteHell(kw, uStapelW[0].x) : texturWert(px), 0.0, 0.0, 0.0);   // ein Platz: die Bahnstatistik (oder der Winkel) aus dem y-Kanal, Kanten erst hier
+        }
         col = texturAnwenden(col, t, false);
       }
     }
