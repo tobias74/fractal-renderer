@@ -1996,7 +1996,7 @@
   </footer>
 </div>
 
-<div id="rueckfrage" class="modal rueckfrage" role="alertdialog" aria-modal="true" aria-labelledby="rueckfrageText" hidden>   <!-- kleine Rückfrage (Ebene löschen); window.confirm kommt in eingebetteten Browserfenstern nicht an -->
+<div id="rueckfrage" class="modal rueckfrage" role="alertdialog" aria-modal="true" aria-labelledby="rueckfrageText" hidden>   <!-- kleine Rückfrage (Ebene oder Textur löschen); window.confirm kommt in eingebetteten Browserfenstern nicht an -->
   <div class="modal-card rueckfrage-karte">
     <p id="rueckfrageText"></p>
     <div class="btns">
@@ -2291,6 +2291,8 @@ const TEXTE = {
   'colour.texture4': { de: 'Vierte Textur', en: 'Fourth texture' },
   'colour.texture-n-title': { de: 'Legt sich über die Texturen darüber, mit eigenen Reglern und Farben. Der Stapel wirkt von oben nach unten; Pfeile und Griff ändern die Reihenfolge, × nimmt die Textur heraus.', en: 'Lies over the textures above it, with its own controls and colours. The stack applies top to bottom; arrows and the handle change the order, × removes the texture.' },
   'colour.texture-remove': { de: 'Diese Textur aus dem Stapel nehmen; die darunter rücken auf', en: 'Remove this texture from the stack; those below move up' },
+  'colour.texture-remove-confirm': { de: 'Textur {0} löschen?', en: 'Remove texture {0}?' },
+  'colour.texture-remove-yes': { de: 'Textur löschen', en: 'Remove texture' },
   'colour.texture-drag': { de: 'Ziehen, um die Reihenfolge im Stapel zu ändern (Tastatur: Pfeil auf und ab)', en: 'Drag to change the order in the stack (keyboard: arrow up and down)' },
   'colour.texture-on': { de: 'Textur an oder aus; die Einstellungen bleiben erhalten', en: 'Texture on or off; the settings are kept' },
   'colour.texture-collapse': { de: 'Regler ein- oder ausklappen', en: 'Collapse or expand the controls' },
@@ -11372,10 +11374,10 @@ function ebenenSaetzeUmordnen(folge) {   // die Sätze im Renderer folgen den ne
   const neu = folge.indexOf(renderEbene); renderEbene = neu >= 0 ? neu : ebeneAktiv;
   if (renderer && renderer.ebeneWaehlen && (neu < 0 || renderer.slotAktiv !== renderEbene)) liveWechseln(ebeneAktiv, !ebeneVeraltet(ebeneAktiv));
 }
-function rueckfrage(text) {   // kleine Rückfrage in der App: löst mit true (Enter, Knopf) oder false (Escape, Abbrechen, Klick daneben) auf
+function rueckfrage(text, jaText = t('layers.remove')) {   // kleine Rückfrage in der App: löst mit true (Enter, Knopf) oder false (Escape, Abbrechen, Klick daneben) auf; jaText beschriftet den Knopf
   return new Promise(res => {
     const box = $('rueckfrage'), ja = $('rueckfrageJa'), nein = $('rueckfrageNein');
-    $('rueckfrageText').textContent = text; box.hidden = false;
+    $('rueckfrageText').textContent = text; ja.textContent = jaText; box.hidden = false;
     const zu = wert => { box.hidden = true; ja.onclick = nein.onclick = box.onclick = null; document.removeEventListener('keydown', taste, true); res(wert); };
     const taste = ev => { if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); zu(false); } else if (ev.key === 'Enter') { ev.preventDefault(); ev.stopPropagation(); zu(true); } };
     ja.onclick = () => zu(true); nein.onclick = () => zu(false); box.onclick = ev => { if (ev.target === box) zu(false); };
@@ -14026,7 +14028,10 @@ for (let n = 1; n <= TEX_SLOTS; n++) {
   e.kontrast.addEventListener('input', () => texSetzer(n, 'kontrast', TEXTUR.kontrast)(+e.kontrast.value));
   e.mitte.addEventListener('input', () => texSetzer(n, 'mitte', TEXTUR.mitte)(+e.mitte.value));
   for (const f of ['hell', 'dunkel']) e[f].addEventListener('input', () => { S[k[f]] = e[f].value; colorDirty = true; scheduleHash(); requestFrame(); });   // Farben: nur Farbe, kein Neurechnen
-  e.weg.addEventListener('click', () => texEntfernen(n));
+  e.weg.addEventListener('click', () => {   // mit Rückfrage (20.09.2026), wie beim Löschen einer Ebene
+    const name = ((e.sel.options[e.sel.selectedIndex] || {}).textContent || '').trim();
+    rueckfrage(t('colour.texture-remove-confirm', n + ' (' + name + ')'), t('colour.texture-remove-yes')).then(ok => { if (ok) texEntfernen(n); });
+  });
   e.an.addEventListener('change', () => { S[k.an] = e.an.checked; syncFarbUI(); scheduleHash(); viewChanged(); });   // an/aus: der Platz zählt nicht mehr mit, neu rechnen
   e.klapp.addEventListener('click', () => { texZu[n] = !texZu[n]; syncFarbUI(); });
   const zsel = $('texZiel' + n);

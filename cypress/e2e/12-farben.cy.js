@@ -928,7 +928,15 @@ describe('Färbungen nach Bahnstatistik', () => {
     cy.revealInDetails('texturRow');
     cy.get('#texturRow .tex-griff').focus().trigger('keydown', { key: 'ArrowDown', force: true });   // Tastatur: Platz 1 nach unten, die Streifen wandern samt Stärke auf Platz 2
     cy.expectHash('tx', '3'); cy.expectHash('t2', '1'); cy.expectHash('t2s', '0.8'); cy.expectHash('t3', '5');
-    cy.get('#textur2Row .tex-weg').click({ force: true });                  // Platz 2 heraus: Platz 3 rückt auf
+    cy.get('#textur2Row .tex-weg').click({ force: true });                  // Platz 2 heraus – erst die Rückfrage (20.09.2026)
+    cy.get('#rueckfrage').should('be.visible'); cy.get('#rueckfrageText').invoke('text').should('contain', 'Textur 2 (');
+    cy.get('#rueckfrageJa').should('have.text', 'Textur löschen');   // der Knopf passt zum Anlass
+    cy.get('#rueckfrageNein').click(); cy.get('#rueckfrage').should('not.be.visible');   // abgelehnt: der Stapel bleibt, wie er war
+    cy.expectHash('t2', '1'); cy.expectHash('t3', '5');
+    cy.get('#textur2Row .tex-weg').click({ force: true }); cy.get('#rueckfrage').should('be.visible');
+    cy.get('body').type('{esc}'); cy.get('#rueckfrage').should('not.be.visible'); cy.expectHash('t2', '1');   // Escape lehnt ebenso ab
+    cy.get('#textur2Row .tex-weg').click({ force: true }); cy.get('#rueckfrageJa').click();   // bestätigt: Platz 3 rückt auf
+    cy.get('#rueckfrage').should('not.be.visible');
     cy.expectHash('t2', '5'); cy.expectHash('t2c', 'ff8040'); cy.expectHash('t3', null);
     cy.get('#textur2Row .tex-griff').then($g => {                           // Ziehen am Griff: Platz 2 über die Mitte von Platz 1 — der Platzhalter rückt schon beim Ziehen
       const r1 = Cypress.$('#texKarte1')[0].getBoundingClientRect(), rg = $g[0].getBoundingClientRect();
