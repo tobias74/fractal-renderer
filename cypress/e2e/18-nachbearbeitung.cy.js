@@ -69,11 +69,35 @@ describe('Nachbearbeitung: Einstellungsebenen', () => {
     cy.get('#nachW1_deck').should('be.visible');
     cy.get('#nachKarte1 .tex-wert').should('have.text', '');
     cy.get('#nachZu1').click();
-    cy.get('#nachKarte2 .tex-weg').click();   // Körnung raus, Zweiton rückt auf; Karte 1 bleibt zu
+    cy.get('#nachKarte2 .tex-weg').click(); cy.get('#rueckfrageJa').click();   // Körnung raus (mit Rückfrage), Zweiton rückt auf; Karte 1 bleibt zu
     cy.get('#nachKarte1').should('have.class', 'nach-zu');
     cy.get('#nachStapel .nach-karte').should('have.length', 2);
     cy.get('#nachKarte2 .tex-kopf .menu-btn').should('contain.text', 'Zweiton');
     cy.expectHash('nb', v => { expect(v).to.contain('12:1:0.25:4,1;14:1:1:'); expect(v).to.not.contain('18:'); });
+  });
+
+  it('eine Einstellungsebene löschen fragt nach: Abbrechen und Escape lassen sie stehen, erst die Bestätigung nimmt sie heraus', () => {
+    cy.visitApp(B + '&nb=12:1:1:4,1;18:1:1:0.3,1');
+    cy.pane('nach');
+    cy.get('#nachStapel .nach-karte').should('have.length', 2);
+    cy.get('#nachKarte2 .tex-weg').click();
+    cy.get('#rueckfrage').should('be.visible');
+    cy.get('#rueckfrageText').invoke('text').should('contain', 'Ebene 2 (');   // die Nummer und die Art stehen in der Frage
+    cy.get('#rueckfrageJa').should('have.text', 'Ebene löschen');
+    cy.get('#rueckfrageNein').click();
+    cy.get('#rueckfrage').should('not.be.visible');
+    cy.get('#nachStapel .nach-karte').should('have.length', 2);   // abgelehnt: der Stapel bleibt
+    cy.expectHash('nb', v => expect(v).to.contain('18:'));
+    cy.get('#nachKarte2 .tex-weg').click();
+    cy.get('#rueckfrage').should('be.visible');
+    cy.get('body').type('{esc}');
+    cy.get('#rueckfrage').should('not.be.visible');
+    cy.get('#nachStapel .nach-karte').should('have.length', 2);   // Escape lehnt ebenso ab
+    cy.get('#nachKarte2 .tex-weg').click();
+    cy.get('#rueckfrageJa').click();
+    cy.get('#rueckfrage').should('not.be.visible');
+    cy.get('#nachStapel .nach-karte').should('have.length', 1);   // bestätigt: die Ebene ist heraus
+    cy.expectHash('nb', v => { expect(v).to.contain('12:'); expect(v).to.not.contain('18:'); });
   });
 
   it('der Link stellt den Stapel wieder her, Ebenen mit Nachbarn: nur die oberste wirkt, Pfeiltasten sortieren', () => {

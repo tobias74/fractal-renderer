@@ -2629,6 +2629,7 @@ const TEXTE = {
   'post.full': { de: 'Der Stapel ist voll: acht Ebenen.', en: 'The stack is full: eight layers.' },
   'post.not-for-clouds': { de: 'Punktwolken werden ohne Nachbearbeitung gezeichnet.', en: 'Point clouds are drawn without post-processing.' },
   'post.opacity': { de: 'Deckkraft', en: 'Opacity' },
+  'post.remove-confirm': { de: 'Ebene {0} löschen?', en: 'Remove layer {0}?' },
   'post.remove': { de: 'Diese Ebene aus dem Stapel nehmen', en: 'Remove this layer from the stack' },
   'post.drag': { de: 'Ziehen, um die Reihenfolge zu ändern (Tastatur: Pfeil auf und ab)', en: 'Drag to change the order (keyboard: arrow up and down)' },
   'post.layer-kind': { de: 'Art der Ebene; beim Wechsel bleiben Deckkraft, Schalter und Maske erhalten', en: 'Kind of the layer; opacity, switch and mask are kept when it changes' },
@@ -13930,7 +13931,10 @@ function nachKarte(i) {
   an.addEventListener('change', () => { S.nach[i].an = an.checked; nachAenderung(); nachKartenBauen(); });
   sch.append(an, document.createElement('span'));
   const weg = document.createElement('button'); weg.type = 'button'; weg.className = 'tex-weg'; weg.textContent = '×'; weg.title = t('post.remove'); weg.setAttribute('aria-label', t('post.remove'));
-  weg.addEventListener('click', () => nachEntfernen(i));
+  weg.addEventListener('click', () => {   // mit Rückfrage (20.09.2026), wie bei Texturen und Fraktal-Ebenen
+    const art = ((artSel.options[artSel.selectedIndex] || {}).textContent || '').trim();
+    rueckfrage(t('post.remove-confirm', (i + 1) + ' (' + art + ')')).then(ok => { if (ok) nachEntfernen(i); });
+  });
   kn.append(sch, weg); kopf.append(griff, zu, artSel, name, kn); enhanceSelect(artSel); karte.append(kopf);   // Auswahl vor der Kurzangabe: erst die Art, dann (zugeklappt) die Deckkraft
   const regler = document.createElement('div'); regler.className = 'nach-regler'; regler.id = 'nachRegler' + (i + 1);
   const hinweis = document.createElement('p'); hinweis.className = 'hint nach-hinweis'; hinweis.hidden = true; hinweis.textContent = t('post.only-one-neighbour'); regler.append(hinweis);

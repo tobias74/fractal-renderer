@@ -78,7 +78,7 @@ describe('Übersetzen der Fassung mit Ebenen und Masken', () => {
     cy.visitApp(B); cy.pane('nach');
     cy.shotStats('ue-weg-vorher').then(vorher => {
       halten(); ebene(12); meldung();
-      cy.get('#nachKarte1 .tex-weg').click(); cy.get('#nachKarte1').should('not.exist');
+      cy.get('#nachKarte1 .tex-weg').click(); cy.get('#rueckfrageJa').click(); cy.get('#nachKarte1').should('not.exist');
       cy.hashParams().then(h => expect(h.has('nb'), 'keine Ebene im Link').to.be.false);
       frei(); fertigOhneMeldung();
       cy.gezeichnet(); cy.shotStats('ue-weg-nachher').then(n => diff(vorher, n).then(d => expect(d.meanDiff, 'wie ohne Ebene').to.be.lessThan(2)));
