@@ -3165,6 +3165,9 @@ const TEXTE = {
   'technical.starting': { de: 'startet', en: 'starting' },
   'technical.technical': { de: 'Technik', en: 'Technical' },
   'technical.undo': { de: 'Rückgängig', en: 'Undo' },
+  'undo.done': { de: 'Rückgängig: {0}', en: 'Undone: {0}' },
+  'undo.redone': { de: 'Wiederhergestellt: {0}', en: 'Redone: {0}' },
+  'undo.view': { de: 'Ansicht', en: 'View' },
   'technical.webgpu-fragment-shader-wgsl': { de: 'WebGPU-Fragment-Shader (WGSL).', en: 'WebGPU fragment shader (WGSL).' },
   'technical.webgpu-is-not-available': { de: 'WebGPU ist in diesem Browser nicht verfügbar. Unter „Technik“ auf Automatisch oder WebGL 2 umstellen.', en: 'WebGPU is not available in this browser. Switch to Automatic or WebGL 2 under “Technical”.' },
   'technical.webgpu-not-usable-hence': { de: 'WebGPU nicht nutzbar, daher WebGL 2.', en: 'WebGPU not usable, hence WebGL 2.' },
@@ -11297,6 +11300,7 @@ function mitEbene(k, fn) {   // fn mit Zustand und Ansicht der Ebene k in S ausf
 }
 function ebeneWaehlen(k, still = false) {   // Ebene k in Motiv, Farbe und Palette bearbeiten; still: nur der Zustand, ohne Bedienfeld und Neurechnen
   if (k < 0 || k >= ebenen.length || (k === ebeneAktiv && !still)) return;
+  if (!still && typeof undoVorAuswahl === 'function') undoVorAuswahl();   // die Auswahl ist kein Schritt für Rückgängig (siehe dort)
   if (k !== ebeneAktiv) {
     const alt = ebeneAktiv, altVerb = ebeneVerbunden(alt), neuVerb = ebeneVerbunden(k);
     ebenen[alt].zustand = ebeneSichern();
@@ -11306,6 +11310,7 @@ function ebeneWaehlen(k, still = false) {   // Ebene k in Motiv, Farbe und Palet
     if (!still && ebenen[alt].solo && ebenenSoloIndex() === alt) { ebenen[alt].solo = false; ebenen[k].solo = true; }   // „Anzeigen: nur diese“ folgt der Auswahl
   }
   if (!still) { syncAllUI(); setMode(S.mode, { force: true, view: ansichtSichern() }); if (typeof syncAaUI === 'function') syncAaUI(); }   // die Glättung erst nach dem Wechsel des Satzes anzeigen (Stufe, Puffer)
+  if (!still && typeof undoNachAuswahl === 'function') undoNachAuswahl();
 }
 // ---- Rechnen der Ebenen: die gewählte Ebene rechnet wie bisher (sie ist auch beim Zeigen „live“); ist sie fertig, sichert die
 // Schleife ihre Farbe, wechselt auf die nächste veraltete Ebene, rechnet sie mit deren Zustand (mitEbene je Frame) und sichert
@@ -14602,6 +14607,7 @@ function syncAllUI() {   // Bedienfeld vollständig an den Zustand angleichen
 // wo der Zustand ohnehin festgehalten wird; zurückgeholt über applyState, denselben Weg wie beim Öffnen einer Datei.
 const UNDO_MAX = 60;   // so viele Schritte hält der Stapel; ältere fallen unten heraus
 let undoStapel = [], redoStapel = [], undoStand = null, undoStandV = null, undoStill = false;
+let undoAuswahlOffen = false;   // nach einer Ebenenwahl, die sich nicht sofort festhalten ließ: die nächste Aufzeichnung gilt still
 function undoJetztSchreiben() { clearTimeout(hashTimer); writeHash(); }   // die verzögerte Aufzeichnung sofort nachholen
 function undoStandJetzt() {   // Schnappschuss für Rückgängig: die Parameter (mit Farben und Glättung) und dazu die Gerätewerte, die nicht im Link stehen
   const o = metaObjekt();
@@ -14610,9 +14616,36 @@ function undoStandJetzt() {   // Schnappschuss für Rückgängig: die Parameter 
 }
 const UNDO_ANKER = ['ca', 'sa', 'off'];   // diese drei führt die App beim Verankern von selbst nach
 function undoOhne(text, namen) {   // denselben Stand ohne die genannten Adresswerte, zum Vergleichen
-  try { const o = JSON.parse(text); if (typeof o.params === 'string') { const p = new URLSearchParams(o.params); for (const k of namen) { p.delete(k); } o.params = p.toString(); } else if (o.params && typeof o.params === 'object') { for (const k of namen) { delete o.params[k]; } } return JSON.stringify(o); } catch (e) { return text; }
+  try {
+    const o = JSON.parse(text);
+    if (typeof o.params === 'string') {   // Fassung 1: Adresszeile; die anderen Ebenen stehen kodiert unter l2, l3 …
+      const p = new URLSearchParams(o.params); for (const k of namen) { p.delete(k); }
+      for (const [k, v] of [...p]) { if (/^l\d+$/.test(k)) { const q = new URLSearchParams(v); for (const nm of namen) { q.delete(nm); } p.set(k, q.toString()); } }
+      o.params = p.toString();
+    } else if (o.params && typeof o.params === 'object') {   // Fassung 2: Objekt; die anderen Ebenen sind eigene Objekte darin
+      for (const k of namen) { delete o.params[k]; }
+      for (const k of Object.keys(o.params)) { if (/^l\d+$/.test(k) && o.params[k] && typeof o.params[k] === 'object') { for (const nm of namen) { delete o.params[k][nm]; } } }
+    }
+    return JSON.stringify(o);
+  } catch (e) { return text; }
 }
-function undoVergleich(text) { return S.autoIter ? undoOhne(text, ['it']) : text; }   // die selbst gewählte Iterationszahl hängt an der Ansicht, sie ist kein eigener Schritt
+function undoGlatt(text) {   // die letzte Stelle der Mitte ist Rundungsrauschen (Laden und Sichern der Ebenen): sie zählt beim Vergleichen nicht
+  const glatt = v => (typeof v === 'string' && /^-?\d\.\d{20,}$/.test(v)) ? v.slice(0, -1) : v;
+  const putzen = p => { for (const k of ['re', 'im']) { if (k in p) p[k] = glatt(p[k]); } };
+  try {
+    const o = JSON.parse(text);
+    if (typeof o.params === 'string') {
+      const p = new URLSearchParams(o.params); const m = Object.fromEntries(p); putzen(m);
+      for (const k of Object.keys(m)) { if (/^l\d+$/.test(k)) { const q = Object.fromEntries(new URLSearchParams(m[k])); putzen(q); m[k] = new URLSearchParams(q).toString(); } }
+      o.params = new URLSearchParams(m).toString();
+    } else if (o.params && typeof o.params === 'object') {
+      putzen(o.params);
+      for (const k of Object.keys(o.params)) { if (/^l\d+$/.test(k) && o.params[k] && typeof o.params[k] === 'object') putzen(o.params[k]); }
+    }
+    return JSON.stringify(o);
+  } catch (e) { return text; }
+}
+function undoVergleich(text) { return undoGlatt(S.autoIter ? undoOhne(text, ['it']) : text); }   // die selbst gewählte Iterationszahl hängt an der Ansicht, sie ist kein eigener Schritt; Rundungsrauschen zählt nicht
 function undoUebernehmen() {   // die App hat von selbst verankert: der neue Stand gilt, ohne dass daraus ein Schritt wird
   const jetzt = undoStandJetzt(); if (jetzt === null) { return; }
   const vergleich = undoVergleich(jetzt);
@@ -14626,11 +14659,43 @@ function undoKnoepfe() {
   for (const b of [$('redo'), ...document.querySelectorAll('#mActions [data-act="redo"]')]) { if (b) b.disabled = !vor; }
 }
 function undoMerken() {   // hat sich etwas geändert, wandert der vorige Stand auf den Stapel
+  const still = undoStill || undoAuswahlOffen; undoAuswahlOffen = false;   // nach einer Ebenenwahl ohne sofortiges Festhalten: still übernehmen
   const jetzt = undoStandJetzt(); if (jetzt === null) { return; }
   const vergleich = undoVergleich(jetzt);
   if (vergleich === undoStandV) { undoStand = jetzt; return; }   // nichts Neues oder nur ein abgeleiteter Wert: kein eigener Schritt
-  if (undoStand !== null && !undoStill) { undoStapel.push(undoStand); if (undoStapel.length > UNDO_MAX) { undoStapel.shift(); } redoStapel.length = 0; }
+  if (undoStand !== null && !still) { undoStapel.push(undoStand); if (undoStapel.length > UNDO_MAX) { undoStapel.shift(); } redoStapel.length = 0; }
   undoStand = jetzt; undoStandV = vergleich; undoKnoepfe();
+}
+function undoVorAuswahl() {   // vor einer bloßen Auswahl (Fraktal-Ebene): was über die Anker hinaus aussteht, wird sein eigener Schritt, der Rest gilt still
+  if (undoStill) return;
+  try { undoUebernehmen(); } catch (e) { /* der Stand ist gerade nicht bildbar (ein Wert im Umbau): die verzögerte Aufzeichnung bleibt geplant und holt es nach */ }
+}
+function undoNachAuswahl() {   // die Auswahl selbst ist kein Schritt: der neue Stand gilt still als Ausgangspunkt
+  if (undoStill) return;
+  undoStill = true;
+  try { undoJetztSchreiben(); } catch (e) { undoAuswahlOffen = true; }   // nicht bildbar: dann gilt die nächste Aufzeichnung still
+  finally { undoStill = false; }
+}
+const UNDO_BEREICHE = [   // welcher Bereich einen Adresswert besitzt, für den Hinweis nach dem Rückgängig; was hier fehlt, gehört zum Motiv
+  [/^(re|im|z)$/, 'undo.view'],
+  [/^nb$/, 'nach'],
+  [/^(aa|aam|aas|aat|aax|bla)$/, 'qualitaet'],
+  [/^(pal|cp|pv|p2|cp2|pv2)$/, 'palette'],
+  [/^t(x|[a-z]|\d+[a-z]*)$/, 'texturen'],
+  [/^(la|l\d+|lm\d+|lu\d*)$/, 'ebenen'],
+  [/^(map|den|off|ca|sa|lm|glow|gw|gd|pf|pfk|lst|lsd|lg|kv|ks|ex|ga)$/, 'farbe'],
+];
+function undoHinweis(vorher, nachher, zurueck) {   // kurz sagen, in welchem Bereich sich der Stand geändert hat; der Bereich selbst bleibt, wo er ist
+  if (vorher === null || nachher === null) return;
+  let a, b; try { a = JSON.parse(undoOhne(undoVergleich(vorher), UNDO_ANKER)); b = JSON.parse(undoOhne(undoVergleich(nachher), UNDO_ANKER)); } catch (e) { return; }   // dieselben Ausnahmen wie beim Vergleich: Anker, Rauschen, selbst gewählte Iterationszahl
+  const werte = o => new URLSearchParams(typeof o.params === 'string' ? o.params : linkText(o.params || {}));
+  const pa = werte(a), pb = werte(b), bereiche = [];
+  const merken = id => { if (!bereiche.includes(id)) bereiche.push(id); };
+  for (const k of new Set([...pa.keys(), ...pb.keys()])) { if (pa.get(k) !== pb.get(k)) { const tr = UNDO_BEREICHE.find(([re]) => re.test(k)); merken(tr ? tr[1] : 'motiv'); } }
+  if (JSON.stringify(a.extra || {}) !== JSON.stringify(b.extra || {})) merken('technik');   // Zyklenprüfung, Näherung, Auflösung: stehen nicht im Link
+  if (!bereiche.length) return;
+  const namen = bereiche.slice(0, 3).map(id => t(id === 'undo.view' ? id : PANES.find(p => p[0] === id)[1]));
+  notify(zurueck ? 'undo.done' : 'undo.redone', namen.join(' · '));
 }
 function undoEditoren(eins, zwei) {   // den Paletteneditor herrichten, den applyState geschlossen oder mit altem Entwurf stehen gelassen hat
   if (eins) {
@@ -14639,16 +14704,17 @@ function undoEditoren(eins, zwei) {   // den Paletteneditor herrichten, den appl
   }
   if (zwei) { p2eOpen(); }   // dort steckt dieselbe Herleitung des Entwurfs aus dem geltenden Schema
 }
-function undoAnwenden(text) {
-  const edEins = !palEd.hidden, edZwei = !pal2Ed.hidden;   // ein offener Paletteneditor bleibt offen und zeigt danach den wiederhergestellten Stand
+function undoAnwenden(text, zurueck) {
+  const vorher = undoStand, edEins = !palEd.hidden, edZwei = !pal2Ed.hidden;   // ein offener Paletteneditor bleibt offen und zeigt danach den wiederhergestellten Stand
   undoStill = true;
   try { applyState(JSON.parse(text)); } catch (e) { /* unlesbarer Schnappschuss: der Stand bleibt, wie er ist */ }
   undoEditoren(edEins, edZwei);
   undoJetztSchreiben();   // der wiederhergestellte Stand steht damit fest
+  undoHinweis(vorher, text, zurueck);
   undoStill = false; undoStand = undoStandJetzt(); undoStandV = undoStand === null ? null : undoVergleich(undoStand); undoKnoepfe();
 }
-function undoZurueck() { undoJetztSchreiben(); if (!undoStapel.length) { return; } const ziel = undoStapel.pop(); if (undoStand !== null) { redoStapel.push(undoStand); } undoAnwenden(ziel); }
-function undoVor() { undoJetztSchreiben(); if (!redoStapel.length) { return; } const ziel = redoStapel.pop(); if (undoStand !== null) { undoStapel.push(undoStand); } undoAnwenden(ziel); }
+function undoZurueck() { undoJetztSchreiben(); if (!undoStapel.length) { return; } const ziel = undoStapel.pop(); if (undoStand !== null) { redoStapel.push(undoStand); } undoAnwenden(ziel, true); }
+function undoVor() { undoJetztSchreiben(); if (!redoStapel.length) { return; } const ziel = redoStapel.pop(); if (undoStand !== null) { undoStapel.push(undoStand); } undoAnwenden(ziel, false); }
 $('undo').addEventListener('click', undoZurueck);
 $('redo').addEventListener('click', undoVor);
 window.addEventListener('keydown', e => {   // Strg+Z, Strg+Umschalt+Z, Strg+Y; am Mac ebenso mit der Befehlstaste

@@ -81,6 +81,26 @@ describe('Zustand in der Adresse', () => {
     cy.get('#cycleSel').should('have.value', '1');
   });
 
+  it('das Wählen einer Fraktal-Ebene ist kein Schritt; Rückgängig nennt den Bereich, wechselt ihn aber nicht', () => {   // 20.09.2026
+    cy.visitApp('mode=mandel&l2=f%3D1&lm2=2:0.7:1:0:1:&la=2'); cy.waitRender();
+    cy.get('#undo').should('be.disabled');
+    cy.get('#stWahl1').click(); cy.expectHash('la', null);       // Ebene 1 wählen: nur Auswahl
+    cy.get('#undo').should('be.disabled');                        // kein Schritt daraus
+    cy.get('#stWahl2').click(); cy.expectHash('la', '2');
+    cy.get('#undo').should('be.disabled');
+    cy.rerender(() => cy.get('#stage canvas').trigger('wheel', { deltaY: -400, clientX: 800, clientY: 400, deltaMode: 0 }));   // eine echte Änderung: die Ansicht
+    cy.expectHash('z', z => expect(parseFloat(z)).to.be.greaterThan(1.1));
+    cy.get('#undo').should('not.be.disabled');
+    cy.pane('motiv');                                              // im Motiv: dort soll das Rückgängig uns lassen
+    cy.get('#undo').click();
+    cy.get('#state').invoke('text').should('match', /Rückgängig: Ansicht/);      // der Hinweis nennt den Bereich
+    cy.get('#stapelZeilen .stapel-zeile.on').should('have.attr', 'data-ebene', '2');   // die Ebene bleibt gewählt
+    cy.get('#pane-motiv').should('not.have.attr', 'hidden'); cy.get('#pane-palette').should('have.attr', 'hidden');   // und der Bereich wird nicht gewechselt
+    cy.expectHash('z', '1.0000e+0');
+    cy.get('#redo').click();
+    cy.get('#state').invoke('text').should('match', /Wiederhergestellt: Ansicht/);
+  });
+
   it('ignoriert Unsinn in der Adresse und bleibt bedienbar', () => {
     cy.visitApp('mode=quatsch&z=abc&p=99&pal=-3&f=77&den=1e9');
     cy.get('#family').should('have.value', 'mandel');

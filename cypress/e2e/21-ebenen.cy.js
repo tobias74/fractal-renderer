@@ -137,6 +137,7 @@ describe('Fraktal-Ebenen', () => {
 
   it('Ziehen mit „Bewegen: Alle“: währenddessen bleibt die gewählte Ebene live, kein Wechsel auf den veralteten Grund', () => {
     cy.visitApp('mode=mandel&l2=f%3D1%26z%3D2%26re%3D-0.5%26im%3D0.2&lm2=2:0.7:1:0:0:&la=2'); cy.alleEbenenFertig();
+    cy.expectHash('re', v => expect(parseFloat(v), 'die Mitte steht im Link').to.be.a('number'));   // der Link wird verzögert geschrieben: erst warten, dann lesen
     cy.hashParams().then(h => { cy.wrap(parseFloat(h.get('re'))).as('reVorher'); });   // die Mitte des Grunds vor dem Ziehen
     const zieh = (c, schritte, x0, y0) => { const win = c.ownerDocument.defaultView; const ev = (type, x, y) => c.dispatchEvent(new win.PointerEvent(type, { pointerId: 1, pointerType: 'mouse', isPrimary: true, clientX: x, clientY: y, buttons: type === 'pointerup' ? 0 : 1, bubbles: true, cancelable: true })); return ev; };
     cy.get('#stage canvas').then($c => { const ev = zieh($c[0]); ev('pointerdown', 300, 300); for (let i = 1; i <= 10; i++) ev('pointermove', 300 + 6 * i, 300 + 4 * i); });
