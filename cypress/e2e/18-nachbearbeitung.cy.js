@@ -422,6 +422,5 @@ describe('Richtung der Beleuchtung über Bahnstatistik (z-Kanal)', () => {
   it('über dem Streifenmittel ergibt „nur Richtung“ ein anderes Bild als die Helligkeit', () => {
     cy.visitApp(M + '&nb=' + L(0));
     cy.shotStats('rz-hell').then(hell => { cy.visitApp(M + '&nb=' + L(7)); cy.shotStats('rz-richtung').then(ri => diff(hell, ri).then(d => expect(d.meanDiff, 'WebGPU: Richtung im z-Kanal').to.be.greaterThan(5))); });
-    cy.visitApp(M + '&nb=' + L(0), gl);
   });
 });
