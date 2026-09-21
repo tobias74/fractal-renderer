@@ -1116,6 +1116,41 @@
         <div class="lbl wertzeile"><label for="comp" data-i18n="colour.compression"></label><span class="val-zusatz" id="compNote"></span><input class="val mono wert" id="compVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="comp" type="range" min="0" max="1000" value="333">
       </div>
+      <div id="materialRow" hidden>   <!-- Relief-Färbungen (4, 6, 12): das Materialmodell der Beleuchtung; „Einfach“ ist das bisherige Relief, die Zeilen darunter hängen an der Wahl -->
+        <div class="lbl"><label for="material" data-i18n-title="colour.material-title" data-i18n="colour.material"></label></div>
+        <select id="material">
+          <option value="0" data-i18n="colour.material-simple"></option>
+          <option value="1" data-i18n="colour.material-dielectric"></option>
+          <option value="2" data-i18n="colour.material-metal"></option>
+        </select>
+      </div>
+      <div id="glanzRow" hidden>
+        <div class="lbl wertzeile"><label for="glanz" data-i18n-title="colour.gloss-title" data-i18n="colour.gloss"></label><input class="val mono wert" id="glanzVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+        <input id="glanz" type="range" min="0" max="1" step="0.01" value="0.5">
+      </div>
+      <div id="reflexionRow" hidden>
+        <div class="lbl wertzeile"><label for="reflexion" data-i18n-title="colour.reflection-title" data-i18n="colour.reflection"></label><input class="val mono wert" id="reflexionVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+        <input id="reflexion" type="range" min="0" max="2" step="0.01" value="0">
+      </div>
+      <div id="himmelLageRow" hidden>   <!-- Himmel der Reflexion: aus der Palette, nur bei Reflexion > 0 -->
+        <div class="lbl wertzeile"><label for="himmelLage" data-i18n-title="colour.sky-position-title" data-i18n="colour.sky-position"></label><input class="val mono wert" id="himmelLageVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+        <input id="himmelLage" type="range" min="0" max="1" step="0.005" value="0">
+      </div>
+      <div id="himmelSpanneRow" hidden>
+        <div class="lbl wertzeile"><label for="himmelSpanne" data-i18n-title="colour.sky-span-title" data-i18n="colour.sky-span"></label><input class="val mono wert" id="himmelSpanneVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+        <input id="himmelSpanne" type="range" min="0" max="1" step="0.005" value="0.1">
+      </div>
+      <div id="neigungRow" hidden>
+        <div class="lbl wertzeile"><label for="neigung" data-i18n-title="colour.relief-slope-title" data-i18n="colour.relief-slope"></label><input class="val mono wert" id="neigungVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+        <input id="neigung" type="range" min="0.1" max="5" step="0.05" value="1">
+      </div>
+      <div id="schattenRow" hidden>
+        <label class="chk" data-i18n-title="colour.shadows-title"><input type="checkbox" id="schatten"> <span data-i18n="colour.shadows"></span></label>
+      </div>
+      <div id="schattenLaengeRow" hidden>   <!-- nur mit Schatten -->
+        <div class="lbl wertzeile"><label for="schattenLaenge" data-i18n-title="colour.shadow-length-title" data-i18n="colour.shadow-length"></label><input class="val mono wert" id="schattenLaengeVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+        <input id="schattenLaenge" type="range" min="1" max="40" step="1" value="8">
+      </div>
       <div id="logmapRow" hidden>
         <div class="lbl wertzeile"><label for="logmap" data-i18n-title="colour.logmap-start-title" data-i18n="colour.logmap-start"></label><input class="val mono wert" id="logmapVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="logmap" type="range" min="0" max="5000" step="1" value="0">
@@ -2341,6 +2376,25 @@ const TEXTE = {
   'colour.orbit-averages': { de: 'Bahnmittel', en: 'Orbit averages' },
   'colour.orbit-traps': { de: 'Bahnfallen', en: 'Orbit traps' },
   'colour.relief': { de: 'Relief', en: 'Relief' },
+  'colour.material': { de: 'Material', en: 'Material' },
+  'colour.material-title': { de: 'Beleuchtung des Reliefs: „Einfach“ ist das bisherige Relief; Dielektrikum und Metall folgen einem physikalisch angelehnten Modell mit Fresnel-Anteil, Glanzlicht, Himmelsreflexion aus der Palette und lokalen Schatten', en: 'Lighting of the relief: “Simple” is the relief as before; dielectric and metal follow a physically inspired model with a Fresnel term, highlight, sky reflection from the palette and local shadows' },
+  'colour.material-simple': { de: 'Einfach', en: 'Simple' },
+  'colour.material-dielectric': { de: 'Dielektrikum', en: 'Dielectric' },
+  'colour.material-metal': { de: 'Metall', en: 'Metal' },
+  'colour.gloss': { de: 'Glanz', en: 'Gloss' },
+  'colour.gloss-title': { de: 'Schärfe des Glanzlichts: 0 = matt, 1 = spiegelnd', en: 'Sharpness of the highlight: 0 = matte, 1 = mirror-like' },
+  'colour.reflection': { de: 'Reflexion', en: 'Reflection' },
+  'colour.reflection-title': { de: 'Anteil der Himmelsreflexion; der Himmel kommt aus der Palette der Ebene; 0 = aus', en: 'Share of the sky reflection; the sky comes from the palette of the layer; 0 = off' },
+  'colour.sky-position': { de: 'Himmel: Lage', en: 'Sky: position' },
+  'colour.sky-position-title': { de: 'Wo in der Palette der Horizont der Himmelsreflexion liegt (0 bis 1, zum Farbversatz dazu)', en: 'Where in the palette the horizon of the sky reflection lies (0 to 1, on top of the colour offset)' },
+  'colour.sky-span': { de: 'Himmel: Spanne', en: 'Sky: span' },
+  'colour.sky-span-title': { de: 'Wie viel Palette zwischen Boden (unten) und Zenit (oben) liegt', en: 'How much of the palette lies between the ground (below) and the zenith (above)' },
+  'colour.relief-slope': { de: 'Relief-Neigung', en: 'Relief slope' },
+  'colour.relief-slope-title': { de: 'Steilheit des Reliefs aus dem Abstandsgefälle: 1 = wie das einfache Relief, darunter flacher, darüber steiler', en: 'Steepness of the relief from the distance gradient: 1 = as the simple relief, lower is flatter, higher is steeper' },
+  'colour.shadows': { de: 'Lokale Schatten', en: 'Local shadows' },
+  'colour.shadows-title': { de: 'Schatten aus dem Höhenfeld: Stellen, vor denen zum Licht hin eine Erhebung liegt, werden dunkler (wenige Proben, günstig)', en: 'Shadows from the height field: spots with a ridge between them and the light get darker (few samples, cheap)' },
+  'colour.shadow-length': { de: 'Schattenlänge', en: 'Shadow length' },
+  'colour.shadow-length-title': { de: 'Reichweite der Schatten in Bildpunkten', en: 'Reach of the shadows in pixels' },
   'colour.sign-changes': { de: 'Vorzeichenwechsel', en: 'Sign changes' },
   'colour.square-root': { de: 'Wurzel', en: 'Square root' },
   'colour.standard': { de: 'Gewöhnlich', en: 'Standard' },
@@ -3737,7 +3791,8 @@ const aaTolToPos = t => Math.round(1000 * Math.log(t / AA_TOL.min) / Math.log(AA
 const aaPosToTol = p => AA_TOL.min * Math.pow(AA_TOL.max / AA_TOL.min, Math.min(1000, Math.max(0, p)) / 1000);   // ohne clamp: das ist beim Laden des Speichers noch nicht definiert
 const aaMaxToPos = n => Math.min(9, Math.max(0, Math.round(Math.log2(n / 8))));
 const aaPosToMax = p => 8 * Math.pow(2, Math.min(9, Math.max(0, p)));
-const LOG_STUFEN = { min: 1, max: 10, def: 1 };   // wie oft der Logarithmus wirkt; stufenlos, ganze Zahlen sind die alten Färbungen (1 = 2, 2 = 5, 3 = 7, 4 = 8, 5 = 9, 6 = 10)
+const LOG_STUFEN = { min: 1, max: 10, def: 1 };
+const MATERIAL = { glanz: { min: 0, max: 1, def: 0.5 }, reflexion: { min: 0, max: 10, def: 0 }, lage: { min: 0, max: 1, def: 0 }, spanne: { min: 0, max: 5, def: 0.1 }, neigung: { min: 0.01, max: 50, def: 1 }, laenge: { min: 1, max: 200, def: 8 } };   // Materialmodell des Reliefs: Grenzen der Zahlenfelder (die Regler enden früher) und Vorgaben; Material 0 = einfach (bisheriges Relief), Reflexion 0 = aus   // wie oft der Logarithmus wirkt; stufenlos, ganze Zahlen sind die alten Färbungen (1 = 2, 2 = 5, 3 = 7, 4 = 8, 5 = 9, 6 = 10)
 const LOG_ALT = { 5: 2, 7: 3, 8: 4, 9: 5, 10: 6 };   // alte Nummern und ihre Stufenzahl
 const MAP_MAX = 35;   // höchste Nummer einer Färbung (siehe Liste „Färbung nach“); 35: eigener Sammler
 const MAPPING_TEXT = { 0: 'mapping.text.0', 1: 'mapping.text.1', 2: 'mapping.text.2', 3: 'mapping.text.3', 4: 'mapping.text.4', 6: 'mapping.text.6', 11: 'mapping.text.11', 12: 'mapping.text.12', 13: 'mapping.text.13', 14: 'mapping.text.14', 15: 'mapping.text.15', 16: 'mapping.text.16', 17: 'mapping.text.17', 18: 'mapping.text.18', 19: 'mapping.text.19', 20: 'mapping.text.20', 21: 'mapping.text.21', 24: 'mapping.text.24', 26: 'mapping.text.26', 28: 'mapping.text.28', 29: 'mapping.text.29', 31: 'mapping.text.31', 32: 'mapping.text.32', 33: 'mapping.text.33', 34: 'mapping.text.34', 35: 'mapping.text.35' };   // ein Satz je Färbung, unter der Auswahl
@@ -5664,7 +5719,7 @@ const WGSL_FILL = /* wgsl */`
 @fragment fn fs() -> @location(0) vec4u { return vec4u(0xFFFFFFFFu, 0u, 0u, 1u); }`;
 
 const WGSL_COLOR_LIB = /* wgsl */`
-struct CP { a: vec4f, b: vec4f, c: vec4f, d: vec4f, misc: vec4f, misc2: vec4f, misc3: vec4f, shift: vec4f, extra: vec4f, z2: vec4f, leer: vec4f, tex: vec4f, innen: vec4f, tex2: vec4f, tex3: vec4f, q: array<vec4f, 20>, stapel: array<vec4f, 12>, paar: vec4f, paar2: vec4f, stapelW: array<vec4f, 4>, nach: array<vec4f, 32>, nachInfo: vec4f, nachBild: vec4f, maske: array<vec4f, 25>, texMaske: array<vec4f, 13>, opt: vec4f, opt2: vec4f }   // texMaske: je Texturplatz drei vec4 wie maske, [12] = (Kantenmaske vorhanden, eine Maske aktiv)   // maske: je Ebene drei vec4 (Art, umkehren, zeigen, weicher Rand; acht Zahlen), [24] = (Abstand vorhanden, eine Maske aktiv);   // paar = (Wert A, Wert B, Faktor A, Faktor B), paar2 = (Abzug A, Abzug B, Flags A, Flags B: Bit 0 Anker, 1 Klemme, 2 voll im Kanal)   // stapel: je Platz (Art, Stärke, Kontrast, Mitte), helle und dunkle Farbe (Vorgabe Weiß und Schwarz); tex2.y = 1: Texturwerte im z-/w-Kanal (über einer Statistik-Färbung), tex2.z = belegte Plätze   // tex = Textur: x Art (0 keine), y Stärke, z Kontrast, w Mitte; innen = eigene Innenfarbe (xyz), w = gestuft; tex2.x = Streifen für die Winkel-Texturen und Periodengebiete; tex3 = zweite Textur (Art, Stärke, Kontrast, Mitte)   // shift.xy = Versatz während des Ziehens, extra.x = Stauchung p, extra.y = Palette vorfiltern (0 = aus, sonst Faktor auf die Breite), extra.z = Farbanker des Bahnmittels (negativ = keiner), extra.w = Fluchtzeit-Abzug β (Färbung 25)
+struct CP { a: vec4f, b: vec4f, c: vec4f, d: vec4f, misc: vec4f, misc2: vec4f, misc3: vec4f, shift: vec4f, extra: vec4f, z2: vec4f, leer: vec4f, tex: vec4f, innen: vec4f, tex2: vec4f, tex3: vec4f, q: array<vec4f, 20>, stapel: array<vec4f, 12>, paar: vec4f, paar2: vec4f, stapelW: array<vec4f, 4>, nach: array<vec4f, 32>, nachInfo: vec4f, nachBild: vec4f, maske: array<vec4f, 25>, texMaske: array<vec4f, 13>, opt: vec4f, opt2: vec4f, mat: vec4f, mat2: vec4f }   // mat = (Material: 0 einfach, 1 Dielektrikum, 2 Metall; Glanz; Reflexion; Neigung), mat2 = (Schatten an, Schattenlänge px, Himmel-Lage, Himmel-Spanne)   // texMaske: je Texturplatz drei vec4 wie maske, [12] = (Kantenmaske vorhanden, eine Maske aktiv)   // maske: je Ebene drei vec4 (Art, umkehren, zeigen, weicher Rand; acht Zahlen), [24] = (Abstand vorhanden, eine Maske aktiv);   // paar = (Wert A, Wert B, Faktor A, Faktor B), paar2 = (Abzug A, Abzug B, Flags A, Flags B: Bit 0 Anker, 1 Klemme, 2 voll im Kanal)   // stapel: je Platz (Art, Stärke, Kontrast, Mitte), helle und dunkle Farbe (Vorgabe Weiß und Schwarz); tex2.y = 1: Texturwerte im z-/w-Kanal (über einer Statistik-Färbung), tex2.z = belegte Plätze   // tex = Textur: x Art (0 keine), y Stärke, z Kontrast, w Mitte; innen = eigene Innenfarbe (xyz), w = gestuft; tex2.x = Streifen für die Winkel-Texturen und Periodengebiete; tex3 = zweite Textur (Art, Stärke, Kontrast, Mitte)   // shift.xy = Versatz während des Ziehens, extra.x = Stauchung p, extra.y = Palette vorfiltern (0 = aus, sonst Faktor auf die Breite), extra.z = Farbanker des Bahnmittels (negativ = keiner), extra.w = Fluchtzeit-Abzug β (Färbung 25)
 // zweidimensionale Palette (PAL2): z2 = (Art: 0 keine, 1 Formel, 2 Tabelle; Achse u; Achse v; –), leer.xyz = Farbe ohne Wert, q = je Quadrant a, b, cu, cv, d
 @group(0) @binding(0) var iter: texture_2d_array<u32>;   // eine Ebene je Probe der Glättung
 @group(0) @binding(1) var<uniform> C: CP;
@@ -5706,10 +5761,52 @@ fn reliefLight(xy: vec2i, k: i32, dist: f32, base: vec3f) -> vec3f {
   let spec = pow(max(dot(reflect(-light, nrm), vec3f(0.0, 0.0, 1.0)), 0.0), 28.0);
   return base * (0.3 + 0.8 * diff) + vec3f(0.4) * spec;
 }
+// Himmel für die Reflexion: aus der Palette der Ebene über die Elevation des gespiegelten Blicks (r.z: −1 Boden … +1 Zenit),
+// Lage mat2.z und Spanne mat2.w in der Palette, dazu der Farbversatz — so passt die Reflexion immer zum Bild
+fn himmelFarbe(r: vec3f) -> vec3f { return pal(C.mat2.z + C.mat2.w * clamp(r.z, -1.0, 1.0) + C.misc.y); }
+// Materialmodell (mat.x > 0): dieselbe Normale wie das einfache Relief, wahlweise flacher oder steiler (mat.w); Fresnel nach
+// Schlick (F0 = 0,04 beim Dielektrikum, die Grundfarbe beim Metall: weißes bzw. farbiges Glanzlicht), normiertes Blinn-Phong-
+// Glanzlicht (mat.y: 0 matt … 1 spiegelnd), Himmelsreflexion über den gespiegelten Blick (mat.z), lokale Schatten aus dem
+// Höhenfeld (mat2.x): sechs Proben entlang der Lichtrichtung im Bild bis mat2.y px, Höhe des Nachbarn gegen die eigene plus Lichtsteigung
+fn reliefMaterial(xy: vec2i, k: i32, dist: f32, base: vec3f) -> vec3f {
+  let h = log2(max(dist, 1.0e-6) + 1.0);
+  let hx = heightAt(xy + vec2i(1, 0), k, h) - heightAt(xy - vec2i(1, 0), k, h);
+  let hy = heightAt(xy + vec2i(0, 1), k, h) - heightAt(xy - vec2i(0, 1), k, h);
+  let st = 1.6 * C.mat.w;   // Neigung 1 = die Steilheit des einfachen Reliefs
+  let nrm = normalize(vec3f(-hx * st, -hy * st, 1.0));
+  let light = normalize(vec3f(-0.55, 0.55 * C.misc3.w, 0.62));
+  let view = vec3f(0.0, 0.0, 1.0);
+  let hv = normalize(light + view);
+  let ndl = max(dot(nrm, light), 0.0); let ndv = max(dot(nrm, view), 0.0); let ndh = max(dot(nrm, hv), 0.0); let vdh = max(dot(view, hv), 0.0);
+  let metall = C.mat.x > 1.5;
+  let f0 = select(vec3f(0.04), base, metall);
+  let fresS = f0 + (vec3f(1.0) - f0) * pow(max(1.0 - vdh, 0.0), 5.0);   // fürs Glanzlicht (Halbvektor)
+  let fresR = f0 + (vec3f(1.0) - f0) * pow(max(1.0 - ndv, 0.0), 5.0);   // für die Reflexion (Blickwinkel auf die Fläche)
+  let n = exp2(1.0 + 10.0 * clamp(C.mat.y, 0.0, 1.0));   // Exponent 2 … 2048
+  let spec = fresS * (pow(ndh, n) * (n + 8.0) / 8.0 * ndl);
+  var sch = 1.0;
+  if (C.mat2.x > 0.5) {
+    let dir = normalize(light.xy); let steig = light.z / length(light.xy); let weite = max(C.mat2.y, 1.0);
+    var ueber = 0.0;   // wie weit die höchste Probe über dem Lichtstrahl liegt (Höhe wie die Normale sie sieht: 2 · st je Einheit)
+    for (var i = 1; i <= 6; i++) {
+      let d = weite * f32(i) / 6.0;
+      let q = xy + vec2i(round(dir * d));
+      ueber = max(ueber, (heightAt(q, k, h) - h) * 2.0 * st - d * steig);
+    }
+    sch = 1.0 - 0.85 * smoothstep(0.0, 1.0, ueber);   // das Umgebungslicht bleibt, Diffus und Glanz werden beschattet
+  }
+  let dif = select(base, base * 0.5, metall) * (0.8 * ndl);   // Metall: gedämpfter Diffusanteil, damit das Bild ohne Reflexion nicht schwarz wird
+  return base * 0.3 + (dif + spec) * sch + himmelFarbe(reflect(-view, nrm)) * fresR * C.mat.z;
+}
+// Relief mit Materialwahl: „Einfach“ (mat.x = 0) ist der bisherige Weg, unverändert und ohne Zusatzaufwand
+fn reliefShade(xy: vec2i, k: i32, dist: f32, base: vec3f) -> vec3f {
+  if (C.mat.x > 0.5) { return reliefMaterial(xy, k, dist, base); }
+  return reliefLight(xy, k, dist, base);
+}
 // „Relief (Abstand)“: Palette nach log-Abstand in Ebenen-Einheiten (Farbe hängt nur vom Punkt ab, nicht vom Zoom), dazu das Relief
 fn distanceShade(xy: vec2i, k: i32, dist: f32) -> vec3f {
   let h = log2(max(dist, 1.0e-6) + 1.0);
-  return reliefLight(xy, k, dist, pal((h + log2(max(C.shift.z, 1.0e-30))) * C.misc.x * 8.0 + C.misc.y));
+  return reliefShade(xy, k, dist, pal((h + log2(max(C.shift.z, 1.0e-30))) * C.misc.x * 8.0 + C.misc.y));
 }
 fn itlog(x0: f32, times: u32) -> f32 {   // k-fach iterierter Logarithmus: log2(… log2(x + 1) + 1 …)
   var x = x0;
@@ -6013,7 +6110,7 @@ fn sampleColor(px: vec4u, xy: vec2i, k: i32) -> vec3f {
       let v = mapNu(select(nu0, floor(nu0), C.innen.w > 0.5));   // gestuft: ganze Iterationen, sichtbare Bänder
       let t = (v - anchorV()) * C.misc.x + C.misc.y;
       if (C.extra.y > 0.0) { col = palAvg(t, palWidth(xy, k) * C.extra.y); } else { col = pal(t); }
-      if (u32(C.misc.w) == 6u || u32(C.misc.w) == 12u) { col = reliefLight(xy, k, bitcast<f32>(px.y), col); }   // Iterationsbänder, vom Abstandsrelief beleuchtet
+      if (u32(C.misc.w) == 6u || u32(C.misc.w) == 12u) { col = reliefShade(xy, k, bitcast<f32>(px.y), col); }   // Iterationsbänder, vom Abstandsrelief beleuchtet
       {   // Textur (wirksame Plätze > 0): erst die Werte der Plätze, dann einmal anwenden
         let gepackt = (C.tex2.z > 1.5) | (C.opt.x > 0.5) | (u32(C.tex.x) == 21u);   // mehrere Plätze, Werte auch für innen gepackt, oder die Karte: die Werte stehen im y- und z-Kanal
         let einzeln = select(texturWert(px), kanteHell(kw, C.stapelW[0].x), u32(C.tex.x) == 11u);   // ein Platz: die Bahnstatistik (oder der Winkel) aus dem y-Kanal, Kanten erst hier
@@ -7748,7 +7845,7 @@ precision highp float; precision highp int; precision highp usampler2DArray; pre
 uniform usampler2DArray uIter; uniform sampler2D uCdf;
 uniform vec3 uA; uniform vec3 uB; uniform vec3 uC; uniform vec3 uD;
 uniform vec2 uMisc; uniform int uAA; uniform int uMapping;
-uniform int uGlowMode; uniform float uGlowWidth; uniform int uInterior; uniform float uHistL; uniform vec4 uMisc3; uniform vec2 uShift; uniform float uPsC; uniform float uAnchor; uniform float uComp; uniform float uStatAnker; uniform float uAbzug; uniform vec4 uTex; uniform vec4 uInnen; uniform vec4 uTex2; uniform vec4 uTex3; uniform vec4 uOpt; uniform vec4 uOpt2; uniform vec4 uStapel[12]; uniform vec4 uPaar; uniform vec4 uPaar2; uniform vec4 uStapelW[4];
+uniform int uGlowMode; uniform float uGlowWidth; uniform int uInterior; uniform float uHistL; uniform vec4 uMisc3; uniform vec2 uShift; uniform float uPsC; uniform float uAnchor; uniform float uComp; uniform float uStatAnker; uniform float uAbzug; uniform vec4 uTex; uniform vec4 uInnen; uniform vec4 uTex2; uniform vec4 uTex3; uniform vec4 uOpt; uniform vec4 uOpt2; uniform vec4 uMat; uniform vec4 uMat2; uniform vec4 uStapel[12]; uniform vec4 uPaar; uniform vec4 uPaar2; uniform vec4 uStapelW[4];
 uniform sampler2D uPal;
 uniform vec4 uTexMaske[13];   // Texturmasken wie im WGSL-Shader
 #define TEXMASKE 1   // 0: ohne Maskencode (das Farbprogramm vom Start); die Programme der Glättung tragen ihn immer
@@ -7776,9 +7873,43 @@ vec3 reliefLight(ivec2 xy, int k, float dist, vec3 base) {
   float spec = pow(max(dot(reflect(-light, nrm), vec3(0.0, 0.0, 1.0)), 0.0), 28.0);
   return base * (0.3 + 0.8 * diff) + vec3(0.4) * spec;
 }
+vec3 himmelFarbe(vec3 r) { return pal(uMat2.z + uMat2.w * clamp(r.z, -1.0, 1.0) + uMisc.y); }   // wie im WGSL-Shader
+vec3 reliefMaterial(ivec2 xy, int k, float dist, vec3 base) {   // Materialmodell wie im WGSL-Shader (Auswahl per ?: über Uniforms, nicht per mix)
+  float h = log2(max(dist, 1.0e-6) + 1.0);
+  float hx = heightAt(xy + ivec2(1, 0), k, h) - heightAt(xy - ivec2(1, 0), k, h);
+  float hy = heightAt(xy + ivec2(0, 1), k, h) - heightAt(xy - ivec2(0, 1), k, h);
+  float st = 1.6 * uMat.w;
+  vec3 nrm = normalize(vec3(-hx * st, -hy * st, 1.0));
+  vec3 light = normalize(vec3(-0.55, 0.55 * uMisc3.w, 0.62));
+  vec3 view = vec3(0.0, 0.0, 1.0);
+  vec3 hv = normalize(light + view);
+  float ndl = max(dot(nrm, light), 0.0), ndv = max(dot(nrm, view), 0.0), ndh = max(dot(nrm, hv), 0.0), vdh = max(dot(view, hv), 0.0);
+  bool metall = uMat.x > 1.5;
+  vec3 f0 = metall ? base : vec3(0.04);
+  vec3 fresS = f0 + (vec3(1.0) - f0) * pow(max(1.0 - vdh, 0.0), 5.0);
+  vec3 fresR = f0 + (vec3(1.0) - f0) * pow(max(1.0 - ndv, 0.0), 5.0);
+  float n = exp2(1.0 + 10.0 * clamp(uMat.y, 0.0, 1.0));
+  vec3 spec = fresS * (pow(ndh, n) * (n + 8.0) / 8.0 * ndl);
+  float sch = 1.0;
+  if (uMat2.x > 0.5) {
+    vec2 dir = normalize(light.xy); float steig = light.z / length(light.xy), weite = max(uMat2.y, 1.0), ueber = 0.0;
+    for (int i = 1; i <= 6; i++) {
+      float d = weite * float(i) / 6.0;
+      ivec2 q = xy + ivec2(round(dir * d));
+      ueber = max(ueber, (heightAt(q, k, h) - h) * 2.0 * st - d * steig);
+    }
+    sch = 1.0 - 0.85 * smoothstep(0.0, 1.0, ueber);
+  }
+  vec3 dif = (metall ? base * 0.5 : base) * (0.8 * ndl);
+  return base * 0.3 + (dif + spec) * sch + himmelFarbe(reflect(-view, nrm)) * fresR * uMat.z;
+}
+vec3 reliefShade(ivec2 xy, int k, float dist, vec3 base) {   // „Einfach“ (uMat.x = 0): der bisherige Weg, unverändert
+  if (uMat.x > 0.5) return reliefMaterial(xy, k, dist, base);
+  return reliefLight(xy, k, dist, base);
+}
 vec3 distanceShade(ivec2 xy, int k, float dist) {
   float h = log2(max(dist, 1.0e-6) + 1.0);
-  return reliefLight(xy, k, dist, pal((h + log2(max(uPsC, 1.0e-30))) * uMisc.x * 8.0 + uMisc.y));
+  return reliefShade(xy, k, dist, pal((h + log2(max(uPsC, 1.0e-30))) * uMisc.x * 8.0 + uMisc.y));
 }
 float itlog(float x, int times) {
   for (int i = 0; i < times; i++) x = log2(x + 1.0);
@@ -8053,7 +8184,7 @@ vec3 sampleColor(uvec4 px, ivec2 xy, int k) {   // Farbe einer Probe; k = Ebene,
       float v = mapNu(uInnen.w > 0.5 ? floor(nu0) : nu0);
       float t = (v - gAnchorV) * uMisc.x + uMisc.y;
       col = uPalFilter > 0.0 ? palAvg(t, palWidth(xy, k) * uPalFilter) : pal(t);
-      if (uMapping == 6 || uMapping == 12) col = reliefLight(xy, k, uintBitsToFloat(px.y), col);
+      if (uMapping == 6 || uMapping == 12) col = reliefShade(xy, k, uintBitsToFloat(px.y), col);
       {   // Textur wie im WGSL-Shader: erst die Werte der Plätze, dann einmal anwenden
         bool gepackt = any(bvec3(uTex2.z > 1.5, uOpt.x > 0.5, int(uTex.x) == 21));
         vec4 t = vec4(0.0);   // ohne wirksamen Platz sind alle Werte null und die Farbe bleibt
@@ -8515,7 +8646,7 @@ class GpuRenderer {
     const U = GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST;
     this.ubF = d.createBuffer({ size: 560, usage: U });   // FP samt texP (6 vec4), texW (4 vec4), Inversionsmitte, Ebenenabbildung und texQ (6 vec4)
     this.ubU = d.createBuffer({ size: 16, usage: U });
-    this.ubC = d.createBuffer({ size: 2032, usage: U });
+    this.ubC = d.createBuffer({ size: 2064, usage: U });
     this.bglK = d.createBindGroupLayout({ entries: [{ binding: 0, visibility: F, buffer: { type: 'uniform' } }].concat([1, 2, 3, 4, 5, 6].map(b => ({ binding: b, visibility: F, texture: { sampleType: 'unfilterable-float', viewDimension: '2d' } }))) });   // Verbund: bis zu sechs Ebenen
     this.pipeK = await d.createRenderPipelineAsync({ layout: d.createPipelineLayout({ bindGroupLayouts: [this.bglK] }), vertex: { module: mK, entryPoint: 'vs' }, fragment: { module: mK, entryPoint: 'fs', targets: [{ format: this.format }] }, primitive: { topology: 'triangle-list' } });
     this.ubK = d.createBuffer({ size: 208, usage: U });
@@ -8808,8 +8939,8 @@ class GpuRenderer {
     this.clearRefine();
   }
   _writeCP(cp) {
-    const f = new Float32Array(508);   // CP samt stapelW, Nachbearbeitung, Masken, Texturmasken und opt
-    f[500] = cp.texInnen || 0; f[501] = cp.texVerbund || 0; f[502] = cp.texVerbundErster || 0; f[503] = cp.leuchtErster || 0; if (cp.logmap) { f[504] = cp.logmap[0]; f[505] = cp.logmap[1]; } f[506] = cp.logStufen || LOG_STUFEN.def;   // Stufen des Logarithmus   // opt: Texturen auch innen; Fallenverbund (Weichheit, erster Fallenplatz); Leuchten-Ebene (1-basiert)
+    const f = new Float32Array(516);   // CP samt stapelW, Nachbearbeitung, Masken, Texturmasken und opt
+    f[500] = cp.texInnen || 0; f[501] = cp.texVerbund || 0; f[502] = cp.texVerbundErster || 0; f[503] = cp.leuchtErster || 0; if (cp.logmap) { f[504] = cp.logmap[0]; f[505] = cp.logmap[1]; } f[506] = cp.logStufen || LOG_STUFEN.def; if (cp.material) f.set(cp.material, 508); if (cp.material2) f.set(cp.material2, 512);   // Stufen des Logarithmus   // opt: Texturen auch innen; Fallenverbund (Weichheit, erster Fallenplatz); Leuchten-Ebene (1-basiert)
     f.set(cp.a, 0); f.set(cp.b, 4); f.set(cp.c, 8); f.set(cp.d, 12);
     f[16] = cp.density; f[17] = cp.offset; f[18] = cp.layers; f[19] = cp.mapping;
     f[20] = cp.glowMode; f[21] = cp.glowWidth; f[22] = cp.interior; f[23] = cp.histL;
@@ -9337,7 +9468,7 @@ class GlRenderer {
   }
   _colorUniforms(prog) {
     const u = {};
-    for (const n of ['uIter', 'uCdf', 'uA', 'uB', 'uC', 'uD', 'uMisc', 'uAA', 'uMapping', 'uGlowMode', 'uGlowWidth', 'uInterior', 'uHistL', 'uMisc3', 'uPal', 'uShift', 'uPsC', 'uAnchor', 'uComp', 'uStatAnker', 'uAbzug', 'uTex', 'uInnen', 'uTex2', 'uOpt', 'uOpt2', 'uTex3', 'uStapel', 'uPaar', 'uPaar2', 'uStapelW', 'uNach', 'uNachInfo', 'uNachBild', 'uNachLut', 'uMaske', 'uTexMaske', 'uRoh', 'uRohTW', 'uLeucht', 'uAccSum', 'uAccCnt', 'uJit', 'uAP', 'uAQ', 'uPalPre', 'uPalFilter', 'uZ2', 'uLeer', 'uQ', 'uPal2']) u[n] = this.gl.getUniformLocation(prog, n);
+    for (const n of ['uIter', 'uCdf', 'uA', 'uB', 'uC', 'uD', 'uMisc', 'uAA', 'uMapping', 'uGlowMode', 'uGlowWidth', 'uInterior', 'uHistL', 'uMisc3', 'uPal', 'uShift', 'uPsC', 'uAnchor', 'uComp', 'uStatAnker', 'uAbzug', 'uTex', 'uInnen', 'uTex2', 'uOpt', 'uOpt2', 'uTex3', 'uStapel', 'uPaar', 'uPaar2', 'uStapelW', 'uNach', 'uNachInfo', 'uNachBild', 'uNachLut', 'uMaske', 'uTexMaske', 'uRoh', 'uRohTW', 'uLeucht', 'uAccSum', 'uAccCnt', 'uJit', 'uAP', 'uAQ', 'uPalPre', 'uPalFilter', 'uZ2', 'uLeer', 'uQ', 'uPal2', 'uMat', 'uMat2']) u[n] = this.gl.getUniformLocation(prog, n);
     return u;
   }
   _program(vs, fs) {
@@ -9494,7 +9625,7 @@ class GlRenderer {
     gl.uniform2f(u.uMisc, cp.density, cp.offset); gl.uniform1i(u.uAA, cp.layers); gl.uniform1i(u.uMapping, cp.mapping);
     gl.uniform1i(u.uGlowMode, cp.glowMode); gl.uniform1f(u.uGlowWidth, cp.glowWidth);
     gl.uniform1i(u.uInterior, cp.interior); gl.uniform1f(u.uHistL, cp.histL);
-    gl.uniform4f(u.uMisc3, cp.formula, cp.roots, cp.palMode || 0, cp.lightY || 1); gl.uniform1f(u.uPsC, cp.ps || 1); gl.uniform1f(u.uAnchor, cp.anchor === undefined ? -1 : cp.anchor); gl.uniform1f(u.uComp, cp.comp || 0); gl.uniform1f(u.uStatAnker, cp.statAnker === undefined ? -1 : cp.statAnker); gl.uniform1f(u.uAbzug, cp.abzug || 0); const tx = cp.textur || TEXTUR_AUS; gl.uniform4f(u.uTex, tx.art, tx.staerke, tx.kontrast, tx.mitte); const inn = cp.innen || [0, 0, 0, 0]; gl.uniform4f(u.uInnen, inn[0], inn[1], inn[2], inn[3]); gl.uniform4f(u.uTex2, cp.streifen || STREIFEN.def, cp.texz ? 1 : 0, cp.texZahl || 0, cp.texKante || 0); const t2 = cp.textur2 || TEXTUR_AUS; gl.uniform4f(u.uTex3, t2.art, t2.staerke, t2.kontrast, t2.mitte); gl.uniform4f(u.uOpt, cp.texInnen || 0, cp.texVerbund || 0, cp.texVerbundErster || 0, cp.leuchtErster || 0); gl.uniform4f(u.uOpt2, cp.logmap ? cp.logmap[0] : 0, cp.logmap ? cp.logmap[1] : 0, cp.logStufen || LOG_STUFEN.def, 0);
+    gl.uniform4f(u.uMisc3, cp.formula, cp.roots, cp.palMode || 0, cp.lightY || 1); const mt = cp.material || [0, 0, 0, 0], mt2 = cp.material2 || [0, 0, 0, 0]; gl.uniform4f(u.uMat, mt[0], mt[1], mt[2], mt[3]); gl.uniform4f(u.uMat2, mt2[0], mt2[1], mt2[2], mt2[3]); gl.uniform1f(u.uPsC, cp.ps || 1); gl.uniform1f(u.uAnchor, cp.anchor === undefined ? -1 : cp.anchor); gl.uniform1f(u.uComp, cp.comp || 0); gl.uniform1f(u.uStatAnker, cp.statAnker === undefined ? -1 : cp.statAnker); gl.uniform1f(u.uAbzug, cp.abzug || 0); const tx = cp.textur || TEXTUR_AUS; gl.uniform4f(u.uTex, tx.art, tx.staerke, tx.kontrast, tx.mitte); const inn = cp.innen || [0, 0, 0, 0]; gl.uniform4f(u.uInnen, inn[0], inn[1], inn[2], inn[3]); gl.uniform4f(u.uTex2, cp.streifen || STREIFEN.def, cp.texz ? 1 : 0, cp.texZahl || 0, cp.texKante || 0); const t2 = cp.textur2 || TEXTUR_AUS; gl.uniform4f(u.uTex3, t2.art, t2.staerke, t2.kontrast, t2.mitte); gl.uniform4f(u.uOpt, cp.texInnen || 0, cp.texVerbund || 0, cp.texVerbundErster || 0, cp.leuchtErster || 0); gl.uniform4f(u.uOpt2, cp.logmap ? cp.logmap[0] : 0, cp.logmap ? cp.logmap[1] : 0, cp.logStufen || LOG_STUFEN.def, 0);
     const stp = cp.stapel || [], sa = new Float32Array(48);   // der Stapel wie im WebGPU-Renderer
     for (let i = 0; i < 4; i++) { const t = stp[i] || TEXTUR_AUS, b = 12 * i; sa[b] = t.art; sa[b + 1] = t.staerke; sa[b + 2] = t.kontrast; sa[b + 3] = t.mitte; sa.set(t.hell || [1, 1, 1], b + 4); sa[b + 7] = t.ziel === undefined ? TEX_ZIEL_VOR : t.ziel; sa.set(t.dunkel || [0, 0, 0], b + 8); sa[b + 11] = t.wo === undefined ? TEX_WO_VOR : t.wo; }
     gl.uniform4fv(u.uStapel, sa);
@@ -9978,7 +10109,7 @@ const S = {
   autoIter: true, manualIter: 1000,
   palette: 0, density: 0.04, offset: 0, animate: false, customPal: null,   // customPal: eigenes Farbschema { id, name, cyclic, stops }
   pal2: {}, pal2Eigen: null,                               // zweidimensionale Palette je Färbung mit zwei Werten (siehe quelle2), Entwurf bzw. Schema aus dem Link
-  mapping: 2, logStufen: LOG_STUFEN.def, logDichteMit: false, glowMode: 0, glowWidth: 1.5, interior: 0, innenFarbe: '#000000', gestuft: false, lyGrenze: 2, fluchtForm: 0, fluchtRadius: 0, dreh: 0, spirale: SPIRALE.def, texInnen: false, texVerbund: 0, invM: [0, 0], biomorph: false, abb: 0, abklingen: 0, logmap: 0, streifen: STREIFEN.def, vorlauf: VORLAUF.def, gewicht: GEWICHT.def, abzug: ABZUG.def, nach: [], textur: 0, texWerte: [0, 0, 0, 0], tex2Werte: [0, 0, 0, 0], tex3Werte: [0, 0, 0, 0], tex4Werte: [0, 0, 0, 0], texStaerke: TEXTUR.staerke.def, texKontrast: TEXTUR.kontrast.def, texMitte: TEXTUR.mitte.def, textur2: 0, tex2Staerke: TEXTUR.staerke.def, tex2Kontrast: TEXTUR.kontrast.def, tex2Mitte: TEXTUR.mitte.def, texHell: '#ffffff', texDunkel: '#000000', tex2Hell: '#ffffff', tex2Dunkel: '#000000', textur3: 0, tex3Staerke: TEXTUR.staerke.def, tex3Kontrast: TEXTUR.kontrast.def, tex3Mitte: TEXTUR.mitte.def, tex3Hell: '#ffffff', tex3Dunkel: '#000000', textur4: 0, tex4Staerke: TEXTUR.staerke.def, tex4Kontrast: TEXTUR.kontrast.def, tex4Mitte: TEXTUR.mitte.def, tex4Hell: '#ffffff', tex4Dunkel: '#000000', texAn: true, tex2An: true, tex3An: true, tex4An: true, paar: PAAR_EIGEN(), kurve: KURVE_STD.map(p => p.slice()), kurveSpann: false,   // Verlaufsart (Standard logarithmisch), Randlinien, Randbreite px, Innen
+  mapping: 2, logStufen: LOG_STUFEN.def, logDichteMit: false, material: 0, glanz: MATERIAL.glanz.def, reflexion: MATERIAL.reflexion.def, himmelLage: MATERIAL.lage.def, himmelSpanne: MATERIAL.spanne.def, neigung: MATERIAL.neigung.def, schatten: false, schattenLaenge: MATERIAL.laenge.def, glowMode: 0, glowWidth: 1.5, interior: 0, innenFarbe: '#000000', gestuft: false, lyGrenze: 2, fluchtForm: 0, fluchtRadius: 0, dreh: 0, spirale: SPIRALE.def, texInnen: false, texVerbund: 0, invM: [0, 0], biomorph: false, abb: 0, abklingen: 0, logmap: 0, streifen: STREIFEN.def, vorlauf: VORLAUF.def, gewicht: GEWICHT.def, abzug: ABZUG.def, nach: [], textur: 0, texWerte: [0, 0, 0, 0], tex2Werte: [0, 0, 0, 0], tex3Werte: [0, 0, 0, 0], tex4Werte: [0, 0, 0, 0], texStaerke: TEXTUR.staerke.def, texKontrast: TEXTUR.kontrast.def, texMitte: TEXTUR.mitte.def, textur2: 0, tex2Staerke: TEXTUR.staerke.def, tex2Kontrast: TEXTUR.kontrast.def, tex2Mitte: TEXTUR.mitte.def, texHell: '#ffffff', texDunkel: '#000000', tex2Hell: '#ffffff', tex2Dunkel: '#000000', textur3: 0, tex3Staerke: TEXTUR.staerke.def, tex3Kontrast: TEXTUR.kontrast.def, tex3Mitte: TEXTUR.mitte.def, tex3Hell: '#ffffff', tex3Dunkel: '#000000', textur4: 0, tex4Staerke: TEXTUR.staerke.def, tex4Kontrast: TEXTUR.kontrast.def, tex4Mitte: TEXTUR.mitte.def, tex4Hell: '#ffffff', tex4Dunkel: '#000000', texAn: true, tex2An: true, tex3An: true, tex4An: true, paar: PAAR_EIGEN(), kurve: KURVE_STD.map(p => p.slice()), kurveSpann: false,   // Verlaufsart (Standard logarithmisch), Randlinien, Randbreite px, Innen
   colAnchor: null,                                         // Farbanker: Iterationswert, an dem der Dichte-Regler die Farbe hält (null = keiner)
   statAnker: null,                                         // Farbanker des Bahnmittels (Färbungen 19, 20, 22, 23): das Mittel, an dem die Farbe hält (null = keiner)
   eigenF: { x: '|z|', s: '', g: 1 }, xm: 'c^3', xf: 'z^2 + c',   // eigene Ausdrücke (AUSDRUCK): der Sammler der Färbung, Ebenenabbildung, Formel — Vorgaben wie EIGEN_VORGABE; Paar-Achsen und Texturplätze tragen ihre eigenen
@@ -10500,7 +10631,7 @@ function aaParams() {
   return { tol: S.aaTol, maxN: deckel, minN: schnell ? AA_MINN_SCHNELL : AA_MINN, schnell: schnell ? 1 : 0, maske: schnell ? AA_MASKE : 0 };
 }
 function colorKey() {   // alles, was die Farbe einer Probe bestimmt: ändert es sich, sind die akkumulierten Farben veraltet
-  return JSON.stringify([S.palette, pal2Objekt(), S.customPal && (S.customPal.stops || [S.customPal.a, S.customPal.b, S.customPal.c, S.customPal.d]), S.density, S.offset, S.mapping, S.glowMode, S.glowWidth, S.interior, S.innenFarbe, S.gestuft, S.colAnchor, S.statAnker, S.abzug, [1, 2, 3, 4].map(texSlot), paarKonfig(), S.comp, S.formula, S.power, S.palFilter, S.palFilterK, cdfVersion]);
+  return JSON.stringify([S.palette, pal2Objekt(), S.customPal && (S.customPal.stops || [S.customPal.a, S.customPal.b, S.customPal.c, S.customPal.d]), S.density, S.offset, S.mapping, S.glowMode, S.glowWidth, S.interior, S.innenFarbe, S.gestuft, S.material, S.glanz, S.reflexion, S.himmelLage, S.himmelSpanne, S.neigung, S.schatten, S.schattenLaenge, S.colAnchor, S.statAnker, S.abzug, [1, 2, 3, 4].map(texSlot), paarKonfig(), S.comp, S.formula, S.power, S.palFilter, S.palFilterK, cdfVersion]);
 }
 function aaRestart() {   // Akkumulation verwerfen: nach neuem Bild, Zoom oder Farbänderung
   if (!aaOn) return;
@@ -10771,6 +10902,8 @@ function colorParams() {
                                                                           // Werte im z-Kanal (über einer Statistik-Färbung); belegte Plätze
     stapel: [1, 2, 3, 4].map(n => n <= texturZahl() ? texFarbParam(n) : TEXTUR_AUS),                                  // alle Plätze der Reihe nach
     innen: [...hexRGB(S.innenFarbe).map(v => v / 255), S.gestuft ? 1 : 0],                                              // eigene Innenfarbe, „gestuft“
+    material: reliefFaerbung() ? [S.material, S.glanz, S.reflexion, S.neigung] : [0, 0, 0, 0],                            // Materialmodell des Reliefs (0 = einfach, der bisherige Weg): Glanz, Reflexion, Neigung
+    material2: [S.schatten ? 1 : 0, S.schattenLaenge, S.himmelLage, S.himmelSpanne],                                       // lokale Schatten an, Schattenlänge px; Himmel aus der Palette: Lage, Spanne
     streifen: S.streifen,                                                                                          // Streifen der Winkel-Texturen und Periodengebiete
     formula: S.formula, roots: nullstellenFormel(S.formula) ? S.nz.length : S.power,
     nach: nachUniform(), nachInfo: nachInfoUniform(), maske: maskeUniform(), texMaske: texMaskeUniform(), nachBild: [0, renderer && renderer.yDown ? 0 : H - 1, W, H] };   // Nachbearbeitung: Ebenen, Nachbar-Ebene, Lage im Bild (am Bildschirm das ganze Bild)
@@ -11745,6 +11878,10 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
   const inn = parseInt(h.get('in'), 10); if (Number.isFinite(inn)) S.interior = clamp(inn, 0, 4);
   const ic = h.get('ic'); S.innenFarbe = ic && /^[0-9a-fA-F]{6}$/.test(ic) ? '#' + ic.toLowerCase() : '#000000';   // eigene Innenfarbe
   S.gestuft = h.get('st') === '1';   // gestuft: ganze Iterationen
+  { const mt = parseInt(h.get('mt'), 10); S.material = Number.isFinite(mt) ? clamp(mt, 0, 2) : 0;   // Materialmodell des Reliefs samt Reglern, Himmel und Schatten (ohne Schlüssel: Vorgaben)
+    const zahl = (k, g) => { const v = parseFloat(h.get(k)); return Number.isFinite(v) ? clamp(v, g.min, g.max) : g.def; };
+    S.glanz = zahl('mg', MATERIAL.glanz); S.reflexion = zahl('mr', MATERIAL.reflexion); S.himmelLage = zahl('mhl', MATERIAL.lage); S.himmelSpanne = zahl('mhs', MATERIAL.spanne); S.neigung = zahl('mn', MATERIAL.neigung);
+    S.schatten = h.get('ms') === '1'; S.schattenLaenge = zahl('ml', MATERIAL.laenge); }
   const pw = parseInt(h.get('p'), 10); if (Number.isFinite(pw)) S.power = clamp(pw, 2, 8);
   const fo = parseInt(h.get('f'), 10); if (Number.isFinite(fo)) S.formula = clamp(fo, 0, FORMULAS.length - 1);
   if (wurzelFormel(S.formula) && !nullstellenFormel(S.formula) && S.power === 2) S.power = 3;   // Newton/Nova ist mit d = 2 entartet (auch in älteren Links)
@@ -11882,6 +12019,14 @@ function buildParamsRoh() {   // die Adresswerte der Ebene in S samt Ansicht und
   if (S.interior) p.set('in', String(S.interior));
   if (S.interior === 4 && S.innenFarbe !== '#000000') p.set('ic', S.innenFarbe.slice(1));
   if (S.gestuft) p.set('st', '1');
+  if (reliefFaerbung() && S.material) {   // Materialmodell des Reliefs: nur abseits von „Einfach“; Regler nur abseits der Vorgabe, Himmel nur mit Reflexion, Schattenlänge nur mit Schatten
+    p.set('mt', String(S.material));
+    if (S.glanz !== MATERIAL.glanz.def) p.set('mg', String(+S.glanz.toFixed(3)));
+    if (S.reflexion !== MATERIAL.reflexion.def) p.set('mr', String(+S.reflexion.toFixed(3)));
+    if (S.reflexion > 0) { if (S.himmelLage !== MATERIAL.lage.def) p.set('mhl', String(+S.himmelLage.toFixed(3))); if (S.himmelSpanne !== MATERIAL.spanne.def) p.set('mhs', String(+S.himmelSpanne.toFixed(3))); }
+    if (S.neigung !== MATERIAL.neigung.def) p.set('mn', String(+S.neigung.toFixed(3)));
+    if (S.schatten) { p.set('ms', '1'); if (S.schattenLaenge !== MATERIAL.laenge.def) p.set('ml', String(+S.schattenLaenge.toFixed(1))); }
+  }
   if (S.power !== 2) p.set('p', String(S.power));
   if (S.formula) { p.set('f', String(S.formula)); if (FORMULAS[S.formula].param) p.set('pp', S.param.toPrecision(4)); if (FORMULAS[S.formula].param2) { p.set('pq', S.param2.map(v => String(+v.toPrecision(5))).join(':')); if (S.zweig) p.set('pk', String(S.zweig)); } }
   if (S.invert) p.set('inv', '1');
@@ -12205,6 +12350,7 @@ function syncFarbUI() {   // Bereich Farbe: was je nach Familie, Formel und Fär
   $('animate').parentElement.hidden = verlauf; $('colAnchor').parentElement.hidden = ohneInnen || (statF && !statAnkerWirkt() && !statMitZeit()); ankerBeschriften(); if (typeof showComp === 'function') showComp();
   $('gestuft').parentElement.hidden = verlauf || lyF !== 0 || winkel || statF;   // gestuft nur bei der Fluchtzeit-Färbung
   $('innenFarbe').hidden = ohneInnen || S.interior !== 4;   // Farbwähler nur bei „Eigene Farbe“
+  syncMaterialUI();   // Materialmodell des Reliefs: Zeilen nur bei Relief-Färbungen, hierarchisch
   $('densAuto').hidden = acc || !werteSinnvoll();          // Anpassen nur, wo die Werteprobe etwas misst
   const ohneFilter = lyap || lyF !== 0 || winkel || zwei || statF;
   $('palFilter').parentElement.hidden = ohneFilter; $('palFilterRow').hidden = ohneFilter || !S.palFilter;
@@ -13323,6 +13469,36 @@ $('densAuto').addEventListener('click', () => {   // Dichte an die Ansicht anpas
 });
 $('innenFarbe').addEventListener('input', e => { S.innenFarbe = e.target.value; colorDirty = true; scheduleHash(); requestFrame(); });
 $('gestuft').addEventListener('change', e => { S.gestuft = e.target.checked; colorDirty = true; scheduleHash(); requestFrame(); });
+function reliefFaerbung() {   // Relief-Färbungen (Abstand 4, logarithmisch 6, Stauchung 12) — nur, wo die Färbung wählbar ist (keine Punktwolke, kein Lyapunov-Motiv)
+  return (S.mapping === 4 || S.mapping === 6 || S.mapping === 12) && S.family !== 'accum' && !(S.family === 'escape' && !!FORMULAS[S.formula].seq);
+}
+function syncMaterialUI() {   // Materialmodell des Reliefs: Zeilen nur bei Relief-Färbungen; Regler nur abseits von „Einfach“; Himmel nur mit Reflexion; Schattenlänge nur mit Schatten
+  const relief = reliefFaerbung(), neu = relief && S.material !== 0;
+  $('materialRow').hidden = !relief; $('glanzRow').hidden = !neu; $('reflexionRow').hidden = !neu; $('neigungRow').hidden = !neu; $('schattenRow').hidden = !neu;
+  $('himmelLageRow').hidden = !(neu && S.reflexion > 0); $('himmelSpanneRow').hidden = !(neu && S.reflexion > 0); $('schattenLaengeRow').hidden = !(neu && S.schatten);
+  const sel = $('material'); sel.value = String(S.material); if (sel._sync) sel._sync();
+  $('glanz').value = String(S.glanz); $('glanzVal').value = fmtZahl(S.glanz, 2);
+  $('reflexion').value = String(S.reflexion); $('reflexionVal').value = fmtZahl(S.reflexion, 2);
+  $('himmelLage').value = String(S.himmelLage); $('himmelLageVal').value = fmtZahl(S.himmelLage, 3);
+  $('himmelSpanne').value = String(S.himmelSpanne); $('himmelSpanneVal').value = fmtZahl(S.himmelSpanne, 3);
+  $('neigung').value = String(S.neigung); $('neigungVal').value = fmtZahl(S.neigung, 2);
+  $('schatten').checked = S.schatten; $('schattenLaenge').value = String(S.schattenLaenge); $('schattenLaengeVal').value = fmtZahl(S.schattenLaenge, 0);
+}
+function materialAenderung() { syncMaterialUI(); colorDirty = true; scheduleHash(); requestFrame(); }   // reine Farbstufe: kein Neurechnen
+$('material').addEventListener('change', () => { S.material = clamp(parseInt($('material').value, 10) || 0, 0, 2); materialAenderung(); });
+const setzeGlanz = v => { S.glanz = clamp(v, MATERIAL.glanz.min, MATERIAL.glanz.max); materialAenderung(); };
+const setzeReflexion = v => { S.reflexion = clamp(v, MATERIAL.reflexion.min, MATERIAL.reflexion.max); materialAenderung(); };
+const setzeHimmelLage = v => { S.himmelLage = clamp(v, MATERIAL.lage.min, MATERIAL.lage.max); materialAenderung(); };
+const setzeHimmelSpanne = v => { S.himmelSpanne = clamp(v, MATERIAL.spanne.min, MATERIAL.spanne.max); materialAenderung(); };
+const setzeNeigung = v => { S.neigung = clamp(v, MATERIAL.neigung.min, MATERIAL.neigung.max); materialAenderung(); };
+const setzeSchattenLaenge = v => { S.schattenLaenge = clamp(v, MATERIAL.laenge.min, MATERIAL.laenge.max); materialAenderung(); };
+$('glanz').addEventListener('input', () => setzeGlanz(+$('glanz').value));
+$('reflexion').addEventListener('input', () => setzeReflexion(+$('reflexion').value));
+$('himmelLage').addEventListener('input', () => setzeHimmelLage(+$('himmelLage').value));
+$('himmelSpanne').addEventListener('input', () => setzeHimmelSpanne(+$('himmelSpanne').value));
+$('neigung').addEventListener('input', () => setzeNeigung(+$('neigung').value));
+$('schattenLaenge').addEventListener('input', () => setzeSchattenLaenge(+$('schattenLaenge').value));
+$('schatten').addEventListener('change', () => { S.schatten = $('schatten').checked; materialAenderung(); });
 showDens();
 const setzeVersatz = v => {   // Punktwolken: die Farben stecken in den Zählern, die müssen dann neu gesammelt werden
   S.offset = v; $('offset').value = Math.round(v * 1000); $('offsetVal').value = fmtZahl(v, 3);
@@ -14756,6 +14932,12 @@ const WERTFELDER = [
   ['tex4MitteVal', 'tex4Mitte', () => [TEXTUR.mitte.min, TEXTUR.mitte.max], v => v, setzeTex4Mitte],
   ['stapelMsVal', 'stapelMs', () => [STAPEL_MS.min, STAPEL_MS.max], v => v, setzeStapelMs],   // Rechenstapel in Millisekunden
   ['logStufenVal', 'logStufen', () => [LOG_STUFEN.min, LOG_STUFEN.max], v => v, setzeLogStufen],
+  ['glanzVal', 'glanz', () => [MATERIAL.glanz.min, MATERIAL.glanz.max], v => v, setzeGlanz],   // Materialmodell des Reliefs: die Zahlenfelder reichen weiter als die Regler
+  ['reflexionVal', 'reflexion', () => [MATERIAL.reflexion.min, MATERIAL.reflexion.max], v => v, setzeReflexion],
+  ['himmelLageVal', 'himmelLage', () => [MATERIAL.lage.min, MATERIAL.lage.max], v => v, setzeHimmelLage],
+  ['himmelSpanneVal', 'himmelSpanne', () => [MATERIAL.spanne.min, MATERIAL.spanne.max], v => v, setzeHimmelSpanne],
+  ['neigungVal', 'neigung', () => [MATERIAL.neigung.min, MATERIAL.neigung.max], v => v, setzeNeigung],
+  ['schattenLaengeVal', 'schattenLaenge', () => [MATERIAL.laenge.min, MATERIAL.laenge.max], v => v, setzeSchattenLaenge],
   ['gedaechtnisVal', 'gedaechtnis', () => [-1, 1], v => Math.round(v * 1000), setzeGedaechtnis],   // Gedächtnis: Regler −1000 … 1000   // Stufen: die Reglerstellung ist der Wert selbst
   ['paarFaktorAVal', 'paarFaktorA', () => [0.001, 1000], faktorZuPos, setzePaarFaktorA],
   ['paarFaktorBVal', 'paarFaktorB', () => [0.001, 1000], faktorZuPos, setzePaarFaktorB],
@@ -14791,7 +14973,7 @@ function resetState() {   // Zustandsfelder auf Standard (Familie und Mandelbrot
   if (S.family === 'accum') S.cloudPrm = CLOUDS[CLOUD_KEYS[S.accKind]].prm.slice();   // Punktwolke: ihre eigenen Vorgaben
   S.autoIter = true; S.manualIter = 1000;
   S.palette = 0; S.customPal = null; S.pal2 = {}; S.pal2Eigen = null; S.density = 0.04; S.offset = 0; S.animate = false;
-  S.mapping = 2; S.logStufen = LOG_STUFEN.def; S.logDichteMit = false; S.glowMode = 0; S.glowWidth = 1.5; S.interior = 0; S.innenFarbe = '#000000'; S.gestuft = false; S.lyGrenze = 2; S.streifen = STREIFEN.def; S.vorlauf = VORLAUF.def; S.gewicht = GEWICHT.def; S.abzug = ABZUG.def; S.nach = []; S.textur = 0; S.texStaerke = TEXTUR.staerke.def; S.texKontrast = TEXTUR.kontrast.def; S.texMitte = TEXTUR.mitte.def; S.textur2 = 0; S.tex2Staerke = TEXTUR.staerke.def; S.tex2Kontrast = TEXTUR.kontrast.def; S.tex2Mitte = TEXTUR.mitte.def; for (let n = 1; n <= TEX_SLOTS; n++) texSlotSetzen(n, TEXTUR_LEER); S.paar = PAAR_EIGEN(); S.kurve = KURVE_STD.map(p => p.slice()); S.kurveSpann = false; S.colAnchor = null; S.statAnker = null; S.anchorAuto = true; S.comp = 0;
+  S.mapping = 2; S.logStufen = LOG_STUFEN.def; S.logDichteMit = false; S.material = 0; S.glanz = MATERIAL.glanz.def; S.reflexion = MATERIAL.reflexion.def; S.himmelLage = MATERIAL.lage.def; S.himmelSpanne = MATERIAL.spanne.def; S.neigung = MATERIAL.neigung.def; S.schatten = false; S.schattenLaenge = MATERIAL.laenge.def; S.glowMode = 0; S.glowWidth = 1.5; S.interior = 0; S.innenFarbe = '#000000'; S.gestuft = false; S.lyGrenze = 2; S.streifen = STREIFEN.def; S.vorlauf = VORLAUF.def; S.gewicht = GEWICHT.def; S.abzug = ABZUG.def; S.nach = []; S.textur = 0; S.texStaerke = TEXTUR.staerke.def; S.texKontrast = TEXTUR.kontrast.def; S.texMitte = TEXTUR.mitte.def; S.textur2 = 0; S.tex2Staerke = TEXTUR.staerke.def; S.tex2Kontrast = TEXTUR.kontrast.def; S.tex2Mitte = TEXTUR.mitte.def; for (let n = 1; n <= TEX_SLOTS; n++) texSlotSetzen(n, TEXTUR_LEER); S.paar = PAAR_EIGEN(); S.kurve = KURVE_STD.map(p => p.slice()); S.kurveSpann = false; S.colAnchor = null; S.statAnker = null; S.anchorAuto = true; S.comp = 0;
   S.jc = [-0.8, 0.156]; S.z0 = [0, 0];
   S.stapelMs = STAPEL_MS.def; S.uiVorrang = true;
   S.aa = DEFAULT_AA; S.aaMode = 'grid'; S.aaTol = AA_TOL.def; S.aaMax = 64; S.aaSigma = AA_SIGMA.def; S.palFilter = false; S.palFilterK = PALK.def; S.cycle = 'auto'; S.bla = 'auto';
@@ -14804,7 +14986,7 @@ function syncAllUI() {   // Bedienfeld vollständig an den Zustand angleichen
   powSel.value = String(S.power); syncPlaneUI(); syncFormulaUI();
   iterAuto.checked = S.autoIter; syncIterUI();
   syncPalSelect(); applyPalette(); densEl.value = densToPos(S.density); showDens(); $('offset').value = Math.round(S.offset * 1000); $('animate').checked = S.animate;
-  mapSel.value = String(S.mapping); $('comp').value = compToPos(S.comp); showComp(); syncLyGrenze(); syncStreifen(); syncVorlauf(); syncGewicht(); syncAbzug(); syncTextur(); syncKurve(); syncFlucht(); syncDreh(); syncSpirale(); syncTexOptionen(); syncInvMitte(); syncAbklingen(); syncLogmap(); ankerBeschriften(); syncGlowUI(); intSel.value = String(S.interior); $('innenFarbe').value = S.innenFarbe; $('gestuft').checked = S.gestuft; syncJuliaUI(); syncZ0UI(); syncFamilyUI(); syncAaUI();
+  mapSel.value = String(S.mapping); $('comp').value = compToPos(S.comp); showComp(); syncLyGrenze(); syncStreifen(); syncVorlauf(); syncGewicht(); syncAbzug(); syncTextur(); syncKurve(); syncFlucht(); syncDreh(); syncSpirale(); syncTexOptionen(); syncInvMitte(); syncAbklingen(); syncLogmap(); ankerBeschriften(); syncGlowUI(); syncMaterialUI(); intSel.value = String(S.interior); $('innenFarbe').value = S.innenFarbe; $('gestuft').checked = S.gestuft; syncJuliaUI(); syncZ0UI(); syncFamilyUI(); syncAaUI();
 }
 // ============================================================
 //  Rückgängig und Wiederholen
@@ -14889,7 +15071,7 @@ const UNDO_BEREICHE = [   // welcher Bereich einen Adresswert besitzt, für den 
   [/^(pal|cp|pv|p2|cp2|pv2)$/, 'palette'],
   [/^t(x|[a-z]|\d+[a-z]*)$/, 'texturen'],
   [/^(la|l\d+|lm\d+|lu\d*)$/, 'ebenen'],
-  [/^(map|den|off|ca|sa|lm|glow|gw|gd|pf|pfk|lst|lsd|lg|kv|ks|ex|ga)$/, 'farbe'],
+  [/^(map|den|off|ca|sa|lm|glow|gw|gd|pf|pfk|lst|lsd|lg|kv|ks|ex|ga|mt|mg|mr|mhl|mhs|mn|ms|ml)$/, 'farbe'],
 ];
 function undoHinweis(vorher, nachher, zurueck) {   // kurz sagen, in welchem Bereich sich der Stand geändert hat; der Bereich selbst bleibt, wo er ist
   if (vorher === null || nachher === null) return;
