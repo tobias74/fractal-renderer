@@ -1749,6 +1749,12 @@
       <input id="palKurve" type="range" min="0.2" max="5" step="0.01" value="1">
       <div class="lbl wertzeile" id="palKurveMitteRow" hidden><label for="palKurveMitte" data-i18n-title="colour.palette-curve-centre-title" data-i18n="colour.palette-curve-centre"></label><input class="val mono wert" id="palKurveMitteVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
       <input id="palKurveMitte" type="range" min="0" max="1" step="0.001" value="0" hidden>
+      <div class="lbl wertzeile" id="palPfadSpanneRow"><label for="palPfadSpanne" data-i18n-title="colour.palette-path-span-title" data-i18n="colour.palette-path-span"></label><input class="val mono wert" id="palPfadSpanneVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+      <input id="palPfadSpanne" type="range" min="0" max="20" step="0.01" value="0">
+      <div class="lbl" id="palZweiRow" hidden><label for="palZwei" data-i18n-title="colour.palette-path-second-title" data-i18n="colour.palette-path-second"></label></div>
+      <select id="palZwei" hidden></select>
+      <div class="lbl wertzeile" id="palPfadBeginnRow" hidden><label for="palPfadBeginn" data-i18n-title="colour.palette-path-start-title" data-i18n="colour.palette-path-start"></label><input class="val mono wert" id="palPfadBeginnVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+      <input id="palPfadBeginn" type="range" min="-20" max="20" step="0.01" value="0" hidden>
 
     </section>
 
@@ -2570,6 +2576,12 @@ const TEXTE = {
   'colour.palette-curve': { de: 'Palettenkurve', en: 'Palette curve' },
   'colour.palette-curve-title': { de: 'Wie die Farben innerhalb eines Palettenumlaufs verteilt sind: 1 gleichmäßig, kleiner als 1 drängt sie an den Anfang des Umlaufs, größer als 1 an sein Ende. Die Umlaufgrenze bleibt unberührt, es entstehen also keine Sprünge.', en: 'How the colours are spread within one turn of the palette: 1 is even, below 1 crowds them at the start of the turn, above 1 at its end. The turn boundary is untouched, so no jumps appear.' },
   'colour.palette-curve-centre': { de: 'Schwerpunkt der Kurve', en: 'Centre of the curve' },
+  'colour.palette-path-span': { de: 'Übergang: Spanne', en: 'Transition: span' },
+  'colour.palette-path-span-title': { de: 'Über wie viele Palettenumläufe die zweite Palette übernimmt. 0 heißt: kein Übergang, es bleibt bei der einen Palette.', en: 'Over how many turns of the palette the second one takes over. 0 means no transition, the single palette stays.' },
+  'colour.palette-path-second': { de: 'Übergang: zweite Palette', en: 'Transition: second palette' },
+  'colour.palette-path-second-title': { de: 'Die Palette, in die das Bild hineinwächst, während die Palettenstelle fortschreitet.', en: 'The palette the picture grows into as the palette position advances.' },
+  'colour.palette-path-start': { de: 'Übergang: Beginn', en: 'Transition: start' },
+  'colour.palette-path-start-title': { de: 'Ab welcher Palettenstelle der Übergang einsetzt; davor gilt allein die erste Palette.', en: 'The palette position where the transition sets in; before it the first palette alone applies.' },
   'colour.palette-curve-centre-title': { de: 'Wo der Umlauf beginnt, an dem die Kurve ansetzt: damit lässt sich die Stauchung auf die Farbe legen, die du treffen willst.', en: 'Where the turn the curve works on begins: this puts the crowding on the colour you want to hit.' },
   'colour.pair-target-palette': { de: 'Palettenposition', en: 'Palette position' },
   'colour.texture-where': { de: 'Wirkt', en: 'Acts' },
@@ -3830,6 +3842,7 @@ const aaMaxToPos = n => Math.min(9, Math.max(0, Math.round(Math.log2(n / 8))));
 const aaPosToMax = p => 8 * Math.pow(2, Math.min(9, Math.max(0, p)));
 const LOG_STUFEN = { min: 1, max: 10, def: 1 };
 const PAL_KURVE = { kurve: { min: 0.2, max: 5, def: 1, step: 0.01 }, mitte: { min: 0, max: 1, def: 0, step: 0.001 } };   // Palettenkurve: Exponent im Umlauf und Schwerpunkt
+const PAL_PFAD = { beginn: { min: -20, max: 20, def: 0, step: 0.01 }, spanne: { min: 0, max: 20, def: 0, step: 0.01 } };   // Palettenübergang: ab welcher Palettenstelle und über wie viele Umläufe die zweite Palette übernimmt (Spanne 0 = aus)
 const MATERIAL = { glanz: { min: 0, max: 1, def: 0.5 }, reflexion: { min: 0, max: 10, def: 0 }, lage: { min: 0, max: 1, def: 0 }, spanne: { min: 0, max: 5, def: 0.1 }, neigung: { min: 0.01, max: 50, def: 1 }, laenge: { min: 1, max: 200, def: 8 } };   // Materialmodell des Reliefs: Grenzen der Zahlenfelder (die Regler enden früher) und Vorgaben; Material 0 = einfach (bisheriges Relief), Reflexion 0 = aus   // wie oft der Logarithmus wirkt; stufenlos, ganze Zahlen sind die alten Färbungen (1 = 2, 2 = 5, 3 = 7, 4 = 8, 5 = 9, 6 = 10)
 const LOG_ALT = { 5: 2, 7: 3, 8: 4, 9: 5, 10: 6 };   // alte Nummern und ihre Stufenzahl
 const MAP_MAX = 35;   // höchste Nummer einer Färbung (siehe Liste „Färbung nach“); 35: eigener Sammler
@@ -4200,7 +4213,9 @@ const PAL_GRUPPEN = [
 // Die geltende Palette ist ein eigenes Schema oder eine Vorgabe, jeweils entweder aus Stützstellen (stops, läuft über die
 // Farbtabelle) oder eine Quilez-Palette (a, b, c, d, läuft über die Kosinus-Uniforms wie Klassisch)
 function palAktiv() { return S.customPal || PALETTES[S.palette] || PALETTES[0]; }
-function palTabelle() { const p = palAktiv(); return p.stops ? p : null; }
+function palPfadAn() { return S.palPfadSpanne > 1e-6; }   // Palettenübergang: erst mit einer Spanne gibt es einen
+function palZweiAktiv() { return PALETTES[S.palZwei] || PALETTES[0]; }   // die Palette, in die der Übergang führt (immer eine eingebaute)
+function palTabelle() { const p = palAktiv(); return p.stops ? p : (palPfadAn() ? p : null); }   // mit Übergang läuft auch eine Kosinus-Palette über die Tabelle, damit beide mischbar sind
 function palKosinus() { const p = palAktiv(); return p.a ? p : PALETTES[0]; }   // bei Stützstellen nur Platzhalter für die Uniforms
 
 // Zweidimensionale Paletten. Manche Färbungen liefern je Punkt zwei Werte (u, v): die Färbung nach Re und Im die zwei Teile
@@ -5786,11 +5801,20 @@ fn palStelle(t: f32) -> f32 {   // Palettenkurve: verteilt die Farben innerhalb 
   let u = fract(t - C.palk.y);
   return t - u + pow(u, C.palk.x);   // nur die Stelle im Umlauf wird gebogen, die Umlaufgrenze bleibt
 }
+fn palPfadAnteil(t: f32) -> f32 {   // Palettenübergang: Anteil der zweiten Palette, 0 vor dem Beginn, 1 nach Beginn plus Spanne; Spanne 0 = aus
+  if (C.palk.w < 1.0e-6) { return 0.0; }
+  return clamp((t - C.palk.z) / C.palk.w, 0.0, 1.0);
+}
+fn palZeile(t: f32, zeile: i32) -> vec3f {   // eine Zeile der Palettentextur an der Stelle t
+  let x = fract(t) * 256.0; let i = i32(x); let fr = x - f32(i);
+  return mix(textureLoad(palTex, vec2i(i & 255, zeile), 0).xyz, textureLoad(palTex, vec2i((i + 1) & 255, zeile), 0).xyz, fr);
+}
 fn pal(tRoh: f32) -> vec3f {
   let t = palStelle(tRoh);
   if (C.misc3.z > 0.5) {
-    let x = fract(t) * 256.0; let i = i32(x); let fr = x - f32(i);
-    return mix(textureLoad(palTex, vec2i(i & 255, 0), 0).xyz, textureLoad(palTex, vec2i((i + 1) & 255, 0), 0).xyz, fr);
+    let f = palPfadAnteil(t);
+    if (f <= 0.0) { return palZeile(t, 0); }
+    return mix(palZeile(t, 0), palZeile(t, 1), f);
   }
   return clamp(C.a.xyz + C.b.xyz * cos(6.2831853 * fract(C.c.xyz * t + C.d.xyz)), vec3f(0.0), vec3f(1.0));
 }
@@ -6069,17 +6093,23 @@ fn palWidth(xy: vec2i, k: i32) -> f32 {
 }
 fn sinc3(x: vec3f) -> vec3f { let p = max(abs(3.14159265 * x), vec3f(1.0e-5)); return sin(p) / p; }
 // ∫₀ˣ des eigenen Farbschemas (x in Tabelleneinträgen, zyklisch mit Periode 256; die Tabelle ist stückweise linear wie in pal)
-fn palInt(x: f32) -> vec3f {
+fn palInt(x: f32, zeile: i32) -> vec3f {
   let cyc = floor(x / 256.0); let r = x - cyc * 256.0;
   let i = i32(r); let fr = r - f32(i);
-  let l0 = textureLoad(palTex, vec2i(i & 255, 0), 0).xyz; let l1 = textureLoad(palTex, vec2i((i + 1) & 255, 0), 0).xyz;
-  return cyc * textureLoad(palPre, vec2i(256, 0), 0).xyz + textureLoad(palPre, vec2i(min(i, 256), 0), 0).xyz + l0 * fr + (l1 - l0) * (0.5 * fr * fr);
+  let l0 = textureLoad(palTex, vec2i(i & 255, zeile), 0).xyz; let l1 = textureLoad(palTex, vec2i((i + 1) & 255, zeile), 0).xyz;
+  return cyc * textureLoad(palPre, vec2i(256, zeile), 0).xyz + textureLoad(palPre, vec2i(min(i, 256), zeile), 0).xyz + l0 * fr + (l1 - l0) * (0.5 * fr * fr);
 }
 // Mittel der Palette über [t − w/2, t + w/2]: Cosinus-Paletten exakt über den sinc-Faktor, eigene Schemata über die Stammfunktion
 fn palAvg(tRoh: f32, w: f32) -> vec3f {
   let t = palStelle(tRoh);   // die Kurve gilt für die Mitte des Fensters; die Breite bleibt, wie die Färbung sie vorgibt
   if (w < 1.0e-4) { return pal(t); }
-  if (C.misc3.z > 0.5) { return (palInt((t + 0.5 * w) * 256.0) - palInt((t - 0.5 * w) * 256.0)) / (w * 256.0); }
+  if (C.misc3.z > 0.5) {
+    let a = (palInt((t + 0.5 * w) * 256.0, 0) - palInt((t - 0.5 * w) * 256.0, 0)) / (w * 256.0);
+    let f = palPfadAnteil(t);
+    if (f <= 0.0) { return a; }
+    let b = (palInt((t + 0.5 * w) * 256.0, 1) - palInt((t - 0.5 * w) * 256.0, 1)) / (w * 256.0);
+    return mix(a, b, f);   // der Anteil gilt für die Mitte des Fensters, wie die Kurve
+  }
   return clamp(C.a.xyz + C.b.xyz * sinc3(C.c.xyz * w) * cos(6.2831853 * (C.c.xyz * t + C.d.xyz)), vec3f(0.0), vec3f(1.0));
 }
 // Zweidimensionale Palette (siehe PAL2). w = die beiden Werte (ihre Vorzeichen wählen den Quadranten), p = Positionen ohne
@@ -7946,9 +7976,21 @@ float palStelle(float t) {   // wie im WGSL-Shader
   float u = fract(t - uPalK.y);
   return t - u + pow(u, uPalK.x);
 }
+float palPfadAnteil(float t) {   // wie im WGSL-Shader
+  if (uPalK.w < 1.0e-6) return 0.0;
+  return clamp((t - uPalK.z) / uPalK.w, 0.0, 1.0);
+}
+vec3 palZeile(float t, int zeile) {   // wie im WGSL-Shader
+  float x = fract(t) * 256.0; int i = int(x); float fr = x - float(i);
+  return mix(texelFetch(uPal, ivec2(i & 255, zeile), 0).rgb, texelFetch(uPal, ivec2((i + 1) & 255, zeile), 0).rgb, fr);
+}
 vec3 pal(float tRoh) {
   float t = palStelle(tRoh);
-  if (uMisc3.z > 0.5) { float x = fract(t) * 256.0; int i = int(x); return mix(texelFetch(uPal, ivec2(i & 255, 0), 0).rgb, texelFetch(uPal, ivec2((i + 1) & 255, 0), 0).rgb, x - float(i)); }
+  if (uMisc3.z > 0.5) {   // wie im WGSL-Shader
+    float f = palPfadAnteil(t);
+    if (f <= 0.0) return palZeile(t, 0);
+    return mix(palZeile(t, 0), palZeile(t, 1), f);
+  }
   return clamp(uA + uB * cos(6.2831853 * fract(uC * t + uD)), 0.0, 1.0);
 }
 float gKw = 0.0;   // wie im WGSL-Shader
@@ -8195,16 +8237,22 @@ float palWidth(ivec2 xy, int k) {   // Breite des Palettenbereichs je Pixel: je 
   return min(sqrt(w2), 64.0);
 }
 vec3 sinc3(vec3 x) { vec3 p = max(abs(3.14159265 * x), vec3(1.0e-5)); return sin(p) / p; }
-vec3 palInt(float x) {   // Stammfunktion der stückweise linearen Tabelle, x in Einträgen, Periode 256
+vec3 palInt(float x, int zeile) {   // Stammfunktion der stückweise linearen Tabelle, x in Einträgen, Periode 256
   float cyc = floor(x / 256.0); float r = x - cyc * 256.0;
   int i = int(r); float fr = r - float(i);
-  vec3 l0 = texelFetch(uPal, ivec2(i & 255, 0), 0).rgb, l1 = texelFetch(uPal, ivec2((i + 1) & 255, 0), 0).rgb;
-  return cyc * texelFetch(uPalPre, ivec2(256, 0), 0).rgb + texelFetch(uPalPre, ivec2(min(i, 256), 0), 0).rgb + l0 * fr + (l1 - l0) * (0.5 * fr * fr);
+  vec3 l0 = texelFetch(uPal, ivec2(i & 255, zeile), 0).rgb, l1 = texelFetch(uPal, ivec2((i + 1) & 255, zeile), 0).rgb;
+  return cyc * texelFetch(uPalPre, ivec2(256, zeile), 0).rgb + texelFetch(uPalPre, ivec2(min(i, 256), zeile), 0).rgb + l0 * fr + (l1 - l0) * (0.5 * fr * fr);
 }
 vec3 palAvg(float tRoh, float w) {   // Mittel der Palette über [t − w/2, t + w/2]; die Kurve gilt für die Mitte des Fensters
   float t = palStelle(tRoh);
   if (w < 1.0e-4) return pal(t);
-  if (uMisc3.z > 0.5) return (palInt((t + 0.5 * w) * 256.0) - palInt((t - 0.5 * w) * 256.0)) / (w * 256.0);
+  if (uMisc3.z > 0.5) {   // wie im WGSL-Shader
+    vec3 a = (palInt((t + 0.5 * w) * 256.0, 0) - palInt((t - 0.5 * w) * 256.0, 0)) / (w * 256.0);
+    float f = palPfadAnteil(t);
+    if (f <= 0.0) return a;
+    vec3 b = (palInt((t + 0.5 * w) * 256.0, 1) - palInt((t - 0.5 * w) * 256.0, 1)) / (w * 256.0);
+    return mix(a, b, f);
+  }
   return clamp(uA + uB * sinc3(uC * w) * cos(6.2831853 * (uC * t + uD)), 0.0, 1.0);
 }
 float achse2(float p, float k) { return k > 0.0 ? 1.0 - exp(-k * abs(p)) : p + uMisc.y; }   // zweidimensionale Palette wie im WGSL-Shader
@@ -8729,9 +8777,9 @@ class GpuRenderer {
       { binding: 8, visibility: F, texture: { sampleType: 'unfilterable-float', viewDimension: '2d' } },
       { binding: 9, visibility: F, texture: { sampleType: 'unfilterable-float', viewDimension: '2d' } },
       { binding: 10, visibility: F, texture: { sampleType: 'unfilterable-float', viewDimension: '2d' } } ] });   // 10: Gradationskurven der Nachbearbeitung
-    this.palTex = d.createTexture({ size: [256, 1], format: 'rgba8unorm', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST });
+    this.palTex = d.createTexture({ size: [256, 2], format: 'rgba8unorm', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST });   // Zeile 0 die Palette, Zeile 1 die des Übergangs
     this.palView = this.palTex.createView();
-    this.palPreTex = d.createTexture({ size: [257, 1], format: 'rgba32float', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST });
+    this.palPreTex = d.createTexture({ size: [257, 2], format: 'rgba32float', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST });   // dieselben zwei Zeilen wie palTex
     this.palPreView = this.palPreTex.createView();
     this.pal2Tex = d.createTexture({ size: [2 * PAL2_N, 2 * PAL2_N], format: 'rgba32float', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST });   // zweidimensionale Palette
     this.pal2View = this.pal2Tex.createView();
@@ -9247,9 +9295,12 @@ class GpuRenderer {
   }
   setPalette2(tab) { this.device.queue.writeTexture({ texture: this.pal2Tex }, tab, { bytesPerRow: 2 * PAL2_N * 16 }, [2 * PAL2_N, 2 * PAL2_N]); }
   setNachLut(tab) { this.device.queue.writeTexture({ texture: this.nachLutTex }, tab, { bytesPerRow: 256 * 16 }, [256, 8]); }   // Gradationskurven der Nachbearbeitung
-  setPalette(lut) {
-    this.device.queue.writeTexture({ texture: this.palTex }, lut, { bytesPerRow: 1024 }, [256, 1]);
-    this.device.queue.writeTexture({ texture: this.palPreTex }, palPrefix(lut), { bytesPerRow: 257 * 16 }, [257, 1]);
+  setPalette(lut, lut2) {   // lut2: die Palette des Übergangs; ohne sie trägt Zeile 1 dieselbe wie Zeile 0
+    const b = lut2 || lut;
+    this.device.queue.writeTexture({ texture: this.palTex, origin: [0, 0] }, lut, { bytesPerRow: 1024 }, [256, 1]);
+    this.device.queue.writeTexture({ texture: this.palTex, origin: [0, 1] }, b, { bytesPerRow: 1024 }, [256, 1]);
+    this.device.queue.writeTexture({ texture: this.palPreTex, origin: [0, 0] }, palPrefix(lut), { bytesPerRow: 257 * 16 }, [257, 1]);
+    this.device.queue.writeTexture({ texture: this.palPreTex, origin: [0, 1] }, palPrefix(b), { bytesPerRow: 257 * 16 }, [257, 1]);
   }
   // ---- Adaptive Glättung: Zufallsproben je Pixel in Farbsummen akkumulieren, Bedarf je Pixel und Kachel verfolgen.
   // Puffer: jit (neue Probe, rg32uint), sum[2] (rgb-Summe + Helligkeitsquadrate, rgba32float), cnt[2] (Probenzahl, r32float),
@@ -9548,12 +9599,12 @@ class GlRenderer {
     this.setCdf(Float32Array.from({ length: CDF_N }, (_, i) => i / CDF_N));
     this.palTex = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.palTex);
-    gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, 256, 1);
+    gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, 256, 2);   // Zeile 0 die Palette, Zeile 1 die des Übergangs
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     this.palPreTex = gl.createTexture();   // Stammfunktion des eigenen Farbschemas für die Palettenvorfilterung
     gl.bindTexture(gl.TEXTURE_2D, this.palPreTex);
-    gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA32F, 257, 1);
+    gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA32F, 257, 2);   // dieselben zwei Zeilen wie palTex
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     this.pal2Tex = gl.createTexture();   // zweidimensionale Palette: 2 × 2 Quadranten à 256 × 256 Farben
@@ -10058,12 +10109,14 @@ class GlRenderer {
     gl.activeTexture(gl.TEXTURE8); gl.bindTexture(gl.TEXTURE_2D, this.nachLutTex);
     gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 256, 8, gl.RGBA, gl.FLOAT, tab, 0);
   }
-  setPalette(lut) {
-    const gl = this.gl;
+  setPalette(lut, lut2) {   // wie im WebGPU-Renderer
+    const gl = this.gl, b = lut2 || lut;
     gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, this.palTex);
     gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 256, 1, gl.RGBA, gl.UNSIGNED_BYTE, lut, 0);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 1, 256, 1, gl.RGBA, gl.UNSIGNED_BYTE, b, 0);
     gl.activeTexture(gl.TEXTURE6); gl.bindTexture(gl.TEXTURE_2D, this.palPreTex);
     gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 257, 1, gl.RGBA, gl.FLOAT, palPrefix(lut), 0);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 1, 257, 1, gl.RGBA, gl.FLOAT, palPrefix(b), 0);
   }
   readRegion(w, h, kanaele = 1) {   // wie im WebGPU-Renderer: der x-Kanal, mit kanaele = 2 auch der y-Kanal
     const gl = this.gl;
@@ -10233,6 +10286,7 @@ const S = {
   palette: 0, density: 0.04, offset: 0, animate: false, customPal: null,   // customPal: eigenes Farbschema { id, name, cyclic, stops }
   pal2: {}, pal2Eigen: null,                               // zweidimensionale Palette je Färbung mit zwei Werten (siehe quelle2), Entwurf bzw. Schema aus dem Link
   palKurve: PAL_KURVE.kurve.def, palKurveMitte: PAL_KURVE.mitte.def,
+  palZwei: 0, palPfadBeginn: PAL_PFAD.beginn.def, palPfadSpanne: PAL_PFAD.spanne.def,
   mapping: 2, logStufen: LOG_STUFEN.def, logDichteMit: false, material: 0, glanz: MATERIAL.glanz.def, reflexion: MATERIAL.reflexion.def, himmelLage: MATERIAL.lage.def, himmelSpanne: MATERIAL.spanne.def, neigung: MATERIAL.neigung.def, schatten: false, schattenLaenge: MATERIAL.laenge.def, glowMode: 0, glowWidth: 1.5, interior: 0, innenFarbe: '#000000', gestuft: false, lyGrenze: 2, fluchtForm: 0, fluchtRadius: 0, dreh: 0, spirale: SPIRALE.def, texInnen: false, texVerbund: 0, invM: [0, 0], biomorph: false, abb: 0, abklingen: 0, logmap: 0, streifen: STREIFEN.def, vorlauf: VORLAUF.def, gewicht: GEWICHT.def, abzug: ABZUG.def, nach: [], textur: 0, texWerte: [0, 0, 0, 0], tex2Werte: [0, 0, 0, 0], tex3Werte: [0, 0, 0, 0], tex4Werte: [0, 0, 0, 0], texStaerke: TEXTUR.staerke.def, texKontrast: TEXTUR.kontrast.def, texMitte: TEXTUR.mitte.def, textur2: 0, tex2Staerke: TEXTUR.staerke.def, tex2Kontrast: TEXTUR.kontrast.def, tex2Mitte: TEXTUR.mitte.def, texHell: '#ffffff', texDunkel: '#000000', tex2Hell: '#ffffff', tex2Dunkel: '#000000', textur3: 0, tex3Staerke: TEXTUR.staerke.def, tex3Kontrast: TEXTUR.kontrast.def, tex3Mitte: TEXTUR.mitte.def, tex3Hell: '#ffffff', tex3Dunkel: '#000000', textur4: 0, tex4Staerke: TEXTUR.staerke.def, tex4Kontrast: TEXTUR.kontrast.def, tex4Mitte: TEXTUR.mitte.def, tex4Hell: '#ffffff', tex4Dunkel: '#000000', texAn: true, tex2An: true, tex3An: true, tex4An: true, paar: PAAR_EIGEN(), kurve: KURVE_STD.map(p => p.slice()), kurveSpann: false,   // Verlaufsart (Standard logarithmisch), Randlinien, Randbreite px, Innen
   colAnchor: null,                                         // Farbanker: Iterationswert, an dem der Dichte-Regler die Farbe hält (null = keiner)
   statAnker: null,                                         // Farbanker des Bahnmittels (Färbungen 19, 20, 22, 23): das Mittel, an dem die Farbe hält (null = keiner)
@@ -11012,7 +11066,7 @@ function pal2Aktiv() {   // Parameter der geltenden zweidimensionalen Palette f�
 }
 function colorParams() {
   const p = palKosinus();
-  return { palKurve: [S.palKurve, S.palKurveMitte, 0, 0], a: p.a, b: p.b, c: p.c, d: p.d, palMode: palTabelle() ? 1 : 0, density: S.density, offset: S.offset, layers: aaOn ? 0 : aaEff * aaEff,   // 0 = adaptiv: Ebene 0 plus Farbsummen
+  return { palKurve: [S.palKurve, S.palKurveMitte, S.palPfadBeginn, palPfadAn() ? S.palPfadSpanne : 0], a: p.a, b: p.b, c: p.c, d: p.d, palMode: palTabelle() ? 1 : 0, density: S.density, offset: S.offset, layers: aaOn ? 0 : aaEff * aaEff,   // 0 = adaptiv: Ebene 0 plus Farbsummen
     shift: [pendingSX, renderer && renderer.yDown ? pendingSY : -pendingSY],   // noch nicht übernommener Versatz aus dem Ziehen
     lightY: renderer && renderer.yDown ? -1 : 1,                                // Licht von oben, egal wie die Texturzeilen laufen
     ps: S.ps,                                                                   // Pixelgröße in der Ebene für den Abstands-Verlauf
@@ -12008,7 +12062,9 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
     const zahl = (k, g) => { const v = parseFloat(h.get(k)); return Number.isFinite(v) ? clamp(v, g.min, g.max) : g.def; };
     S.glanz = zahl('mg', MATERIAL.glanz); S.reflexion = zahl('mr', MATERIAL.reflexion); S.himmelLage = zahl('mhl', MATERIAL.lage); S.himmelSpanne = zahl('mhs', MATERIAL.spanne); S.neigung = zahl('mn', MATERIAL.neigung);
     S.schatten = h.get('ms') === '1'; S.schattenLaenge = zahl('ml', MATERIAL.laenge);
-    S.palKurve = zahl('plk', PAL_KURVE.kurve); S.palKurveMitte = zahl('plm', PAL_KURVE.mitte); }   // Palettenkurve (ohne Schlüssel: gleichmäßig)
+    S.palKurve = zahl('plk', PAL_KURVE.kurve); S.palKurveMitte = zahl('plm', PAL_KURVE.mitte);   // Palettenkurve (ohne Schlüssel: gleichmäßig)
+    S.palPfadSpanne = zahl('pps', PAL_PFAD.spanne); S.palPfadBeginn = zahl('ppb', PAL_PFAD.beginn);   // Palettenübergang (ohne Schlüssel: keiner)
+    const p2 = parseInt(h.get('pp2'), 10); S.palZwei = Number.isFinite(p2) ? clamp(p2, 0, PALETTES.length - 1) : 0; }
   const pw = parseInt(h.get('p'), 10); if (Number.isFinite(pw)) S.power = clamp(pw, 2, 8);
   const fo = parseInt(h.get('f'), 10); if (Number.isFinite(fo)) S.formula = clamp(fo, 0, FORMULAS.length - 1);
   if (wurzelFormel(S.formula) && !nullstellenFormel(S.formula) && S.power === 2) S.power = 3;   // Newton/Nova ist mit d = 2 entartet (auch in älteren Links)
@@ -12114,6 +12170,11 @@ function buildParamsRoh() {   // die Adresswerte der Ebene in S samt Ansicht und
     if (S.texAn === false) p.set('ta', '0');   // ausgeschaltet, Einstellungen bleiben
     if (Math.abs(S.palKurve - PAL_KURVE.kurve.def) > 1e-6) p.set('plk', String(+S.palKurve.toFixed(4)));   // Palettenkurve nur abseits der Gleichverteilung
     if (Math.abs(S.palKurve - PAL_KURVE.kurve.def) > 1e-6 && Math.abs(S.palKurveMitte - PAL_KURVE.mitte.def) > 1e-6) p.set('plm', String(+S.palKurveMitte.toFixed(4)));   // der Schwerpunkt zählt nur mit Kurve
+    if (S.palPfadSpanne > 1e-6) {   // Palettenübergang: zweite Palette und Beginn zählen nur mit Spanne
+      p.set('pps', String(+S.palPfadSpanne.toFixed(4)));
+      if (S.palZwei) p.set('pp2', String(S.palZwei));
+      if (Math.abs(S.palPfadBeginn - PAL_PFAD.beginn.def) > 1e-6) p.set('ppb', String(+S.palPfadBeginn.toFixed(4)));
+    }
     if (texZielWirkt(S.texZiel) !== TEX_ZIEL_VOR) p.set('tz', String(S.texZiel));   // Ziel nur abseits der Helligkeit
     if ((S.texWo || TEX_WO_VOR) !== TEX_WO_VOR) p.set('tw', String(S.texWo));   // wo der Platz wirkt, nur abseits von außen
     if (S.textur === 23 && S.texWahl) p.set('tr', String(S.texWahl));   // Wertwahl der Rosette, nur abseits der Maske
@@ -12933,7 +12994,7 @@ iterAuto.addEventListener('change', () => {
 });
 
 // ---- Eigene Farbschemata: Stützstellen (Position 0..1, Farbe) → 256 Farben, gespeichert im localStorage
-let customPalettes = [], palLUTCache = null, peDraft = null;
+let customPalettes = [], palLUTCache = null, palLUT2Cache = null, peDraft = null;
 function hexRGB(h) { return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }   // (Funktionsdeklarationen: readHash läuft vor diesem Abschnitt)
 function rgbHex(c) { return '#' + c.map(v => Math.round(clamp(v, 0, 255)).toString(16).padStart(2, '0')).join(''); }
 function mixRGB(a, b, t) { return [0, 1, 2].map(i => a[i] + (b[i] - a[i]) * t); }
@@ -12992,8 +13053,9 @@ function presetStops(p, n = 8) {   // Vorgabe-Palette als Stützstellen (Startpu
 }
 function applyPalette() {
   const tab = palTabelle();
-  palLUTCache = tab ? palLUT(tab) : null;
-  if (renderer && palLUTCache && renderer.setPalette) renderer.setPalette(palLUTCache);
+  palLUTCache = tab ? palFarben(tab) : null;   // palFarben kann beide Arten: Stützstellen und Kosinus
+  palLUT2Cache = palPfadAn() ? palFarben(palZweiAktiv()) : null;
+  if (renderer && palLUTCache && renderer.setPalette) renderer.setPalette(palLUTCache, palLUT2Cache);
   colorDirty = true;
   if (S.family === 'accum') accDirty = true;   // die Farben der Punktwolken stecken in den Zählern
   scheduleHash();   // der Link soll die Palette mitführen
@@ -13629,6 +13691,20 @@ $('neigung').addEventListener('input', () => setzeNeigung(+$('neigung').value));
 $('schattenLaenge').addEventListener('input', () => setzeSchattenLaenge(+$('schattenLaenge').value));
 $('schatten').addEventListener('change', () => { S.schatten = $('schatten').checked; materialAenderung(); });
 showDens();
+function palZweiFuellen() {   // die Auswahl der zweiten Palette trägt die eingebauten Paletten
+  const sel = $('palZwei'); if (!sel || sel.options.length) return;
+  PALETTES.forEach((p, i) => { const o = document.createElement('option'); o.value = String(i); o.setAttribute('data-i18n', p.name); sel.append(o); });
+}
+function showPalPfad() {   // zweite Palette und Beginn zählen erst, wenn eine Spanne gesetzt ist
+  const an = palPfadAn();
+  $('palPfadSpanne').value = String(S.palPfadSpanne); $('palPfadSpanneVal').value = fmtZahl(S.palPfadSpanne, 2);
+  $('palPfadBeginn').value = String(S.palPfadBeginn); $('palPfadBeginnVal').value = fmtZahl(S.palPfadBeginn, 2);
+  $('palZwei').value = String(S.palZwei); if ($('palZwei')._sync) $('palZwei')._sync();
+  for (const id of ['palZweiRow', 'palZwei', 'palPfadBeginnRow', 'palPfadBeginn']) $(id).hidden = !an;
+}
+const palPfadAenderung = () => { showPalPfad(); applyPalette(); scheduleHash(); };   // die zweite Tabelle muss mit hoch
+const setzePalPfadSpanne = v => { S.palPfadSpanne = clamp(v, PAL_PFAD.spanne.min, PAL_PFAD.spanne.max); palPfadAenderung(); };
+const setzePalPfadBeginn = v => { S.palPfadBeginn = clamp(v, PAL_PFAD.beginn.min, PAL_PFAD.beginn.max); palPfadAenderung(); };
 function showPalKurve() {   // der Schwerpunkt zählt erst, wenn die Kurve von der Gleichverteilung abweicht
   const wirkt = Math.abs(S.palKurve - PAL_KURVE.kurve.def) > 1e-4;
   $('palKurve').value = String(S.palKurve); $('palKurveVal').value = fmtZahl(S.palKurve, 2);
@@ -13640,7 +13716,10 @@ const setzePalKurve = v => { S.palKurve = clamp(v, PAL_KURVE.kurve.min, PAL_KURV
 const setzePalKurveMitte = v => { S.palKurveMitte = clamp(v, PAL_KURVE.mitte.min, PAL_KURVE.mitte.max); palKurveAenderung(); };
 $('palKurve').addEventListener('input', () => setzePalKurve(+$('palKurve').value));
 $('palKurveMitte').addEventListener('input', () => setzePalKurveMitte(+$('palKurveMitte').value));
-showPalKurve();
+palZweiFuellen(); showPalPfad(); showPalKurve();
+$('palPfadSpanne').addEventListener('input', () => setzePalPfadSpanne(+$('palPfadSpanne').value));
+$('palPfadBeginn').addEventListener('input', () => setzePalPfadBeginn(+$('palPfadBeginn').value));
+$('palZwei').addEventListener('change', () => { S.palZwei = clamp(parseInt($('palZwei').value, 10) || 0, 0, PALETTES.length - 1); palPfadAenderung(); });
 const setzeVersatz = v => {   // Punktwolken: die Farben stecken in den Zählern, die müssen dann neu gesammelt werden
   S.offset = v; $('offset').value = Math.round(v * 1000); $('offsetVal').value = fmtZahl(v, 3);
   colorDirty = true; if (S.family === 'accum') accDirty = true; scheduleHash(); requestFrame(); peHistPlan();
@@ -14785,6 +14864,7 @@ function ankerVersatz(delta) {   // Versatz um den Unterschied der Ankerterme na
   S.offset = ((S.offset + delta) % 1 + 1) % 1;
   $('offset').value = Math.round(S.offset * 1000); $('offsetVal').value = fmtZahl(S.offset, 3);
   if (typeof showPalKurve === 'function') showPalKurve();
+  if (typeof showPalPfad === 'function') showPalPfad();
   colorDirty = true; scheduleHash(); requestFrame();
 }
 function ankerBeschriften() {   // Häkchen und Hinweis je nach Färbung: beim reinen Bahnmittel zählt nur dessen Anker, den es nie von selbst gibt
@@ -15075,6 +15155,8 @@ const WERTFELDER = [
   ['stapelMsVal', 'stapelMs', () => [STAPEL_MS.min, STAPEL_MS.max], v => v, setzeStapelMs],   // Rechenstapel in Millisekunden
   ['palKurveVal', 'palKurve', () => [PAL_KURVE.kurve.min, PAL_KURVE.kurve.max], v => v, setzePalKurve],   // Palettenkurve: das Zahlenfeld reicht weiter als der Regler
   ['palKurveMitteVal', 'palKurveMitte', () => [PAL_KURVE.mitte.min, PAL_KURVE.mitte.max], v => v, setzePalKurveMitte],
+  ['palPfadSpanneVal', 'palPfadSpanne', () => [PAL_PFAD.spanne.min, PAL_PFAD.spanne.max], v => v, setzePalPfadSpanne],   // Palettenübergang
+  ['palPfadBeginnVal', 'palPfadBeginn', () => [PAL_PFAD.beginn.min, PAL_PFAD.beginn.max], v => v, setzePalPfadBeginn],
   ['logStufenVal', 'logStufen', () => [LOG_STUFEN.min, LOG_STUFEN.max], v => v, setzeLogStufen],
   ['glanzVal', 'glanz', () => [MATERIAL.glanz.min, MATERIAL.glanz.max], v => v, setzeGlanz],   // Materialmodell des Reliefs: die Zahlenfelder reichen weiter als die Regler
   ['reflexionVal', 'reflexion', () => [MATERIAL.reflexion.min, MATERIAL.reflexion.max], v => v, setzeReflexion],
@@ -15118,6 +15200,7 @@ function resetState() {   // Zustandsfelder auf Standard (Familie und Mandelbrot
   S.autoIter = true; S.manualIter = 1000;
   S.palette = 0; S.customPal = null; S.pal2 = {}; S.pal2Eigen = null; S.density = 0.04; S.offset = 0; S.animate = false;
   S.palKurve = PAL_KURVE.kurve.def; S.palKurveMitte = PAL_KURVE.mitte.def;
+  S.palZwei = 0; S.palPfadBeginn = PAL_PFAD.beginn.def; S.palPfadSpanne = PAL_PFAD.spanne.def;
   S.mapping = 2; S.logStufen = LOG_STUFEN.def; S.logDichteMit = false; S.material = 0; S.glanz = MATERIAL.glanz.def; S.reflexion = MATERIAL.reflexion.def; S.himmelLage = MATERIAL.lage.def; S.himmelSpanne = MATERIAL.spanne.def; S.neigung = MATERIAL.neigung.def; S.schatten = false; S.schattenLaenge = MATERIAL.laenge.def; S.glowMode = 0; S.glowWidth = 1.5; S.interior = 0; S.innenFarbe = '#000000'; S.gestuft = false; S.lyGrenze = 2; S.streifen = STREIFEN.def; S.vorlauf = VORLAUF.def; S.gewicht = GEWICHT.def; S.abzug = ABZUG.def; S.nach = []; S.textur = 0; S.texStaerke = TEXTUR.staerke.def; S.texKontrast = TEXTUR.kontrast.def; S.texMitte = TEXTUR.mitte.def; S.textur2 = 0; S.tex2Staerke = TEXTUR.staerke.def; S.tex2Kontrast = TEXTUR.kontrast.def; S.tex2Mitte = TEXTUR.mitte.def; for (let n = 1; n <= TEX_SLOTS; n++) texSlotSetzen(n, TEXTUR_LEER); S.paar = PAAR_EIGEN(); S.kurve = KURVE_STD.map(p => p.slice()); S.kurveSpann = false; S.colAnchor = null; S.statAnker = null; S.anchorAuto = true; S.comp = 0;
   S.jc = [-0.8, 0.156]; S.z0 = [0, 0];
   S.stapelMs = STAPEL_MS.def; S.uiVorrang = true;
@@ -15213,7 +15296,7 @@ const UNDO_BEREICHE = [   // welcher Bereich einen Adresswert besitzt, für den 
   [/^(re|im|z)$/, 'undo.view'],
   [/^nb$/, 'nach'],
   [/^(aa|aam|aas|aat|aax|bla)$/, 'qualitaet'],
-  [/^(pal|cp|pv|p2|cp2|pv2|plk|plm)$/, 'palette'],
+  [/^(pal|cp|pv|p2|cp2|pv2|plk|plm|pps|ppb|pp2)$/, 'palette'],
   [/^t(x|[a-z]|\d+[a-z]*)$/, 'texturen'],
   [/^(la|l\d+|lm\d+|lu\d*)$/, 'ebenen'],
   [/^(map|den|off|ca|sa|lm|glow|gw|gd|pf|pfk|lst|lsd|lg|kv|ks|ex|ga|mt|mg|mr|mhl|mhs|mn|ms|ml)$/, 'farbe'],
