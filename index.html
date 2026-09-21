@@ -5798,13 +5798,12 @@ struct CP { a: vec4f, b: vec4f, c: vec4f, d: vec4f, misc: vec4f, misc2: vec4f, m
   return vec4f(x, y, 0.0, 1.0);
 }
 fn palStelle(t: f32) -> f32 {   // Palettenkurve: verteilt die Farben innerhalb eines Umlaufs um; palk.x = Exponent (1 = gleichmäßig), palk.y = Schwerpunkt
-  if (!(C.palk.x > 0.0) || abs(C.palk.x - 1.0) < 1.0e-4) { return t; }   // ohne gesetzten Exponenten (0) bleibt die Stelle, wie sie ist
   let u = fract(t - C.palk.y);
-  return t - u + pow(u, C.palk.x);   // nur die Stelle im Umlauf wird gebogen, die Umlaufgrenze bleibt
+  let an = (C.palk.x > 0.0) & (abs(C.palk.x - 1.0) >= 1.0e-4);   // ohne gesetzten Exponenten (0) bleibt die Stelle, wie sie ist
+  return select(t, t - u + pow(u, max(C.palk.x, 1.0e-6)), an);   // nur die Stelle im Umlauf wird gebogen, die Umlaufgrenze bleibt
 }
 fn palPfadAnteil(t: f32) -> f32 {   // Palettenübergang: Anteil der zweiten Palette, 0 vor dem Beginn, 1 nach Beginn plus Spanne; Spanne 0 = aus
-  if (C.palk.w < 1.0e-6) { return 0.0; }
-  return clamp((t - C.palk.z) / C.palk.w, 0.0, 1.0);
+  return select(0.0, clamp((t - C.palk.z) / max(C.palk.w, 1.0e-6), 0.0, 1.0), C.palk.w >= 1.0e-6);
 }
 fn palZeile(t: f32, zeile: i32) -> vec3f {   // eine Zeile der Palettentextur an der Stelle t
   let x = fract(t) * 256.0; let i = i32(x); let fr = x - f32(i);
@@ -5813,9 +5812,7 @@ fn palZeile(t: f32, zeile: i32) -> vec3f {   // eine Zeile der Palettentextur an
 fn pal(tRoh: f32) -> vec3f {
   let t = palStelle(tRoh);
   if (C.misc3.z > 0.5) {
-    let f = palPfadAnteil(t);
-    if (f <= 0.0) { return palZeile(t, 0); }
-    return mix(palZeile(t, 0), palZeile(t, 1), f);
+    return mix(palZeile(t, 0), palZeile(t, 1), palPfadAnteil(t));   // ohne Übergang ist der Anteil 0 und die zweite Zeile zählt nicht
   }
   return clamp(C.a.xyz + C.b.xyz * cos(6.2831853 * fract(C.c.xyz * t + C.d.xyz)), vec3f(0.0), vec3f(1.0));
 }
@@ -5994,26 +5991,23 @@ fn texAchsen(t: vec4f) -> vec2f {   // Summe der Plätze, die auf eine Achse der
 }
 fn texSummeEin(i: u32, v: f32, innen: bool, ziel: u32) -> f32 {   // Beitrag eines Platzes zu einem Ziel, das die Werte aufsummiert; 0, wenn er hier nicht gilt (wo wie bei der Helligkeit)
   let wo = texWo(i);
-  if (C.stapel[3u * i].x < 0.5 || texZiel(i) != ziel || select(wo == 1u, wo == 0u, innen) || verbundStill(i)) { return 0.0; }
-  return texWertGeformt(v, C.stapel[3u * i]);
+  let gilt = (C.stapel[3u * i].x >= 0.5) & (texZiel(i) == ziel) & (!select(wo == 1u, wo == 0u, innen)) & (!verbundStill(i));
+  return select(0.0, texWertGeformt(v, C.stapel[3u * i]), gilt);
 }
 fn texSumme(t: vec4f, innen: bool, ziel: u32) -> f32 {   // Summe der Plätze mit diesem Ziel (Wert · Stärke): Palettenposition (3) und Glühen (6)
   var v = texSummeEin(0u, t.x, innen, ziel) + texSummeEin(1u, t.y, innen, ziel);   // feste Indizes: ein dynamischer macht das Übersetzen langsam (wie bei gTWert)
-  if (C.tex2.z > 2.5) { v = v + texSummeEin(2u, t.z, innen, ziel); }
-  if (C.tex2.z > 3.5) { v = v + texSummeEin(3u, t.w, innen, ziel); }
+  v = v + select(0.0, texSummeEin(2u, t.z, innen, ziel), C.tex2.z > 2.5);
+  v = v + select(0.0, texSummeEin(3u, t.w, innen, ziel), C.tex2.z > 3.5);
   return v;
 }
 fn texWo(i: u32) -> u32 { return u32(C.stapel[3u * i + 2u].w); }   // wo der Platz wirkt: 0 außen, 1 nur innen, 2 überall
 fn texturN(col: vec3f, i: u32, v: f32, innen: bool) -> vec3f {   // Platz i des Stapels (0-basiert), mit seiner Maske als Faktor; „Maske zeigen“: die Auswahl als Grau
   let wo = texWo(i); let z = texZiel(i);
   let gilt = (!select(wo == 1u, wo == 0u, innen)) & ((z == 2u) | (z == 4u) | (z == 5u)) & (!verbundStill(i));   // gilt der Platz hier, wirkt er auf die fertige Farbe (2 Helligkeit, 4 Sättigung, 5 Farbton; 0, 1, 3 gehen in die Palette) und trägt er das verbundene Minimum selbst?
-  if (!gilt) { return col; }
   let mk = texMaskeVon(i);
-  var neu: vec3f;
-  if (z == 4u) { neu = saettigungAn(col, texWertGeformt(v, C.stapel[3u * i])); }   // Sättigung: dieselbe Rechnung wie bei den Paar-Wertzeilen
-  else if (z == 5u) { neu = farbtonAn(col, texWertGeformt(v, C.stapel[3u * i])); }
-  else { neu = texturMit(col, v, C.stapel[3u * i], C.stapel[3u * i + 1u].xyz, C.stapel[3u * i + 2u].xyz); }
-  return select(mix(col, neu, mk), vec3f(mk), texMaskeZeigt(i));
+  let w = texWertGeformt(v, C.stapel[3u * i]);   // Sättigung und Farbton rechnen wie die Paar-Wertzeilen
+  let neu = select(select(texturMit(col, v, C.stapel[3u * i], C.stapel[3u * i + 1u].xyz, C.stapel[3u * i + 2u].xyz), farbtonAn(col, w), z == 5u), saettigungAn(col, w), z == 4u);
+  return select(col, select(mix(col, neu, mk), vec3f(mk), texMaskeZeigt(i)), gilt);
 }
 fn nuAt(xy: vec2i, k: i32, dims: vec2i, fallback: f32) -> f32 {   // glatte Iterationszahl des Nachbarn; innen, ungerechnet oder außerhalb des Bildes: der eigene Wert
   if (xy.x < 0 || xy.y < 0 || xy.x >= dims.x || xy.y >= dims.y) { return fallback; }
