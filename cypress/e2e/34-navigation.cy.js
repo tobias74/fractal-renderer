@@ -1,4 +1,4 @@
-// Navigation: Schwung beim Ziehen (Vorgabe an, abschaltbar im Bereich Technik) und die neuen Tasten.
+// Navigation: Schwung beim Ziehen (Vorgabe aus, einschaltbar im Bereich Technik) und die neuen Tasten.
 // Der Schwung bewegt nur die Ansicht; er ist wie das Ziehen selbst kein eigener Schritt für Rückgängig.
 describe('Navigation: Schwung und Tasten', () => {
   const B = 'mode=mandel&re=-0.7462586155&im=0.1111580353&z=5.6e4&it=400';
@@ -8,20 +8,19 @@ describe('Navigation: Schwung und Tasten', () => {
     cy.get('#stage canvas').trigger('pointerup', { pointerId: 1, clientX: 600 + schritte * dx, clientY: 400, force: true });
   };
 
-  it('der Schalter steht im Bereich Technik, ist vorgegeben an und bleibt im Speicher', () => {
+  it('der Schalter steht im Bereich Technik, ist vorgegeben aus und bleibt im Speicher', () => {
     cy.visitApp(B);
     cy.revealInDetails('traegheit');
-    cy.get('#traegheit').should('be.checked');
-    cy.get('#traegheit').uncheck();
-    cy.window().then(w => expect(w.localStorage.getItem('fractal.traegheit'), 'die Wahl liegt im Speicher').to.equal('0'));
+    cy.get('#traegheit').should('not.be.checked');   // ein Fraktal ist kein Kartenbild: der Nachlauf ist aus, bis man ihn will
     cy.get('#traegheit').check();
-    cy.window().then(w => expect(w.localStorage.getItem('fractal.traegheit')).to.equal('1'));
+    cy.window().then(w => expect(w.localStorage.getItem('fractal.traegheit'), 'die Wahl liegt im Speicher').to.equal('1'));
+    cy.get('#traegheit').uncheck();
+    cy.window().then(w => expect(w.localStorage.getItem('fractal.traegheit')).to.equal('0'));
   });
 
   it('mit Schwung läuft das Bild nach dem Loslassen weiter, ohne Schwung nicht', () => {
     cy.visitApp(B); cy.waitRender();
-    cy.revealInDetails('traegheit'); cy.get('#traegheit').uncheck();
-    cy.pane('motiv');
+    cy.pane('motiv');   // Vorgabe ist ohne Schwung
     ziehen();
     cy.wait(700);
     cy.hashParams().then(h => cy.wrap(parseFloat(h.get('re'))).as('ohneSchwung'));
@@ -40,6 +39,7 @@ describe('Navigation: Schwung und Tasten', () => {
 
   it('der Schwung ist kein eigener Schritt für Rückgängig: ein Rückgängig stellt die Ansicht von vor dem Ziehen her', () => {
     cy.visitApp(B); cy.waitRender();
+    cy.revealInDetails('traegheit'); cy.get('#traegheit').check(); cy.pane('motiv');   // mit Schwung, damit der Auslauf mitgeprüft wird
     cy.get('#undo').should('be.disabled');
     ziehen();
     cy.wait(900);

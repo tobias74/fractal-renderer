@@ -2006,7 +2006,7 @@
       <div class="lbl wertzeile"><label for="stapelMs" data-i18n-title="technical.batch-title" data-i18n="technical.batch"></label><input class="val mono wert" id="stapelMsVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
       <input id="stapelMs" type="range" min="8" max="120" step="1" value="40">
       <label class="chk" data-i18n-title="technical.ui-first-title"><input type="checkbox" id="uiVorrang" checked> <span data-i18n="technical.ui-first"></span></label>
-      <label class="chk" data-i18n-title="technical.inertia-title"><input type="checkbox" id="traegheit" checked> <span data-i18n="technical.inertia"></span></label>
+      <label class="chk" data-i18n-title="technical.inertia-title"><input type="checkbox" id="traegheit"> <span data-i18n="technical.inertia"></span></label>
       <label class="chk" data-i18n-title="technical.toast-title"><input type="checkbox" id="toastAn" checked> <span data-i18n="technical.toast"></span></label>
       <p class="hint" id="techInfo"></p>
     </section>
@@ -3331,7 +3331,7 @@ const TEXTE = {
   'technical.approximation-bla': { de: 'Näherung (BLA)', en: 'Approximation (BLA)' },
   'technical.certified': { de: 'Zertifiziert', en: 'Certified' },
   'technical.inertia': { de: 'Schwung beim Ziehen', en: 'Momentum when dragging' },
-  'technical.inertia-title': { de: 'Nach dem Loslassen läuft das Bild mit der zuletzt gemessenen Geschwindigkeit aus und wird dabei langsamer. Ein neuer Griff, ein Tastendruck oder das Abschalten hier hält es sofort an.', en: 'After you let go the picture keeps moving at the speed it last had and slows down. A new grip, a key press, or switching this off stops it at once.' },
+  'technical.inertia-title': { de: 'Nach dem Loslassen läuft das Bild mit der zuletzt gemessenen Geschwindigkeit aus und wird dabei langsamer. Vorgabe ist aus: bei einem Fraktal zielst du meist auf eine Stelle, statt weite Wege zu schieben. Ein neuer Griff oder ein Tastendruck hält den Schwung sofort an.', en: 'After you let go the picture keeps moving at the speed it last had and slows down. Off by default: with a fractal you usually aim at a spot instead of pushing across long distances. A new grip or a key press stops it at once.' },
   'status.snapshot': { de: 'Schnappschuss wird gesichert …', en: 'Saving snapshot …' },
   'technical.automatic': { de: 'Automatisch', en: 'Automatic' },
   'technical.appearance': { de: 'Erscheinungsbild', en: 'Appearance' },
@@ -10327,7 +10327,7 @@ const S = {
     // Familie escape oder accum (Punktwolken, accKind = Index in CLOUDS)
   cloudPrm: [0, 0, 0, 0],
   quality: 1, rendererPref: 'auto',
-  theme: 'dunkel', stapelMs: STAPEL_MS.def, uiVorrang: true, traegheit: true, aa: DEFAULT_AA, aaMode: 'grid', aaTol: AA_TOL.def, aaMax: 64, aaSigma: AA_SIGMA.def,   // Glättung: Raster-Stufe, Verfahren (grid | adaptive | fast), Regler der adaptiven Verfahren
+  theme: 'dunkel', stapelMs: STAPEL_MS.def, uiVorrang: true, traegheit: false,   // Schwung beim Ziehen: aus, er passt zu Karten, nicht zu Fraktalen aa: DEFAULT_AA, aaMode: 'grid', aaTol: AA_TOL.def, aaMax: 64, aaSigma: AA_SIGMA.def,   // Glättung: Raster-Stufe, Verfahren (grid | adaptive | fast), Regler der adaptiven Verfahren
   palFilter: false, palFilterK: PALK.def,                  // Palette über den Bereich mitteln, den sie innerhalb eines Pixels durchläuft; Faktor auf die Breite
 };
 const views = { mandel: null, julia: null };
