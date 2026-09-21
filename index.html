@@ -3396,6 +3396,7 @@ function festesAttribut(el, attr, schluessel) { el.dataset[MARKEN[attr]] = schlu
 function setLang(l) {   // Sprache wechseln: erst die Texte mit Marke, dann alles, was der Code selbst beschriftet
   LANG = l; try { localStorage.setItem('fractal.lang', l); } catch (e) { /* egal */ }
   document.documentElement.lang = LANG;
+  if (typeof palZweiFuellen === 'function') palZweiFuellen();   // die zweite Palette muss vor dem Beschriften stehen
   zeigeTexte();
   sprachGewechselt();
 }
@@ -5794,7 +5795,7 @@ struct CP { a: vec4f, b: vec4f, c: vec4f, d: vec4f, misc: vec4f, misc2: vec4f, m
   return vec4f(x, y, 0.0, 1.0);
 }
 fn palStelle(t: f32) -> f32 {   // Palettenkurve: verteilt die Farben innerhalb eines Umlaufs um; palk.x = Exponent (1 = gleichmäßig), palk.y = Schwerpunkt
-  if (abs(C.palk.x - 1.0) < 1.0e-4) { return t; }
+  if (!(C.palk.x > 0.0) || abs(C.palk.x - 1.0) < 1.0e-4) { return t; }   // ohne gesetzten Exponenten (0) bleibt die Stelle, wie sie ist
   let u = fract(t - C.palk.y);
   return t - u + pow(u, C.palk.x);   // nur die Stelle im Umlauf wird gebogen, die Umlaufgrenze bleibt
 }
@@ -7968,7 +7969,7 @@ uniform sampler2D uAccSum; uniform sampler2D uAccCnt;   // adaptive Glättung: F
 uniform sampler2D uPalPre; uniform float uPalFilter;    // Stammfunktion des eigenen Farbschemas, Palette vorfiltern?
 uniform vec4 uZ2; uniform vec3 uLeer; uniform vec4 uQ[20]; uniform sampler2D uPal2;   // zweidimensionale Palette wie im WGSL-Shader (z2, leer, q, pal2Tex)
 float palStelle(float t) {   // wie im WGSL-Shader
-  if (abs(uPalK.x - 1.0) < 1.0e-4) return t;
+  if (!(uPalK.x > 0.0) || abs(uPalK.x - 1.0) < 1.0e-4) return t;   // wie im WGSL-Shader
   float u = fract(t - uPalK.y);
   return t - u + pow(u, uPalK.x);
 }
@@ -9104,7 +9105,7 @@ class GpuRenderer {
   }
   _writeCP(cp) {
     const f = new Float32Array(520);   // CP samt stapelW, Nachbearbeitung, Masken, Texturmasken, opt und Palettenkurve
-    f[500] = cp.texInnen || 0; f[501] = cp.texVerbund || 0; f[502] = cp.texVerbundErster || 0; f[503] = cp.leuchtErster || 0; if (cp.logmap) { f[504] = cp.logmap[0]; f[505] = cp.logmap[1]; } f[506] = cp.logStufen || LOG_STUFEN.def; if (cp.material) f.set(cp.material, 508); if (cp.material2) f.set(cp.material2, 512); if (cp.palKurve) f.set(cp.palKurve, 516);   // Stufen des Logarithmus   // opt: Texturen auch innen; Fallenverbund (Weichheit, erster Fallenplatz); Leuchten-Ebene (1-basiert)
+    f[500] = cp.texInnen || 0; f[501] = cp.texVerbund || 0; f[502] = cp.texVerbundErster || 0; f[503] = cp.leuchtErster || 0; if (cp.logmap) { f[504] = cp.logmap[0]; f[505] = cp.logmap[1]; } f[506] = cp.logStufen || LOG_STUFEN.def; if (cp.material) f.set(cp.material, 508); if (cp.material2) f.set(cp.material2, 512); f.set(cp.palKurve || [1, 0, 0, 0], 516);   // ohne Angabe die gleichmäßige Kurve, wie im WebGL-Renderer   // Stufen des Logarithmus   // opt: Texturen auch innen; Fallenverbund (Weichheit, erster Fallenplatz); Leuchten-Ebene (1-basiert)
     f.set(cp.a, 0); f.set(cp.b, 4); f.set(cp.c, 8); f.set(cp.d, 12);
     f[16] = cp.density; f[17] = cp.offset; f[18] = cp.layers; f[19] = cp.mapping;
     f[20] = cp.glowMode; f[21] = cp.glowWidth; f[22] = cp.interior; f[23] = cp.histL;
