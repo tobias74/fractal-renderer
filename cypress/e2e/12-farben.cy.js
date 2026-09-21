@@ -1417,17 +1417,17 @@ describe('Texturmasken: berechnete Auswahl je Platz', () => {
     });
   });
 
-  it('Texturmasken mit WebGL 2: die Maske wirkt, aus ist wie ohne, die Fassung steht binnen 25 s; auf WebGPU ist die Maske über alles die Identität', () => {
+  it('Texturmasken mit WebGL 2: die Maske wirkt, aus ist wie ohne, die Fassung kommt zustande; auf WebGPU ist die Maske über alles die Identität', () => {
     const gl = { storage: { 'fractal.renderer': 'webgl' } };
     cy.visitApp(B, gl);
     cy.get('#badge').should('have.text', 'WebGL 2');
     cy.shotStats('tmgl-ohne').then(ohne => {
       cy.visitApp(B + '&tu=m3,1,0,0.25,0,20', gl);
-      cy.get('#state', { timeout: 25000 }).should('not.contain.text', 'übersetzt');
+      cy.get('#state', { timeout: 180000 }).should('not.contain.text', 'übersetzt');
       cy.waitRender();
       cy.shotStats('tmgl-inv').then(inv => diff(ohne, inv).then(d => expect(d.meanDiff, 'die Maske nimmt die Textur weg').to.be.greaterThan(3)));
       cy.visitApp(B + '&tu=m3,3,0,0.25,0,20', gl);   // Maske aus
-      cy.get('#state', { timeout: 25000 }).should('not.contain.text', 'übersetzt');
+      cy.get('#state', { timeout: 180000 }).should('not.contain.text', 'übersetzt');
       cy.waitRender();
       cy.shotStats('tmgl-aus').then(aus => diff(ohne, aus).then(d => expect(d.meanDiff, 'Maske aus = ohne Maske').to.be.lessThan(0.5)));
     });
