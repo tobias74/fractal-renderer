@@ -1745,6 +1745,10 @@
       <label class="chk"><input id="animate" type="checkbox"> <span data-i18n="colour.animate-colours"></span></label>
       <div class="lbl wertzeile"><label for="offset" data-i18n="colour.colour-offset"></label><input class="val mono wert" id="offsetVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
       <input id="offset" type="range" min="0" max="1000" value="0">
+      <div class="lbl wertzeile" id="palKurveRow"><label for="palKurve" data-i18n-title="colour.palette-curve-title" data-i18n="colour.palette-curve"></label><input class="val mono wert" id="palKurveVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+      <input id="palKurve" type="range" min="0.2" max="5" step="0.01" value="1">
+      <div class="lbl wertzeile" id="palKurveMitteRow" hidden><label for="palKurveMitte" data-i18n-title="colour.palette-curve-centre-title" data-i18n="colour.palette-curve-centre"></label><input class="val mono wert" id="palKurveMitteVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+      <input id="palKurveMitte" type="range" min="0" max="1" step="0.001" value="0" hidden>
 
     </section>
 
@@ -2563,6 +2567,10 @@ const TEXTE = {
   'colour.pair-target-glow': { de: 'Glühen', en: 'Glow' },
   'colour.pair-target-layer': { de: 'Deckkraft der Ebene', en: 'Layer opacity' },
   'colour.pair-target-relief': { de: 'Relief-Höhe', en: 'Relief height' },
+  'colour.palette-curve': { de: 'Palettenkurve', en: 'Palette curve' },
+  'colour.palette-curve-title': { de: 'Wie die Farben innerhalb eines Palettenumlaufs verteilt sind: 1 gleichmäßig, kleiner als 1 drängt sie an den Anfang des Umlaufs, größer als 1 an sein Ende. Die Umlaufgrenze bleibt unberührt, es entstehen also keine Sprünge.', en: 'How the colours are spread within one turn of the palette: 1 is even, below 1 crowds them at the start of the turn, above 1 at its end. The turn boundary is untouched, so no jumps appear.' },
+  'colour.palette-curve-centre': { de: 'Schwerpunkt der Kurve', en: 'Centre of the curve' },
+  'colour.palette-curve-centre-title': { de: 'Wo der Umlauf beginnt, an dem die Kurve ansetzt: damit lässt sich die Stauchung auf die Farbe legen, die du treffen willst.', en: 'Where the turn the curve works on begins: this puts the crowding on the colour you want to hit.' },
   'colour.pair-target-palette': { de: 'Palettenposition', en: 'Palette position' },
   'colour.texture-where': { de: 'Wirkt', en: 'Acts' },
   'colour.texture-where-outside': { de: 'Außen', en: 'Outside' },
@@ -3821,6 +3829,7 @@ const aaPosToTol = p => AA_TOL.min * Math.pow(AA_TOL.max / AA_TOL.min, Math.min(
 const aaMaxToPos = n => Math.min(9, Math.max(0, Math.round(Math.log2(n / 8))));
 const aaPosToMax = p => 8 * Math.pow(2, Math.min(9, Math.max(0, p)));
 const LOG_STUFEN = { min: 1, max: 10, def: 1 };
+const PAL_KURVE = { kurve: { min: 0.2, max: 5, def: 1, step: 0.01 }, mitte: { min: 0, max: 1, def: 0, step: 0.001 } };   // Palettenkurve: Exponent im Umlauf und Schwerpunkt
 const MATERIAL = { glanz: { min: 0, max: 1, def: 0.5 }, reflexion: { min: 0, max: 10, def: 0 }, lage: { min: 0, max: 1, def: 0 }, spanne: { min: 0, max: 5, def: 0.1 }, neigung: { min: 0.01, max: 50, def: 1 }, laenge: { min: 1, max: 200, def: 8 } };   // Materialmodell des Reliefs: Grenzen der Zahlenfelder (die Regler enden früher) und Vorgaben; Material 0 = einfach (bisheriges Relief), Reflexion 0 = aus   // wie oft der Logarithmus wirkt; stufenlos, ganze Zahlen sind die alten Färbungen (1 = 2, 2 = 5, 3 = 7, 4 = 8, 5 = 9, 6 = 10)
 const LOG_ALT = { 5: 2, 7: 3, 8: 4, 9: 5, 10: 6 };   // alte Nummern und ihre Stufenzahl
 const MAP_MAX = 35;   // höchste Nummer einer Färbung (siehe Liste „Färbung nach“); 35: eigener Sammler
@@ -5757,7 +5766,7 @@ const WGSL_FILL = /* wgsl */`
 @fragment fn fs() -> @location(0) vec4u { return vec4u(0xFFFFFFFFu, 0u, 0u, 1u); }`;
 
 const WGSL_COLOR_LIB = /* wgsl */`
-struct CP { a: vec4f, b: vec4f, c: vec4f, d: vec4f, misc: vec4f, misc2: vec4f, misc3: vec4f, shift: vec4f, extra: vec4f, z2: vec4f, leer: vec4f, tex: vec4f, innen: vec4f, tex2: vec4f, tex3: vec4f, q: array<vec4f, 20>, stapel: array<vec4f, 12>, paar: vec4f, paar2: vec4f, stapelW: array<vec4f, 4>, nach: array<vec4f, 32>, nachInfo: vec4f, nachBild: vec4f, maske: array<vec4f, 25>, texMaske: array<vec4f, 13>, opt: vec4f, opt2: vec4f, mat: vec4f, mat2: vec4f }   // mat = (Material: 0 einfach, 1 Dielektrikum, 2 Metall; Glanz; Reflexion; Neigung), mat2 = (Schatten an, Schattenlänge px, Himmel-Lage, Himmel-Spanne)   // texMaske: je Texturplatz drei vec4 wie maske, [12] = (Kantenmaske vorhanden, eine Maske aktiv)   // maske: je Ebene drei vec4 (Art, umkehren, zeigen, weicher Rand; acht Zahlen), [24] = (Abstand vorhanden, eine Maske aktiv);   // paar = (Wert A, Wert B, Faktor A, Faktor B), paar2 = (Abzug A, Abzug B, Flags A, Flags B: Bit 0 Anker, 1 Klemme, 2 voll im Kanal)   // stapel: je Platz (Art, Stärke, Kontrast, Mitte), helle und dunkle Farbe (Vorgabe Weiß und Schwarz); tex2.y = 1: Texturwerte im z-/w-Kanal (über einer Statistik-Färbung), tex2.z = belegte Plätze   // tex = Textur: x Art (0 keine), y Stärke, z Kontrast, w Mitte; innen = eigene Innenfarbe (xyz), w = gestuft; tex2.x = Streifen für die Winkel-Texturen und Periodengebiete; tex3 = zweite Textur (Art, Stärke, Kontrast, Mitte)   // shift.xy = Versatz während des Ziehens, extra.x = Stauchung p, extra.y = Palette vorfiltern (0 = aus, sonst Faktor auf die Breite), extra.z = Farbanker des Bahnmittels (negativ = keiner), extra.w = Fluchtzeit-Abzug β (Färbung 25)
+struct CP { a: vec4f, b: vec4f, c: vec4f, d: vec4f, misc: vec4f, misc2: vec4f, misc3: vec4f, shift: vec4f, extra: vec4f, z2: vec4f, leer: vec4f, tex: vec4f, innen: vec4f, tex2: vec4f, tex3: vec4f, q: array<vec4f, 20>, stapel: array<vec4f, 12>, paar: vec4f, paar2: vec4f, stapelW: array<vec4f, 4>, nach: array<vec4f, 32>, nachInfo: vec4f, nachBild: vec4f, maske: array<vec4f, 25>, texMaske: array<vec4f, 13>, opt: vec4f, opt2: vec4f, mat: vec4f, mat2: vec4f, palk: vec4f }   // mat = (Material: 0 einfach, 1 Dielektrikum, 2 Metall; Glanz; Reflexion; Neigung), mat2 = (Schatten an, Schattenlänge px, Himmel-Lage, Himmel-Spanne)   // texMaske: je Texturplatz drei vec4 wie maske, [12] = (Kantenmaske vorhanden, eine Maske aktiv)   // maske: je Ebene drei vec4 (Art, umkehren, zeigen, weicher Rand; acht Zahlen), [24] = (Abstand vorhanden, eine Maske aktiv);   // paar = (Wert A, Wert B, Faktor A, Faktor B), paar2 = (Abzug A, Abzug B, Flags A, Flags B: Bit 0 Anker, 1 Klemme, 2 voll im Kanal)   // stapel: je Platz (Art, Stärke, Kontrast, Mitte), helle und dunkle Farbe (Vorgabe Weiß und Schwarz); tex2.y = 1: Texturwerte im z-/w-Kanal (über einer Statistik-Färbung), tex2.z = belegte Plätze   // tex = Textur: x Art (0 keine), y Stärke, z Kontrast, w Mitte; innen = eigene Innenfarbe (xyz), w = gestuft; tex2.x = Streifen für die Winkel-Texturen und Periodengebiete; tex3 = zweite Textur (Art, Stärke, Kontrast, Mitte)   // shift.xy = Versatz während des Ziehens, extra.x = Stauchung p, extra.y = Palette vorfiltern (0 = aus, sonst Faktor auf die Breite), extra.z = Farbanker des Bahnmittels (negativ = keiner), extra.w = Fluchtzeit-Abzug β (Färbung 25)
 // zweidimensionale Palette (PAL2): z2 = (Art: 0 keine, 1 Formel, 2 Tabelle; Achse u; Achse v; –), leer.xyz = Farbe ohne Wert, q = je Quadrant a, b, cu, cv, d
 @group(0) @binding(0) var iter: texture_2d_array<u32>;   // eine Ebene je Probe der Glättung
 @group(0) @binding(1) var<uniform> C: CP;
@@ -5772,7 +5781,13 @@ struct CP { a: vec4f, b: vec4f, c: vec4f, d: vec4f, misc: vec4f, misc2: vec4f, m
   let y = f32((vi & 2u) << 1u) - 1.0;
   return vec4f(x, y, 0.0, 1.0);
 }
-fn pal(t: f32) -> vec3f {
+fn palStelle(t: f32) -> f32 {   // Palettenkurve: verteilt die Farben innerhalb eines Umlaufs um; palk.x = Exponent (1 = gleichmäßig), palk.y = Schwerpunkt
+  if (abs(C.palk.x - 1.0) < 1.0e-4) { return t; }
+  let u = fract(t - C.palk.y);
+  return t - u + pow(u, C.palk.x);   // nur die Stelle im Umlauf wird gebogen, die Umlaufgrenze bleibt
+}
+fn pal(tRoh: f32) -> vec3f {
+  let t = palStelle(tRoh);
   if (C.misc3.z > 0.5) {
     let x = fract(t) * 256.0; let i = i32(x); let fr = x - f32(i);
     return mix(textureLoad(palTex, vec2i(i & 255, 0), 0).xyz, textureLoad(palTex, vec2i((i + 1) & 255, 0), 0).xyz, fr);
@@ -6061,7 +6076,8 @@ fn palInt(x: f32) -> vec3f {
   return cyc * textureLoad(palPre, vec2i(256, 0), 0).xyz + textureLoad(palPre, vec2i(min(i, 256), 0), 0).xyz + l0 * fr + (l1 - l0) * (0.5 * fr * fr);
 }
 // Mittel der Palette über [t − w/2, t + w/2]: Cosinus-Paletten exakt über den sinc-Faktor, eigene Schemata über die Stammfunktion
-fn palAvg(t: f32, w: f32) -> vec3f {
+fn palAvg(tRoh: f32, w: f32) -> vec3f {
+  let t = palStelle(tRoh);   // die Kurve gilt für die Mitte des Fensters; die Breite bleibt, wie die Färbung sie vorgibt
   if (w < 1.0e-4) { return pal(t); }
   if (C.misc3.z > 0.5) { return (palInt((t + 0.5 * w) * 256.0) - palInt((t - 0.5 * w) * 256.0)) / (w * 256.0); }
   return clamp(C.a.xyz + C.b.xyz * sinc3(C.c.xyz * w) * cos(6.2831853 * (C.c.xyz * t + C.d.xyz)), vec3f(0.0), vec3f(1.0));
@@ -7918,14 +7934,20 @@ precision highp float; precision highp int; precision highp usampler2DArray; pre
 uniform usampler2DArray uIter; uniform sampler2D uCdf;
 uniform vec3 uA; uniform vec3 uB; uniform vec3 uC; uniform vec3 uD;
 uniform vec2 uMisc; uniform int uAA; uniform int uMapping;
-uniform int uGlowMode; uniform float uGlowWidth; uniform int uInterior; uniform float uHistL; uniform vec4 uMisc3; uniform vec2 uShift; uniform float uPsC; uniform float uAnchor; uniform float uComp; uniform float uStatAnker; uniform float uAbzug; uniform vec4 uTex; uniform vec4 uInnen; uniform vec4 uTex2; uniform vec4 uTex3; uniform vec4 uOpt; uniform vec4 uOpt2; uniform vec4 uMat; uniform vec4 uMat2; uniform vec4 uStapel[12]; uniform vec4 uPaar; uniform vec4 uPaar2; uniform vec4 uStapelW[4];
+uniform int uGlowMode; uniform float uGlowWidth; uniform int uInterior; uniform float uHistL; uniform vec4 uMisc3; uniform vec2 uShift; uniform float uPsC; uniform float uAnchor; uniform float uComp; uniform float uStatAnker; uniform float uAbzug; uniform vec4 uTex; uniform vec4 uInnen; uniform vec4 uTex2; uniform vec4 uTex3; uniform vec4 uOpt; uniform vec4 uOpt2; uniform vec4 uMat; uniform vec4 uMat2; uniform vec4 uPalK; uniform vec4 uStapel[12]; uniform vec4 uPaar; uniform vec4 uPaar2; uniform vec4 uStapelW[4];
 uniform sampler2D uPal;
 uniform vec4 uTexMaske[13];   // Texturmasken wie im WGSL-Shader
 #define TEXMASKE 1   // 0: ohne Maskencode (das Farbprogramm vom Start); die Programme der Glättung tragen ihn immer
 uniform sampler2D uAccSum; uniform sampler2D uAccCnt;   // adaptive Glättung: Farbsummen und Helligkeitsquadrate, Probenzahl
 uniform sampler2D uPalPre; uniform float uPalFilter;    // Stammfunktion des eigenen Farbschemas, Palette vorfiltern?
 uniform vec4 uZ2; uniform vec3 uLeer; uniform vec4 uQ[20]; uniform sampler2D uPal2;   // zweidimensionale Palette wie im WGSL-Shader (z2, leer, q, pal2Tex)
-vec3 pal(float t) {
+float palStelle(float t) {   // wie im WGSL-Shader
+  if (abs(uPalK.x - 1.0) < 1.0e-4) return t;
+  float u = fract(t - uPalK.y);
+  return t - u + pow(u, uPalK.x);
+}
+vec3 pal(float tRoh) {
+  float t = palStelle(tRoh);
   if (uMisc3.z > 0.5) { float x = fract(t) * 256.0; int i = int(x); return mix(texelFetch(uPal, ivec2(i & 255, 0), 0).rgb, texelFetch(uPal, ivec2((i + 1) & 255, 0), 0).rgb, x - float(i)); }
   return clamp(uA + uB * cos(6.2831853 * fract(uC * t + uD)), 0.0, 1.0);
 }
@@ -8179,7 +8201,8 @@ vec3 palInt(float x) {   // Stammfunktion der stückweise linearen Tabelle, x in
   vec3 l0 = texelFetch(uPal, ivec2(i & 255, 0), 0).rgb, l1 = texelFetch(uPal, ivec2((i + 1) & 255, 0), 0).rgb;
   return cyc * texelFetch(uPalPre, ivec2(256, 0), 0).rgb + texelFetch(uPalPre, ivec2(min(i, 256), 0), 0).rgb + l0 * fr + (l1 - l0) * (0.5 * fr * fr);
 }
-vec3 palAvg(float t, float w) {   // Mittel der Palette über [t − w/2, t + w/2]
+vec3 palAvg(float tRoh, float w) {   // Mittel der Palette über [t − w/2, t + w/2]; die Kurve gilt für die Mitte des Fensters
+  float t = palStelle(tRoh);
   if (w < 1.0e-4) return pal(t);
   if (uMisc3.z > 0.5) return (palInt((t + 0.5 * w) * 256.0) - palInt((t - 0.5 * w) * 256.0)) / (w * 256.0);
   return clamp(uA + uB * sinc3(uC * w) * cos(6.2831853 * (uC * t + uD)), 0.0, 1.0);
@@ -8746,7 +8769,7 @@ class GpuRenderer {
     const U = GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST;
     this.ubF = d.createBuffer({ size: 560, usage: U });   // FP samt texP (6 vec4), texW (4 vec4), Inversionsmitte, Ebenenabbildung und texQ (6 vec4)
     this.ubU = d.createBuffer({ size: 16, usage: U });
-    this.ubC = d.createBuffer({ size: 2064, usage: U });
+    this.ubC = d.createBuffer({ size: 2080, usage: U });
     this.bglK = d.createBindGroupLayout({ entries: [{ binding: 0, visibility: F, buffer: { type: 'uniform' } }].concat([1, 2, 3, 4, 5, 6].map(b => ({ binding: b, visibility: F, texture: { sampleType: 'unfilterable-float', viewDimension: '2d' } }))) });   // Verbund: bis zu sechs Ebenen
     this.pipeK = await d.createRenderPipelineAsync({ layout: d.createPipelineLayout({ bindGroupLayouts: [this.bglK] }), vertex: { module: mK, entryPoint: 'vs' }, fragment: { module: mK, entryPoint: 'fs', targets: [{ format: this.format }] }, primitive: { topology: 'triangle-list' } });
     this.ubK = d.createBuffer({ size: 208, usage: U });
@@ -9039,8 +9062,8 @@ class GpuRenderer {
     this.clearRefine();
   }
   _writeCP(cp) {
-    const f = new Float32Array(516);   // CP samt stapelW, Nachbearbeitung, Masken, Texturmasken und opt
-    f[500] = cp.texInnen || 0; f[501] = cp.texVerbund || 0; f[502] = cp.texVerbundErster || 0; f[503] = cp.leuchtErster || 0; if (cp.logmap) { f[504] = cp.logmap[0]; f[505] = cp.logmap[1]; } f[506] = cp.logStufen || LOG_STUFEN.def; if (cp.material) f.set(cp.material, 508); if (cp.material2) f.set(cp.material2, 512);   // Stufen des Logarithmus   // opt: Texturen auch innen; Fallenverbund (Weichheit, erster Fallenplatz); Leuchten-Ebene (1-basiert)
+    const f = new Float32Array(520);   // CP samt stapelW, Nachbearbeitung, Masken, Texturmasken, opt und Palettenkurve
+    f[500] = cp.texInnen || 0; f[501] = cp.texVerbund || 0; f[502] = cp.texVerbundErster || 0; f[503] = cp.leuchtErster || 0; if (cp.logmap) { f[504] = cp.logmap[0]; f[505] = cp.logmap[1]; } f[506] = cp.logStufen || LOG_STUFEN.def; if (cp.material) f.set(cp.material, 508); if (cp.material2) f.set(cp.material2, 512); if (cp.palKurve) f.set(cp.palKurve, 516);   // Stufen des Logarithmus   // opt: Texturen auch innen; Fallenverbund (Weichheit, erster Fallenplatz); Leuchten-Ebene (1-basiert)
     f.set(cp.a, 0); f.set(cp.b, 4); f.set(cp.c, 8); f.set(cp.d, 12);
     f[16] = cp.density; f[17] = cp.offset; f[18] = cp.layers; f[19] = cp.mapping;
     f[20] = cp.glowMode; f[21] = cp.glowWidth; f[22] = cp.interior; f[23] = cp.histL;
@@ -9568,7 +9591,7 @@ class GlRenderer {
   }
   _colorUniforms(prog) {
     const u = {};
-    for (const n of ['uIter', 'uCdf', 'uA', 'uB', 'uC', 'uD', 'uMisc', 'uAA', 'uMapping', 'uGlowMode', 'uGlowWidth', 'uInterior', 'uHistL', 'uMisc3', 'uPal', 'uShift', 'uPsC', 'uAnchor', 'uComp', 'uStatAnker', 'uAbzug', 'uTex', 'uInnen', 'uTex2', 'uOpt', 'uOpt2', 'uTex3', 'uStapel', 'uPaar', 'uPaar2', 'uStapelW', 'uNach', 'uNachInfo', 'uNachBild', 'uNachLut', 'uMaske', 'uTexMaske', 'uRoh', 'uRohTW', 'uLeucht', 'uAccSum', 'uAccCnt', 'uJit', 'uAP', 'uAQ', 'uPalPre', 'uPalFilter', 'uZ2', 'uLeer', 'uQ', 'uPal2', 'uMat', 'uMat2']) u[n] = this.gl.getUniformLocation(prog, n);
+    for (const n of ['uIter', 'uCdf', 'uA', 'uB', 'uC', 'uD', 'uMisc', 'uAA', 'uMapping', 'uGlowMode', 'uGlowWidth', 'uInterior', 'uHistL', 'uMisc3', 'uPal', 'uShift', 'uPsC', 'uAnchor', 'uComp', 'uStatAnker', 'uAbzug', 'uTex', 'uInnen', 'uTex2', 'uOpt', 'uOpt2', 'uTex3', 'uStapel', 'uPaar', 'uPaar2', 'uStapelW', 'uNach', 'uNachInfo', 'uNachBild', 'uNachLut', 'uMaske', 'uTexMaske', 'uRoh', 'uRohTW', 'uLeucht', 'uAccSum', 'uAccCnt', 'uJit', 'uAP', 'uAQ', 'uPalPre', 'uPalFilter', 'uZ2', 'uLeer', 'uQ', 'uPal2', 'uMat', 'uMat2', 'uPalK']) u[n] = this.gl.getUniformLocation(prog, n);
     return u;
   }
   _program(vs, fs) {
@@ -9725,7 +9748,7 @@ class GlRenderer {
     gl.uniform2f(u.uMisc, cp.density, cp.offset); gl.uniform1i(u.uAA, cp.layers); gl.uniform1i(u.uMapping, cp.mapping);
     gl.uniform1i(u.uGlowMode, cp.glowMode); gl.uniform1f(u.uGlowWidth, cp.glowWidth);
     gl.uniform1i(u.uInterior, cp.interior); gl.uniform1f(u.uHistL, cp.histL);
-    gl.uniform4f(u.uMisc3, cp.formula, cp.roots, cp.palMode || 0, cp.lightY || 1); const mt = cp.material || [0, 0, 0, 0], mt2 = cp.material2 || [0, 0, 0, 0]; gl.uniform4f(u.uMat, mt[0], mt[1], mt[2], mt[3]); gl.uniform4f(u.uMat2, mt2[0], mt2[1], mt2[2], mt2[3]); gl.uniform1f(u.uPsC, cp.ps || 1); gl.uniform1f(u.uAnchor, cp.anchor === undefined ? -1 : cp.anchor); gl.uniform1f(u.uComp, cp.comp || 0); gl.uniform1f(u.uStatAnker, cp.statAnker === undefined ? -1 : cp.statAnker); gl.uniform1f(u.uAbzug, cp.abzug || 0); const tx = cp.textur || TEXTUR_AUS; gl.uniform4f(u.uTex, tx.art, tx.staerke, tx.kontrast, tx.mitte); const inn = cp.innen || [0, 0, 0, 0]; gl.uniform4f(u.uInnen, inn[0], inn[1], inn[2], inn[3]); gl.uniform4f(u.uTex2, cp.streifen || STREIFEN.def, cp.texz ? 1 : 0, cp.texZahl || 0, cp.texKante || 0); const t2 = cp.textur2 || TEXTUR_AUS; gl.uniform4f(u.uTex3, t2.art, t2.staerke, t2.kontrast, t2.mitte); gl.uniform4f(u.uOpt, cp.texInnen || 0, cp.texVerbund || 0, cp.texVerbundErster || 0, cp.leuchtErster || 0); gl.uniform4f(u.uOpt2, cp.logmap ? cp.logmap[0] : 0, cp.logmap ? cp.logmap[1] : 0, cp.logStufen || LOG_STUFEN.def, 0);
+    gl.uniform4f(u.uMisc3, cp.formula, cp.roots, cp.palMode || 0, cp.lightY || 1); const mt = cp.material || [0, 0, 0, 0], mt2 = cp.material2 || [0, 0, 0, 0]; const pk = cp.palKurve || [1, 0, 0, 0]; gl.uniform4f(u.uPalK, pk[0], pk[1], pk[2], pk[3]); gl.uniform4f(u.uMat, mt[0], mt[1], mt[2], mt[3]); gl.uniform4f(u.uMat2, mt2[0], mt2[1], mt2[2], mt2[3]); gl.uniform1f(u.uPsC, cp.ps || 1); gl.uniform1f(u.uAnchor, cp.anchor === undefined ? -1 : cp.anchor); gl.uniform1f(u.uComp, cp.comp || 0); gl.uniform1f(u.uStatAnker, cp.statAnker === undefined ? -1 : cp.statAnker); gl.uniform1f(u.uAbzug, cp.abzug || 0); const tx = cp.textur || TEXTUR_AUS; gl.uniform4f(u.uTex, tx.art, tx.staerke, tx.kontrast, tx.mitte); const inn = cp.innen || [0, 0, 0, 0]; gl.uniform4f(u.uInnen, inn[0], inn[1], inn[2], inn[3]); gl.uniform4f(u.uTex2, cp.streifen || STREIFEN.def, cp.texz ? 1 : 0, cp.texZahl || 0, cp.texKante || 0); const t2 = cp.textur2 || TEXTUR_AUS; gl.uniform4f(u.uTex3, t2.art, t2.staerke, t2.kontrast, t2.mitte); gl.uniform4f(u.uOpt, cp.texInnen || 0, cp.texVerbund || 0, cp.texVerbundErster || 0, cp.leuchtErster || 0); gl.uniform4f(u.uOpt2, cp.logmap ? cp.logmap[0] : 0, cp.logmap ? cp.logmap[1] : 0, cp.logStufen || LOG_STUFEN.def, 0);
     const stp = cp.stapel || [], sa = new Float32Array(48);   // der Stapel wie im WebGPU-Renderer
     for (let i = 0; i < 4; i++) { const t = stp[i] || TEXTUR_AUS, b = 12 * i; sa[b] = t.art; sa[b + 1] = t.staerke; sa[b + 2] = t.kontrast; sa[b + 3] = t.mitte; sa.set(t.hell || [1, 1, 1], b + 4); sa[b + 7] = t.ziel === undefined ? TEX_ZIEL_VOR : t.ziel; sa.set(t.dunkel || [0, 0, 0], b + 8); sa[b + 11] = t.wo === undefined ? TEX_WO_VOR : t.wo; }
     gl.uniform4fv(u.uStapel, sa);
@@ -10209,6 +10232,7 @@ const S = {
   autoIter: true, manualIter: 1000,
   palette: 0, density: 0.04, offset: 0, animate: false, customPal: null,   // customPal: eigenes Farbschema { id, name, cyclic, stops }
   pal2: {}, pal2Eigen: null,                               // zweidimensionale Palette je Färbung mit zwei Werten (siehe quelle2), Entwurf bzw. Schema aus dem Link
+  palKurve: PAL_KURVE.kurve.def, palKurveMitte: PAL_KURVE.mitte.def,
   mapping: 2, logStufen: LOG_STUFEN.def, logDichteMit: false, material: 0, glanz: MATERIAL.glanz.def, reflexion: MATERIAL.reflexion.def, himmelLage: MATERIAL.lage.def, himmelSpanne: MATERIAL.spanne.def, neigung: MATERIAL.neigung.def, schatten: false, schattenLaenge: MATERIAL.laenge.def, glowMode: 0, glowWidth: 1.5, interior: 0, innenFarbe: '#000000', gestuft: false, lyGrenze: 2, fluchtForm: 0, fluchtRadius: 0, dreh: 0, spirale: SPIRALE.def, texInnen: false, texVerbund: 0, invM: [0, 0], biomorph: false, abb: 0, abklingen: 0, logmap: 0, streifen: STREIFEN.def, vorlauf: VORLAUF.def, gewicht: GEWICHT.def, abzug: ABZUG.def, nach: [], textur: 0, texWerte: [0, 0, 0, 0], tex2Werte: [0, 0, 0, 0], tex3Werte: [0, 0, 0, 0], tex4Werte: [0, 0, 0, 0], texStaerke: TEXTUR.staerke.def, texKontrast: TEXTUR.kontrast.def, texMitte: TEXTUR.mitte.def, textur2: 0, tex2Staerke: TEXTUR.staerke.def, tex2Kontrast: TEXTUR.kontrast.def, tex2Mitte: TEXTUR.mitte.def, texHell: '#ffffff', texDunkel: '#000000', tex2Hell: '#ffffff', tex2Dunkel: '#000000', textur3: 0, tex3Staerke: TEXTUR.staerke.def, tex3Kontrast: TEXTUR.kontrast.def, tex3Mitte: TEXTUR.mitte.def, tex3Hell: '#ffffff', tex3Dunkel: '#000000', textur4: 0, tex4Staerke: TEXTUR.staerke.def, tex4Kontrast: TEXTUR.kontrast.def, tex4Mitte: TEXTUR.mitte.def, tex4Hell: '#ffffff', tex4Dunkel: '#000000', texAn: true, tex2An: true, tex3An: true, tex4An: true, paar: PAAR_EIGEN(), kurve: KURVE_STD.map(p => p.slice()), kurveSpann: false,   // Verlaufsart (Standard logarithmisch), Randlinien, Randbreite px, Innen
   colAnchor: null,                                         // Farbanker: Iterationswert, an dem der Dichte-Regler die Farbe hält (null = keiner)
   statAnker: null,                                         // Farbanker des Bahnmittels (Färbungen 19, 20, 22, 23): das Mittel, an dem die Farbe hält (null = keiner)
@@ -10988,7 +11012,7 @@ function pal2Aktiv() {   // Parameter der geltenden zweidimensionalen Palette f�
 }
 function colorParams() {
   const p = palKosinus();
-  return { a: p.a, b: p.b, c: p.c, d: p.d, palMode: palTabelle() ? 1 : 0, density: S.density, offset: S.offset, layers: aaOn ? 0 : aaEff * aaEff,   // 0 = adaptiv: Ebene 0 plus Farbsummen
+  return { palKurve: [S.palKurve, S.palKurveMitte, 0, 0], a: p.a, b: p.b, c: p.c, d: p.d, palMode: palTabelle() ? 1 : 0, density: S.density, offset: S.offset, layers: aaOn ? 0 : aaEff * aaEff,   // 0 = adaptiv: Ebene 0 plus Farbsummen
     shift: [pendingSX, renderer && renderer.yDown ? pendingSY : -pendingSY],   // noch nicht übernommener Versatz aus dem Ziehen
     lightY: renderer && renderer.yDown ? -1 : 1,                                // Licht von oben, egal wie die Texturzeilen laufen
     ps: S.ps,                                                                   // Pixelgröße in der Ebene für den Abstands-Verlauf
@@ -11983,7 +12007,8 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
   { const mt = parseInt(h.get('mt'), 10); S.material = Number.isFinite(mt) ? clamp(mt, 0, 2) : 0;   // Materialmodell des Reliefs samt Reglern, Himmel und Schatten (ohne Schlüssel: Vorgaben)
     const zahl = (k, g) => { const v = parseFloat(h.get(k)); return Number.isFinite(v) ? clamp(v, g.min, g.max) : g.def; };
     S.glanz = zahl('mg', MATERIAL.glanz); S.reflexion = zahl('mr', MATERIAL.reflexion); S.himmelLage = zahl('mhl', MATERIAL.lage); S.himmelSpanne = zahl('mhs', MATERIAL.spanne); S.neigung = zahl('mn', MATERIAL.neigung);
-    S.schatten = h.get('ms') === '1'; S.schattenLaenge = zahl('ml', MATERIAL.laenge); }
+    S.schatten = h.get('ms') === '1'; S.schattenLaenge = zahl('ml', MATERIAL.laenge);
+    S.palKurve = zahl('plk', PAL_KURVE.kurve); S.palKurveMitte = zahl('plm', PAL_KURVE.mitte); }   // Palettenkurve (ohne Schlüssel: gleichmäßig)
   const pw = parseInt(h.get('p'), 10); if (Number.isFinite(pw)) S.power = clamp(pw, 2, 8);
   const fo = parseInt(h.get('f'), 10); if (Number.isFinite(fo)) S.formula = clamp(fo, 0, FORMULAS.length - 1);
   if (wurzelFormel(S.formula) && !nullstellenFormel(S.formula) && S.power === 2) S.power = 3;   // Newton/Nova ist mit d = 2 entartet (auch in älteren Links)
@@ -12087,6 +12112,8 @@ function buildParamsRoh() {   // die Adresswerte der Ebene in S samt Ansicht und
     if (S.texMitte !== TEXTUR.mitte.def) p.set('tm', String(+S.texMitte.toFixed(2)));
     if (S.texHell !== '#ffffff') p.set('tc', S.texHell.slice(1)); if (S.texDunkel !== '#000000') p.set('td', S.texDunkel.slice(1));   // Farben nur abseits der Vorgabe
     if (S.texAn === false) p.set('ta', '0');   // ausgeschaltet, Einstellungen bleiben
+    if (Math.abs(S.palKurve - PAL_KURVE.kurve.def) > 1e-6) p.set('plk', String(+S.palKurve.toFixed(4)));   // Palettenkurve nur abseits der Gleichverteilung
+    if (Math.abs(S.palKurve - PAL_KURVE.kurve.def) > 1e-6 && Math.abs(S.palKurveMitte - PAL_KURVE.mitte.def) > 1e-6) p.set('plm', String(+S.palKurveMitte.toFixed(4)));   // der Schwerpunkt zählt nur mit Kurve
     if (texZielWirkt(S.texZiel) !== TEX_ZIEL_VOR) p.set('tz', String(S.texZiel));   // Ziel nur abseits der Helligkeit
     if ((S.texWo || TEX_WO_VOR) !== TEX_WO_VOR) p.set('tw', String(S.texWo));   // wo der Platz wirkt, nur abseits von außen
     if (S.textur === 23 && S.texWahl) p.set('tr', String(S.texWahl));   // Wertwahl der Rosette, nur abseits der Maske
@@ -13602,6 +13629,18 @@ $('neigung').addEventListener('input', () => setzeNeigung(+$('neigung').value));
 $('schattenLaenge').addEventListener('input', () => setzeSchattenLaenge(+$('schattenLaenge').value));
 $('schatten').addEventListener('change', () => { S.schatten = $('schatten').checked; materialAenderung(); });
 showDens();
+function showPalKurve() {   // der Schwerpunkt zählt erst, wenn die Kurve von der Gleichverteilung abweicht
+  const wirkt = Math.abs(S.palKurve - PAL_KURVE.kurve.def) > 1e-4;
+  $('palKurve').value = String(S.palKurve); $('palKurveVal').value = fmtZahl(S.palKurve, 2);
+  $('palKurveMitte').value = String(S.palKurveMitte); $('palKurveMitteVal').value = fmtZahl(S.palKurveMitte, 3);
+  $('palKurveMitteRow').hidden = !wirkt; $('palKurveMitte').hidden = !wirkt;
+}
+const palKurveAenderung = () => { showPalKurve(); colorDirty = true; if (S.family === 'accum') accDirty = true; scheduleHash(); requestFrame(); };
+const setzePalKurve = v => { S.palKurve = clamp(v, PAL_KURVE.kurve.min, PAL_KURVE.kurve.max); palKurveAenderung(); };
+const setzePalKurveMitte = v => { S.palKurveMitte = clamp(v, PAL_KURVE.mitte.min, PAL_KURVE.mitte.max); palKurveAenderung(); };
+$('palKurve').addEventListener('input', () => setzePalKurve(+$('palKurve').value));
+$('palKurveMitte').addEventListener('input', () => setzePalKurveMitte(+$('palKurveMitte').value));
+showPalKurve();
 const setzeVersatz = v => {   // Punktwolken: die Farben stecken in den Zählern, die müssen dann neu gesammelt werden
   S.offset = v; $('offset').value = Math.round(v * 1000); $('offsetVal').value = fmtZahl(v, 3);
   colorDirty = true; if (S.family === 'accum') accDirty = true; scheduleHash(); requestFrame(); peHistPlan();
@@ -14745,6 +14784,7 @@ function setStatAnker(m, frisch = false) {
 function ankerVersatz(delta) {   // Versatz um den Unterschied der Ankerterme nachführen: das Bild bleibt in diesem Moment, wie es ist
   S.offset = ((S.offset + delta) % 1 + 1) % 1;
   $('offset').value = Math.round(S.offset * 1000); $('offsetVal').value = fmtZahl(S.offset, 3);
+  if (typeof showPalKurve === 'function') showPalKurve();
   colorDirty = true; scheduleHash(); requestFrame();
 }
 function ankerBeschriften() {   // Häkchen und Hinweis je nach Färbung: beim reinen Bahnmittel zählt nur dessen Anker, den es nie von selbst gibt
@@ -15033,6 +15073,8 @@ const WERTFELDER = [
   ['tex4KontrastVal', 'tex4Kontrast', () => [TEXTUR.kontrast.min, TEXTUR.kontrast.max], v => v, setzeTex4Kontrast],
   ['tex4MitteVal', 'tex4Mitte', () => [TEXTUR.mitte.min, TEXTUR.mitte.max], v => v, setzeTex4Mitte],
   ['stapelMsVal', 'stapelMs', () => [STAPEL_MS.min, STAPEL_MS.max], v => v, setzeStapelMs],   // Rechenstapel in Millisekunden
+  ['palKurveVal', 'palKurve', () => [PAL_KURVE.kurve.min, PAL_KURVE.kurve.max], v => v, setzePalKurve],   // Palettenkurve: das Zahlenfeld reicht weiter als der Regler
+  ['palKurveMitteVal', 'palKurveMitte', () => [PAL_KURVE.mitte.min, PAL_KURVE.mitte.max], v => v, setzePalKurveMitte],
   ['logStufenVal', 'logStufen', () => [LOG_STUFEN.min, LOG_STUFEN.max], v => v, setzeLogStufen],
   ['glanzVal', 'glanz', () => [MATERIAL.glanz.min, MATERIAL.glanz.max], v => v, setzeGlanz],   // Materialmodell des Reliefs: die Zahlenfelder reichen weiter als die Regler
   ['reflexionVal', 'reflexion', () => [MATERIAL.reflexion.min, MATERIAL.reflexion.max], v => v, setzeReflexion],
@@ -15075,6 +15117,7 @@ function resetState() {   // Zustandsfelder auf Standard (Familie und Mandelbrot
   if (S.family === 'accum') S.cloudPrm = CLOUDS[CLOUD_KEYS[S.accKind]].prm.slice();   // Punktwolke: ihre eigenen Vorgaben
   S.autoIter = true; S.manualIter = 1000;
   S.palette = 0; S.customPal = null; S.pal2 = {}; S.pal2Eigen = null; S.density = 0.04; S.offset = 0; S.animate = false;
+  S.palKurve = PAL_KURVE.kurve.def; S.palKurveMitte = PAL_KURVE.mitte.def;
   S.mapping = 2; S.logStufen = LOG_STUFEN.def; S.logDichteMit = false; S.material = 0; S.glanz = MATERIAL.glanz.def; S.reflexion = MATERIAL.reflexion.def; S.himmelLage = MATERIAL.lage.def; S.himmelSpanne = MATERIAL.spanne.def; S.neigung = MATERIAL.neigung.def; S.schatten = false; S.schattenLaenge = MATERIAL.laenge.def; S.glowMode = 0; S.glowWidth = 1.5; S.interior = 0; S.innenFarbe = '#000000'; S.gestuft = false; S.lyGrenze = 2; S.streifen = STREIFEN.def; S.vorlauf = VORLAUF.def; S.gewicht = GEWICHT.def; S.abzug = ABZUG.def; S.nach = []; S.textur = 0; S.texStaerke = TEXTUR.staerke.def; S.texKontrast = TEXTUR.kontrast.def; S.texMitte = TEXTUR.mitte.def; S.textur2 = 0; S.tex2Staerke = TEXTUR.staerke.def; S.tex2Kontrast = TEXTUR.kontrast.def; S.tex2Mitte = TEXTUR.mitte.def; for (let n = 1; n <= TEX_SLOTS; n++) texSlotSetzen(n, TEXTUR_LEER); S.paar = PAAR_EIGEN(); S.kurve = KURVE_STD.map(p => p.slice()); S.kurveSpann = false; S.colAnchor = null; S.statAnker = null; S.anchorAuto = true; S.comp = 0;
   S.jc = [-0.8, 0.156]; S.z0 = [0, 0];
   S.stapelMs = STAPEL_MS.def; S.uiVorrang = true;
@@ -15170,7 +15213,7 @@ const UNDO_BEREICHE = [   // welcher Bereich einen Adresswert besitzt, für den 
   [/^(re|im|z)$/, 'undo.view'],
   [/^nb$/, 'nach'],
   [/^(aa|aam|aas|aat|aax|bla)$/, 'qualitaet'],
-  [/^(pal|cp|pv|p2|cp2|pv2)$/, 'palette'],
+  [/^(pal|cp|pv|p2|cp2|pv2|plk|plm)$/, 'palette'],
   [/^t(x|[a-z]|\d+[a-z]*)$/, 'texturen'],
   [/^(la|l\d+|lm\d+|lu\d*)$/, 'ebenen'],
   [/^(map|den|off|ca|sa|lm|glow|gw|gd|pf|pfk|lst|lsd|lg|kv|ks|ex|ga|mt|mg|mr|mhl|mhs|mn|ms|ml)$/, 'farbe'],
