@@ -1,7 +1,6 @@
 // Texturen über den Färbungen nach Abstand (4) und Relief (6, 12): beide brauchten früher denselben zweiten Kanal
 // und schlossen sich aus. Jetzt behält die Färbung den y-Kanal und die Texturwerte stehen in z und w, wie es bei den
-// Färbungen nach Bahnwerten längst der Fall ist. Damit trägt jeder Texel die Werte, und ein Platz kann als neues Ziel
-// die Relief-Höhe (8) heben und senken — die Nachbarabfrage des Reliefs liest sie dort.
+// Färbungen nach Bahnwerten längst der Fall ist.
 import { IMAGE_REGION } from '../support/commands';
 
 describe('Texturen über Abstand und Relief', () => {
@@ -31,27 +30,9 @@ describe('Texturen über Abstand und Relief', () => {
     });
   });
 
-  it('das Ziel Relief-Höhe gibt es nur bei den beiden beleuchteten Färbungen und es formt das Höhenfeld', () => {
-    const H = B + '&map=6&mt=2&mg=0.7&tx=1&ts=2&tc=6';
-    cy.visitApp(H);
-    cy.pane('texturen');
-    cy.get('#texZiel1 option[value="8"]').should('not.have.attr', 'hidden').and('have.text', 'Relief-Höhe');
-    cy.visitApp(B + '&map=2&tx=1&ts=2');        // gewöhnliche Färbung: kein Höhenfeld, also kein Ziel
-    cy.pane('texturen');
-    cy.get('#texZiel1 option[value="8"]').should('have.attr', 'hidden');
-    cy.visitApp(B + '&map=2&tx=1&ts=2&tz=8');   // aus dem Link: fällt sichtbar auf die Helligkeit zurück
-    cy.pane('texturen'); cy.get('#texZiel1').should('have.value', '2'); cy.expectHash('tz', null);
-    cy.visitApp(H); cy.waitRender();
-    cy.shotStats('tr-hell').then(hell => {
-      cy.visitApp(H + '&tz=8'); cy.waitRender();
-      cy.expectHash('tz', '8');
-      cy.shotStats('tr-hoehe').then(hoehe => anders(hell, hoehe, 'als Höhe formt der Wert das Relief statt die Farbe'));
-    });
-  });
-
-  it('WebGL 2 rechnet Textur über Relief und die Relief-Höhe wie WebGPU', () => {
+  it('WebGL 2 rechnet Textur über Relief wie WebGPU', () => {
     const gl = { storage: { 'fractal.renderer': 'webgl' } };
-    for (const [z, name] of [['2', 'hell'], ['8', 'hoehe']]) {
+    for (const [z, name] of [['2', 'hell']]) {
       const H = B + '&map=6&mt=2&mg=0.7&tx=1&ts=2&tc=6&tz=' + z;
       cy.visitApp(H); cy.waitRender();
       cy.shotStats('tr-gpu-' + name).then(gpu => {
