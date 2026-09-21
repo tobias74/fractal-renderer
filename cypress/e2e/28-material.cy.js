@@ -1,5 +1,5 @@
 // Materialmodell der Reliefbeleuchtung (Färbungen 4, 6, 12): Zeilen nur bei einer Relief-Färbung und hierarchisch, Link-Runde,
-// Bild je Material, Schatten, Reflexion und Neigung, WebGPU gleich WebGL 2, „Einfach“ ohne Schlüssel bitgleich zum bisherigen Relief.
+// Bild je Material, Schatten, Reflexion und Neigung, „Einfach“ ohne Schlüssel bitgleich zum bisherigen Relief.
 import { IMAGE_REGION } from '../support/commands';
 
 describe('Materialmodell des Reliefs', () => {
@@ -96,17 +96,4 @@ describe('Materialmodell des Reliefs', () => {
     });
   });
 
-  it('WebGL 2 rechnet das Materialmodell wie WebGPU, auch Relief (Abstand) und Stauchung + Relief', () => {
-    const gl = { storage: { 'fractal.renderer': 'webgl' } };
-    for (const [name, link] of [['log', B + '&map=6&mt=2&mg=0.7&mr=1&mhs=0.4&mn=2&ms=1&ml=12'], ['abstand', B + '&map=4&mt=1&mg=0.8&mr=1.5&ms=1'], ['stauchung', B + '&map=12&sc=0.4&mt=2&mn=1.5']]) {
-      cy.visitApp(link);
-      cy.get('#badge').should('have.text', 'WebGPU');
-      cy.shotStats('mat-gpu-' + name).then(gpu => {
-        cy.visitApp(link, gl);
-        cy.get('#badge').should('have.text', 'WebGL 2');
-        cy.get('#state', { timeout: 25000 }).should('not.contain.text', 'übersetzt'); cy.waitRender();
-        cy.shotStats('mat-gl-' + name).then(webgl => gleich(gpu, webgl, 'WebGL 2 rechnet dasselbe Bild (' + name + ')'));
-      });
-    }
-  });
 });

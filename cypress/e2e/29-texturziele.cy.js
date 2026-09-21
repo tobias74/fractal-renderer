@@ -1,7 +1,6 @@
 // Ziele der Texturplätze: neben Helligkeit (2) und den beiden Achsen (0, 1) gibt es die Palettenposition (3) und die
 // Sättigung (4). Geprüft: die Auswahl ist hierarchisch (Palettenposition nur ohne „Werte kombinieren“, Achsen nur damit),
-// die Werte überstehen Link, Löschen und „Alles zurücksetzen“, jedes Ziel färbt anders, die Vorgabe lässt das alte Bild,
-// und WebGL 2 rechnet wie WebGPU.
+// die Werte überstehen Link, Löschen und „Alles zurücksetzen“, jedes Ziel färbt anders, die Vorgabe lässt das alte Bild,.
 import { IMAGE_REGION } from '../support/commands';
 
 describe('Ziele der Texturplätze: Palettenposition und Sättigung', () => {
@@ -79,24 +78,18 @@ describe('Ziele der Texturplätze: Palettenposition und Sättigung', () => {
           cy.shotStats('tz-satt').then(satt => {
             anders(hell, satt, 'die Sättigung färbt anders als die Helligkeit');
             anders(pal, satt, 'Palettenposition und Sättigung unterscheiden sich');
-            cy.visitApp(B + '&tx=1&ts=0.5&tz=4', { storage: { 'fractal.renderer': 'webgl' } });
-            cy.shotStats('tz-satt-gl').then(gl => gleich(satt, gl, 'WebGL 2 rechnet die Sättigung wie WebGPU'));
           });
-          cy.visitApp(B + '&tx=1&ts=0.5&tz=3', { storage: { 'fractal.renderer': 'webgl' } });
-          cy.shotStats('tz-palette-gl').then(gl => gleich(pal, gl, 'WebGL 2 rechnet die Palettenposition wie WebGPU'));
         });
       });
     });
   });
 
-  it('Auch über einer Statistik-Färbung, mit gemittelter Palette und innen wirken die neuen Ziele; WebGL 2 gleich', () => {
+  it('Auch über einer Statistik-Färbung, mit gemittelter Palette und innen wirken die neuen Ziele', () => {
     cy.visitApp(B + '&map=19&tx=4&ts=0.5');   // Streifenmittel als Färbung, Kreuzfalle als Textur (Werte im z- und w-Kanal)
     cy.shotStats('stat-hell').then(hell => {
       cy.visitApp(B + '&map=19&tx=4&ts=0.5&tz=3');
       cy.shotStats('stat-palette').then(pal => {
         anders(hell, pal, 'über einer Statistik-Färbung verschiebt die Palettenposition die Farbe');
-        cy.visitApp(B + '&map=19&tx=4&ts=0.5&tz=3', { storage: { 'fractal.renderer': 'webgl' } });
-        cy.shotStats('stat-palette-gl').then(gl => gleich(pal, gl, 'WebGL 2 rechnet das ebenso'));
       });
       cy.visitApp(B + '&map=19&tx=4&ts=0.5&tz=4');
       cy.shotStats('stat-satt').then(satt => anders(hell, satt, 'die Sättigung wirkt auch über einer Statistik-Färbung'));

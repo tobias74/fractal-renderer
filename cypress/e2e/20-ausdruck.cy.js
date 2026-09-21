@@ -22,7 +22,7 @@ describe('Eigene Ausdrücke', () => {
     });
   });
 
-  it('Eigene Formel: z^2 + c ist die Vorgabe und sieht aus wie Mandelbrot; getippt ändert Link und Bild; Fehler bleiben außen vor; WebGL 2 rechnet dasselbe', () => {
+  it('Eigene Formel: z^2 + c ist die Vorgabe und sieht aus wie Mandelbrot; getippt ändert Link und Bild; Fehler bleiben außen vor', () => {
     cy.visitApp('mode=mandel&f=37');
     cy.waitRender();
     cy.rowShown('formelRow', true); cy.rowShown('paramRow', true); cy.rowShown('param2Row', true);
@@ -43,12 +43,8 @@ describe('Eigene Ausdrücke', () => {
         cy.get('#formelEigen').clear().type('z^3 +{enter}');   // unvollständig: Anzeige meldet den Fehler, Zustand und Link behalten die gültige Formel
         cy.get('#formelEigenText').should('have.class', 'fehler').and('contain.text', 'Stelle 6');
         cy.expectHash('xf', 'z^3 + c');
-        cy.visitApp('mode=mandel&f=37&xf=z%5E3+%2B+c', { storage: { 'fractal.renderer': 'webgl' } }); cy.waitRender();
-        cy.shotStats('xf-webgl').then(gl => {
-          gleich(k3, gl, 'WebGL 2 rechnet dasselbe Bild');
-          cy.get('#formelEigen').clear().type('z^4 + c{enter}'); cy.waitRender(); cy.wait(400);   // geänderter Ausdruck: WebGL 2 muss neu übersetzen, nicht das alte Programm aus dem Cache nehmen
-          cy.shotStats('xf-webgl-4').then(gl4 => cy.task('pngDiff', { a: gl.file, b: gl4.file, region: IMAGE_REGION }).then(x => expect(x.meanDiff, 'WebGL 2 übersetzt den geänderten Ausdruck neu').to.be.greaterThan(3)));
-        });
+        cy.get('#formelEigen').clear().type('z^4 + c{enter}'); cy.waitRender(); cy.wait(400);   // geänderter Ausdruck: der Shader muss neu übersetzen, nicht das alte Bild stehen lassen
+        cy.shotStats('xf-k4').then(k4 => anders(k3, k4, 'z⁴ + c rechnet wirklich neu'));
       });
     });
     cy.visitApp('mode=mandel&f=37&xf=z%5E2+%2B+q');   // ungültig im Link: die Vorgabe
@@ -85,13 +81,12 @@ describe('Eigene Ausdrücke', () => {
       cy.get('#eigenFText').should('have.class', 'fehler').and('contain.text', 'unbekannter Name');
       cy.expectHash('xc', '|z - 1|');
     });
-    cy.visitApp('mode=mandel&map=35&xc=frac(re+z)&xcg=4&xcs=s+%2B+1', { storage: { 'fractal.renderer': 'webgl' } }); cy.waitRender();   // WebGL 2 übersetzt denselben Code
     cy.get('#state').invoke('text').should('match', /Fertig/);
     cy.pane('farbe'); cy.get('#eigenF').should('have.value', 'frac(re z)'); cy.get('#eigenFG').should('have.value', '4'); cy.get('#eigenFS').should('have.value', 's + 1');
     cy.visitApp('mode=mandel'); cy.pane('farbe'); cy.rowShown('eigenFRow', false);
   });
 
-  it('Paar-Achsen und Texturplätze tragen je einen eigenen Ausdruck: Block bei der Stelle, Schlüssel im Link, WebGL 2 gleich', () => {
+  it('Paar-Achsen und Texturplätze tragen je einen eigenen Ausdruck: Block bei der Stelle, Schlüssel im Link', () => {
     const H = 'mode=mandel&map=31&pa=10:1:0:0&pb=10:20:0:0&pae=%7Cim+z%7C&pbe=frac(2+arg+z%2Fpi)&pbeg=0';   // beide Achsen mit eigenem Ausdruck
     cy.visitApp(H); cy.waitRender();
     cy.pane('farbe'); cy.rowShown('eigenPARow', true); cy.rowShown('eigenPBRow', true); cy.rowShown('eigenFRow', false);
@@ -110,8 +105,6 @@ describe('Eigene Ausdrücke', () => {
     cy.pane('farbe'); cy.rowShown('eigenT1Row', true); cy.rowShown('eigenT2Row', true);
     cy.get('#eigenT1').should('have.value', 'frac(2 arg z/pi)'); cy.get('#eigenT2').should('have.value', '|im z|'); cy.get('#eigenT1G').should('have.value', '0');
     cy.shotStats('te-zwei').then(zwei => {
-      cy.visitApp(T, { storage: { 'fractal.renderer': 'webgl' } }); cy.waitRender();
-      cy.shotStats('te-webgl').then(gl => gleich(zwei, gl, 'WebGL 2 rechnet beide Plätze gleich'));
     });
     cy.visitApp('mode=mandel'); cy.pane('farbe'); cy.rowShown('eigenT1Row', false);
   });
@@ -128,8 +121,6 @@ describe('Eigene Ausdrücke', () => {
       cy.get('#abbEigenText').should('have.text', 'c³');
       cy.shotStats('xm-kubik').then(k => {
         anders(q, k, 'c³ ist ein anderes Bild');
-        cy.visitApp('mode=mandel&ab=7&xm=c%5E3&z=0.5', { storage: { 'fractal.renderer': 'webgl' } }); cy.waitRender();
-        cy.shotStats('xm-webgl').then(gl => gleich(k, gl, 'WebGL 2 rechnet dieselbe Abbildung'));
       });
     });
     cy.visitApp('mode=mandel&ab=3'); cy.rowShown('abbEigenRow', false);

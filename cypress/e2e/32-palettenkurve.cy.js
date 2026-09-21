@@ -33,7 +33,7 @@ describe('Palettenkurve', () => {
     cy.expectHash('plk', null); cy.expectHash('plm', null);
   });
 
-  it('die Kurve färbt anders, der Schwerpunkt verschiebt die Stauchung, und WebGL 2 rechnet gleich', () => {
+  it('die Kurve färbt anders, der Schwerpunkt verschiebt die Stauchung,', () => {
     cy.visitApp(B); cy.waitRender();
     cy.shotStats('pk-gleich').then(gleich => {
       cy.visitApp(B + '&plk=3.2'); cy.waitRender();
@@ -48,10 +48,7 @@ describe('Palettenkurve', () => {
     const H = B + '&plk=3.2&plm=0.4';
     cy.visitApp(H); cy.waitRender();
     cy.shotStats('pk-gpu').then(gpu => {
-      cy.visitApp(H, { storage: { 'fractal.renderer': 'webgl' } });
-      cy.get('#badge').should('have.text', 'WebGL 2');
       cy.waitRender();
-      cy.shotStats('pk-gl').then(g => diff(gpu, g).then(d => expect(d.meanDiff, 'WebGL 2 rechnet die Kurve wie WebGPU').to.be.lessThan(8)));
     });
   });
 });

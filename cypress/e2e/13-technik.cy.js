@@ -230,17 +230,6 @@ describe('Glättung und Technik', () => {
     cy.get('#state').invoke('text').should('not.match', /BLA/);
   });
 
-  it('Renderer auf WebGL 2 umschalten und zurück auf Automatik', () => {
-    cy.pickOption('renderer', 'webgl');
-    cy.get('#badge', { timeout: 30000 }).should('have.text', 'WebGL 2');
-    cy.waitRender();
-    cy.window().then(win => expect(win.localStorage.getItem('fractal.renderer')).to.eq('webgl'));
-    cy.get('#renderer').should('have.value', 'webgl');
-    cy.pickOption('renderer', 'auto');
-    cy.get('#badge', { timeout: 30000 }).invoke('text').should('match', /^(WebGPU|WebGL 2)$/);
-    cy.waitRender();
-  });
-
   it('Technik-Einstellungen aus dem Speicher werden beim Start übernommen', () => {
     cy.visitApp('', { storage: { 'fractal.aa': '2', 'fractal.cycle': '0', 'fractal.bla': '0', 'fractal.quality': '0.5' }, aa: null });
     cy.get('#aaSel').should('have.value', '2');

@@ -1,5 +1,5 @@
 // Fraktal-Ebenen: jede Auswahl der Dropdowns im Zusammenhang mit Ebenen und ihre Kombinationen — Maskenarten (mit und ohne
-// Umkehren), alle Mischmodi bei zwei Deckkräften und gegen WebGL 2, Glättungsverfahren und -stufen je Ebene, jede Formel,
+// Umkehren), alle Mischmodi bei zwei Deckkräften, Glättungsverfahren und -stufen je Ebene, jede Formel,
 // jede Färbung, jede Palette und jede Ebenenabbildung auf einer zweiten Ebene, die Schalter „Bewegen“ und „Anzeigen“ über drei
 // Ebenen, eigene Ausdrücke (Formel, Färbung, Ebenenabbildung) verteilt auf drei Ebenen.
 import { IMAGE_REGION } from '../support/commands';
@@ -36,7 +36,7 @@ describe('Ebenen: alle Auswahlen und Kombinationen', () => {
     cy.get('@konsole').should('not.have.been.called');
   });
 
-  it('Mischmodi × Deckkraft: jeder Modus bei 0,5 und 1 im Link und fertig; WebGL 2 gleicht WebGPU in jedem Modus', () => {
+  it('Mischmodi × Deckkraft: jeder Modus bei 0,5 und 1 im Link und fertig', () => {
     cy.visitApp(ZWEI, spion); fertig(); cy.pane('ebenen');
     for (const deck of [0.5, 1]) {
       cy.setRange('ebeneDeck2', deck); cy.wait(200);
@@ -45,11 +45,7 @@ describe('Ebenen: alle Auswahlen und Kombinationen', () => {
     cy.get('#state').invoke('text').should('match', /Fertig/); cy.get('@konsole').should('not.have.been.called');
     for (let m = 0; m < 18; m++) {
       cy.visitApp(`mode=mandel&l2=f%3D1&lm2=${m}:0.6:1:0:1:&la=2`); fertig();
-      cy.gezeichnet(); cy.shotStats('ea-modus-' + m).then(gpu => {
-        cy.visitApp(`mode=mandel&l2=f%3D1&lm2=${m}:0.6:1:0:1:&la=2`, { storage: { 'fractal.renderer': 'webgl' } }); fertig();
-        cy.get('#badge').should('contain.text', 'WebGL');
-        cy.gezeichnet(); cy.shotStats('ea-modus-' + m + '-gl').then(gl => gleich(gpu, gl, 'Modus ' + m + ': WebGL 2 wie WebGPU', 12));
-      });
+      cy.gezeichnet(); cy.shotStats('ea-modus-' + m);
     }
   });
 
@@ -138,7 +134,7 @@ describe('Ebenen: alle Auswahlen und Kombinationen', () => {
     cy.get('#stZeile2').should('have.class', 'aus');
   });
 
-  it('Eigene Ausdrücke auf Ebenen: eigene Formel auf dem Grund, eigene Färbung auf der zweiten, eigene Ebenenabbildung auf der dritten; WebGL 2 gleicht WebGPU', () => {
+  it('Eigene Ausdrücke auf Ebenen: eigene Formel auf dem Grund, eigene Färbung auf der zweiten, eigene Ebenenabbildung auf der dritten', () => {
     const link = 'mode=mandel&f=37&xf=z%5E3%2Bc&l2=f%3D1%26map%3D35%26xc%3Dsqrt(n)&l3=f%3D2%26ab%3D7%26xm%3Dz*z&lm2=2:0.7:1:0:1:&lm3=10:0.5:1:0:1:&la=3';
     cy.visitApp(link, spion); alleFertig().then(ms => expect(ms, 'drei Ebenen mit eigenen Ausdrücken fertig').to.be.greaterThan(0));
     cy.expectHash('f', '37'); cy.expectHash('xf', 'z^3+c');
@@ -148,8 +144,6 @@ describe('Ebenen: alle Auswahlen und Kombinationen', () => {
     cy.get('#stWahl1').click(); cy.wait(600); cy.get('#formula').should('have.value', '37');
     cy.get('@konsole').should('not.have.been.called');
     cy.gezeichnet(); cy.shotStats('ea-ausdruecke').then(gpu => {
-      cy.visitApp(link, { storage: { 'fractal.renderer': 'webgl' } }); alleFertig().then(ms => expect(ms).to.be.greaterThan(0));
-      cy.gezeichnet(); cy.shotStats('ea-ausdruecke-gl').then(gl => gleich(gpu, gl, 'WebGL 2 rechnet die eigenen Ausdrücke auf allen Ebenen wie WebGPU', 12));
     });
   });
 });

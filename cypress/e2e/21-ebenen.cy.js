@@ -1,5 +1,5 @@
 // Fraktal-Ebenen: Ebenenzeile in Motiv, Farbe und Palette (Auswahl, +, ×), der Mischer (Reihenfolge, Sichtbarkeit, Solo, Mischmodus,
-// Deckkraft, Maske, Ansicht verbunden), der Link (l2 …, lm2 …, lu2 …, la), der Verbund im Bild auf WebGPU und WebGL 2.
+// Deckkraft, Maske, Ansicht verbunden), der Link (l2 …, lm2 …, lu2 …, la), der Verbund im Bild auf WebGPU.
 import { IMAGE_REGION } from '../support/commands';
 
 describe('Fraktal-Ebenen', () => {
@@ -41,8 +41,6 @@ describe('Fraktal-Ebenen', () => {
       cy.gezeichnet(); cy.shotStats('eb-nur-mandel').then(m => anders(zwei, m, 'anders als die Mandelbrot-Menge allein'));
       cy.visitApp('mode=mandel&f=1'); cy.waitRender();
       cy.gezeichnet(); cy.shotStats('eb-nur-ship').then(sh => anders(zwei, sh, 'anders als das Burning Ship allein'));
-      cy.visitApp(ZWEI, { storage: { 'fractal.renderer': 'webgl' } }); cy.alleEbenenFertig();
-      cy.gezeichnet(); cy.shotStats('eb-zwei-webgl').then(gl => gleich(zwei, gl, 'WebGL 2 mischt dasselbe Bild', 10));
       cy.visitApp(ZWEI); cy.alleEbenenFertig();
       cy.pane('ebenen'); cy.get('#stapelZeilen .stapel-zeile').should('have.length', 2);
       cy.get('#stSolo2').click(); cy.wait(600);   // Solo: nur die zweite Ebene

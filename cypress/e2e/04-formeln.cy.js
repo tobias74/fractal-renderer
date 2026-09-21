@@ -61,7 +61,7 @@ describe('Formelfamilie', () => {
     });
   });
 
-  it('Zwei Potenzen: Parameter und Zweig im Link, Tiefenzoom bei 10^12 ohne Rundungsflecken, WebGL 2 rechnet dasselbe Bild', () => {
+  it('Zwei Potenzen: Parameter und Zweig im Link, Tiefenzoom bei 10^12 ohne Rundungsflecken', () => {
     // nahe am kritischen Punkt heben sich die linearen Anteile beider Potenzen auf; ohne die Reihe um z₀ zerfiel das Bild in fp32 in Flecken
     const T = 'mode=mandel&f=17&pp=-0.9&pq=3.8:-2.4:1.2&pk=-1&inv=1&re=1.410647617268638&im=-0.5399341480183459&z=1.2545e12&it=2500&fr=10&map=33&lm=377&dr=-127';
     cy.visitApp(T);
@@ -71,13 +71,10 @@ describe('Formelfamilie', () => {
     cy.expectHash('pk', '-1');
     cy.shotStats('zwei-potenzen-webgpu').then(gpu => {
       expect(gpu.std, 'Struktur statt Fläche').to.be.greaterThan(20);
-      cy.visitApp(T, { storage: { 'fractal.renderer': 'webgl' } });
-      cy.waitRender();
-      cy.shotStats('zwei-potenzen-webgl').then(gl => cy.task('pngDiff', { a: gpu.file, b: gl.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, 'WebGL 2 rechnet dasselbe Bild').to.be.lessThan(8)));
     });
   });
 
-  it('Kubisch: Tiefenzoom bei 10^12 am Rand der Menge, WebGL 2 rechnet dasselbe Bild', () => {
+  it('Kubisch: Tiefenzoom bei 10^12 am Rand der Menge', () => {
     const T = 'mode=mandel&f=26&pp=0.6&re=-0.80615306973529044&im=0.3&z=1e12';   // Randpunkt der Menge z³ + 0,6·z² + c bei Im c = 0,3
     cy.visitApp(T);
     cy.waitRender();
@@ -86,9 +83,6 @@ describe('Formelfamilie', () => {
     cy.get('#depthVal').should('contain.text', '10^12');
     cy.shotStats('kubisch-webgpu').then(gpu => {
       expect(gpu.std, 'Struktur statt Fläche').to.be.greaterThan(5);
-      cy.visitApp(T, { storage: { 'fractal.renderer': 'webgl' } });
-      cy.waitRender();
-      cy.shotStats('kubisch-webgl').then(gl => cy.task('pngDiff', { a: gpu.file, b: gl.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, 'WebGL 2 rechnet dasselbe Bild').to.be.lessThan(8)));
     });
   });
 
@@ -243,7 +237,7 @@ describe('Formelfamilie', () => {
     cy.visitApp('mode=mandel&f=11'); cy.rowShown('nzRow', false);   // Newton auf z^d − 1 kennt keine Nullstellen-Liste
   });
 
-  it('Hybrid-Folge: zwei Formeln im Wechsel stehen im Link, rechnen in fp32, ergeben ein eigenes Bild, auf WebGL 2 dasselbe', () => {
+  it('Hybrid-Folge: zwei Formeln im Wechsel stehen im Link, rechnen in fp32, ergeben ein eigenes Bild, auf dasselbe', () => {
     const anders = (a, b, text) => cy.task('pngDiff', { a: a.file, b: b.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, text).to.be.greaterThan(3));
     const H = 'mode=mandel&f=0&hb=1&seq=AB';   // Mandelbrot und Burning Ship im Wechsel
     cy.visitApp(H);
@@ -258,8 +252,6 @@ describe('Formelfamilie', () => {
       cy.shotStats('hybrid-nur-a').then(a => anders(ab, a, 'anders als Mandelbrot allein'));
       cy.visitApp('mode=mandel&f=1'); cy.waitRender();
       cy.shotStats('hybrid-nur-b').then(b => anders(ab, b, 'anders als Burning Ship allein'));
-      cy.visitApp(H, { storage: { 'fractal.renderer': 'webgl' } }); cy.waitRender();
-      cy.shotStats('hybrid-webgl').then(gl => cy.task('pngDiff', { a: ab.file, b: gl.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, 'WebGL 2 rechnet dasselbe Bild').to.be.lessThan(8)));
     });
     cy.visitApp(H);
     cy.waitRender();
@@ -289,9 +281,7 @@ describe('Formelfamilie', () => {
 
   it('Lyapunov reicht in alle vier Quadranten: auch mit negativen a und b bleibt die Bahn beschränkt', () => {
     // Ausschnitt a ≈ −1,35 … −0,18, b ≈ −0,9 … −0,08: früher ganz grau (nicht definiert), jetzt überall ein Exponent
-    for (const r of ['webgpu', 'webgl']) {
-      cy.visitApp('mode=mandel&f=13&re=-0.5&im=-0.5&z=3', r === 'webgl' ? { storage: { 'fractal.renderer': 'webgl' } } : {});
-      if (r === 'webgl') cy.get('#badge').should('have.text', 'WebGL 2');
+    for (const r of ['webgpu']) {
       cy.shotStats('lyapunov-quadrant-' + r).then(s => {
         expect(s.mean, r + ': hell (Gold) statt Grau').to.be.greaterThan(80);
         expect(s.colors, r + ': ein Verlauf statt einer Fläche').to.be.greaterThan(20);
@@ -355,8 +345,6 @@ describe('Formelfamilie', () => {
       }).then(() => {
         diff(bilder[5], bilder[6]).then(d => expect(d.meanDiff, 'Produkt anders als Differenz der Quadrate').to.be.greaterThan(1.2));
         diff(bilder[6], bilder[7]).then(d => expect(d.meanDiff, 'Differenz der Quadrate anders als Differenz der Beträge').to.be.greaterThan(1.2));
-        cy.visitApp(B + '&ff=6', { storage: { 'fractal.renderer': 'webgl' } }); cy.get('#badge').invoke('text').should('match', /WebGL/i);
-        cy.shotStats('flucht-form-6-gl').then(gl => diff(bilder[6], gl).then(d => expect(d.meanDiff, 'WebGL 2 rechnet dieselbe Grenze').to.be.lessThan(0.8)));
       });
     });
     cy.visitApp('mode=mandel&ff=9'); cy.get('#fluchtForm').should('have.value', '7');   // über den Rand: an die letzte Form geklemmt

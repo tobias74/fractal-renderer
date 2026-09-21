@@ -4,7 +4,7 @@ describe('Start und Grundzustand', () => {
   it('lädt ohne Fehler, rendert die Mandelbrot-Menge und zeigt den Renderer an', () => {
     cy.visitApp();
     cy.title().should('eq', 'Fraktal-Renderer');
-    cy.get('#badge').invoke('text').should('match', /^(WebGPU|WebGL 2)$/);
+    cy.get('#badge').invoke('text').should('match', /^WebGPU$/);
     cy.get('#stage canvas').should($c => {
       expect($c[0].width, 'Canvas-Breite').to.be.greaterThan(400);
       expect($c[0].height, 'Canvas-Höhe').to.be.greaterThan(300);
@@ -14,7 +14,7 @@ describe('Start und Grundzustand', () => {
     cy.get('#coords').should('contain.text', 'Re -0,008').and('contain.text', 'Im 0,000');   // Fraktal in der Fläche neben dem Bedienfeld zentriert
     cy.get('#iterVal').should('have.value', '120');
     cy.get('#depthVal').should('have.text', '10^0 von 10^26');
-    cy.get('#techInfo').invoke('text').should('match', /WGSL|GLSL|WebGL/);
+    cy.get('#techInfo').invoke('text').should('match', /WGSL/);
   });
 
   it('meldet keine Konsolenfehler beim Start', () => {
@@ -31,24 +31,14 @@ describe('Start und Grundzustand', () => {
     });
   });
 
-  it('läuft auch mit erzwungenem WebGL 2', () => {
-    cy.visitApp('', { storage: { 'fractal.renderer': 'webgl' } });
-    cy.get('#badge').should('have.text', 'WebGL 2');
-    cy.get('#renderer').should('have.value', 'webgl');
-    cy.get('#techInfo').invoke('text').should('match', /WebGL/);
-    cy.get('#state').invoke('text').should('match', /Fertig/);
-  });
-
-  it('startet nach einem Kontextverlust neu, auch wenn der Grafikprozess erst einen Moment braucht', () => {   // 20.09.2026: am Handy scheiterte der sofortige Wechsel auf WebGL 2 nach VK_ERROR_DEVICE_LOST
-    cy.visitApp('', { storage: { 'fractal.renderer': 'webgl' } });
-    cy.get('#badge').should('have.text', 'WebGL 2'); cy.waitRender();
+  it('startet nach einem Kontextverlust neu, auch wenn der Grafikprozess erst einen Moment braucht', () => {   // 20.09.2026: am Handy scheiterte der sofortige Wechsel nach VK_ERROR_DEVICE_LOST
+    cy.get('#badge').should('have.text', 'WebGPU'); cy.waitRender();
     cy.window().then(w => {
-      const gl = w.document.querySelector('#stage canvas').getContext('webgl2');   // der bestehende Kontext, bevor die Attrappe greift
-      const orig = w.HTMLCanvasElement.prototype.getContext; let verweigert = 0;
-      w.HTMLCanvasElement.prototype.getContext = function (...a) { if (a[0] === 'webgl2' && verweigert < 1) { verweigert++; return null; } return orig.apply(this, a); };   // wie ein Grafikprozess, der gerade neu startet: der erste neue Kontext scheitert
-      gl.getExtension('WEBGL_lose_context').loseContext();
+      const orig = w.navigator.gpu.requestAdapter.bind(w.navigator.gpu); let verweigert = 0;
+      w.navigator.gpu.requestAdapter = (...a) => (verweigert++ < 1 ? Promise.resolve(null) : orig(...a));   // der erste neue Anlauf findet noch keine Grafikkarte
+      expect(w.__kontextVerlieren(), 'der Testhaken löst den Verlust aus').to.eq(true);
     });
-    cy.get('#badge', { timeout: 15000 }).should('have.text', 'WebGL 2');   // der zweite Anlauf nach der Pause gelingt
+    cy.get('#badge', { timeout: 15000 }).should('have.text', 'WebGPU');   // der zweite Anlauf nach der Pause gelingt
     cy.get('#fatal').should('have.attr', 'hidden');   // nie „keine GPU“
     cy.waitRender(); cy.gezeichnet().should('eq', true);
   });

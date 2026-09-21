@@ -7,7 +7,7 @@
 describe('Schnelltest', () => {
   it('startet, rendert ein Bild und wechselt zwischen allen Bereichen', () => {
     cy.visitApp();
-    cy.get('#badge').invoke('text').should('match', /^(WebGPU|WebGL 2)$/);
+    cy.get('#badge').invoke('text').should('match', /^WebGPU$/);
     cy.get('#fatal').should('not.be.visible');
     cy.get('#stage canvas').should('be.visible');
     cy.get('#resInfo').should('contain.text', 'Render ');

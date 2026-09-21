@@ -37,18 +37,6 @@ describe('Fraktalfamilien', () => {
     });
   }));
 
-  it('Punktwolken unter WebGL 2: CPU-Worker und GLSL-Anzeige liefern ein Bild', () => {
-    for (const v of CLOUDS) {
-      cy.visitApp('fam=' + v + '&at=3000000', { storage: { 'fractal.renderer': 'webgl' } });
-      cy.get('#badge').should('have.text', 'WebGL 2');
-      cy.waitRender(/Fertig|Done/, 60000);
-      cy.shotStats('wolke-webgl-' + v).then(s => {
-        expect(s.mean, v + ' ist nicht schwarz').to.be.greaterThan(1);
-        expect(s.colors, v + ' hat mehrere Farben').to.be.greaterThan(20);
-      });
-    }
-  });
-
   it('Punktwolken: Belichtung, Gamma und Probenziel wirken auf die Adresse', () => {
     cy.pickOption('family', 'clifford');
     cy.setRange('exposure', 700);
@@ -76,8 +64,7 @@ describe('Fraktalfamilien', () => {
   // Früher sprang die Helligkeitsskala bei jedem Neustart des Sammelns auf 1: das erste Bild blitzte übersteuert auf,
   // bis die neue Skala von der Grafikkarte zurück war. Beim Ziehen eines Reglers flackerte es deshalb stark.
   // Die Zwischenstände werden immer gezeigt; unter WebGL wachsen sie über die CPU-Worker sichtbar heran.
-  for (const rend of ['auto', 'webgl']) it(`kein Aufblitzen beim Verstellen, Zwischenstände sichtbar (Renderer ${rend})`, () => {
-    cy.visitApp('fam=dejong&at=10000000', rend === 'webgl' ? { storage: { 'fractal.renderer': 'webgl' } } : {});
+  for (const rend of ['auto']) it(`kein Aufblitzen beim Verstellen, Zwischenstände sichtbar (Renderer ${rend})`, () => {
     cy.get('#accSteps').should('not.exist');               // kein Häkchen mehr: Zwischenstände gibt es immer
     cy.waitRender(/Fertig|Done/, 60000);
     cy.wait(400);

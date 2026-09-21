@@ -1059,9 +1059,6 @@ describe('Färbungen nach Bahnstatistik', () => {
       cy.visitApp(B + '&map=19&tx=12&t2=13&t3=14&t4=11');   // vier neue Arten gestapelt über einer Statistik-Färbung (Kanäle z und w)
       cy.get('#textur4').should('have.value', '11');
       cy.shotStats('arten-stapel').then(mit => deutlich(ohne, mit, 'der Stapel aus neuen Arten färbt'));
-      cy.visitApp(B + '&tx=10&ts=0.8&t2=11', { storage: { 'fractal.renderer': 'webgl' } });   // Randnähe und Kanten mit WebGL 2 (GLSL-Weg)
-      cy.get('#badge').should('have.text', 'WebGL 2');
-      cy.shotStats('arten-webgl').then(mit => deutlich(ohne, mit, 'WebGL 2: Randnähe und Kanten färben'));
     });
   });
   it('Kurve: Übertragungskurve über den Häufigkeiten — Gerade als Vorgabe, gezogener Punkt ändert das Bild, Punkte im Link', () => {
@@ -1417,27 +1414,6 @@ describe('Texturmasken: berechnete Auswahl je Platz', () => {
     });
   });
 
-  it('Texturmasken mit WebGL 2: die Maske wirkt, aus ist wie ohne, die Fassung kommt zustande; auf WebGPU ist die Maske über alles die Identität', () => {
-    const gl = { storage: { 'fractal.renderer': 'webgl' } };
-    cy.visitApp(B, gl);
-    cy.get('#badge').should('have.text', 'WebGL 2');
-    cy.shotStats('tmgl-ohne').then(ohne => {
-      cy.visitApp(B + '&tu=m3,1,0,0.25,0,20', gl);
-      cy.get('#state', { timeout: 180000 }).should('not.contain.text', 'übersetzt');
-      cy.waitRender();
-      cy.shotStats('tmgl-inv').then(inv => diff(ohne, inv).then(d => expect(d.meanDiff, 'die Maske nimmt die Textur weg').to.be.greaterThan(3)));
-      cy.visitApp(B + '&tu=m3,3,0,0.25,0,20', gl);   // Maske aus
-      cy.get('#state', { timeout: 180000 }).should('not.contain.text', 'übersetzt');
-      cy.waitRender();
-      cy.shotStats('tmgl-aus').then(aus => diff(ohne, aus).then(d => expect(d.meanDiff, 'Maske aus = ohne Maske').to.be.lessThan(0.5)));
-    });
-    cy.visitApp(B);
-    cy.shotStats('tmid-ohne').then(ohne => {
-      cy.visitApp(B + '&tu=m3,0,0,0,0,5000');   // Iterationen 0 … 5000 mit hartem Rand: überall 1
-      cy.shotStats('tmid-alles').then(alles => diff(ohne, alles).then(d => expect(d.meanDiff, 'Maske über alles = ohne Maske').to.be.lessThan(0.5)));
-    });
-  });
-
 });
 
 describe('Paar-Wert Streifenphase (Sammler 18)', () => {
@@ -1514,18 +1490,6 @@ describe('Spiralfalle, Texturen innen und Fallenverbund', () => {
     cy.expectHash('ti', null);
   });
 
-  it('Texturen auch innen mit WebGL 2: gezeichnetes Inneres, außen unverändert', () => {
-    const gl = { storage: { 'fractal.renderer': 'webgl' } };
-    cy.visitApp(J + '&tx=19&ts=0.8', gl);
-    cy.shotStats('innen-gl-ohne').then(ohne => {
-      cy.visitApp(J + '&tx=19&ts=0.8&ti=1', gl);
-      cy.shotStats('innen-gl-mit').then(mit => {
-        diff(ohne, mit).then(d => expect(d.meanDiff, 'WebGL 2: innen färbt die Textur').to.be.greaterThan(5));
-        diff(ohne, mit, AUSSEN).then(d => expect(d.meanDiff, 'WebGL 2: außen bleibt gleich').to.be.lessThan(0.5));
-      });
-    });
-  });
-
   it('Fallenverbund: Punkt- und Ringfalle mit weichem Minimum ergeben ein anderes Bild; Regler mit Wertfeld, Link (tv)', () => {
     cy.visitApp(B + '&tx=19&t2=15&t2s=0.6');
     cy.pane('texturen');
@@ -1546,7 +1510,7 @@ describe('Spiralfalle, Texturen innen und Fallenverbund', () => {
 
 describe('Äußerer Winkel und Karte', () => {
   const B = 'mode=mandel&re=-0.75&im=0.1&z=1.3&it=500';
-  it('Färbung 34: äußerer Winkel statt Fluchtwinkel, im Link, WebGL 2 wie WebGPU, nur bei z^d + c wählbar', () => {
+  it('Färbung 34: äußerer Winkel statt Fluchtwinkel, im Link, nur bei z^d + c wählbar', () => {
     cy.visitApp(B + '&map=15');
     cy.shotStats('winkel-flucht').then(flucht => {
       cy.visitApp(B + '&map=34');
@@ -1554,8 +1518,6 @@ describe('Äußerer Winkel und Karte', () => {
       cy.expectHash('map', '34');
       cy.shotStats('winkel-aussen').then(aussen => {
         cy.task('pngDiff', { a: flucht.file, b: aussen.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, 'der äußere Winkel färbt anders als der Fluchtwinkel').to.be.greaterThan(3));
-        cy.visitApp(B + '&map=34', { storage: { 'fractal.renderer': 'webgl' } });
-        cy.shotStats('winkel-aussen-gl').then(gl => cy.task('pngDiff', { a: aussen.file, b: gl.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, 'WebGL 2 rechnet denselben Winkel').to.be.lessThan(12)));   // der Winkel summiert über hunderte Iterationen gewrappte Differenzen: die beiden Übersetzer ordnen anders um, das ergibt einen kleinen gleichmäßigen Versatz (gemessen 6 bis 9)
       });
     });
     cy.visitApp(B);

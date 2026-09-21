@@ -1,5 +1,5 @@
 // Rosettenfalle (Texturart 23, Sammler 21) und Auswertung der Fallen je Platz: Bedienzeilen (hierarchisch), Link-Schlüssel
-// (tq mit sechs Werten, tr, tf), Bild je Wertwahl und Auswertung, WebGL 2 gleich WebGPU, die Vorgabe lässt das alte Bild
+// (tq mit sechs Werten, tr, tf), Bild je Wertwahl und Auswertung WebGPU, die Vorgabe lässt das alte Bild
 // (Ringfalle mit und ohne Schlüssel identisch), der Fallenverbund nimmt die Rosette mit.
 import { IMAGE_REGION } from '../support/commands';
 
@@ -59,8 +59,6 @@ describe('Rosettenfalle und Auswertung der Fallen', () => {
         cy.visitApp(B + '&tx=23&ts=0.8&tr=2');
         cy.shotStats('ros-winkel').then(wi => {
           anders(maske, wi, 'der Kontaktwinkel färbt anders als die Maske'); anders(it1, wi, 'Kontaktwinkel und Kontaktiteration unterscheiden sich');
-          cy.visitApp(B + '&tx=23&ts=0.8&tr=2', { storage: { 'fractal.renderer': 'webgl' } });
-          cy.shotStats('ros-winkel-gl').then(gl => gleich(wi, gl, 'WebGL 2 rechnet den Kontaktwinkel wie WebGPU'));
         });
       });
       cy.visitApp(B + '&tx=23&ts=0.8&tf=1');
@@ -71,12 +69,10 @@ describe('Rosettenfalle und Auswertung der Fallen', () => {
       });
       cy.visitApp(B + '&tx=23&ts=0.8&tq=0.5:5:2');
       cy.shotStats('ros-drall').then(dr => anders(maske, dr, 'Drall macht aus der Rosette eine Spiralrosette'));
-      cy.visitApp(B + '&tx=23&ts=0.8', { storage: { 'fractal.renderer': 'webgl' } });
-      cy.shotStats('ros-maske-gl').then(gl => gleich(maske, gl, 'WebGL 2 rechnet die Rosette wie WebGPU'));
     });
   });
 
-  it('Vorgabe lässt das alte Bild: Ringfalle mit und ohne Schlüssel identisch, andere Auswertung anders; der Fallenverbund nimmt die Rosette mit, WebGL 2 gleich', () => {
+  it('Vorgabe lässt das alte Bild: Ringfalle mit und ohne Schlüssel identisch, andere Auswertung anders; der Fallenverbund nimmt die Rosette mit', () => {
     cy.visitApp(B + '&tx=15&ts=0.8');
     cy.shotStats('ring-alt').then(alt => {
       cy.visitApp(B + '&tx=15&ts=0.8&tf=0&tr=0');   // die Vorgaben ausdrücklich im Link: dieselben Werte, die Schlüssel verschwinden
@@ -93,8 +89,6 @@ describe('Rosettenfalle und Auswertung der Fallen', () => {
       cy.pane('texturen'); cy.get('#texVerbund').should('have.value', '0.5');
       cy.shotStats('verbund-mit').then(mit => {
         anders(ohne, mit, 'der Verbund mit der Rosette verändert das Bild');
-        cy.visitApp(B + '&tx=23&ts=0.8&t2=15&t2s=0.6&tv=0.5', { storage: { 'fractal.renderer': 'webgl' } });
-        cy.shotStats('verbund-gl').then(gl => gleich(mit, gl, 'WebGL 2 rechnet den Verbund mit der Rosette wie WebGPU'));
       });
     });
   });

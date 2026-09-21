@@ -1,6 +1,6 @@
 // Ebenenmischer: jedes Bedienelement der Karten (Kopf, Einklappen, Sichtbar, Solo, Name, Mischmodus, Deckkraft, Ansicht,
 // Maske, Löschen, Hinzufügen, Reihenfolge), Rückgängig und Link als Ganzes, dazu Rendern und Ziehen mit mehreren Ebenen
-// (Reihenfolge der Schritte, Bildvergleich WebGPU/WebGL 2, Bildtakt beim Ziehen gegen eine Ebene).
+// (Reihenfolge der Schritte, Bildvergleich WebGPU, Bildtakt beim Ziehen gegen eine Ebene).
 import { IMAGE_REGION } from '../support/commands';
 
 describe('Ebenenmischer', () => {
@@ -90,7 +90,7 @@ describe('Ebenenmischer', () => {
     cy.get('#ebeneName2').clear().type('{enter}'); cy.wait(400); cy.expectHash('lm2', '2:0.7:1:0:1:');
   });
 
-  it('Mischmodus: jeder Modus rendert ohne Fehler, Normal, Multiplizieren und Differenz unterscheiden sich, WebGL 2 gleicht WebGPU', () => {
+  it('Mischmodus: jeder Modus rendert ohne Fehler, Normal, Multiplizieren und Differenz unterscheiden sicht WebGPU', () => {
     cy.visitApp(ZWEI, { onBeforeLoad: win => { cy.spy(win.console, 'error').as('konsole'); } }); fertig(); cy.pane('ebenen');
     cy.get('#ebeneModus2 option').should('have.length', 18);
     for (let i = 0; i < 18; i++) {
@@ -106,11 +106,6 @@ describe('Ebenenmischer', () => {
         cy.pickOption('ebeneModus2', 10); cy.wait(600);
         cy.gezeichnet(); cy.shotStats('em-diff').then(diff => {
           anders(multi, diff, 'Differenz mischt anders als Multiplizieren');
-          cy.visitApp('mode=mandel&l2=f%3D1&lm2=10:0.7:1:0:1:&la=2', { storage: { 'fractal.renderer': 'webgl' } }); fertig();
-          cy.get('#badge').should('contain.text', 'WebGL');
-          cy.gezeichnet(); cy.shotStats('em-diff-webgl').then(gl => gleich(diff, gl, 'WebGL 2 mischt Differenz wie WebGPU', 10));
-          cy.visitApp('mode=mandel&l2=f%3D1&lm2=1:0.7:1:0:1:&la=2', { storage: { 'fractal.renderer': 'webgl' } }); fertig();
-          cy.gezeichnet(); cy.shotStats('em-multi-webgl').then(gl => gleich(multi, gl, 'WebGL 2 mischt Multiplizieren wie WebGPU', 10));
         });
       });
     });
@@ -228,7 +223,7 @@ describe('Ebenenmischer', () => {
     });
   });
 
-  it('Rendern mit drei Ebenen: alle werden fertig, erst alle Grundbilder, dann die Glättungen (die gewählte zuerst), keine Fehler; WebGL 2 gleicht WebGPU', () => {
+  it('Rendern mit drei Ebenen: alle werden fertig, erst alle Grundbilder, dann die Glättungen (die gewählte zuerst), keine Fehler', () => {
     cy.visitApp(DREI, { aa: '2', onBeforeLoad: win => { cy.spy(win.console, 'error').as('konsole'); } });
     alleFertig().then(ms => expect(ms, 'alle drei Ebenen samt Glättung fertig').to.be.greaterThan(0));
     cy.window().then(win => {
@@ -242,8 +237,6 @@ describe('Ebenenmischer', () => {
     cy.gezeichnet(); cy.shotStats('em-drei').then(drei => {
       cy.visitApp('mode=mandel&f=2'); fertig();
       cy.gezeichnet(); cy.shotStats('em-drei-tricorn').then(t => anders(drei, t, 'drei Ebenen sind anders als das Tricorn allein'));
-      cy.visitApp(DREI, { aa: '2', storage: { 'fractal.renderer': 'webgl' } }); alleFertig();
-      cy.gezeichnet(); cy.shotStats('em-drei-webgl').then(gl => gleich(drei, gl, 'WebGL 2 mischt drei Ebenen wie WebGPU', 10));
     });
   });
 

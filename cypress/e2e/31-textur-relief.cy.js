@@ -48,17 +48,4 @@ describe('Texturen über Abstand und Relief', () => {
     });
   });
 
-  it('WebGL 2 rechnet Textur über Relief und die Relief-Höhe wie WebGPU', () => {
-    const gl = { storage: { 'fractal.renderer': 'webgl' } };
-    for (const [z, name] of [['2', 'hell'], ['8', 'hoehe']]) {
-      const H = B + '&map=6&mt=2&mg=0.7&tx=1&ts=2&tc=6&tz=' + z;
-      cy.visitApp(H); cy.waitRender();
-      cy.shotStats('tr-gpu-' + name).then(gpu => {
-        cy.visitApp(H, gl);
-        cy.get('#badge').should('have.text', 'WebGL 2');
-        cy.waitRender();
-        cy.shotStats('tr-gl-' + name).then(g => diff(gpu, g).then(d => expect(d.meanDiff, 'WebGL 2 rechnet ' + name + ' wie WebGPU').to.be.lessThan(8)));
-      });
-    }
-  });
 });

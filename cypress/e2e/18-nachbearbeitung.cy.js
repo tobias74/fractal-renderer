@@ -316,35 +316,16 @@ describe('Nachbearbeitung: Einstellungsebenen', () => {
       return cy.task('pngStats', { file: files[0], region: { x0: 0, y0: 0, x1: 1, y1: 1 } }).then(st => st.mean);
     });
   };
-  it('die Ebenen wirken im gespeicherten Bild, mit WebGPU wie mit WebGL 2, und stehen in den Bildangaben', () => {
+  it('die Ebenen wirken im gespeicherten Bild, und stehen in den Bildangaben', () => {
     exportMittel(B).then(ohne => {
       exportMittel(B + '&nb=11:1:1:1').then(mit => {
         expect(Math.abs(mit - ohne), 'die Datei ist invertiert').to.be.greaterThan(40);
-        exportMittel(B + '&nb=11:1:1:1', { 'fractal.renderer': 'webgl' }).then(gl => expect(Math.abs(gl - mit), 'WebGL 2 exportiert dasselbe').to.be.lessThan(3));
       });
     });
     cy.visitApp(B + '&nb=11:1:1:1');
     cy.get('#save').click();
     cy.get('#metaText').invoke('val').then(text => expect(JSON.parse(text).params.nb, 'die Ebenen stehen in den Bildangaben').to.match(/^11:/));   // Version 2: die Parameter als Objekt
     cy.get('#posterCancel').click();
-  });
-
-  it('mit WebGL 2: Ebene und Maske wirken, die Fassung mit Ebenen steht binnen 25 s (kein minutenlanges Übersetzen mehr)', () => {
-    const gl = { storage: { 'fractal.renderer': 'webgl' } };
-    cy.visitApp(B, gl);
-    cy.get('#badge').should('have.text', 'WebGL 2');
-    cy.shotStats('gl-ohne').then(ohne => {
-      cy.visitApp(B + '&nb=11:1:1:1', gl);
-      cy.get('#state', { timeout: 25000 }).should('not.contain.text', 'übersetzt');   // die Fassung mit Ebenen wird nebenher übersetzt; das dauerte einmal über 30 s
-      cy.waitRender();
-      cy.shotStats('gl-invers').then(inv => {
-        diff(ohne, inv).then(d => expect(d.meanDiff, 'WebGL 2 invertiert').to.be.greaterThan(40));
-        cy.visitApp(B + '&nb=11:1:1:1:m1,0,0,0.25,1', gl);   // nur außen: die Maske kam auf WebGL 2 einmal nicht an (Uniforms hinter einem Kommentar)
-        cy.get('#state', { timeout: 25000 }).should('not.contain.text', 'übersetzt');
-        cy.waitRender();
-        cy.shotStats('gl-maske').then(mk => { diff(ohne, mk).then(d => expect(d.meanDiff, 'außen invertiert').to.be.greaterThan(20)); diff(inv, mk).then(d => expect(d.meanDiff, 'innen bleibt').to.be.greaterThan(5)); });
-      });
-    });
   });
 
   it('ein von Hand getippter Link mit + in den Kurven liest sich richtig (die Adresse macht aus + ein Leerzeichen)', () => {
@@ -383,14 +364,6 @@ describe('Beleuchtung (Ebenenart 28)', () => {
       });
     });
   });
-  it('Beleuchtung mit WebGL 2: Ebene wirkt', () => {
-    const gl = { storage: { 'fractal.renderer': 'webgl' } };
-    cy.visitApp(J, gl);
-    cy.shotStats('licht-gl-ohne').then(ohne => {
-      cy.visitApp(J + '&nb=' + L, gl);
-      cy.shotStats('licht-gl-mit').then(mit => diff(ohne, mit).then(d => expect(d.meanDiff, 'WebGL 2: die Beleuchtung verändert das Bild').to.be.greaterThan(5)));
-    });
-  });
 });
 
 describe('Leuchten (Ebenenart 29)', () => {
@@ -422,14 +395,6 @@ describe('Leuchten (Ebenenart 29)', () => {
     cy.get('#nachKarte2 .nach-hinweis').should('contain.text', 'Leuchten');
     cy.get('#nachKarte1').should('not.have.class', 'nach-inaktiv');
   });
-  it('Leuchten mit WebGL 2: helles wird heller', () => {
-    const gl = { storage: { 'fractal.renderer': 'webgl' } };
-    cy.visitApp(J, gl);
-    cy.shotStats('leucht-gl-ohne').then(ohne => {
-      cy.visitApp(J + '&nb=' + G, gl);
-      cy.shotStats('leucht-gl-mit').then(mit => { diff(ohne, mit).then(d => expect(d.meanDiff, 'WebGL 2: das Leuchten verändert das Bild').to.be.greaterThan(3)); expect(mit.mean).to.be.greaterThan(ohne.mean); });
-    });
-  });
 });
 
 describe('Beleuchtung aus der Fluchtzeit (Quellen 6 und 7)', () => {
@@ -448,22 +413,15 @@ describe('Beleuchtung aus der Fluchtzeit (Quellen 6 und 7)', () => {
       cy.shotStats('lf-richtung').then(ri => diff(hell, ri).then(d => expect(d.meanDiff, 'nur die Richtung').to.be.greaterThan(1.5)));
     });
   });
-  it('Fluchtzeit, nur Richtung mit WebGL 2', () => {
-    const gl = { storage: { 'fractal.renderer': 'webgl' } };
-    cy.visitApp(B + '&nb=' + L(0), gl);
-    cy.shotStats('lf-gl-hell').then(hell => { cy.visitApp(B + '&nb=' + L(7), gl); cy.shotStats('lf-gl-richtung').then(ri => diff(hell, ri).then(d => expect(d.meanDiff, 'WebGL 2: nur die Richtung').to.be.greaterThan(1.5))); });
-  });
 });
 
 describe('Richtung der Beleuchtung über Bahnstatistik (z-Kanal)', () => {
   const M = 'mode=mandel&re=-0.75&im=0.1&z=1.3&it=2000&map=19';
   const L = q => '28:1:1:' + q + ',1,85,45,1,0,40,0,0.87,0.9,1,0';
   const diff = (a, b) => cy.task('pngDiff', { a: a.file, b: b.file, region: IMAGE_REGION });
-  it('über dem Streifenmittel ergibt „nur Richtung“ ein anderes Bild als die Helligkeit, mit WebGPU und WebGL 2', () => {
+  it('über dem Streifenmittel ergibt „nur Richtung“ ein anderes Bild als die Helligkeit', () => {
     cy.visitApp(M + '&nb=' + L(0));
     cy.shotStats('rz-hell').then(hell => { cy.visitApp(M + '&nb=' + L(7)); cy.shotStats('rz-richtung').then(ri => diff(hell, ri).then(d => expect(d.meanDiff, 'WebGPU: Richtung im z-Kanal').to.be.greaterThan(5))); });
-    const gl = { storage: { 'fractal.renderer': 'webgl' } };
     cy.visitApp(M + '&nb=' + L(0), gl);
-    cy.shotStats('rz-gl-hell').then(hell => { cy.visitApp(M + '&nb=' + L(7), gl); cy.shotStats('rz-gl-richtung').then(ri => diff(hell, ri).then(d => expect(d.meanDiff, 'WebGL 2: Richtung im z-Kanal').to.be.greaterThan(5))); });
   });
 });

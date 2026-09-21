@@ -1,7 +1,7 @@
 import { IMAGE_REGION } from '../support/commands';
 
 // Übersetzen der Fassung mit Ebenen und Masken: die Fassung des Farbpasses, die Einstellungsebenen und Ebenenmasken kennt,
-// entsteht beim ersten Gebrauch nebenher (WebGPU: Pipelines asynchron, WebGL 2: Programme parallel). Solange zeigt der
+// entsteht beim ersten Gebrauch nebenher (Pipelines entstehen asynchron). Solange zeigt der
 // Bildschirm die Farbe ohne Ebenen, die Statuszeile sagt „Ebenen und Masken werden übersetzt …“, die Laufanzeige läuft.
 // Die Testhaken window.__uebersetzenHalten (hält die Übersetzung an, bis der Test sie freigibt) und window.__uebersetzenFehler
 // (lässt sie scheitern) machen den flüchtigen Zustand fassbar; ohne sie wäre er im aktuellen Chrome nach Millisekunden vorbei.
@@ -153,24 +153,6 @@ describe('Übersetzen der Fassung mit Ebenen und Masken', () => {
     frei();
     cy.get('#mState', { timeout: 30000 }).should($s => { expect($s.text()).to.match(/Fertig/); expect($s.text()).not.to.match(/übersetzt/); });
     cy.get('#mStatus').should('not.have.class', 'busy'); cy.get('#mState').should('not.have.class', 'uebersetzt');
-  });
-
-  it('WebGL 2: dieselbe Meldung, angehalten und freigegeben; ohne parallele Übersetzung wirkt die Ebene sofort', () => {
-    cy.visitApp(B, { storage: { 'fractal.renderer': 'webgl' } }); cy.pane('nach');
-    cy.get('#badge').invoke('text').should('match', /WebGL/i);
-    halten(); ebene(12); cy.wait(300);
-    stand().then(z => {
-      if (z.uebersetzt) {   // KHR_parallel_shader_compile: die Programme entstehen nebenher, der Haken hält die Prüfung an
-        meldung(); anzeigenDa();
-        cy.gezeichnet(); cy.shotStats('ue-gl-gehalten').then(g => expect(g.grau, 'noch farbig').to.be.lessThan(0.5));
-        frei(); fertigOhneMeldung();
-      } else {   // ohne die Erweiterung übersetzt WebGL sofort; dann darf es auch keine Meldung geben
-        cy.log('WebGL 2 ohne parallele Übersetzung: sofort fertig');
-        cy.get('#state').invoke('text').should('not.match', /übersetzt/);
-        frei();
-      }
-      cy.waitRender(); cy.gezeichnet(); cy.shotStats('ue-gl-frei').then(f => expect(f.grau, 'Graustufen wirken mit WebGL 2').to.be.greaterThan(0.95));
-    });
   });
 
   it('Hinweis über dem Bild: erscheint erst nach kurzer Zeit mit Schritt und Sekunden, zählt hoch, steht auch in der Statuszeile, lässt sich wegklicken', () => {

@@ -1,7 +1,6 @@
 // Weitere Ziele der Texturplätze: Farbton (5), Glühen (6) und Deckkraft der Ebene (7). Geprüft: die Auswahl ist
 // hierarchisch (Glühen nur mit wirksamen Kantenlinien, Deckkraft nur ab der zweiten Fraktal-Ebene), die Werte
-// überstehen Link und „Alles zurücksetzen“, jedes Ziel ändert das Bild, die Vorgabe lässt das alte Bild, und
-// WebGL 2 rechnet wie WebGPU.
+// überstehen Link und „Alles zurücksetzen“, jedes Ziel ändert das Bild, die Vorgabe lässt das alte Bild, und.
 // Die Deckkraft reist über ein eigenes, drittes Ziel des Farbpasses zum Ebenenpass — der liest die fertige Farbe
 // aus dem Zwischenbild und käme sonst nicht an sie heran.
 import { IMAGE_REGION } from '../support/commands';
@@ -68,17 +67,4 @@ describe('Ziele der Texturplätze: Farbton, Glühen und Deckkraft', () => {
     });
   });
 
-  it('WebGL 2 rechnet die drei Ziele wie WebGPU', () => {
-    const gl = { storage: { 'fractal.renderer': 'webgl' } };
-    for (const [z, name] of [['5', 'farbton'], ['6', 'gluehen'], ['7', 'deckkraft']]) {
-      const H = KANTE + '&glow=1&gw=8' + ZWEI + '&ts=1.5&tz=' + z;
-      cy.visitApp(H); cy.waitRender();
-      cy.shotStats('tz2-gpu-' + name).then(gpu => {
-        cy.visitApp(H, gl);
-        cy.get('#badge').should('have.text', 'WebGL 2');
-        cy.waitRender();
-        cy.shotStats('tz2-gl-' + name).then(g => gleich(gpu, g, 'WebGL 2 rechnet das Ziel ' + name + ' wie WebGPU'));
-      });
-    }
-  });
 });
