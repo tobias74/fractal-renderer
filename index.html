@@ -1992,6 +1992,7 @@
         <select id="blaSel">
           <option value="auto" data-i18n="technical.automatic"></option>
           <option value="1" data-i18n="technical.always"></option>
+          <option value="2" data-i18n="technical.certified"></option>
           <option value="0" data-i18n="colour.off"></option>
         </select>
       </div>
@@ -3328,6 +3329,7 @@ const TEXTE = {
   'technical.actions': { de: 'Aktionen', en: 'Actions' },
   'technical.always': { de: 'Immer', en: 'Always' },
   'technical.approximation-bla': { de: 'Näherung (BLA)', en: 'Approximation (BLA)' },
+  'technical.certified': { de: 'Zertifiziert', en: 'Certified' },
   'technical.inertia': { de: 'Schwung beim Ziehen', en: 'Momentum when dragging' },
   'technical.inertia-title': { de: 'Nach dem Loslassen läuft das Bild mit der zuletzt gemessenen Geschwindigkeit aus und wird dabei langsamer. Ein neuer Griff, ein Tastendruck oder das Abschalten hier hält es sofort an.', en: 'After you let go the picture keeps moving at the speed it last had and slows down. A new grip, a key press, or switching this off stops it at once.' },
   'status.snapshot': { de: 'Schnappschuss wird gesichert …', en: 'Saving snapshot …' },
@@ -3417,6 +3419,9 @@ const TW = 2048;                                  // Breite der Orbit-Textur
 const MAX_ITER = 100000;
 const ROWS = Math.ceil(2 * (MAX_ITER + 2) / TW);  // Platz für zwei Referenzbahnen
 const BLA_EPS = Math.pow(2, -24);                 // zulässiger Linearisierungsfehler je Block, relativ (unter der fp32-Rundung)
+const BLA_ETA = Math.pow(2, -24);                 // Rundungsanteil der Auswertung A·δ + B·δc in fp32 (zertifizierte Fassung)
+const BLA_KLEIN = 1e-30;                          // darunter ist ein Faktor oder Radius in fp32 nicht mehr verlässlich (Unterlauf)
+function blaZertifiziert() { return S.bla === '2'; }   // zertifiziert: der Radius bilanziert zusätzlich die Rundung
 const BLA_P2 = 1 << Math.ceil(Math.log2(MAX_ITER + 1));   // Einträge je Segment auf Zweierpotenz aufgefüllt
 const ROWS_BLA = Math.ceil(4 * BLA_P2 / TW);          // zwei Segmente à 2·P2 Texel (alle Ebenen)
 const MAX_ZOOM = 1e26, MIN_ZOOM = 0.01, MAX_LOG = 26;
@@ -10364,7 +10369,7 @@ try {   // gespeicherte App-Einstellungen nur lesen, wenn die Einwilligung dafü
     const pf = localStorage.getItem('fractal.palfilter'); if (pf === '0' || pf === '1') S.palFilter = pf === '1';
     const pk = parseFloat(localStorage.getItem('fractal.palfilterk')); if (pk >= PALK.min && pk <= PALK.max) S.palFilterK = pk;
     const cyc = localStorage.getItem('fractal.cycle'); if (cyc === '0' || cyc === '1' || cyc === 'auto') S.cycle = cyc;
-    const bl = localStorage.getItem('fractal.bla'); if (bl === '0' || bl === '1' || bl === 'auto') S.bla = bl;
+    const bl = localStorage.getItem('fractal.bla'); if (bl === '0' || bl === '1' || bl === '2' || bl === 'auto') S.bla = bl;
   }
 } catch (e) { /* kein Speicher, kein Problem */ }
 
@@ -10523,7 +10528,7 @@ function blaOn() { return S.bla !== '0' && S.formula === 0 && !S.startC && !hybr
 // Layout je Segment: N Einzelschritte auf P2 = 2^L aufgefüllt, Ebene k belegt P2/2^k Texel ab 2·P2 − (2·P2 >> k),
 // Eintrag e = m >> k für Blockstart m ≡ 0 mod 2^k; ungenutzte Plätze tragen r = 0.
 function buildBla(dcMax, maxIter, rows) {
-  const julia = S.mode === 'julia', pw = S.power;
+  const julia = S.mode === 'julia', pw = S.power, zert = blaZertifiziert();   // zertifiziert: die Radien bilanzieren auch die Rundung
   const seg = (start, n, base) => {   // liefert [N, 2·P2, Ebenen]
     const N = Math.max(0, n - 1), P2 = 1 << Math.ceil(Math.log2(Math.max(1, N))), levels = Math.round(Math.log2(P2));
     blaR.fill(0, base, base + 2 * P2);
@@ -10534,7 +10539,7 @@ function buildBla(dcMax, maxIter, rows) {
       let pr = 1, pi = 0;
       for (let j = 1; j < pw; j++) { const nr = pr * Zr - pi * Zi; pi = pr * Zi + pi * Zr; pr = nr; }
       Ar[m] = pw * pr; Ai[m] = pw * pi; Br[m] = julia ? 0 : 1; Bi[m] = 0;
-      R[m] = BLA_EPS * Math.hypot(Zr, Zi) / (pw - 1);
+      R[m] = (zert ? Math.max(0, BLA_EPS - BLA_ETA) : BLA_EPS) * Math.hypot(Zr, Zi) / (pw - 1);   // zertifiziert: der Darstellungsfehler von Z geht mit ab
     }
     blaR4.fill(0, start, start + n);
     for (let k = 0; ; k++) {
@@ -10554,6 +10559,10 @@ function buildBla(dcMax, maxIter, rows) {
         const br = Ar[y] * Br[x] - Ai[y] * Bi[x] + Br[y], bi = Ar[y] * Bi[x] + Ai[y] * Br[x] + Bi[y];
         const ax = Math.hypot(Ar[x], Ai[x]), bx = Math.hypot(Br[x], Bi[x]);
         let r = Math.min(R[x], Math.max(0, (R[y] - bx * dcMax) / ax));
+        if (zert) {   // die Auswertung A·δ + B·δc rundet: der Fehler wächst mit dem, was der Block trägt, und wird vom Radius abgezogen
+          r = Math.min(r, Math.max(0, (R[y] - bx * dcMax - BLA_ETA * (ax * R[x] + bx * dcMax)) / ax));
+          if (ax < BLA_KLEIN || r < BLA_KLEIN) r = 0;   // Unterlauf: dann lieber den gewöhnlichen Schritt
+        }
         if (!(r > 0) || !Number.isFinite(r) || Math.abs(ar) > 1e30 || Math.abs(ai) > 1e30 || Math.abs(br) > 1e30 || Math.abs(bi) > 1e30) r = 0;
         Ar2[e] = ar; Ai2[e] = ai; Br2[e] = br; Bi2[e] = bi; R2[e] = r;
       }
@@ -10564,7 +10573,7 @@ function buildBla(dcMax, maxIter, rows) {
   const a = seg(0, orbitLenA, 0);
   const b = julia ? seg(orbitBaseB, orbitLenB, a[1]) : [0, 0, 0];
   blaMeta.n.set([a[0], b[0], a[1], b[1]]); blaMeta.misc.set([a[1], a[2], b[2], julia ? 1 : 0]);
-  blaActive = S.bla === '1' || blaWorth(dcMax, maxIter) >= 0.35;   // automatisch nur, wenn die Stichprobe deutlich spart
+  blaActive = S.bla === '1' || S.bla === '2' || blaWorth(dcMax, maxIter) >= 0.35;   // automatisch nur, wenn die Stichprobe deutlich spart
   if (!blaActive) return;
   renderer.setBla(blaR, blaAB, Math.min(ROWS_BLA, Math.ceil((a[1] + b[1]) / TW)));
   renderer.setBlaR4(blaR4, rows);
@@ -12167,7 +12176,7 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
   if (h.get('inv') === '1') S.invert = true;
   const ir = parseFloat(h.get('ir')), ii = parseFloat(h.get('ii')); S.invM = [Number.isFinite(ir) ? clamp(ir, -4, 4) : 0, Number.isFinite(ii) ? clamp(ii, -4, 4) : 0];   // Inversionsmitte
   const cy = h.get('cyc'); if (cy === '0' || cy === '1') S.cycle = cy;
-  const bla = h.get('bla'); if (bla === '0' || bla === '1') S.bla = bla;
+  const bla = h.get('bla'); if (bla === '0' || bla === '1' || bla === '2') S.bla = bla;   // 2 = zertifiziert
   S.pal2 = {}; S.pal2Eigen = decodePal2(h.get('cp2')); const p2 = h.get('p2'), q2 = quelle2();   // Palette der Färbung mit zwei Werten, falls nicht die Vorgabe
   if (q2 && p2 !== null) {   // n: gewöhnliche, e: eigenes Schema aus cp2, sonst die Kennung (bei alten Links die Nummer)
     let r = p2 === 'n' ? -1 : p2 === 'e' ? (S.pal2Eigen ? 'y:tmp' : pal2Start(q2)) : pal2Nr(/^\d+$/.test(p2) ? PAL2_ALT[+p2] : p2);
