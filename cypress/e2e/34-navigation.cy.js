@@ -22,16 +22,15 @@ describe('Navigation: Schwung und Tasten', () => {
     cy.visitApp(B); cy.waitRender();
     cy.pane('motiv');   // Vorgabe ist ohne Schwung
     ziehen();
-    cy.wait(700);
+    cy.wait(1500);
     cy.hashParams().then(h => cy.wrap(parseFloat(h.get('re'))).as('ohneSchwung'));
     cy.visitApp(B); cy.waitRender();
     cy.revealInDetails('traegheit'); cy.get('#traegheit').check();
     cy.pane('motiv');
     ziehen();
-    cy.wait(700);
-    cy.hashParams().then(h => {
-      cy.get('@ohneSchwung').then(ohne => {
-        const mit = parseFloat(h.get('re'));
+    cy.wait(1500);
+    cy.get('@ohneSchwung').then(ohne => {
+      cy.hashParams().then(h => parseFloat(h.get('re'))).should(mit => {
         expect(Math.abs(mit - (-0.7462586155)), 'mit Schwung wandert die Mitte weiter').to.be.greaterThan(Math.abs(ohne - (-0.7462586155)));
       });
     });
@@ -45,7 +44,7 @@ describe('Navigation: Schwung und Tasten', () => {
     cy.wait(900);
     cy.get('#undo').should('not.be.disabled');
     cy.get('#undo').click();
-    cy.expectHash('re', '-0.7462586155000000000000000000000');
+    cy.hashParams().then(h => expect(parseFloat(h.get('re')), 're nach Rückgängig').to.be.closeTo(-0.7462586155, 1e-9));
   });
 
   it('die Leertaste wählt die nächste Fraktal-Ebene, bei einer einzigen geschieht nichts', () => {

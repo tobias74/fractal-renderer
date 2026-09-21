@@ -81,6 +81,7 @@ describe('Eigene Ausdrücke', () => {
       cy.get('#eigenFText').should('have.class', 'fehler').and('contain.text', 'unbekannter Name');
       cy.expectHash('xc', '|z - 1|');
     });
+    cy.visitApp('mode=mandel&map=35&xc=frac(re+z)&xcg=4&xcs=s+%2B+1'); cy.waitRender();   // aus dem Link gelesen: Feld, Zusammenfassung und Zustand stehen wieder da
     cy.get('#state').invoke('text').should('match', /Fertig/);
     cy.pane('farbe'); cy.get('#eigenF').should('have.value', 'frac(re z)'); cy.get('#eigenFG').should('have.value', '4'); cy.get('#eigenFS').should('have.value', 's + 1');
     cy.visitApp('mode=mandel'); cy.pane('farbe'); cy.rowShown('eigenFRow', false);

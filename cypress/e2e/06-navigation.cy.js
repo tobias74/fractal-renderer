@@ -53,6 +53,7 @@ describe('Navigation im Bild', () => {
 
   it('Tastenkürzel greifen nicht, während ein Eingabefeld den Fokus hat', () => {
     cy.rerender(() => cy.pickOption('formula', 13));   // Lyapunov hat ein Textfeld für die Folge (setzt die Ansicht zurück)
+    cy.document().then(d => d.activeElement && d.activeElement.blur());   // nach der Wahl liegt der Fokus auf dem Menueknopf; Tastenkuerzel gelten nur ohne Bedienelement im Fokus
     cy.get('body').type('+');
     cy.expectHash('z', z => expect(parseFloat(z)).to.be.closeTo(2.25, 0.01));   // Lyapunov-Ansicht hat Zoom 1,5, ein Plus: 2,25
     cy.revealInDetails('seq');

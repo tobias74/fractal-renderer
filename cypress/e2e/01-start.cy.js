@@ -32,6 +32,7 @@ describe('Start und Grundzustand', () => {
   });
 
   it('startet nach einem Kontextverlust neu, auch wenn der Grafikprozess erst einen Moment braucht', () => {   // 20.09.2026: am Handy scheiterte der sofortige Wechsel nach VK_ERROR_DEVICE_LOST
+    cy.visitApp();
     cy.get('#badge').should('not.be.visible'); cy.waitRender();
     cy.window().then(w => {
       const orig = w.navigator.gpu.requestAdapter.bind(w.navigator.gpu); let verweigert = 0;

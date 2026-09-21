@@ -15,13 +15,14 @@ module.exports = defineConfig({
     video: false,
     screenshotOnRunFailure: true,
     defaultCommandTimeout: 10000,
-    pageLoadTimeout: 60000,
+    pageLoadTimeout: 120000,   // das Uebersetzen der Shader faellt je Fassung einmal an und ist kein Kriterium
     retries: { runMode: 0, openMode: 0 },
     downloadsFolder: 'cypress/downloads',
     trashAssetsBeforeRuns: true,
     experimentalMemoryManagement: true,
     setupNodeEvents(on, config) {
-      // WebGPU im Chrome-Browser freischalten (Electron nutzt sonst WebGL 2, was die App ebenfalls kann)
+      // Tests laufen in Chrome: sein WebGPU ist aktuell. Das Electron von Cypress bringt Chrome 118 mit und
+      // uebersetzt die Fassung mit Ebenen und Masken minutenlang (dieselbe Fassung steht in Chrome in 8 Sekunden).
       on('before:browser:launch', (browser, launchOptions) => {
         if (browser.family === 'chromium' && browser.name !== 'electron') {
           launchOptions.args.push('--enable-unsafe-webgpu', '--ignore-gpu-blocklist');

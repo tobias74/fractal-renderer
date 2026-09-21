@@ -11110,7 +11110,7 @@ $('schatten').addEventListener('change', () => { S.schatten = $('schatten').chec
 showDens();
 function palZweiFuellen() {   // die Auswahl der zweiten Palette trägt die eingebauten Paletten
   const sel = $('palZwei'); if (!sel || sel.options.length) return;
-  PALETTES.forEach((p, i) => { const o = document.createElement('option'); o.value = String(i); o.setAttribute('data-i18n', p.name); sel.append(o); });
+  PALETTES.forEach((p, i) => { const o = document.createElement('option'); o.value = String(i); o.setAttribute('data-i18n', p.name); o.textContent = t(p.name); sel.append(o); });   // die Liste entsteht nach dem Beschriften: der Name muss gleich mit
 }
 function showPalPfad() {   // zweite Palette und Beginn zählen erst, wenn eine Spanne gesetzt ist
   const an = palPfadAn();
@@ -12072,7 +12072,7 @@ for (let n = 1; n <= TEX_SLOTS; n++) {
   e.an.addEventListener('change', () => { S[k.an] = e.an.checked; syncFarbUI(); scheduleHash(); viewChanged(); });   // an/aus: der Platz zählt nicht mehr mit, neu rechnen
   e.klapp.addEventListener('click', () => { texZu[n] = !texZu[n]; syncFarbUI(); });
   const zsel = $('texZiel' + n);
-  if (zsel) zsel.addEventListener('change', () => { S[k.ziel] = clamp(parseInt(zsel.value, 10) || 0, 0, 4); syncFarbUI(); scheduleHash(); colorDirty = true; requestFrame(); });   // nur umfärben: der Wert liegt schon im Puffer
+  if (zsel) zsel.addEventListener('change', () => { S[k.ziel] = clamp(parseInt(zsel.value, 10) || 0, 0, 8); syncFarbUI(); scheduleHash(); colorDirty = true; requestFrame(); });   // nur umfärben: der Wert liegt schon im Puffer
   const wsel = $('texWo' + n);
   if (wsel) wsel.addEventListener('change', () => { S[k.wo] = clamp(parseInt(wsel.value, 10) || 0, 0, 2); syncFarbUI(); scheduleHash(); viewChanged(); });   // innen entstehen die Werte im Fraktal-Shader: neu rechnen
   const wahlSel = $('texWahl' + n);   // Wertwahl der Rosette und Auswertung der Falle: beides entsteht beim Iterieren, neu rechnen

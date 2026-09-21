@@ -69,7 +69,8 @@ Cypress.Commands.add('pickOption', (id, value) => {
   cy.get('#' + id).then($sel => {
     if ($sel.attr('data-enhanced') === '1') {
       cy.get(`#${id} + .menu-btn`).scrollIntoView().click();
-      cy.get(`#${id}Menu`).should('be.visible').find(`button[data-value="${val}"]`).click();
+      // direkt am Element klicken: das Menü scrollt beim Öffnen zum gewählten Eintrag, ein Klick nach Koordinaten trifft dann den Nachbarn
+      cy.get(`#${id}Menu`).should('be.visible').find(`button[data-value="${val}"]`).then($b => $b[0].click());
       cy.get(`#${id}Menu`).should('not.be.visible');
     } else {
       cy.get('#' + id).select(val, { force: true });
