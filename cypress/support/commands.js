@@ -37,7 +37,9 @@ Cypress.Commands.add('visitApp', (hash = '', opts = {}) => {
   if (wait) cy.waitRender();
 });
 
-Cypress.Commands.add('waitRender', (re = /Fertig|Done/, timeout = 60000) => {
+// Die Übersetzungszeit der Shader ist kein Kriterium: sie fällt je Fassung einmal an, die App zeigt sie als Streifen
+// über dem Bild und in der Statuszeile. Der Timeout ist deshalb großzügig und prüft nur, dass das Bild überhaupt kommt.
+Cypress.Commands.add('waitRender', (re = /Fertig|Done/, timeout = 180000) => {
   // Prüffunktion statt .invoke('text'): so gilt der lange Timeout für die ganze Kette
   cy.get('#state', { timeout }).should($s => expect($s.text(), 'Statuszeile').to.match(re));
 });

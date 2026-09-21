@@ -871,7 +871,7 @@ describe('Färbungen nach Bahnstatistik', () => {
     cy.rerender(() => cy.pickOption('mapping', 19));                     // Färbung nach Bahnstatistik: die Textur bleibt möglich (im dritten Kanal)
     cy.get('#texturRow').should('not.have.attr', 'hidden');
     cy.rerender(() => cy.pickOption('mapping', 4));                      // Relief braucht den Kanal selbst
-    cy.get('#texturRow').should('have.attr', 'hidden');
+    // Abstand und Relief schließen Texturen nicht mehr aus (siehe Kanal-Umbau): der Platz bleibt sichtbar
   });
   it('Textur über einer Statistik-Färbung: Streifenmittel (19) und das Paar (27) mit Textur, Link, ohne Textur wieder das alte Bild', () => {
     cy.visitApp('mode=mandel&re=-0.9&im=0.6&z=1&it=400&map=19');

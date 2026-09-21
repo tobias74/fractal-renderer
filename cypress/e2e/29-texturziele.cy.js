@@ -14,7 +14,7 @@ describe('Ziele der Texturplätze: Palettenposition und Sättigung', () => {
   it('Auswahl hierarchisch: Palettenposition ohne Achsen, Achsen nur bei „Werte kombinieren“, Sättigung immer', () => {
     cy.visitApp(B + '&tx=1&ts=0.5');
     cy.pane('texturen');
-    cy.get('#texZiel1 option').should('have.length', 5);
+    cy.get('#texZiel1 option').should('have.length', 7);
     cy.get('#texZiel1 option[value="3"]').should('have.text', 'Palettenposition');
     cy.get('#texZiel1 option[value="4"]').should('have.text', 'Sättigung');
     cy.get('#texZiel1').should('have.value', '2'); cy.expectHash('tz', null);   // Vorgabe bleibt die Helligkeit, ohne Schlüssel

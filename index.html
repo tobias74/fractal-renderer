@@ -12198,6 +12198,14 @@ function buildParamsRoh() {   // die Adresswerte der Ebene in S samt Ansicht und
   if (q2 && typeof r2 === 'number' && r2 >= 0 && PAL2[r2]) p.set('pv2', pal2Werte(PAL2[r2]));   // die Werte der zweiten Palette, auch der Vorgabe der Färbung
   p.set('den', S.density.toPrecision(3));
   if (S.offset) p.set('off', S.offset.toFixed(3));
+  if (Math.abs(S.palKurve - PAL_KURVE.kurve.def) > 1e-6) p.set('plk', String(+S.palKurve.toFixed(4)));   // Palettenkurve nur abseits der Gleichverteilung
+  if (Math.abs(S.palKurve - PAL_KURVE.kurve.def) > 1e-6 && Math.abs(S.palKurveMitte - PAL_KURVE.mitte.def) > 1e-6) p.set('plm', String(+S.palKurveMitte.toFixed(4)));   // der Schwerpunkt zählt nur mit Kurve
+  if (S.palPfadSpanne > 1e-6) {   // Palettenübergang: zweite Palette und Beginn zählen nur mit Spanne
+    p.set('pps', String(+S.palPfadSpanne.toFixed(4)));
+    if (S.palZwei) p.set('pp2', String(S.palZwei));
+    if (Math.abs(S.palPfadBeginn - PAL_PFAD.beginn.def) > 1e-6) p.set('ppb', String(+S.palPfadBeginn.toFixed(4)));
+  }
+
   if (S.nach.length) p.set('nb', nachSchreiben());   // Nachbearbeitung: alle Ebenen (nb; pp ist der Formelparameter)
   if (S.animate) p.set('anim', '1');                                    // wandernde Farben gehören zum Bild
   if (S.palFilter) { p.set('pf', '1'); if (Math.abs(S.palFilterK - 1) > 1e-9) p.set('pfk', S.palFilterK.toPrecision(3)); }   // ändert die Farben, muss in den Link
@@ -12224,13 +12232,6 @@ function buildParamsRoh() {   // die Adresswerte der Ebene in S samt Ansicht und
     if (S.texMitte !== TEXTUR.mitte.def) p.set('tm', String(+S.texMitte.toFixed(2)));
     if (S.texHell !== '#ffffff') p.set('tc', S.texHell.slice(1)); if (S.texDunkel !== '#000000') p.set('td', S.texDunkel.slice(1));   // Farben nur abseits der Vorgabe
     if (S.texAn === false) p.set('ta', '0');   // ausgeschaltet, Einstellungen bleiben
-    if (Math.abs(S.palKurve - PAL_KURVE.kurve.def) > 1e-6) p.set('plk', String(+S.palKurve.toFixed(4)));   // Palettenkurve nur abseits der Gleichverteilung
-    if (Math.abs(S.palKurve - PAL_KURVE.kurve.def) > 1e-6 && Math.abs(S.palKurveMitte - PAL_KURVE.mitte.def) > 1e-6) p.set('plm', String(+S.palKurveMitte.toFixed(4)));   // der Schwerpunkt zählt nur mit Kurve
-    if (S.palPfadSpanne > 1e-6) {   // Palettenübergang: zweite Palette und Beginn zählen nur mit Spanne
-      p.set('pps', String(+S.palPfadSpanne.toFixed(4)));
-      if (S.palZwei) p.set('pp2', String(S.palZwei));
-      if (Math.abs(S.palPfadBeginn - PAL_PFAD.beginn.def) > 1e-6) p.set('ppb', String(+S.palPfadBeginn.toFixed(4)));
-    }
     if (texZielWirkt(S.texZiel) !== TEX_ZIEL_VOR) p.set('tz', String(S.texZiel));   // Ziel nur abseits der Helligkeit
     if ((S.texWo || TEX_WO_VOR) !== TEX_WO_VOR) p.set('tw', String(S.texWo));   // wo der Platz wirkt, nur abseits von außen
     if (S.textur === 23 && S.texWahl) p.set('tr', String(S.texWahl));   // Wertwahl der Rosette, nur abseits der Maske

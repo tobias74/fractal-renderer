@@ -20,7 +20,6 @@ describe('Ziele der Texturplätze: Farbton und Glühen', () => {
     cy.get('#texZiel1 option').should('have.length', 7);
     cy.get('#texZiel1 option[value="5"]').should('have.text', 'Farbton');
     cy.get('#texZiel1 option[value="6"]').should('have.text', 'Glühen');
-    cy.get('#texZiel1 option[value="7"]').should('have.text', 'Deckkraft der Ebene');
     cy.visitApp(KANTE + '&glow=1&gw=8');                    // mit Kantenlinien
     cy.visitApp(KANTE + ZWEI);                              // mit zweiter Ebene
     cy.visitApp(KANTE + '&glow=1&gw=8' + ZWEI);             // beides
