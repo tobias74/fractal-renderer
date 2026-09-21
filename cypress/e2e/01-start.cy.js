@@ -4,7 +4,7 @@ describe('Start und Grundzustand', () => {
   it('lädt ohne Fehler, rendert die Mandelbrot-Menge und zeigt den Renderer an', () => {
     cy.visitApp();
     cy.title().should('eq', 'Fraktal-Renderer');
-    cy.get('#badge').invoke('text').should('match', /^WebGPU$/);
+    cy.get('#badge').should('not.be.visible');
     cy.get('#stage canvas').should($c => {
       expect($c[0].width, 'Canvas-Breite').to.be.greaterThan(400);
       expect($c[0].height, 'Canvas-Höhe').to.be.greaterThan(300);
@@ -32,13 +32,13 @@ describe('Start und Grundzustand', () => {
   });
 
   it('startet nach einem Kontextverlust neu, auch wenn der Grafikprozess erst einen Moment braucht', () => {   // 20.09.2026: am Handy scheiterte der sofortige Wechsel nach VK_ERROR_DEVICE_LOST
-    cy.get('#badge').should('have.text', 'WebGPU'); cy.waitRender();
+    cy.get('#badge').should('not.be.visible'); cy.waitRender();
     cy.window().then(w => {
       const orig = w.navigator.gpu.requestAdapter.bind(w.navigator.gpu); let verweigert = 0;
       w.navigator.gpu.requestAdapter = (...a) => (verweigert++ < 1 ? Promise.resolve(null) : orig(...a));   // der erste neue Anlauf findet noch keine Grafikkarte
       expect(w.__kontextVerlieren(), 'der Testhaken löst den Verlust aus').to.eq(true);
     });
-    cy.get('#badge', { timeout: 15000 }).should('have.text', 'WebGPU');   // der zweite Anlauf nach der Pause gelingt
+    cy.get('#badge', { timeout: 15000 }).should('not.be.visible');   // der zweite Anlauf nach der Pause gelingt: die Anzeige verschwindet wieder
     cy.get('#fatal').should('have.attr', 'hidden');   // nie „keine GPU“
     cy.waitRender(); cy.gezeichnet().should('eq', true);
   });
@@ -55,7 +55,7 @@ describe('Start und Grundzustand', () => {
     cy.get('#pane-technik').should('have.attr', 'hidden');
     cy.get('#pane-technik .pane-title').should('have.text', 'Technik');
     // Technik trägt nur, was die Rechnung betrifft; die Auflösung steht bei der Glättung unter Qualität
-    cy.get('#pane-technik #renderer, #pane-technik #cycleSel, #pane-technik #blaSel').should('have.length', 3);
+    cy.get('#pane-technik #cycleSel, #pane-technik #blaSel').should('have.length', 2);
     cy.get('#pane-qualitaet #quality').should('exist');
     cy.get('#pane-technik #quality').should('not.exist');
   });

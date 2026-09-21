@@ -3391,7 +3391,7 @@ function zeigeTexte(wurzel = document.body) {
     for (const el of wurzel.querySelectorAll('[data-' + (attr === 'aria-label' ? 'i18n-aria-label' : 'i18n-' + attr) + ']')) el.setAttribute(attr, t(el.dataset[feld]));
 }
 window.__i18n = () => ({ sprache: LANG, fehlende: [...FEHLENDE_TEXTE], eintraege: Object.keys(TEXTE).length });   // für die Tests
-window.__kontextVerlieren = () => { if (renderer && renderer.device) { renderer.device.destroy(); return true; } return false; };   // Testhaken (Cypress): den Verlust des Grafikkontexts auslösen
+window.__kontextVerlieren = () => { if (renderer && renderer.onLost) { renderer.onLost({ message: 'Testhaken' }); return true; } return false; };   // Testhaken (Cypress): den Verlust des Grafikkontexts melden, ohne das Gerät wirklich zu verwerfen (das nähme die Seite mit)
 function festerText(el, schluessel) { el.dataset.i18n = schluessel; el.textContent = t(schluessel); return el; }   // vom Code gebaut, aber nur einmal
 function festesAttribut(el, attr, schluessel) { el.dataset[MARKEN[attr]] = schluessel; el.setAttribute(attr, t(schluessel)); return el; }
 function setLang(l) {   // Sprache wechseln: erst die Texte mit Marke, dann alles, was der Code selbst beschriftet
@@ -8892,7 +8892,7 @@ async function initRenderer() {
   if (neustartTimer) { clearTimeout(neustartTimer); neustartTimer = 0; }   // ein wartender Anlauf verfällt, wenn ohnehin neu gestartet wird
   if (renderer) { renderer.onLost = null; try { renderer.destroy(); } catch (e) { /* egal */ } renderer = null; }   // onLost abhängen: das absichtliche Zerstören darf keinen Neustart auslösen (Endlosschleife beim Renderer-Wechsel)
   W = 0; H = 0; hasImage = false; phase = 'idle'; gpuBusy = false;
-  const badge = $('badge'); badge.textContent = t('technical.starting'); badge.className = 'badge';
+  const badge = $('badge'); badge.hidden = false; badge.textContent = t('technical.starting'); badge.className = 'badge';
   const attempts = [];
   attempts.push(async c => GpuRenderer.create(c));
   const errors = [];
@@ -8906,18 +8906,18 @@ async function initRenderer() {
     if (kontextVerluste > 0 && neustartVersuche < 4) {   // nach einem Kontextverlust braucht der Grafikprozess einen Moment: mit wachsender Pause noch einmal, statt gleich „keine GPU“
       const pause = 800 * 2 ** neustartVersuche++;
       console.warn('Renderer nach Kontextverlust noch nicht verfügbar (' + errors.join(' · ') + '), neuer Anlauf in ' + pause + ' ms');
-      badge.textContent = t('technical.starting'); badge.className = 'badge';
+      badge.hidden = false; badge.textContent = t('technical.starting'); badge.className = 'badge';
       neustartTimer = setTimeout(() => { neustartTimer = 0; initRenderer(); }, pause);
       return;
     }
     $('fatal').hidden = false;
     $('fatalMsg').textContent = t(fatalText());
-    badge.textContent = t('technical.no-gpu'); badge.className = 'badge none';
+    badge.hidden = false; badge.textContent = t('technical.no-gpu'); badge.className = 'badge none';
     $('techInfo').textContent = errors.join(' · ');
     return;
   }
   $('fatal').hidden = true; neustartVersuche = 0;
-  badge.textContent = renderer.name; badge.className = 'badge ' + renderer.kind;
+  badge.hidden = true; badge.textContent = ''; badge.className = 'badge ' + renderer.kind;   // läuft alles, braucht es keinen Namen: es gibt nur einen Renderer
   renderer.onBereit = () => { lastStatusKey = ''; colorDirty = true; ebenenMaskenVeraltet(); requestFrame(); };   // WebGL 2: die Fassung des Farbpasses mit Nachbearbeitung ist übersetzt – umfärben
   renderer.onNachFehler = text => notify('status.post-error', text);   // die Fassung ließ sich nicht übersetzen: sagen, statt still ohne Ebenen zu zeichnen
   applyPalette();

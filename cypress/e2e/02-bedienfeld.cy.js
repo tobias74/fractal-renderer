@@ -12,7 +12,7 @@ describe('Bedienfeld: Schublade und Bereichsleiste am PC', () => {
       expect(r.width, 'Breite').to.be.closeTo(356, 1);
     });
     cy.get('.panel-head .wordmark').should('have.text', 'Motiv');   // die Kopfzeile nennt den offenen Bereich
-    cy.get('#badge').should('be.visible');
+    cy.get('#badge').should('exist');   // im Normalfall verborgen, nur „startet“ und „keine GPU“ zeigen sich
     cy.get('#toggle').should('not.be.visible');
     cy.get('#rail').should('be.visible').then($r => {
       const r = $r[0].getBoundingClientRect();
