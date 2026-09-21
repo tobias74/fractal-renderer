@@ -1365,6 +1365,7 @@
             <option value="4" data-i18n="colour.pair-target-saturation"></option>
             <option value="5" data-i18n="colour.pair-target-hue"></option>
             <option value="6" data-i18n="colour.pair-target-glow"></option>
+            <option value="7" data-i18n="colour.pair-target-layer"></option>
             <option value="8" data-i18n="colour.pair-target-relief"></option>
             <option value="3" data-i18n="colour.pair-target-palette"></option>
             <option value="0" data-i18n="colour.pair-target-axis-a"></option>
@@ -1468,6 +1469,7 @@
             <option value="4" data-i18n="colour.pair-target-saturation"></option>
             <option value="5" data-i18n="colour.pair-target-hue"></option>
             <option value="6" data-i18n="colour.pair-target-glow"></option>
+            <option value="7" data-i18n="colour.pair-target-layer"></option>
             <option value="8" data-i18n="colour.pair-target-relief"></option>
             <option value="3" data-i18n="colour.pair-target-palette"></option>
             <option value="0" data-i18n="colour.pair-target-axis-a"></option>
@@ -1571,6 +1573,7 @@
             <option value="4" data-i18n="colour.pair-target-saturation"></option>
             <option value="5" data-i18n="colour.pair-target-hue"></option>
             <option value="6" data-i18n="colour.pair-target-glow"></option>
+            <option value="7" data-i18n="colour.pair-target-layer"></option>
             <option value="8" data-i18n="colour.pair-target-relief"></option>
             <option value="3" data-i18n="colour.pair-target-palette"></option>
             <option value="0" data-i18n="colour.pair-target-axis-a"></option>
@@ -1674,6 +1677,7 @@
             <option value="4" data-i18n="colour.pair-target-saturation"></option>
             <option value="5" data-i18n="colour.pair-target-hue"></option>
             <option value="6" data-i18n="colour.pair-target-glow"></option>
+            <option value="7" data-i18n="colour.pair-target-layer"></option>
             <option value="8" data-i18n="colour.pair-target-relief"></option>
             <option value="3" data-i18n="colour.pair-target-palette"></option>
             <option value="0" data-i18n="colour.pair-target-axis-a"></option>
@@ -2570,6 +2574,7 @@ const TEXTE = {
   'colour.pair-target-hue': { de: 'Farbton', en: 'Hue' },
   'colour.pair-target-glow': { de: 'Glühen', en: 'Glow' },
   'colour.pair-target-relief': { de: 'Relief-Höhe', en: 'Relief height' },
+  'colour.pair-target-layer': { de: 'Deckkraft der Ebene', en: 'Layer opacity' },
   'colour.palette-curve': { de: 'Palettenkurve', en: 'Palette curve' },
   'colour.palette-curve-title': { de: 'Wie die Farben innerhalb eines Palettenumlaufs verteilt sind: 1 gleichmäßig, kleiner als 1 drängt sie an den Anfang des Umlaufs, größer als 1 an sein Ende. Die Umlaufgrenze bleibt unberührt, es entstehen also keine Sprünge.', en: 'How the colours are spread within one turn of the palette: 1 is even, below 1 crowds them at the start of the turn, above 1 at its end. The turn boundary is untouched, so no jumps appear.' },
   'colour.palette-curve-centre': { de: 'Schwerpunkt der Kurve', en: 'Centre of the curve' },
@@ -4114,9 +4119,10 @@ function nachLesen(text) {   // aus dem Link; Unbekanntes wird ausgelassen
   return aus;
 }
 const TEXTUR_LEER = { art: 0, staerke: TEXTUR.staerke.def, kontrast: TEXTUR.kontrast.def, mitte: TEXTUR.mitte.def, hell: '#ffffff', dunkel: '#000000', an: true, ziel: TEX_ZIEL_VOR, wo: TEX_WO_VOR, maske: null, wahl: 0, fallen: 0, stich: STICH.def };   // maske: siehe MASKE_TEX_ARTEN; wahl: Wertwahl der Rosette; fallen, stich: Auswertung der Falle
+const mischWirkt = () => Array.isArray(ebenen) && ebenen.length > 1;   // Deckkraft der Ebene: erst mit einer Ebene darunter gibt es etwas zu mischen
 const reliefWirkt = () => S.mapping === 6 || S.mapping === 12;   // Relief-Höhe: nur die beiden beleuchteten Färbungen haben ein Höhenfeld
 const glowWirkt = () => S.glowMode !== 0 && !lyapModus() && !(winkelModus() & 1) && !statIrgend() && !paarKonfig();   // Kantenlinien: dieselbe Bedingung, mit der colorParams den Glühmodus setzt
-const texZielWirkt = z => { const v = z === undefined ? TEX_ZIEL_VOR : z; const paar = !!paarKonfig(); if ((v === 0 || v === 1) && !paar) return TEX_ZIEL_VOR; if (v === 3 && paar) return TEX_ZIEL_VOR; if (v === 6 && !glowWirkt()) return TEX_ZIEL_VOR; if (v === 7) return TEX_ZIEL_VOR; if (v === 8 && !reliefWirkt()) return TEX_ZIEL_VOR; return v; };   // 7 war die Deckkraft der Ebene: nicht umsetzbar, der Wert fällt auf die Helligkeit   // Achsen nur bei „Werte kombinieren“, die eine Palettenposition nur sonst, das Glühen nur mit Kantenlinien
+const texZielWirkt = z => { const v = z === undefined ? TEX_ZIEL_VOR : z; const paar = !!paarKonfig(); if ((v === 0 || v === 1) && !paar) return TEX_ZIEL_VOR; if (v === 3 && paar) return TEX_ZIEL_VOR; if (v === 6 && !glowWirkt()) return TEX_ZIEL_VOR; if (v === 7 && !mischWirkt()) return TEX_ZIEL_VOR; if (v === 8 && !reliefWirkt()) return TEX_ZIEL_VOR; return v; };   // 7 war die Deckkraft der Ebene: nicht umsetzbar, der Wert fällt auf die Helligkeit   // Achsen nur bei „Werte kombinieren“, die eine Palettenposition nur sonst, das Glühen nur mit Kantenlinien
 function texKeys(n) { const p = n === 1 ? 'tex' : 'tex' + n; return { art: n === 1 ? 'textur' : 'textur' + n, staerke: p + 'Staerke', kontrast: p + 'Kontrast', mitte: p + 'Mitte', hell: p + 'Hell', dunkel: p + 'Dunkel', an: p + 'An', werte: p + 'Werte', ziel: p + 'Ziel', wo: p + 'Wo', maske: p + 'Maske', eigen: p + 'Eigen', wahl: p + 'Wahl', fallen: p + 'Fallen', stich: p + 'Stich' }; }
 function texSlot(n) { const k = texKeys(n); return { art: S[k.art], staerke: S[k.staerke], kontrast: S[k.kontrast], mitte: S[k.mitte], hell: S[k.hell], dunkel: S[k.dunkel], an: S[k.an] !== false, werte: S[k.werte] || texWerteVorgabe(S[k.art]), ziel: S[k.ziel] === undefined ? TEX_ZIEL_VOR : S[k.ziel], wo: S[k.wo] === undefined ? TEX_WO_VOR : S[k.wo], maske: S[k.maske] || maskeNeu(0), eigen: S[k.eigen] || null, wahl: S[k.wahl] || 0, fallen: S[k.fallen] || 0, stich: S[k.stich] || STICH.def }; }
 function texSlotSetzen(n, t) { const k = texKeys(n); S[k.art] = t.art; S[k.staerke] = t.staerke; S[k.kontrast] = t.kontrast; S[k.mitte] = t.mitte; S[k.hell] = t.hell; S[k.dunkel] = t.dunkel; S[k.an] = t.an !== false; S[k.ziel] = t.ziel === undefined ? TEX_ZIEL_VOR : t.ziel; S[k.wo] = t.wo === undefined ? TEX_WO_VOR : t.wo; S[k.werte] = (t.werte || texWerteVorgabe(t.art)).slice(); S[k.maske] = t.maske ? Object.assign({}, t.maske, { p: t.maske.p.slice() }) : maskeNeu(0); S[k.eigen] = t.eigen ? Object.assign({}, t.eigen) : null; S[k.wahl] = t.wahl || 0; S[k.fallen] = t.fallen || 0; S[k.stich] = t.stich || STICH.def; }
@@ -5923,6 +5929,7 @@ fn texturWert(px: vec4u) -> f32 {   // der Texturwert 0 … 1 je Art: Mittel und
 }
 struct TexMaskeWerte { nu: f32, kw: f32, v: vec4f, m: vec4f }
 var<private> gT: TexMaskeWerte;   // je Probe: glatte Fluchtzeit, Steilheit (Kanten), die Werte der vier Plätze, ihre Masken
+var<private> gTd: f32 = 0.0;   // Ziel Deckkraft der Ebene: die Summe der Plätze, einmal je Probe; das dritte Ziel trägt sie zum Ebenenpass
 var<private> gKw: f32 = 0.0;   // Kantensteilheit des eigenen Punktes, einmal je Probe; das Höhenfeld nimmt sie auch für die Nachbarn
 var<private> gTw: vec4f = vec4f(0.0);   // die Werte der vier Plätze am eigenen Punkt, einmal je Probe entpackt
 fn gTWert(sl: u32) -> f32 { return select(select(gT.v.x, gT.v.y, sl == 1u), select(gT.v.z, gT.v.w, sl == 3u), sl >= 2u); }   // ohne dynamischen Index (der Übersetzer würde sonst langsam)
@@ -5984,7 +5991,7 @@ fn paarAchse(wert: u32, roh: f32, nu: f32, faktor: f32, abzug: u32, flags: u32) 
 }
 fn fallenArt(kind: u32) -> bool { return (kind == 4u) | (kind == 5u) | (kind == 14u) | (kind == 15u) | (kind == 19u) | (kind == 20u) | (kind == 23u); }   // Fallen-Texturarten: Kreuz, Ursprung, Gitter, Ring, Punkt, Spirale, Rosette; ohne Abkürzung, siehe Kopf
 fn verbundStill(i: u32) -> bool { return (C.opt.y > 0.0) & fallenArt(u32(C.stapel[3u * i].x)) & (i + 1u != u32(C.opt.z)); }   // Fallenverbund: nur der erste Fallenplatz trägt das verbundene Minimum
-fn texZiel(i: u32) -> u32 { return u32(C.stapel[3u * i + 1u].w); }   // Ziel des Platzes: 0 erste Achse, 1 zweite Achse, 2 Helligkeit (Vorgabe), 3 Palettenposition, 4 Sättigung, 5 Farbton, 6 Glühen, 8 Relief-Höhe (7 entfiel)
+fn texZiel(i: u32) -> u32 { return u32(C.stapel[3u * i + 1u].w); }   // Ziel des Platzes: 0 erste Achse, 1 zweite Achse, 2 Helligkeit (Vorgabe), 3 Palettenposition, 4 Sättigung, 5 Farbton, 6 Glühen, 7 Deckkraft der Ebene, 8 Relief-Höhe
 fn texAchsen(t: vec4f) -> vec2f {   // Summe der Plätze, die auf eine Achse der Palette wirken (Wert · Stärke)
   var a = vec2f(0.0);
   for (var i = 0u; i < 4u; i = i + 1u) {
@@ -6037,7 +6044,7 @@ fn texWerte(a: u32, b: u32, kw: f32) -> vec4f {   // die Werte der vier Plätze 
   return vec4f(texStapelWert(0u, v.x, kw), texStapelWert(1u, v.y, kw), texStapelWert(2u, w.x, kw), texStapelWert(3u, w.y, kw));
 }
 fn texturAnwenden(col: vec3f, t: vec4f, innen: bool) -> vec3f {   // die Werte der bis zu vier Plätze von oben nach unten auf die Farbe; „Maske zeigen“ hält den Stapel an diesem Platz an
-  texMaskeWerte(t); texMaskenAlle(col);   // alle Werte und alle Masken einmal je Probe
+  texMaskeWerte(t); texMaskenAlle(col); gTd = texSumme(t, innen, 7u);   // alle Werte, alle Masken und die Deckkraft der Ebene einmal je Probe
   let c0 = texturN(col, 0u, t.x, innen); let z0 = texMaskeZeigt(0u);
   let c1 = select(texturN(c0, 1u, t.y, innen), c0, z0); let z1 = z0 | texMaskeZeigt(1u);
   let c2 = select(select(texturN(c1, 2u, t.z, innen), c1, z1), c1, C.tex2.z <= 2.5); let z2 = z1 | texMaskeZeigt(2u);
@@ -6481,9 +6488,9 @@ const WGSL_POST_MAIN = /* wgsl */`
 const WGSL_COLOR_OHNE = wgslOhneTexMaske(WGSL_COLOR);
 // Die volle Fassung: mit Texturmasken und zwei Zielen – Farbe und die Texturwerte des Pixels (für Ebenenmasken nach Texturwert); sie speist die Nachbearbeitung
 const WGSL_COLOR_VOLL = WGSL_COLOR
-  .replace('@fragment fn fs(@builtin(position) pos: vec4f) -> @location(0) vec4f {', 'struct FarbeAus { @location(0) col: vec4f, @location(1) tw: vec4f }\n@fragment fn fs(@builtin(position) pos: vec4f) -> FarbeAus {')
-  .replace('return vec4f(0.043, 0.051, 0.071, 1.0); }', 'return FarbeAus(vec4f(0.043, 0.051, 0.071, 1.0), vec4f(0.0)); }')
-  .replace('return vec4f(farbeRoh(xy, dims), 1.0);', 'let c = farbeRoh(xy, dims); return FarbeAus(vec4f(c, 1.0), gT.v);');
+  .replace('@fragment fn fs(@builtin(position) pos: vec4f) -> @location(0) vec4f {', 'struct FarbeAus { @location(0) col: vec4f, @location(1) tw: vec4f, @location(2) td: f32 }\n@fragment fn fs(@builtin(position) pos: vec4f) -> FarbeAus {')
+  .replace('return vec4f(0.043, 0.051, 0.071, 1.0); }', 'return FarbeAus(vec4f(0.043, 0.051, 0.071, 1.0), vec4f(0.0), 0.0); }')
+  .replace('return vec4f(farbeRoh(xy, dims), 1.0);', 'let c = farbeRoh(xy, dims); return FarbeAus(vec4f(c, 1.0), gT.v, gTd);');
 // Die Nachbearbeitung als eigener Durchlauf: liest das Zwischenbild (roh) und die Texturwerte (rohTW), die Iterationstextur nur für die Masken.
 // Eigenes, kleines Programm: so bleibt das Übersetzen kurz (die Färbung steckt nicht mehr in derselben Schleife).
 const WGSL_POST = WGSL_COLOR_LIB.match(/^struct CP \{.*$/m)[0] + /* wgsl */`
@@ -6493,6 +6500,7 @@ const WGSL_POST = WGSL_COLOR_LIB.match(/^struct CP \{.*$/m)[0] + /* wgsl */`
 @group(0) @binding(3) var rohTW: texture_2d<f32>;    // die Texturwerte je Pixel (vier Plätze)
 @group(0) @binding(4) var nachLut: texture_2d<f32>;  // Gradationskurven: je Ebene eine Zeile, 256 Einträge (x Gesamt, y R, z G, w B)
 @group(0) @binding(5) var leucht: texture_2d<f32>;   // Leuchten: das kleine, weichgezeichnete Bild der hellen Anteile (ein Viertel der Größe)
+@group(0) @binding(6) var rohTD: texture_2d<f32>;    // die Summe der Plätze mit Ziel „Deckkraft der Ebene“ je Pixel
 @vertex fn vs(@builtin(vertex_index) i: u32) -> @builtin(position) vec4f { var p = array<vec2f, 3>(vec2f(-1.0, -1.0), vec2f(3.0, -1.0), vec2f(-1.0, 3.0)); return vec4f(p[i], 0.0, 1.0); }
 fn gTWert(sl: u32) -> f32 { return select(select(gM.tw.x, gM.tw.y, sl == 1u), select(gM.tw.z, gM.tw.w, sl == 3u), sl >= 2u); }
 ` + WGSL_POST_ABSCHNITT + /* wgsl */`
@@ -6513,7 +6521,8 @@ const WGSL_EBENE = WGSL_POST.slice(0, WGSL_POST.indexOf('@fragment fn fs(')) + /
   let c = farbeRoh(xyS, rdims);
   var m = 1.0;
   if (C.maske[24].w > 0.5) { maskeLaden(xyS, dims, rdims); m = nMaske(7u, xyS - vec2i(C.shift.xy), c, 0.0); }
-  return vec4f(c, m);
+  let d = textureLoad(rohTD, clamp(xyS, vec2i(0), rdims - vec2i(1)), 0).x;   // Plätze mit Ziel Deckkraft verschieben sie; ohne solchen Platz ist der Wert null
+  return vec4f(c, clamp(m + d, 0.0, 1.0));
 }`;
 // Der Verbund: die gesicherten Farben der Ebenen von unten nach oben, je mit Mischmodus, Deckkraft (× Maske) und der Abbildung
 // ihrer Ansicht in die jetzige (a·x + b, wie die Zoom-Vorschau). Die Mischmodi rechnen im sRGB der fertigen Farben wie in der
@@ -7996,6 +8005,7 @@ vec3 pal(float tRoh) {
   }
   return clamp(uA + uB * cos(6.2831853 * fract(uC * t + uD)), 0.0, 1.0);
 }
+float gTd = 0.0;   // wie im WGSL-Shader: die Summe der Plätze mit Ziel Deckkraft der Ebene
 float gKw = 0.0;   // wie im WGSL-Shader
 vec4 gTw = vec4(0.0);   // wie im WGSL-Shader
 // Bausteine der Texturplätze, die das Höhenfeld unten braucht: sie stehen hier, statt vorab deklariert zu werden
@@ -8213,7 +8223,7 @@ vec2 texAchsen(vec4 t) {   // wie im WGSL-Shader
   return a;
 }
 vec3 texturAnwenden(vec3 col, vec4 t, bool innen) {   // wie im WGSL-Shader
-  texMaskeWerte(t); texMaskenAlle(col);
+  texMaskeWerte(t); texMaskenAlle(col); gTd = texSumme(t, innen, 7u);   // wie im WGSL-Shader
   vec3 c0 = texturN(col, 0, t.x, innen); bool z0 = texMaskeZeigt(0);
   vec3 c1 = mix(texturN(c0, 1, t.y, innen), c0, float(z0)); bool z1 = z0 || texMaskeZeigt(1);
   vec3 c2 = mix(mix(texturN(c1, 2, t.z, innen), c1, float(z1)), c1, float(uTex2.z <= 2.5)); bool z2 = z1 || texMaskeZeigt(2);
@@ -8380,9 +8390,10 @@ vec3 sampleColor(uvec4 px, ivec2 xy, int k) {   // Farbe einer Probe; k = Ebene,
 
 const GLSL_COLOR = GLSL_COLOR_LIB + `
 layout(location = 0) out vec4 outColor;
-#define MRT 0   // 1: zweites Ziel mit den Texturwerten des Pixels (Fassung „voll“, die die Nachbearbeitung speist)
+#define MRT 0   // 1: zweites und drittes Ziel (Texturwerte, Deckkraft der Ebene) — die Fassung „voll“, die die Nachbearbeitung speist
 #if MRT
 layout(location = 1) out vec4 outTW;
+layout(location = 2) out float outTD;
 #endif
 vec3 farbeRoh(ivec2 xy0, ivec2 dims) {   // wie im WGSL-Shader: die Farbe vor der Nachbearbeitung; eine einzige Aufrufstelle von sampleColor
   ivec2 xy = clamp(xy0, ivec2(0), dims - 1);
@@ -8398,11 +8409,16 @@ vec3 farbeRoh(ivec2 xy0, ivec2 dims) {   // wie im WGSL-Shader: die Farbe vor de
 void main() {
   ivec2 xy = ivec2(gl_FragCoord.xy) - ivec2(uShift);
   ivec2 dims = textureSize(uIter, 0).xy;
-  if (xy.x < 0 || xy.y < 0 || xy.x >= dims.x || xy.y >= dims.y) { outColor = vec4(0.043, 0.051, 0.071, 1.0); return; }
+  if (xy.x < 0 || xy.y < 0 || xy.x >= dims.x || xy.y >= dims.y) { outColor = vec4(0.043, 0.051, 0.071, 1.0);
+#if MRT
+    outTW = vec4(0.0); outTD = 0.0;
+#endif
+    return; }
   gItlogDen = itlog(50.0, itlogK()); gItlogDen2 = itlog(50.0, itlogK() + 1); gBoxDen = pow(51.0, uComp) - 1.0; gAnchorV = anchorV();
   outColor = vec4(farbeRoh(xy, dims), 1.0);
 #if MRT
   outTW = gTv;
+  outTD = gTd;
 #endif
 }`;
 
@@ -8425,7 +8441,7 @@ void main() {
 }`;
 const GLSL_POST = `#version 300 es
 precision highp float; precision highp int; precision highp usampler2DArray; precision highp sampler2D;
-uniform usampler2DArray uIter; uniform sampler2D uRoh; uniform sampler2D uRohTW; uniform sampler2D uLeucht; uniform vec2 uShift; uniform float uPsC; uniform vec4 uTex2; uniform vec4 uOpt;   // opt.w: Leuchten-Ebene (1-basiert)
+uniform usampler2DArray uIter; uniform sampler2D uRoh; uniform sampler2D uRohTW; uniform sampler2D uRohTD;   // uRohTD: die Summe der Plätze mit Ziel „Deckkraft der Ebene“ uniform sampler2D uLeucht; uniform vec2 uShift; uniform float uPsC; uniform vec4 uTex2; uniform vec4 uOpt;   // opt.w: Leuchten-Ebene (1-basiert)
 out vec4 outColor;
 uniform vec4 uNach[32]; uniform vec4 uNachInfo; uniform vec4 uNachBild; uniform sampler2D uNachLut; uniform vec4 uMaske[25];   // Nachbearbeitung wie im WGSL-Shader
 float nLum(vec3 c) { return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
@@ -8613,7 +8629,8 @@ const GLSL_EBENE = GLSL_POST.slice(0, GLSL_POST.indexOf('void main() {')) + `voi
   vec3 c = farbeRoh(xyS, rdims);
   float m = 1.0;
   if (uMaske[24].w > 0.5) { maskeLaden(xyS, dims, rdims); m = nMaske(7, xyS - ivec2(uShift), c, 0.0); }
-  outColor = vec4(c, m);
+  float dk = texelFetch(uRohTD, clamp(xyS, ivec2(0), rdims - 1), 0).r;   // wie im WGSL-Shader
+  outColor = vec4(c, clamp(m + dk, 0.0, 1.0));
 }`;
 const GLSL_VERBUND = `#version 300 es
 precision highp float; precision highp int; precision highp sampler2D;
@@ -8807,7 +8824,8 @@ class GpuRenderer {
       { binding: 2, visibility: F, texture: { sampleType: 'float', viewDimension: '2d' } },
       { binding: 3, visibility: F, texture: { sampleType: 'float', viewDimension: '2d' } },
       { binding: 4, visibility: F, texture: { sampleType: 'unfilterable-float', viewDimension: '2d' } },
-      { binding: 5, visibility: F, texture: { sampleType: 'float', viewDimension: '2d' } } ] });
+      { binding: 5, visibility: F, texture: { sampleType: 'float', viewDimension: '2d' } },
+      { binding: 6, visibility: F, texture: { sampleType: 'unfilterable-float', viewDimension: '2d' } } ] });   // Deckkraft der Ebene (r16float: nicht filterbar)
     this.bglL = d.createBindGroupLayout({ entries: [ { binding: 0, visibility: F, texture: { sampleType: 'float', viewDimension: '2d' } }, { binding: 1, visibility: F, buffer: { type: 'uniform' } } ] });   // Leuchten: Quelle und Schrittwerte
     this.ubL = [0, 1, 2].map(() => d.createBuffer({ size: 16, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST })); this.pipeL = null;
     this.postScreen = null; this.postEx = null;   // Zwischenbilder (Bildschirm, Exportkachel), siehe _postRes
@@ -9017,7 +9035,7 @@ class GpuRenderer {
     } else {
       const res = this._postRes(ex, vw || this.W, vh || this.H);
       const p1 = enc.beginRenderPass({ colorAttachments: [
-        { view: res.rohView, loadOp: 'clear', storeOp: 'store', clearValue: { r: 0, g: 0, b: 0, a: 1 } }, { view: res.twView, loadOp: 'clear', storeOp: 'store', clearValue: { r: 0, g: 0, b: 0, a: 1 } } ] });
+        { view: res.rohView, loadOp: 'clear', storeOp: 'store', clearValue: { r: 0, g: 0, b: 0, a: 1 } }, { view: res.twView, loadOp: 'clear', storeOp: 'store', clearValue: { r: 0, g: 0, b: 0, a: 1 } }, { view: res.tdView, loadOp: 'clear', storeOp: 'store', clearValue: { r: 0, g: 0, b: 0, a: 0 } } ] });
       p1.setPipeline(tm ? this.pipeV1 : this.pipeV0); p1.setBindGroup(0, bg); bereich(p1); p1.draw(3); p1.end();
       const p2 = enc.beginRenderPass({ colorAttachments: [{ view, loadOp: 'clear', storeOp: 'store', clearValue: { r: 0, g: 0, b: 0, a: 1 } }] });
       p2.setPipeline(this.pipeM); p2.setBindGroup(0, res.bg); bereich(p2); p2.draw(3); p2.end();
@@ -9150,11 +9168,12 @@ class GpuRenderer {
     if (alt) this._postResFrei(alt);
     const usage = GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING;
     const roh = d.createTexture({ size: [w, h], format: this.format, usage }), tw = d.createTexture({ size: [w, h], format: 'rgba8unorm', usage });
+    const td = d.createTexture({ size: [w, h], format: 'r16float', usage });   // Deckkraft der Ebene: eine Zahl mit Vorzeichen je Pixel
     const lw = Math.max(1, Math.ceil(w / 4)), lh = Math.max(1, Math.ceil(h / 4));   // Leuchten: ein Viertel der Größe, zwei Bilder im Wechsel
     const la = d.createTexture({ size: [lw, lh], format: 'rgba16float', usage }), lb = d.createTexture({ size: [lw, lh], format: 'rgba16float', usage });
-    const res = { w, h, lw, lh, iterView, roh, tw, la, lb, rohView: roh.createView(), twView: tw.createView(), laView: la.createView(), lbView: lb.createView() };
+    const res = { w, h, lw, lh, iterView, roh, tw, td, la, lb, rohView: roh.createView(), twView: tw.createView(), tdView: td.createView(), laView: la.createView(), lbView: lb.createView() };
     res.bg = d.createBindGroup({ layout: this.bglP, entries: [
-      { binding: 0, resource: iterView }, { binding: 1, resource: { buffer: this.ubC } }, { binding: 2, resource: res.rohView }, { binding: 3, resource: res.twView }, { binding: 4, resource: this.nachLutView }, { binding: 5, resource: res.laView } ] });
+      { binding: 0, resource: iterView }, { binding: 1, resource: { buffer: this.ubC } }, { binding: 2, resource: res.rohView }, { binding: 3, resource: res.twView }, { binding: 4, resource: this.nachLutView }, { binding: 5, resource: res.laView }, { binding: 6, resource: res.tdView } ] });
     res.bgL = [res.rohView, res.laView, res.lbView].map((v, k) => d.createBindGroup({ layout: this.bglL, entries: [{ binding: 0, resource: v }, { binding: 1, resource: { buffer: this.ubL[k] } }] }));   // Auszug aus roh → la, waagerecht la → lb, senkrecht lb → la
     if (ex) this.postEx = res; else this.postScreen = res;
     return res;
@@ -9170,7 +9189,7 @@ class GpuRenderer {
     } else {   // zwei Durchläufe: Färbung ins Zwischenbild (Farbe und Texturwerte), dann die Nachbearbeitung auf das Ziel
       const ex = !!bg && bg === this.exBgC, res = this._postRes(ex, vw || this.W, vh || this.H);   // ohne Bindgruppe: der Bildschirm (exBgC ist anfangs undefined)
       const p1 = enc.beginRenderPass({ colorAttachments: [
-        { view: res.rohView, loadOp: 'clear', storeOp: 'store', clearValue: { r: 0, g: 0, b: 0, a: 1 } }, { view: res.twView, loadOp: 'clear', storeOp: 'store', clearValue: { r: 0, g: 0, b: 0, a: 0 } } ] });
+        { view: res.rohView, loadOp: 'clear', storeOp: 'store', clearValue: { r: 0, g: 0, b: 0, a: 1 } }, { view: res.twView, loadOp: 'clear', storeOp: 'store', clearValue: { r: 0, g: 0, b: 0, a: 0 } }, { view: res.tdView, loadOp: 'clear', storeOp: 'store', clearValue: { r: 0, g: 0, b: 0, a: 0 } } ] });
       p1.setPipeline(tm ? this.pipeV1 : this.pipeV0); p1.setBindGroup(0, bg || this.bgC); bereich(p1); p1.draw(3); p1.end();
       if (cp.leucht && this.pipeL) {   // Leuchten: drei kleine Durchläufe (Auszug, waagerecht, senkrecht) auf ein Viertel der Größe
         const ziele = [res.laView, res.lbView, res.laView];
@@ -9247,7 +9266,7 @@ class GpuRenderer {
         if (window.__uebersetzenFehler) throw new Error('Testhaken: Übersetzen schlägt fehl');   // Testhaken (Cypress): der Fehlerpfad
         const mV = await mk(tm ? WGSL_COLOR_VOLL : wgslOhneTexMaske(WGSL_COLOR_VOLL));
         const pV = await d.createRenderPipelineAsync({ layout: d.createPipelineLayout({ bindGroupLayouts: [this.bglC] }), vertex: { module: mV, entryPoint: 'vs' },
-          fragment: { module: mV, entryPoint: 'fs', targets: [{ format: this.format }, { format: 'rgba8unorm' }] }, primitive: prim });
+          fragment: { module: mV, entryPoint: 'fs', targets: [{ format: this.format }, { format: 'rgba8unorm' }, { format: 'r16float' }] }, primitive: prim });
         this.nachSchritt = 1;
         if (!this.pipeL) {
           const mL = await mk(WGSL_LEUCHT);
@@ -9645,7 +9664,7 @@ class GlRenderer {
   }
   _colorUniforms(prog) {
     const u = {};
-    for (const n of ['uIter', 'uCdf', 'uA', 'uB', 'uC', 'uD', 'uMisc', 'uAA', 'uMapping', 'uGlowMode', 'uGlowWidth', 'uInterior', 'uHistL', 'uMisc3', 'uPal', 'uShift', 'uPsC', 'uAnchor', 'uComp', 'uStatAnker', 'uAbzug', 'uTex', 'uInnen', 'uTex2', 'uOpt', 'uOpt2', 'uTex3', 'uStapel', 'uPaar', 'uPaar2', 'uStapelW', 'uNach', 'uNachInfo', 'uNachBild', 'uNachLut', 'uMaske', 'uTexMaske', 'uRoh', 'uRohTW', 'uLeucht', 'uAccSum', 'uAccCnt', 'uJit', 'uAP', 'uAQ', 'uPalPre', 'uPalFilter', 'uZ2', 'uLeer', 'uQ', 'uPal2', 'uMat', 'uMat2', 'uPalK']) u[n] = this.gl.getUniformLocation(prog, n);
+    for (const n of ['uIter', 'uCdf', 'uA', 'uB', 'uC', 'uD', 'uMisc', 'uAA', 'uMapping', 'uGlowMode', 'uGlowWidth', 'uInterior', 'uHistL', 'uMisc3', 'uPal', 'uShift', 'uPsC', 'uAnchor', 'uComp', 'uStatAnker', 'uAbzug', 'uTex', 'uInnen', 'uTex2', 'uOpt', 'uOpt2', 'uTex3', 'uStapel', 'uPaar', 'uPaar2', 'uStapelW', 'uNach', 'uNachInfo', 'uNachBild', 'uNachLut', 'uMaske', 'uTexMaske', 'uRoh', 'uRohTW', 'uLeucht', 'uAccSum', 'uAccCnt', 'uJit', 'uAP', 'uAQ', 'uPalPre', 'uPalFilter', 'uZ2', 'uLeer', 'uQ', 'uPal2', 'uMat', 'uMat2', 'uPalK', 'uRohTD']) u[n] = this.gl.getUniformLocation(prog, n);
     return u;
   }
   _program(vs, fs) {
@@ -9854,18 +9873,19 @@ class GlRenderer {
   _postRes(ex, w, h) {   // Zwischenbild der Nachbearbeitung mit zwei Zielen (Farbe, Texturwerte), je für Bildschirm und Exportkachel
     const gl = this.gl, alt = ex ? this.postEx : this.postScreen;
     if (alt && alt.w === w && alt.h === h) return alt;
-    if (alt) { gl.deleteTexture(alt.roh); gl.deleteTexture(alt.tw); gl.deleteFramebuffer(alt.fbo); gl.deleteTexture(alt.la); gl.deleteTexture(alt.lb); gl.deleteFramebuffer(alt.lfboA); gl.deleteFramebuffer(alt.lfboB); }
+    if (alt) { gl.deleteTexture(alt.roh); gl.deleteTexture(alt.tw); if (alt.td) gl.deleteTexture(alt.td); gl.deleteFramebuffer(alt.fbo); gl.deleteTexture(alt.la); gl.deleteTexture(alt.lb); gl.deleteFramebuffer(alt.lfboA); gl.deleteFramebuffer(alt.lfboB); }
     const mk = () => { const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t); gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, w, h); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST); return t; };
-    const roh = mk(), tw = mk(), fbo = gl.createFramebuffer();
+    const mkTd = () => { const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t); gl.texStorage2D(gl.TEXTURE_2D, 1, gl.R16F, w, h); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); return t; };   // Deckkraft der Ebene: eine Zahl mit Vorzeichen je Pixel
+    const roh = mk(), tw = mk(), td = mkTd(), fbo = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, roh, 0); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.TEXTURE_2D, tw, 0);
-    gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, roh, 0); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.TEXTURE_2D, tw, 0); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT2, gl.TEXTURE_2D, td, 0);
+    gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1, gl.COLOR_ATTACHMENT2]);
     const lw = Math.max(1, Math.ceil(w / 4)), lh = Math.max(1, Math.ceil(h / 4));   // Leuchten: ein Viertel der Größe, zwei Bilder im Wechsel
     const mkl = () => { const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t); gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, lw, lh); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST); return t; };
     const la = mkl(), lb = mkl(), lfboA = gl.createFramebuffer(), lfboB = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, lfboA); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, la, 0); gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
     gl.bindFramebuffer(gl.FRAMEBUFFER, lfboB); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, lb, 0); gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
-    const res = { w, h, roh, tw, fbo, lw, lh, la, lb, lfboA, lfboB };
+    const res = { w, h, roh, tw, td, fbo, lw, lh, la, lb, lfboA, lfboB };
     if (ex) this.postEx = res; else this.postScreen = res;
     return res;
   }
@@ -9929,6 +9949,7 @@ class GlRenderer {
     gl.useProgram(this.progM.prog); this._setColorUniforms(this.progM.u, cp, srcTex);
     gl.activeTexture(gl.TEXTURE9); gl.bindTexture(gl.TEXTURE_2D, res.roh); gl.uniform1i(this.progM.u.uRoh, 9);
     gl.activeTexture(gl.TEXTURE10); gl.bindTexture(gl.TEXTURE_2D, res.tw); gl.uniform1i(this.progM.u.uRohTW, 10);
+    gl.activeTexture(gl.TEXTURE11); gl.bindTexture(gl.TEXTURE_2D, res.td); gl.uniform1i(this.progM.u.uRohTD, 11);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
   _verbund(fbo, vb, w, h, hole = null) {   // die gesicherten Farben der Ebenen (unten zuerst) übereinander ins Ziel; hole(k): andere Quelle (Export)
@@ -9958,6 +9979,7 @@ class GlRenderer {
     this._setColorUniforms(this.progP.u, post);
     gl.activeTexture(gl.TEXTURE9); gl.bindTexture(gl.TEXTURE_2D, res.roh); gl.uniform1i(this.progP.u.uRoh, 9);
     gl.activeTexture(gl.TEXTURE10); gl.bindTexture(gl.TEXTURE_2D, res.tw); gl.uniform1i(this.progP.u.uRohTW, 10);
+    gl.activeTexture(gl.TEXTURE11); gl.bindTexture(gl.TEXTURE_2D, res.td); gl.uniform1i(this.progP.u.uRohTD, 11);
     gl.activeTexture(gl.TEXTURE11); gl.bindTexture(gl.TEXTURE_2D, res.la); gl.uniform1i(this.progP.u.uLeucht, 11);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
@@ -9987,6 +10009,7 @@ class GlRenderer {
     this._setColorUniforms(this.progP.u, cp, srcTex);   // dieselben Uniforms (Ebenen, Masken, Kurven, Versatz); Unbenutztes bleibt ohne Wirkung
     gl.activeTexture(gl.TEXTURE9); gl.bindTexture(gl.TEXTURE_2D, res.roh); gl.uniform1i(this.progP.u.uRoh, 9);
     gl.activeTexture(gl.TEXTURE10); gl.bindTexture(gl.TEXTURE_2D, res.tw); gl.uniform1i(this.progP.u.uRohTW, 10);
+    gl.activeTexture(gl.TEXTURE11); gl.bindTexture(gl.TEXTURE_2D, res.td); gl.uniform1i(this.progP.u.uRohTD, 11);
     gl.activeTexture(gl.TEXTURE11); gl.bindTexture(gl.TEXTURE_2D, res.la); gl.uniform1i(this.progP.u.uLeucht, 11);   // Leuchten (ohne Ebene bleibt es ungelesen)
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
@@ -10996,8 +11019,8 @@ function texArtenParam() { const g = texturAktiv2() || texturZ() || (texInnenIrg
  return { tex1: g ? texArtAn(1) : 0, tex2: g ? texArtAn(2) : 0, tex3: g ? texArtAn(3) : 0, tex4: g ? texArtAn(4) : 0 }; }   // gepackter Weg: die wirksamen Arten der Plätze (sonst der rohe Wert im y-Kanal)
 function texZielRueckfall() {   // was die Färbung nicht anbietet, fällt auf die Helligkeit zurück — sichtbar, nicht heimlich
   const paar = !!paarKonfig();
-  const glow = glowWirkt(), relief = reliefWirkt();
-  for (let m = 1; m <= TEX_SLOTS; m++) { const k = texKeys(m); const z = S[k.ziel]; if ((paar ? z === 3 : (z === 0 || z === 1)) || (z === 6 && !glow) || z === 7 || (z === 8 && !relief)) S[k.ziel] = TEX_ZIEL_VOR; }   // ohne Achsen fallen die Achsen zurück, mit Achsen die Palettenposition, ohne Kantenlinien das Glühen, ohne zweite Ebene die Deckkraft
+  const glow = glowWirkt(), relief = reliefWirkt(), misch = mischWirkt();
+  for (let m = 1; m <= TEX_SLOTS; m++) { const k = texKeys(m); const z = S[k.ziel]; if ((paar ? z === 3 : (z === 0 || z === 1)) || (z === 6 && !glow) || (z === 7 && !misch) || (z === 8 && !relief)) S[k.ziel] = TEX_ZIEL_VOR; }   // ohne Achsen fallen die Achsen zurück, mit Achsen die Palettenposition, ohne Kantenlinien das Glühen, ohne zweite Ebene die Deckkraft
 }
 function texFarbParam(n) { const t = texSlot(n); if (!t.an || t.art === 0) return TEXTUR_AUS; return { art: t.art, staerke: t.staerke, kontrast: t.kontrast, mitte: t.mitte, hell: farbe01(t.hell), dunkel: farbe01(t.dunkel), ziel: texZielWirkt(t.ziel), wo: t.wo === undefined ? TEX_WO_VOR : t.wo }; }   // ausgeschaltet: wirkt wie keine
 function statIrgend() { return statPipeline() || statPipeline2() || statPipeline3() || statPipeline4() || statPipeline5() || statPipeline6(); }   // rechnet der Shader irgendeine Bahnstatistik? (BLA, Zyklen, Abstand)
@@ -12103,7 +12126,7 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
   }
   const texFarbe = (k, vor) => { const v = h.get(k); return v && /^[0-9a-fA-F]{6}$/.test(v) ? '#' + v.toLowerCase() : vor; };   // Farben der Texturen: hell und dunkel
   S.texHell = texFarbe('tc', '#ffffff'); S.texDunkel = texFarbe('td', '#000000'); S.texAn = h.get('ta') !== '0';
-  function tzl(k) { const v = parseInt(h.get(k), 10); return v >= 0 && v <= 8 ? v : TEX_ZIEL_VOR; }   // Ziel des Platzes: 0 erste Achse, 1 zweite, 2 Helligkeit, 3 Palettenposition, 4 Sättigung, 5 Farbton, 6 Glühen, 8 Relief-Höhe (7 entfiel) (Funktion: die Plätze 2 bis 4 werden früher gelesen)
+  function tzl(k) { const v = parseInt(h.get(k), 10); return v >= 0 && v <= 8 ? v : TEX_ZIEL_VOR; }   // Ziel des Platzes: 0 erste Achse, 1 zweite, 2 Helligkeit, 3 Palettenposition, 4 Sättigung, 5 Farbton, 6 Glühen, 7 Deckkraft der Ebene, 8 Relief-Höhe (Funktion: die Plätze 2 bis 4 werden früher gelesen)
   S.texZiel = tzl('tz');
   for (let n = 2; n <= TEX_SLOTS; n++) S[texKeys(n).an] = h.get('t' + n + 'a') !== '0';   // ausgeschaltete Plätze
   for (let n = 2; n <= TEX_SLOTS; n++) { const k = texKeys(n); S[k.hell] = texFarbe('t' + n + 'c', '#ffffff'); S[k.dunkel] = texFarbe('t' + n + 'd', '#000000'); }
@@ -12646,7 +12669,7 @@ function syncFarbUI() {   // Bereich Farbe: was je nach Familie, Formel und Fär
     const zielW = texZielWirkt(sl.ziel), zr = $('texZielRow' + n), zs = $('texZiel' + n);   // Ziel des Platzes
     if (zr) zr.hidden = !(zeigen && belegt && !zu);
     if (zs) {
-      for (const o of zs.options) { if (o.value === '0' || o.value === '1') o.hidden = !paarKonfig(); if (o.value === '3') o.hidden = !!paarKonfig(); if (o.value === '6') o.hidden = !glowWirkt(); if (o.value === '7') o.hidden = true; if (o.value === '8') o.hidden = !reliefWirkt(); }   // Achsen nur, wenn die Färbung welche liefert; sonst die eine Palettenposition; das Glühen nur mit Kantenlinien, die Deckkraft nur mit einer zweiten Ebene
+      for (const o of zs.options) { if (o.value === '0' || o.value === '1') o.hidden = !paarKonfig(); if (o.value === '3') o.hidden = !!paarKonfig(); if (o.value === '6') o.hidden = !glowWirkt(); if (o.value === '7') o.hidden = !mischWirkt(); if (o.value === '8') o.hidden = !reliefWirkt(); }   // Achsen nur, wenn die Färbung welche liefert; sonst die eine Palettenposition; das Glühen nur mit Kantenlinien, die Deckkraft nur mit einer zweiten Ebene
       zs.value = String(zielW); if (zs._rebuild) zs._rebuild(); if (zs._sync) zs._sync();
     }
     if (zielW !== TEX_ZIEL_VOR) e.reihen[3].hidden = true;   // helle und dunkle Farbe gelten nur für die Helligkeit
