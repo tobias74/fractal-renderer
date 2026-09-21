@@ -2005,6 +2005,7 @@
       <div class="lbl wertzeile"><label for="stapelMs" data-i18n-title="technical.batch-title" data-i18n="technical.batch"></label><input class="val mono wert" id="stapelMsVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
       <input id="stapelMs" type="range" min="8" max="120" step="1" value="40">
       <label class="chk" data-i18n-title="technical.ui-first-title"><input type="checkbox" id="uiVorrang" checked> <span data-i18n="technical.ui-first"></span></label>
+      <label class="chk" data-i18n-title="technical.inertia-title"><input type="checkbox" id="traegheit" checked> <span data-i18n="technical.inertia"></span></label>
       <label class="chk" data-i18n-title="technical.toast-title"><input type="checkbox" id="toastAn" checked> <span data-i18n="technical.toast"></span></label>
       <p class="hint" id="techInfo"></p>
     </section>
@@ -3327,6 +3328,9 @@ const TEXTE = {
   'technical.actions': { de: 'Aktionen', en: 'Actions' },
   'technical.always': { de: 'Immer', en: 'Always' },
   'technical.approximation-bla': { de: 'Näherung (BLA)', en: 'Approximation (BLA)' },
+  'technical.inertia': { de: 'Schwung beim Ziehen', en: 'Momentum when dragging' },
+  'technical.inertia-title': { de: 'Nach dem Loslassen läuft das Bild mit der zuletzt gemessenen Geschwindigkeit aus und wird dabei langsamer. Ein neuer Griff, ein Tastendruck oder das Abschalten hier hält es sofort an.', en: 'After you let go the picture keeps moving at the speed it last had and slows down. A new grip, a key press, or switching this off stops it at once.' },
+  'status.snapshot': { de: 'Schnappschuss wird gesichert …', en: 'Saving snapshot …' },
   'technical.automatic': { de: 'Automatisch', en: 'Automatic' },
   'technical.appearance': { de: 'Erscheinungsbild', en: 'Appearance' },
   'technical.appearance-title': { de: 'Farben der Oberfläche: dunkel wie bisher, reines Schwarz, hell, oder wie es dein System gerade einstellt. Liegt nur in diesem Browser (mit deiner Einwilligung zu Einstellungen) und nie im Link.', en: 'Colours of the interface: dark as before, pure black, light, or whatever your system is set to. Kept only in this browser (with your consent to settings) and never in the link.' },
@@ -10301,7 +10305,7 @@ const S = {
     // Familie escape oder accum (Punktwolken, accKind = Index in CLOUDS)
   cloudPrm: [0, 0, 0, 0],
   quality: 1, rendererPref: 'auto',
-  theme: 'dunkel', stapelMs: STAPEL_MS.def, uiVorrang: true, aa: DEFAULT_AA, aaMode: 'grid', aaTol: AA_TOL.def, aaMax: 64, aaSigma: AA_SIGMA.def,   // Glättung: Raster-Stufe, Verfahren (grid | adaptive | fast), Regler der adaptiven Verfahren
+  theme: 'dunkel', stapelMs: STAPEL_MS.def, uiVorrang: true, traegheit: true, aa: DEFAULT_AA, aaMode: 'grid', aaTol: AA_TOL.def, aaMax: 64, aaSigma: AA_SIGMA.def,   // Glättung: Raster-Stufe, Verfahren (grid | adaptive | fast), Regler der adaptiven Verfahren
   palFilter: false, palFilterK: PALK.def,                  // Palette über den Bereich mitteln, den sie innerhalb eines Pixels durchläuft; Faktor auf die Breite
 };
 const views = { mandel: null, julia: null };
@@ -10348,6 +10352,7 @@ try {   // gespeicherte App-Einstellungen nur lesen, wenn die Einwilligung dafü
     const q = localStorage.getItem('fractal.quality'); if (q) S.quality = parseFloat(q) || 1;
     const sm = localStorage.getItem('fractal.stapelms'); if (sm) S.stapelMs = Math.min(STAPEL_MS.max, Math.max(STAPEL_MS.min, parseInt(sm, 10) || STAPEL_MS.def));   // ohne clamp: das steht erst weiter unten
     const uv = localStorage.getItem('fractal.uivorrang'); if (uv) S.uiVorrang = uv !== '0';
+    const tr = localStorage.getItem('fractal.traegheit'); if (tr) S.traegheit = tr !== '0';
     const to = localStorage.getItem('fractal.toast'); if (to) toastAn = to !== '0';
     const th = localStorage.getItem('fractal.theme'); if (THEMES.includes(th)) S.theme = th;
     const a = localStorage.getItem('fractal.aa'); if (a) S.aa = aaSnap(parseInt(a, 10) || DEFAULT_AA);
@@ -11580,9 +11585,31 @@ async function initRenderer() {
 // ============================================================
 //  Eingabe
 // ============================================================
+let schwungRaf = 0;   // Trägheit: die laufende Ausrollbewegung (0 = keine)
+function schwungStoppen() { if (schwungRaf) { cancelAnimationFrame(schwungRaf); schwungRaf = 0; } }
+function schwungStarten(vx, vy) {   // vx, vy in Bildpunkten je Millisekunde; das Bild rollt aus und klingt exponentiell ab
+  schwungStoppen();
+  if (!S.traegheit || zeigerAktiv) return;
+  const MIN = 0.02;                                  // darunter lohnt sich keine Bewegung mehr (Bildpunkte je Millisekunde)
+  if (Math.hypot(vx, vy) < 5 * MIN) return;
+  let x = vx, y = vy, vorher = performance.now();
+  const schritt = () => {
+    schwungRaf = 0;
+    const jetzt = performance.now(), dt = Math.min(64, jetzt - vorher); vorher = jetzt;
+    if (zeigerAktiv) return;                         // ein neuer Zeiger übernimmt
+    const daempfung = Math.exp(-dt / 220);           // Zeitkonstante: nach gut einer Fünftelsekunde ist ein Drittel weg
+    x *= daempfung; y *= daempfung;
+    pan(x * dt, y * dt);
+    if (Math.hypot(x, y) < MIN) { commitPan(); requestFrame(); return; }
+    interactUntil = Math.max(interactUntil, jetzt + 150);   // während des Auslaufens bleiben die anderen Ebenen ruhig
+    schwungRaf = requestAnimationFrame(schritt);
+  };
+  schwungRaf = requestAnimationFrame(schritt);
+}
 function attachCanvasEvents(c) {
   const ptrs = new Map();
   let pinch = null, lastTap = { t: 0, x: 0, y: 0 };
+  let letzte = { x: 0, y: 0, t: 0, vx: 0, vy: 0 };   // letzte Bewegung eines einzelnen Zeigers, für die Trägheit
   const toCanvas = e => { const r = c.getBoundingClientRect(); return [(e.clientX - r.left) * W / r.width, (e.clientY - r.top) * H / r.height]; };
   const pinchState = () => {
     const [a, b] = [...ptrs.values()];
@@ -11593,6 +11620,7 @@ function attachCanvasEvents(c) {
     if (e.altKey && S.family === 'escape') {   // Alt+Klick: Farbanker auf diesen Punkt setzen
       const [ax, ay] = toCanvas(e); anchorAt = { x: ax, y: ay }; anchorProbe = true; requestFrame(); return;
     }
+    schwungStoppen();   // ein neuer Griff hält das Auslaufen an
     try { c.setPointerCapture(e.pointerId); } catch (err) { /* egal */ }
     const [x, y] = toCanvas(e);
     ptrs.set(e.pointerId, { x, y }); zeigerAktiv = true;
@@ -11606,7 +11634,17 @@ function attachCanvasEvents(c) {
     const p = ptrs.get(e.pointerId); if (!p) return;
     const [x, y] = toCanvas(e);
     const fein = e.shiftKey ? (e.ctrlKey ? 0.01 : 0.1) : 1;   // Umschalt: ein Zehntel der Bewegung, Strg + Umschalt: ein Hundertstel (unter einem Pixel, genauer Weg)
-    if (ptrs.size === 1) { if (x !== p.x || y !== p.y) { if (fein < 1) panFein((x - p.x) * fein, (y - p.y) * fein); else pan(x - p.x, y - p.y); } p.x = x; p.y = y; }
+    if (ptrs.size === 1) {
+      if (x !== p.x || y !== p.y) {
+        const jetzt = performance.now(), dt = jetzt - letzte.t;
+        if (dt > 0 && dt < 120 && fein === 1) {   // Geschwindigkeit geglättet mitführen; die Feinbewegung rollt nicht aus
+          letzte.vx = 0.6 * letzte.vx + 0.4 * (x - p.x) / dt; letzte.vy = 0.6 * letzte.vy + 0.4 * (y - p.y) / dt;
+        } else { letzte.vx = 0; letzte.vy = 0; }
+        letzte.t = jetzt;
+        if (fein < 1) panFein((x - p.x) * fein, (y - p.y) * fein); else pan(x - p.x, y - p.y);
+      }
+      p.x = x; p.y = y;
+    }
     else {
       p.x = x; p.y = y;
       if (ptrs.size === 2 && pinch) {
@@ -11617,7 +11655,15 @@ function attachCanvasEvents(c) {
       }
     }
   });
-  const end = e => { ptrs.delete(e.pointerId); zeigerAktiv = ptrs.size > 0; pinch = ptrs.size === 2 ? pinchState() : null; if (ptrs.size === 0) { commitPan(); requestFrame(); } };   // losgelassen: übernehmen, und die Ebenenschleife darf weiter
+  const end = e => {
+    ptrs.delete(e.pointerId); zeigerAktiv = ptrs.size > 0; pinch = ptrs.size === 2 ? pinchState() : null;
+    if (ptrs.size === 0) {
+      const frisch = performance.now() - letzte.t < 90;   // nur ein Loslassen aus der Bewegung heraus rollt aus
+      commitPan(); requestFrame();
+      if (frisch) schwungStarten(letzte.vx, letzte.vy);
+      letzte.vx = 0; letzte.vy = 0;
+    }
+  };   // losgelassen: übernehmen, und die Ebenenschleife darf weiter
   c.addEventListener('pointerup', end); c.addEventListener('pointercancel', end);
   c.addEventListener('wheel', e => {
     e.preventDefault();
@@ -11627,6 +11673,19 @@ function attachCanvasEvents(c) {
     zoomAt(x, y, Math.exp(-clamp(dy, -400, 400) * 0.0022 * fein));
   }, { passive: false });
   c.addEventListener('contextmenu', e => e.preventDefault());
+}
+function schnappschuss() {   // Taste s: die Ansicht sichern, wie sie zu sehen ist; das Poster-Bedienfeld muss dafür nicht offen sein
+  if (exporting) return;
+  notify('status.snapshot');
+  Promise.resolve().then(() => saveScreenShot()).catch(() => { });
+}
+function vollbildUmschalten() {   // Taste f
+  if (document.fullscreenElement) { if (document.exitFullscreen) document.exitFullscreen().catch(() => { }); }
+  else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => { });
+}
+function naechsteEbene() {   // Leertaste: die nächste Fraktal-Ebene wählen (bei einer einzigen geschieht nichts)
+  if (!Array.isArray(ebenen) || ebenen.length < 2) return;
+  ebeneWaehlen((ebeneAktiv + 1) % ebenen.length);
 }
 window.addEventListener('keydown', e => {
   if (e.target instanceof Element && e.target.matches('input, select, textarea, button, a')) return;
@@ -11644,8 +11703,12 @@ window.addEventListener('keydown', e => {
     case ']': drehGeste(e.shiftKey ? 0.1 : 1); break;
     case 'r': case 'R': resetView(); break;
     case 'h': case 'H': togglePanel(); break;
+    case 's': case 'S': schnappschuss(); e.preventDefault(); return;      // Schnappschuss: keine Ansichtsänderung, also ohne commitPan
+    case 'f': case 'F': vollbildUmschalten(); e.preventDefault(); return;
+    case ' ': naechsteEbene(); e.preventDefault(); return;
     default: return;
   }
+  schwungStoppen();                                   // Tastatur übernimmt: ein laufendes Auslaufen hält an
   commitPan();                                        // Tastatur-Schritte sofort übernehmen
   e.preventDefault();
 });
@@ -11687,7 +11750,7 @@ function ddToString(a, digits = 32) {
 const EBENEN_MAX = 6;
 const EBENE_MODI = ['normal', 'multiply', 'screen', 'overlay', 'darken', 'lighten', 'dodge', 'burn', 'hardlight', 'softlight', 'difference', 'exclusion', 'add', 'subtract', 'hue', 'saturation', 'color', 'luminosity'];
 const EBENE_FARBEN = ['#82cbbe', '#e0a050', '#5fa8e0', '#c98ad8', '#e06868', '#a9c85a'];   // Farbmarke je Ebene (Pille, Karte)
-const EBENE_GLOBAL = new Set(['cx', 'cy', 'zoom', 'ps', 'dreh', 'quality', 'rendererPref', 'bla', 'cycle', 'stapelMs', 'uiVorrang', 'theme', 'nach', 'family', 'cloudPrm', 'accKind', 'accTarget', 'exposure', 'gamma']);
+const EBENE_GLOBAL = new Set(['cx', 'cy', 'zoom', 'ps', 'dreh', 'quality', 'rendererPref', 'bla', 'cycle', 'stapelMs', 'uiVorrang', 'traegheit', 'theme', 'nach', 'family', 'cloudPrm', 'accKind', 'accTarget', 'exposure', 'gamma']);
 const EBENE_LINK_GLOBAL = ['nb', 'page', 'fam', 'ex', 'ga', 'at', 'bla', 'cyc'];   // Adresswerte des Bilds: stehen nicht im Parametersatz einer weiteren Ebene
 const EBENE_LINK_ANSICHT = ['re', 'im', 'z', 'dr'];                                 // die Ansicht: nur bei einer gelösten Ebene im Parametersatz
 let ebenen = [], ebeneAktiv = 0, ebeneInS = 0, ebenenBasisAnsicht = null, ebenenLeseTiefe = 0, ebenenStartAktiv = 0, EBENE_STANDARD = null;   // ebeneInS: welche Ebene gerade in S liegt (mitEbene tauscht vorübergehend)
@@ -12335,14 +12398,14 @@ try {
   const c = JSON.parse(localStorage.getItem('fractal.consent') || 'null');
   if (c && c.v === 2) consent = { v: 2, ts: c.ts, settings: !!c.settings, marketing: !!c.marketing };   // ältere Fassungen kannten die Kategorie App-Einstellungen nicht: neu fragen
 } catch (e) { consent = null; }
-const SETTINGS_KEYS = ['fractal.aa', 'fractal.aamode', 'fractal.aatol', 'fractal.aamax', 'fractal.aasigma', 'fractal.palfilter', 'fractal.palfilterk', 'fractal.cycle', 'fractal.bla', 'fractal.renderer', 'fractal.quality', 'fractal.stapelms', 'fractal.uivorrang', 'fractal.theme', 'fractal.meta', 'fractal.palettes', 'fractal.palettes2'];
+const SETTINGS_KEYS = ['fractal.traegheit', 'fractal.aa', 'fractal.aamode', 'fractal.aatol', 'fractal.aamax', 'fractal.aasigma', 'fractal.palfilter', 'fractal.palfilterk', 'fractal.cycle', 'fractal.bla', 'fractal.renderer', 'fractal.quality', 'fractal.stapelms', 'fractal.uivorrang', 'fractal.theme', 'fractal.meta', 'fractal.palettes', 'fractal.palettes2'];
 function storeAllowed() { return !!(consent && consent.settings); }
 function lsSet(key, value) { scheduleHash();   // jede abgelegte Einstellung gehört zum Zustand: die Adresse zieht nach, dabei merkt sich Rückgängig den Schritt
   if (!storeAllowed()) return false; try { localStorage.setItem(key, value); return true; } catch (e) { return false; } }
 function persistSettings() {   // nach erteilter Einwilligung die aktuellen Einstellungen ablegen
   { const z = S; Object.assign(GLAETTUNG_VORGABE, { aa: z.aa, aaMode: z.aaMode, aaTol: z.aaTol, aaMax: z.aaMax, aaSigma: z.aaSigma }); lsSet('fractal.aa', String(z.aa)); lsSet('fractal.aamode', z.aaMode); lsSet('fractal.aatol', String(z.aaTol)); lsSet('fractal.aamax', String(z.aaMax)); lsSet('fractal.aasigma', String(z.aaSigma)); } /* die zuletzt eingestellte Glättung: Vorgabe für Links ohne Angabe */ lsSet('fractal.palfilter', S.palFilter ? '1' : '0'); lsSet('fractal.palfilterk', String(S.palFilterK)); lsSet('fractal.cycle', S.cycle); lsSet('fractal.bla', S.bla);
   lsSet('fractal.toast', toastAn ? '1' : '0');
-  lsSet('fractal.renderer', S.rendererPref); lsSet('fractal.quality', String(S.quality)); lsSet('fractal.stapelms', String(S.stapelMs)); lsSet('fractal.uivorrang', S.uiVorrang ? '1' : '0'); lsSet('fractal.theme', S.theme);
+  lsSet('fractal.renderer', S.rendererPref); lsSet('fractal.quality', String(S.quality)); lsSet('fractal.stapelms', String(S.stapelMs)); lsSet('fractal.uivorrang', S.uiVorrang ? '1' : '0'); lsSet('fractal.traegheit', S.traegheit ? '1' : '0'); lsSet('fractal.theme', S.theme);
   if (customPalettes.length) lsSet('fractal.palettes', JSON.stringify(customPalettes));
   if (eigene2.length) lsSet('fractal.palettes2', JSON.stringify(eigene2));
 }
@@ -13717,6 +13780,8 @@ const setzePalKurveMitte = v => { S.palKurveMitte = clamp(v, PAL_KURVE.mitte.min
 $('palKurve').addEventListener('input', () => setzePalKurve(+$('palKurve').value));
 $('palKurveMitte').addEventListener('input', () => setzePalKurveMitte(+$('palKurveMitte').value));
 palZweiFuellen(); showPalPfad(); showPalKurve();
+$('traegheit').addEventListener('change', () => { S.traegheit = $('traegheit').checked; if (!S.traegheit) schwungStoppen(); lsSet('fractal.traegheit', S.traegheit ? '1' : '0'); });
+$('traegheit').checked = S.traegheit;
 $('palPfadSpanne').addEventListener('input', () => setzePalPfadSpanne(+$('palPfadSpanne').value));
 $('palPfadBeginn').addEventListener('input', () => setzePalPfadBeginn(+$('palPfadBeginn').value));
 $('palZwei').addEventListener('change', () => { S.palZwei = clamp(parseInt($('palZwei').value, 10) || 0, 0, PALETTES.length - 1); palPfadAenderung(); });
