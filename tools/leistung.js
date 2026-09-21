@@ -131,12 +131,13 @@ async function main() {
       breite: c ? c.width : 0, hoehe: c ? c.height : 0, hash: location.hash, fatal: !document.getElementById('fatal').hidden,
       params: (window.fractalState && window.fractalState.get().params) || '',
       dcl: performance.getEntriesByType('navigation')[0]?.domContentLoadedEventEnd || 0 }; })()`;
+  // vorher = renderT0 des zuletzt gesehenen Durchlaufs (nicht die Rechenzeit: die kann sich wiederholen)
   async function wartenBisFertig(vorher, timeout = 180000) {
     const t0 = Date.now();
     for (;;) {
       const z = await js(LESEN);
       if (z.fatal) throw new Error('App meldet einen Fehler: ' + z.status);
-      if (z.fertig && z.renderMs >= 0 && z.renderMs !== vorher) return z;
+      if (z.fertig && z.renderMs >= 0 && z.renderT0 !== vorher) return z;
       if (Date.now() - t0 > timeout) throw new Error('Zeitüberschreitung, Status: ' + z.status);
       await schlaf(40);
     }
@@ -151,7 +152,7 @@ async function main() {
       const t0 = Date.now();
       while (Date.now() - t0 < 2000) {
         const z = await js(LESEN);
-        if (!z.fertig || z.renderMs < 0 || z.renderMs !== vorher) return wartenBisFertig(vorher);   // begonnen (oder schon fertig)
+        if (!z.fertig || z.renderMs < 0 || z.renderT0 !== vorher) return wartenBisFertig(vorher);   // begonnen (oder schon fertig)
         await schlaf(20);
       }
     }
@@ -199,15 +200,15 @@ async function main() {
         if (e.hinweis) continue;
         e.kalt.push(szene.ebenen ? z.jetzt - z.dcl : z.renderMs); e.erstesBild.push(szene.ebenen ? z.jetzt : z.renderT0 + z.renderMs); e.laden.push(z.dcl);   // bei Ebenen: vom Ende des Ladens, bis alle Ebenen samt Glättung fertig sind (renderT0 gehört nur der zuletzt gerechneten Ebene)
         if (mitGlaettung && z.refineMs > z.renderMs) e.glaettung.push(z.refineMs - z.renderMs);
-        let vorher = z.renderMs;
+        let vorher = z.renderT0;
         try {
           for (let w = 0; w < WARM; w++) {
             const tw = Date.now(), y = await neuRendern(vorher);
             if (!y) { e.notizen.push(`Runde ${r + 1}: kein Neurender begonnen (Status „${(await js(LESEN)).status}“)`); break; }
             e.warm.push(szene.ebenen ? Date.now() - tw : y.renderMs); /* bei Ebenen: vom Anstoß, bis alle Ebenen fertig sind */ if (mitGlaettung && y.refineMs > y.renderMs) e.glaettung.push(y.refineMs - y.renderMs); vorher = y.renderMs;
           }
-          const zug = await ziehen(vorher); e.zugLuecke.push(zug.luecke); e.zugFps.push(zug.fps); if (zug.fertig) vorher = zug.fertig.renderMs;
-          const eilig = await ziehen(vorher, true); e.schnellLuecke.push(eilig.luecke); e.schnellFps.push(eilig.fps); if (eilig.fertig) vorher = eilig.fertig.renderMs;
+          const zug = await ziehen(vorher); e.zugLuecke.push(zug.luecke); e.zugFps.push(zug.fps); if (zug.fertig) vorher = zug.fertig.renderT0;
+          const eilig = await ziehen(vorher, true); e.schnellLuecke.push(eilig.luecke); e.schnellFps.push(eilig.fps); if (eilig.fertig) vorher = eilig.fertig.renderT0;
           // reine Durchläufe: nur der Shader, ohne Planung – das ist die Zeit, die die Rechnung selbst braucht
           if (await js('typeof window.__leistungPass === "function"')) for (let p = 0; p < PASSES; p++) e.durchlauf.push(await js('window.__leistungPass()'));
         } catch (err) { e.notizen.push(`Runde ${r + 1}: ${err.message}`); }
