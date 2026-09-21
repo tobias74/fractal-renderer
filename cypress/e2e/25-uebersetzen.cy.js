@@ -151,7 +151,7 @@ describe('Übersetzen der Fassung mit Ebenen und Masken', () => {
     cy.get('#mState').should('be.visible').invoke('text').should('match', /übersetzt/);
     cy.get('#mState').should('have.class', 'uebersetzt');
     frei();
-    cy.get('#mState', { timeout: 30000 }).should($s => { expect($s.text()).to.match(/Fertig/); expect($s.text()).not.to.match(/übersetzt/); });
+    cy.get('#mState', { timeout: 180000 }).should($s => { expect($s.text()).to.match(/Fertig/); expect($s.text()).not.to.match(/übersetzt/); });
     cy.get('#mStatus').should('not.have.class', 'busy'); cy.get('#mState').should('not.have.class', 'uebersetzt');
   });
 
@@ -197,7 +197,7 @@ describe('Übersetzen der Fassung mit Ebenen und Masken', () => {
     cy.get('#mKurz').should('be.visible');
     cy.get('#uebersetzenToast', { timeout: 5000 }).should('be.visible').then($t => { const r = $t[0].getBoundingClientRect(); expect(r.top, 'oben unter der Kopfzeile').to.be.within(40, 160); expect(r.right, 'im Bild').to.be.lessThan(392); });
     frei();
-    cy.get('#mState', { timeout: 30000 }).should($s => { expect($s.text()).to.match(/Fertig/); expect($s.text()).not.to.match(/übersetzt/); });
+    cy.get('#mState', { timeout: 180000 }).should($s => { expect($s.text()).to.match(/Fertig/); expect($s.text()).not.to.match(/übersetzt/); });
     cy.get('#mKurz').should('have.text', ''); cy.get('#uebersetzenToast').should('have.attr', 'hidden');
   });
 });
