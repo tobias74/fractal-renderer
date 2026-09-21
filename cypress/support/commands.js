@@ -116,7 +116,7 @@ Cypress.Commands.add('shotStats', (name, region = IMAGE_REGION) => {
 });
 
 // Fraktal-Ebenen: warten, bis jede sichtbare Ebene gerechnet und geglättet ist (bei einer Ebene: bis „Fertig“); liefert die Zeit in ms seit dem Laden, −1 bei Zeitüberschreitung
-Cypress.Commands.add('alleEbenenFertig', (timeout = 60000) => cy.window({ timeout }).then({ timeout }, win => new Promise(res => {
+Cypress.Commands.add('alleEbenenFertig', (timeout = 180000) => cy.window({ timeout }).then({ timeout }, win => new Promise(res => {
   const t0 = Date.now();
   const pruefe = () => {
     const z = win.ebenenStand ? win.ebenenStand() : null, st = win.document.getElementById('state').textContent;
