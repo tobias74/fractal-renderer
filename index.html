@@ -1303,6 +1303,7 @@
             <option value="19" data-i18n="colour.texture-point"></option>
             <option value="20" data-i18n="colour.texture-spiral"></option>
             <option value="21" data-i18n="colour.texture-chart"></option>
+            <option value="23" data-i18n="colour.texture-rosette"></option>
             <option value="22" data-i18n="colour.custom"></option>
           </select>
         </div>
@@ -1343,6 +1344,23 @@
           <input id="texMitte" type="range" min="0" max="1" step="0.01" value="0.5">
         </div>
         <div id="texWerteRow" hidden><div class="tex-werte" id="texWerte"></div></div>   <!-- eigene Regler der Art, aus TEXTUR_REGLER gebaut -->
+        <div class="paar-zeile" id="texWahlRow1" hidden>   <!-- Rosette: welcher der gesammelten Werte den Platz füllt -->
+          <label class="paar-ziel" for="texWahl1" data-i18n="colour.texture-value"></label>
+          <select id="texWahl1" data-i18n-title="colour.texture-value-title">
+            <option value="0" data-i18n="colour.texture-value-mask"></option>
+            <option value="1" data-i18n="colour.texture-value-iteration"></option>
+            <option value="2" data-i18n="colour.texture-value-angle"></option>
+          </select>
+        </div>
+        <div class="paar-zeile" id="texFallenRow1" hidden>   <!-- Fallen: welche Bahnpunkte die Falle prüft -->
+          <label class="paar-ziel" for="texFallen1" data-i18n="colour.trap-eval"></label>
+          <select id="texFallen1" data-i18n-title="colour.trap-eval-title">
+            <option value="0" data-i18n="colour.trap-eval-every"></option>
+            <option value="1" data-i18n="colour.trap-eval-sample"></option>
+            <option value="2" data-i18n="colour.trap-eval-end"></option>
+          </select>
+        </div>
+        <div class="lbl wertzeile" id="texStichRow1" hidden><label for="texStich1" data-i18n-title="colour.trap-eval-n-title" data-i18n="colour.trap-eval-n"></label><input class="val mono wert" id="texStich1" type="text" inputmode="numeric" spellcheck="false" autocomplete="off"></div>
         <div id="texFarbenRow" hidden>
           <div class="tex-farben">
             <span class="tex-farben-titel" data-i18n-title="colour.texture-colours-title" data-i18n="colour.texture-colours"></span>
@@ -1383,6 +1401,7 @@
             <option value="19" data-i18n="colour.texture-point"></option>
             <option value="20" data-i18n="colour.texture-spiral"></option>
             <option value="21" data-i18n="colour.texture-chart"></option>
+            <option value="23" data-i18n="colour.texture-rosette"></option>
             <option value="22" data-i18n="colour.custom"></option>
           </select>
         </div>
@@ -1423,6 +1442,23 @@
           <input id="tex2Mitte" type="range" min="0" max="1" step="0.01" value="0.5">
         </div>
         <div id="tex2WerteRow" hidden><div class="tex-werte" id="tex2Werte"></div></div>   <!-- eigene Regler der Art, aus TEXTUR_REGLER gebaut -->
+        <div class="paar-zeile" id="texWahlRow2" hidden>   <!-- Rosette: welcher der gesammelten Werte den Platz füllt -->
+          <label class="paar-ziel" for="texWahl2" data-i18n="colour.texture-value"></label>
+          <select id="texWahl2" data-i18n-title="colour.texture-value-title">
+            <option value="0" data-i18n="colour.texture-value-mask"></option>
+            <option value="1" data-i18n="colour.texture-value-iteration"></option>
+            <option value="2" data-i18n="colour.texture-value-angle"></option>
+          </select>
+        </div>
+        <div class="paar-zeile" id="texFallenRow2" hidden>   <!-- Fallen: welche Bahnpunkte die Falle prüft -->
+          <label class="paar-ziel" for="texFallen2" data-i18n="colour.trap-eval"></label>
+          <select id="texFallen2" data-i18n-title="colour.trap-eval-title">
+            <option value="0" data-i18n="colour.trap-eval-every"></option>
+            <option value="1" data-i18n="colour.trap-eval-sample"></option>
+            <option value="2" data-i18n="colour.trap-eval-end"></option>
+          </select>
+        </div>
+        <div class="lbl wertzeile" id="texStichRow2" hidden><label for="texStich2" data-i18n-title="colour.trap-eval-n-title" data-i18n="colour.trap-eval-n"></label><input class="val mono wert" id="texStich2" type="text" inputmode="numeric" spellcheck="false" autocomplete="off"></div>
         <div id="tex2FarbenRow" hidden>
           <div class="tex-farben">
             <span class="tex-farben-titel" data-i18n-title="colour.texture-colours-title" data-i18n="colour.texture-colours"></span>
@@ -1463,6 +1499,7 @@
             <option value="19" data-i18n="colour.texture-point"></option>
             <option value="20" data-i18n="colour.texture-spiral"></option>
             <option value="21" data-i18n="colour.texture-chart"></option>
+            <option value="23" data-i18n="colour.texture-rosette"></option>
             <option value="22" data-i18n="colour.custom"></option>
           </select>
         </div>
@@ -1503,6 +1540,23 @@
           <input id="tex3Mitte" type="range" min="0" max="1" step="0.01" value="0.5">
         </div>
         <div id="tex3WerteRow" hidden><div class="tex-werte" id="tex3Werte"></div></div>   <!-- eigene Regler der Art, aus TEXTUR_REGLER gebaut -->
+        <div class="paar-zeile" id="texWahlRow3" hidden>   <!-- Rosette: welcher der gesammelten Werte den Platz füllt -->
+          <label class="paar-ziel" for="texWahl3" data-i18n="colour.texture-value"></label>
+          <select id="texWahl3" data-i18n-title="colour.texture-value-title">
+            <option value="0" data-i18n="colour.texture-value-mask"></option>
+            <option value="1" data-i18n="colour.texture-value-iteration"></option>
+            <option value="2" data-i18n="colour.texture-value-angle"></option>
+          </select>
+        </div>
+        <div class="paar-zeile" id="texFallenRow3" hidden>   <!-- Fallen: welche Bahnpunkte die Falle prüft -->
+          <label class="paar-ziel" for="texFallen3" data-i18n="colour.trap-eval"></label>
+          <select id="texFallen3" data-i18n-title="colour.trap-eval-title">
+            <option value="0" data-i18n="colour.trap-eval-every"></option>
+            <option value="1" data-i18n="colour.trap-eval-sample"></option>
+            <option value="2" data-i18n="colour.trap-eval-end"></option>
+          </select>
+        </div>
+        <div class="lbl wertzeile" id="texStichRow3" hidden><label for="texStich3" data-i18n-title="colour.trap-eval-n-title" data-i18n="colour.trap-eval-n"></label><input class="val mono wert" id="texStich3" type="text" inputmode="numeric" spellcheck="false" autocomplete="off"></div>
         <div id="tex3FarbenRow" hidden>
           <div class="tex-farben">
             <span class="tex-farben-titel" data-i18n-title="colour.texture-colours-title" data-i18n="colour.texture-colours"></span>
@@ -1543,6 +1597,7 @@
             <option value="19" data-i18n="colour.texture-point"></option>
             <option value="20" data-i18n="colour.texture-spiral"></option>
             <option value="21" data-i18n="colour.texture-chart"></option>
+            <option value="23" data-i18n="colour.texture-rosette"></option>
             <option value="22" data-i18n="colour.custom"></option>
           </select>
         </div>
@@ -1583,6 +1638,23 @@
           <input id="tex4Mitte" type="range" min="0" max="1" step="0.01" value="0.5">
         </div>
         <div id="tex4WerteRow" hidden><div class="tex-werte" id="tex4Werte"></div></div>   <!-- eigene Regler der Art, aus TEXTUR_REGLER gebaut -->
+        <div class="paar-zeile" id="texWahlRow4" hidden>   <!-- Rosette: welcher der gesammelten Werte den Platz füllt -->
+          <label class="paar-ziel" for="texWahl4" data-i18n="colour.texture-value"></label>
+          <select id="texWahl4" data-i18n-title="colour.texture-value-title">
+            <option value="0" data-i18n="colour.texture-value-mask"></option>
+            <option value="1" data-i18n="colour.texture-value-iteration"></option>
+            <option value="2" data-i18n="colour.texture-value-angle"></option>
+          </select>
+        </div>
+        <div class="paar-zeile" id="texFallenRow4" hidden>   <!-- Fallen: welche Bahnpunkte die Falle prüft -->
+          <label class="paar-ziel" for="texFallen4" data-i18n="colour.trap-eval"></label>
+          <select id="texFallen4" data-i18n-title="colour.trap-eval-title">
+            <option value="0" data-i18n="colour.trap-eval-every"></option>
+            <option value="1" data-i18n="colour.trap-eval-sample"></option>
+            <option value="2" data-i18n="colour.trap-eval-end"></option>
+          </select>
+        </div>
+        <div class="lbl wertzeile" id="texStichRow4" hidden><label for="texStich4" data-i18n-title="colour.trap-eval-n-title" data-i18n="colour.trap-eval-n"></label><input class="val mono wert" id="texStich4" type="text" inputmode="numeric" spellcheck="false" autocomplete="off"></div>
         <div id="tex4FarbenRow" hidden>
           <div class="tex-farben">
             <span class="tex-farben-titel" data-i18n-title="colour.texture-colours-title" data-i18n="colour.texture-colours"></span>
@@ -2349,7 +2421,7 @@ const TEXTE = {
   'colour.texture-r-line-width': { de: 'Linienbreite', en: 'Line width' },
   'colour.texture-r-line-width-title': { de: 'Breite der Linien in Pixeln, überall gleich: aus der Abstandsschätzung, bei den Strahlen über die Winkeltreue der Böttcher-Abbildung.', en: 'Line width in pixels, the same everywhere: from the distance estimate, for the rays through the conformality of the Böttcher map.' },
   'colour.trap-fusion': { de: 'Fallen verbinden (weiches Minimum)', en: 'Fuse traps (smooth minimum)' },
-  'colour.trap-fusion-title': { de: 'Verbindet die Fallen-Texturen des Stapels (Kreuz, Ursprung, Gitter, Ring, Punkt, Spirale) je Bahnschritt zu einem weichen Minimum ihrer Abstände; der erste Fallenplatz trägt das Ergebnis, die anderen Fallenplätze wirken nicht mehr einzeln. 0 = aus, größer = weicher.', en: 'Fuses the trap textures of the stack (cross, origin, lattice, ring, point, spiral) per orbit step into a smooth minimum of their distances; the first trap slot carries the result, the other trap slots no longer act on their own. 0 = off, larger = softer.' },
+  'colour.trap-fusion-title': { de: 'Verbindet die Fallen-Texturen des Stapels (Kreuz, Ursprung, Gitter, Ring, Punkt, Spirale, Rosette) je Bahnschritt zu einem weichen Minimum ihrer Abstände; der erste Fallenplatz trägt das Ergebnis, die anderen Fallenplätze wirken nicht mehr einzeln. 0 = aus, größer = weicher.', en: 'Fuses the trap textures of the stack (cross, origin, lattice, ring, point, spiral, rosette) per orbit step into a smooth minimum of their distances; the first trap slot carries the result, the other trap slots no longer act on their own. 0 = off, larger = softer.' },
   'colour.texture-r-winding': { de: 'Windung', en: 'Winding' },
   'colour.texture-r-winding-title': { de: 'Wie eng die logarithmische Spirale r = e^(b·φ) gewunden ist: kleine Werte, enge Windungen. Der Abstand ist der zur nächsten Windung.', en: 'How tightly the logarithmic spiral r = e^(b·φ) winds: small values, tight turns. The distance is measured to the nearest turn.' },
   'colour.texture-r-spiral-title': { de: 'Die Mitte der Spirale in der Ebene', en: 'The centre of the spiral in the plane' },
@@ -2373,6 +2445,31 @@ const TEXTE = {
   'colour.texture-r-x': { de: 'Punkt, Realteil', en: 'Point, real part' },
   'colour.texture-r-y': { de: 'Punkt, Imaginärteil', en: 'Point, imaginary part' },
   'colour.texture-r-point-title': { de: 'Der Punkt in der Ebene, zu dem die Bahn ihren kleinsten Abstand sucht', en: 'The point in the plane the orbit comes closest to' },
+  'colour.texture-rosette': { de: 'Rosettenfalle', en: 'Rosette trap' },
+  'colour.texture-r-amplitude': { de: 'Amplitude', en: 'Amplitude' },
+  'colour.texture-r-amplitude-title': { de: 'Wie weit die Blätter der Rosette ln r = a·cos(k·θ + τ·ln r + φ) nach innen und außen ausschlagen; 0 = der Einheitskreis', en: 'How far the petals of the rosette ln r = a·cos(k·θ + τ·ln r + φ) swing inwards and outwards; 0 = the unit circle' },
+  'colour.texture-r-petals': { de: 'Blätter', en: 'Petals' },
+  'colour.texture-r-petals-title': { de: 'Zahl der Blätter k der Rosette (ganzzahlig)', en: 'Number of petals k of the rosette (whole number)' },
+  'colour.texture-r-twist': { de: 'Drall', en: 'Twist' },
+  'colour.texture-r-twist-title': { de: 'Dreht die Blätter mit dem Radius: τ·ln r im Winkel. 0 = Rosette, sonst eine Spiralrosette', en: 'Turns the petals with the radius: τ·ln r in the angle. 0 = rosette, otherwise a spiral rosette' },
+  'colour.texture-r-phase': { de: 'Phase', en: 'Phase' },
+  'colour.texture-r-phase-title': { de: 'Dreht die ganze Rosette, in Grad', en: 'Rotates the whole rosette, in degrees' },
+  'colour.texture-r-width': { de: 'Weite', en: 'Width' },
+  'colour.texture-r-width-title': { de: 'Weite w der Maske e^−(d/w)^h um die Falle: bis zu welchem Abstand ein Bahnpunkt noch als Kontakt zählt', en: 'Width w of the mask e^−(d/w)^h around the trap: up to which distance an orbit point still counts as contact' },
+  'colour.texture-r-hardness': { de: 'Härte', en: 'Hardness' },
+  'colour.texture-r-hardness-title': { de: 'Härte h der Maske e^−(d/w)^h: klein = weicher Saum, groß = scharfer Rand', en: 'Hardness h of the mask e^−(d/w)^h: small = soft fringe, large = sharp edge' },
+  'colour.texture-value': { de: 'Wert', en: 'Value' },
+  'colour.texture-value-title': { de: 'Welcher der gesammelten Werte den Platz füllt: die Maske des kleinsten Abstands, die Iteration des Kontakts (Anteil der Iterationszahl) oder der Winkel des Bahnpunkts beim Kontakt (Umläufe)', en: 'Which of the collected values fills the slot: the mask of the smallest distance, the iteration of contact (share of the iteration count) or the angle of the orbit point at contact (turns)' },
+  'colour.texture-value-mask': { de: 'Maske', en: 'Mask' },
+  'colour.texture-value-iteration': { de: 'Kontaktiteration', en: 'Contact iteration' },
+  'colour.texture-value-angle': { de: 'Kontaktwinkel', en: 'Contact angle' },
+  'colour.trap-eval': { de: 'Auswertung', en: 'Evaluation' },
+  'colour.trap-eval-title': { de: 'Welche Bahnpunkte die Falle prüft: jeden (wie bisher), nur jeden n-ten (Stichproben) oder nur den letzten (am Ende). Gilt auch im Fallenverbund.', en: 'Which orbit points the trap checks: every one (as before), only every nth (samples) or only the last one (at the end). Also applies in the trap fusion.' },
+  'colour.trap-eval-every': { de: 'Jede Iteration', en: 'Every iteration' },
+  'colour.trap-eval-sample': { de: 'Stichproben', en: 'Samples' },
+  'colour.trap-eval-end': { de: 'Am Ende', en: 'At the end' },
+  'colour.trap-eval-n': { de: 'Jede n-te Iteration', en: 'Every nth iteration' },
+  'colour.trap-eval-n-title': { de: 'Schrittweite der Stichproben: nur die Bahnpunkte 0, n, 2n … zählen', en: 'Step of the samples: only the orbit points 0, n, 2n … count' },
   'colour.total-turning': { de: 'Gesamtdrehung', en: 'Total turning' },
   'colour.combine-values': { de: 'Werte kombinieren', en: 'Combine values' },
   'colour.escape-time-value': { de: 'Fluchtzeit', en: 'Escape time' },
@@ -3693,12 +3790,15 @@ const ABKL = { max: 0.5 };   // Abklingen der Bahnmittel: Anteil, den jeder neue
 // Textur: eine Bahnstatistik als Helligkeit über der Fluchtzeit-Färbung. Art 0 = keine, 1 Streifenmittel, 2 Dreiecksmittel,
 // 3 Gesamtdrehung, 4 Kreuzfalle, 5 Ursprungsnähe, 6 Strahlen (Fluchtwinkel), 7 Wirbel (Winkel und Fluchtzeit), 8 Periodengebiete
 // (arten: die Statistik des Shaders dazu, 0 = der Fluchtwinkel); Stärke 0 … 1, Kontrast, Mitte = der Wert, der die Farbe unverändert lässt
-const TEXTUR = { arten: { 1: 3, 2: 4, 3: 8, 4: 1, 5: 7, 6: 0, 7: 0, 8: 10, 9: 0, 10: 0, 11: 0, 12: 11, 13: 12, 14: 13, 15: 14, 16: 15, 17: 16, 18: 5, 19: 17, 20: 19, 21: 0, 22: 20 }, staerke: { min: 0, max: 1, def: 0.7 }, kontrast: { min: 0.1, max: 8, def: 1 }, mitte: { min: 0, max: 1, def: 0.5 } };
+const TEXTUR = { arten: { 1: 3, 2: 4, 3: 8, 4: 1, 5: 7, 6: 0, 7: 0, 8: 10, 9: 0, 10: 0, 11: 0, 12: 11, 13: 12, 14: 13, 15: 14, 16: 15, 17: 16, 18: 5, 19: 17, 20: 19, 21: 0, 22: 20, 23: 21 }, staerke: { min: 0, max: 1, def: 0.7 }, kontrast: { min: 0.1, max: 8, def: 1 }, mitte: { min: 0, max: 1, def: 0.5 } };
 // Arten 9–18 (13.09.): 9 Bänder (aus der Fluchtzeit), 10 Randnähe (Abstandsschätzung), 11 Kanten (aus den Nachbarn, erst im Farbpass),
 // 12 Exponentielles Glätten (Sammler 11), 13 Krümmungsmittel (12), 14 Gitterfalle (13), 15 Ringfalle (14), 16 Weglänge (15),
 // 17 Schwerpunkt (16), 18 Vorzeichenwechsel (Sammler 5 wie die Färbung 21), 19 Punktfalle (Sammler 17)
-const TEX_ART_MAX = 22;   // höchste Nummer einer Texturart (siehe Auswahlliste); 22: eigener Ausdruck des Platzes
-// Eigene Regler je Texturart: bis zu vier Zahlen je Platz (im Shader ein vec4). Diese Tabelle ist die einzige Beschreibung eines
+// 23 Rosettenfalle (Sammler 21, 21.09.): Kurve ln r = a·cos(k·θ + τ·ln r + φ) in Polarkoordinaten des Bahnpunkts; sammelt kleinsten Abstand,
+// Schritt und Winkel des Kontakts, der Platz zeigt davon einen (Wertwahl tr). Dazu je Fallenplatz die Auswertung (tf): jede Iteration, Stichproben, am Ende
+const TEX_ART_MAX = 23;   // höchste Nummer einer Texturart (siehe Auswahlliste); 22: eigener Ausdruck des Platzes, 23: Rosettenfalle
+// Eigene Regler je Texturart: bis zu sechs Zahlen je Platz (im Shader die ersten vier als vec4 texP/texW, die fünfte und sechste in texQ.xy,
+// nur im Fraktal-Shader; „ganz“ = ganzzahlig). Diese Tabelle ist die einzige Beschreibung eines
 // Reglers: Schlüssel, Bereich, Schritt, Vorgabe, Texte; „neu“ = geht in die Rechnung des Fraktal-Shaders ein (sonst nur in die Farbe).
 // Daraus entstehen die Bedienelemente je Platz (texWerteBauen), der Link (tq, t2q … als Werte mit Doppelpunkt, nur abseits der
 // Vorgabe), der Zustand (S.texWerte, S.tex2Werte …) und die Shader-Werte (texP je Sammler, texW je Platz, stapelW im Farbpass).
@@ -3719,12 +3819,18 @@ const TEXTUR_REGLER = {
   21: [{ k: 'ringe', min: 0, max: 8, schritt: 0.5, def: 1, neu: true, text: 'colour.texture-r-rings', tipp: 'colour.texture-r-rings-title' },
        { k: 'strahlen', min: 0, max: 64, schritt: 1, def: 8, neu: true, text: 'colour.texture-r-rays', tipp: 'colour.texture-r-rays-title' },
        { k: 'breite', min: 0.25, max: 8, schritt: 0.25, def: 1, neu: true, text: 'colour.texture-r-line-width', tipp: 'colour.texture-r-line-width-title' }],
+  23: [{ k: 'amplitude', min: 0, max: 3, schritt: 0.01, def: 0.5, neu: true, text: 'colour.texture-r-amplitude', tipp: 'colour.texture-r-amplitude-title' },   // Rosette: ln r = a·cos(k·θ + τ·ln r + φ), dazu die Maske e^−(d/w)^h
+       { k: 'blaetter', min: 1, max: 24, schritt: 1, def: 5, neu: true, ganz: true, text: 'colour.texture-r-petals', tipp: 'colour.texture-r-petals-title' },
+       { k: 'drall', min: -10, max: 10, schritt: 0.1, def: 0, neu: true, text: 'colour.texture-r-twist', tipp: 'colour.texture-r-twist-title' },
+       { k: 'phase', min: 0, max: 360, schritt: 1, def: 0, neu: true, text: 'colour.texture-r-phase', tipp: 'colour.texture-r-phase-title' },
+       { k: 'weite', min: 0.01, max: 2, schritt: 0.01, def: 0.2, neu: true, text: 'colour.texture-r-width', tipp: 'colour.texture-r-width-title' },
+       { k: 'haerte', min: 0.25, max: 8, schritt: 0.05, def: 2, neu: true, text: 'colour.texture-r-hardness', tipp: 'colour.texture-r-hardness-title' }],
 };
 function texRegler(art) { return TEXTUR_REGLER[art] || []; }
 function texWerteVorgabe(art) { const w = [0, 0, 0, 0]; texRegler(art).forEach((r, i) => { w[i] = r.def; }); return w; }
 function texWerteLesen(text, art) {   // aus dem Link: „a:b“ in der Reihenfolge der Regler; fehlende oder unlesbare Werte = Vorgabe
   const w = texWerteVorgabe(art), teile = (text || '').split(':');
-  texRegler(art).forEach((r, i) => { const v = parseFloat(teile[i]); if (Number.isFinite(v)) w[i] = clamp(v, r.min, r.max); });
+  texRegler(art).forEach((r, i) => { const v = parseFloat(teile[i]); if (Number.isFinite(v)) w[i] = clamp(r.ganz ? Math.round(v) : v, r.min, r.max); });
   return w;
 }
 function texWerteText(art, w) {   // Zusatzregler am Ende entfallen auf ihrer Vorgabe: ältere Links bleiben gleich
@@ -3739,6 +3845,10 @@ const TEX_ZIEL_VOR = 2;
 // Wo ein Texturplatz wirkt: 0 außen (wie seit jeher), 1 nur innen, 2 überall. Innen rechnet der Fraktal-Shader die Werte
 // nur, wenn irgendein Platz sie braucht; dann liegen sie wie außen in den Kanälen z und w.
 const TEX_WO_VOR = 0;
+// Auswertung der Fallen je Platz (nur bei Fallen-Arten): 0 jede Iteration (wie seit jeher), 1 Stichproben (nur jeder n-te Bahnpunkt, n = STICH),
+// 2 am Ende (nur der letzte Bahnpunkt). Wertwahl der Rosette: 0 Maske des kleinsten Abstands, 1 Kontaktiteration, 2 Kontaktwinkel.
+const STICH = { min: 1, max: 1000, def: 4 };
+const fallenText = (modus, n) => modus === 1 && n !== STICH.def ? '1:' + n : String(modus);   // Link tf: Modus, bei Stichproben mit n abseits der Vorgabe
 const TEXTUR_AUS = { art: 0, staerke: 0, kontrast: 1, mitte: 0.5, hell: [1, 1, 1], dunkel: [0, 0, 0], ziel: TEX_ZIEL_VOR, wo: TEX_WO_VOR };   // hell/dunkel: die Farben, zu denen die Textur zieht (Weiß/Schwarz = aufhellen/abdunkeln)
 // Texturstapel: TEX_SLOTS Plätze, von oben nach unten angewandt. Platz 1 trägt die Zustandsnamen von früher (textur, texStaerke …),
 // Platz n die mit Nummer (textur2, tex2Staerke …); ein Platz mit Art 0 ist leer und ändert nichts
@@ -3746,6 +3856,7 @@ const TEX_SLOTS = 4;
 const TEXTUR_NAMEN = { 1: 'colour.stripe-average', 2: 'colour.texture-triangle', 3: 'colour.total-turning', 4: 'colour.texture-cross', 5: 'colour.closest-to-origin', 6: 'colour.texture-rays', 7: 'colour.texture-whirl', 8: 'colour.period-domains', 9: 'colour.texture-bands', 10: 'colour.texture-distance', 11: 'colour.texture-edges', 12: 'colour.texture-smoothing', 13: 'colour.texture-curvature', 14: 'colour.texture-lattice', 15: 'colour.texture-ring', 16: 'colour.texture-path', 17: 'colour.texture-centroid', 18: 'colour.sign-changes', 19: 'colour.texture-point' };   // wie die Auswahlliste
 TEXTUR_NAMEN[21] = 'colour.texture-chart';   // Karte: Potenzialringe und äußere Strahlen
 TEXTUR_NAMEN[22] = 'colour.custom';   // eigener Ausdruck des Platzes als Textur (Wert 0 … 1 erwartet)
+TEXTUR_NAMEN[23] = 'colour.texture-rosette';   // Rosettenfalle
 // ---- Nachbearbeitung: Tabelle der Ebenenarten und Lesen/Schreiben des Links (die Bedienung steht weiter unten, „Nachbearbeitung“) ----
 // Ebenen wirken im Farbpass auf das fertige Pixel, von oben nach unten, ohne das Fraktal neu zu rechnen. Jede Ebene ist eine
 // Art aus NACH_ARTEN mit ihren Reglern (Reihenfolge der Regler = Reihenfolge der Zahlen p[0 …]); dazu Deckkraft und Schalter.
@@ -3891,11 +4002,11 @@ function nachLesen(text) {   // aus dem Link; Unbekanntes wird ausgelassen
   }
   return aus;
 }
-const TEXTUR_LEER = { art: 0, staerke: TEXTUR.staerke.def, kontrast: TEXTUR.kontrast.def, mitte: TEXTUR.mitte.def, hell: '#ffffff', dunkel: '#000000', an: true, ziel: TEX_ZIEL_VOR, wo: TEX_WO_VOR, maske: null };   // maske: siehe MASKE_TEX_ARTEN
+const TEXTUR_LEER = { art: 0, staerke: TEXTUR.staerke.def, kontrast: TEXTUR.kontrast.def, mitte: TEXTUR.mitte.def, hell: '#ffffff', dunkel: '#000000', an: true, ziel: TEX_ZIEL_VOR, wo: TEX_WO_VOR, maske: null, wahl: 0, fallen: 0, stich: STICH.def };   // maske: siehe MASKE_TEX_ARTEN; wahl: Wertwahl der Rosette; fallen, stich: Auswertung der Falle
 const texZielWirkt = z => { const v = z === undefined ? TEX_ZIEL_VOR : z; return (v === 0 || v === 1) && !paarKonfig() ? TEX_ZIEL_VOR : v; };
-function texKeys(n) { const p = n === 1 ? 'tex' : 'tex' + n; return { art: n === 1 ? 'textur' : 'textur' + n, staerke: p + 'Staerke', kontrast: p + 'Kontrast', mitte: p + 'Mitte', hell: p + 'Hell', dunkel: p + 'Dunkel', an: p + 'An', werte: p + 'Werte', ziel: p + 'Ziel', wo: p + 'Wo', maske: p + 'Maske', eigen: p + 'Eigen' }; }
-function texSlot(n) { const k = texKeys(n); return { art: S[k.art], staerke: S[k.staerke], kontrast: S[k.kontrast], mitte: S[k.mitte], hell: S[k.hell], dunkel: S[k.dunkel], an: S[k.an] !== false, werte: S[k.werte] || texWerteVorgabe(S[k.art]), ziel: S[k.ziel] === undefined ? TEX_ZIEL_VOR : S[k.ziel], wo: S[k.wo] === undefined ? TEX_WO_VOR : S[k.wo], maske: S[k.maske] || maskeNeu(0), eigen: S[k.eigen] || null }; }
-function texSlotSetzen(n, t) { const k = texKeys(n); S[k.art] = t.art; S[k.staerke] = t.staerke; S[k.kontrast] = t.kontrast; S[k.mitte] = t.mitte; S[k.hell] = t.hell; S[k.dunkel] = t.dunkel; S[k.an] = t.an !== false; S[k.ziel] = t.ziel === undefined ? TEX_ZIEL_VOR : t.ziel; S[k.wo] = t.wo === undefined ? TEX_WO_VOR : t.wo; S[k.werte] = (t.werte || texWerteVorgabe(t.art)).slice(); S[k.maske] = t.maske ? Object.assign({}, t.maske, { p: t.maske.p.slice() }) : maskeNeu(0); S[k.eigen] = t.eigen ? Object.assign({}, t.eigen) : null; }
+function texKeys(n) { const p = n === 1 ? 'tex' : 'tex' + n; return { art: n === 1 ? 'textur' : 'textur' + n, staerke: p + 'Staerke', kontrast: p + 'Kontrast', mitte: p + 'Mitte', hell: p + 'Hell', dunkel: p + 'Dunkel', an: p + 'An', werte: p + 'Werte', ziel: p + 'Ziel', wo: p + 'Wo', maske: p + 'Maske', eigen: p + 'Eigen', wahl: p + 'Wahl', fallen: p + 'Fallen', stich: p + 'Stich' }; }
+function texSlot(n) { const k = texKeys(n); return { art: S[k.art], staerke: S[k.staerke], kontrast: S[k.kontrast], mitte: S[k.mitte], hell: S[k.hell], dunkel: S[k.dunkel], an: S[k.an] !== false, werte: S[k.werte] || texWerteVorgabe(S[k.art]), ziel: S[k.ziel] === undefined ? TEX_ZIEL_VOR : S[k.ziel], wo: S[k.wo] === undefined ? TEX_WO_VOR : S[k.wo], maske: S[k.maske] || maskeNeu(0), eigen: S[k.eigen] || null, wahl: S[k.wahl] || 0, fallen: S[k.fallen] || 0, stich: S[k.stich] || STICH.def }; }
+function texSlotSetzen(n, t) { const k = texKeys(n); S[k.art] = t.art; S[k.staerke] = t.staerke; S[k.kontrast] = t.kontrast; S[k.mitte] = t.mitte; S[k.hell] = t.hell; S[k.dunkel] = t.dunkel; S[k.an] = t.an !== false; S[k.ziel] = t.ziel === undefined ? TEX_ZIEL_VOR : t.ziel; S[k.wo] = t.wo === undefined ? TEX_WO_VOR : t.wo; S[k.werte] = (t.werte || texWerteVorgabe(t.art)).slice(); S[k.maske] = t.maske ? Object.assign({}, t.maske, { p: t.maske.p.slice() }) : maskeNeu(0); S[k.eigen] = t.eigen ? Object.assign({}, t.eigen) : null; S[k.wahl] = t.wahl || 0; S[k.fallen] = t.fallen || 0; S[k.stich] = t.stich || STICH.def; }
 function texArtAn(n) { const k = texKeys(n); return S[k.an] === false ? 0 : S[k.art]; }   // wirksame Art: 0, wenn der Platz ausgeschaltet ist (die Einstellungen bleiben)
 function texturBelegt() { let z = 0; for (let n = 1; n <= TEX_SLOTS; n++) if (S[texKeys(n).art] !== 0) z = n; return z; }   // letzter Platz mit gewählter Art, auch wenn ausgeschaltet (Anzeige, Link)
 // Übertragungskurve (Färbung 28): Punkte (x, y) in 0 … 1, nach x geordnet, erster bei x = 0, letzter bei x = 1; Vorgabe die Gerade
@@ -4186,6 +4297,7 @@ struct FP {
   opt: vec4f,                                        // x = Faltung je Schritt (0 keine, 1 |x|+i|y|, 2 |x|+iy, 3 x+i|y|, 4 x−iy, 5 |x|−iy), y = Gedächtnis p·zₙ₋₁, z = Start im Bildpunkt (1), w = frei
   opt2: vec4f,                                       // x = Funktion (Lambda, fn(z^d) + c), y = zweite Formel der Hybrid-Folge (+1, 0 = keine), z = deren Parameter, w = frei
   wurzeln: array<vec4f, 3>,                          // bis zu sechs Nullstellen (je zwei je vec4) für Newton/Halley auf eigenes Polynom
+  texQ: array<vec4f, 6>,                             // je Sammler: x, y = fünfter und sechster Regler der Art (Rosette: Weite, Härte der Maske), z = Wertwahl (Rosette: 0 Maske, 1 Kontaktiteration, 2 Kontaktwinkel), w = Auswertung der Falle (0 jede Iteration, n > 0 jede n-te, −1 nur der letzte Bahnpunkt)
 };
 @group(0) @binding(0) var<uniform> P: FP;
 @group(0) @binding(1) var orbit: texture_2d<f32>;
@@ -4421,6 +4533,7 @@ fn stNimm2(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f,
   if (!nimm) { return; }
   if (STAT2 == 20u) { eigenNimm(1u, st, n, z, zv, cc, w, i); return; }   // eigener Ausdruck dieses Platzes
   var s = *st;
+  if (fallenSammler(STAT2)) { let pol = P.texQ[1].w; if (!fallenSchritt(pol, i)) { return; } if (pol < -0.5) { *mn = 1.0e30; s.x = 1.0e30; } }   // Auswertung der Falle: Stichproben lassen Schritte aus; „am Ende“ beginnt das Minimum jedes Mal neu, es bleibt der letzte Bahnpunkt
   if (STAT2 == 6u || STAT2 == 7u) { *mn = min(*mn, length(z)); }   // Ursprungsnähe: kleinster Betrag der Bahn
   if (STAT2 == 7u) { *n += 1u; return; }
   if (STAT2 == 10u) { let r2 = dot(z, z); if (r2 < *mn) { *mn = r2; s.w = f32(i); } *st = s; *n += 1u; return; }   // Periodengebiete: der Schritt der größten Nähe zum Ursprung
@@ -4432,6 +4545,7 @@ fn stNimm2(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f,
   if (STAT2 == 15u) { s.x += w * (1.0 - exp(-length(z - zv) / tp.x)); s.z += w; *st = s; *n += 1u; return; }   // Weglänge: gewichtetes Mittel der gedämpften Schrittlängen
   if (STAT2 == 16u) { if (dot(z, z) < tp.x * tp.x) { s.x += w * z.x; s.y += w * z.y; s.z += w; } *st = s; *n += 1u; return; }   // Schwerpunkt der Bahnpunkte im Kreis |z| < 2
   if (STAT2 == 19u) { let v = z - tp.yz; let r = max(length(v), 1.0e-30); let b = max(tp.x, 1.0e-3); let ph = atan2(v.y, v.x); let kk = round((log(r) / b - ph) * (1.0 / 6.2831853)); *mn = min(*mn, abs(r - exp(b * (ph + 6.2831853 * kk)))); *n += 1u; return; }   // Spiralfalle: radialer Abstand zur nächsten Windung von r = e^(b·φ) um (tp.y, tp.z)
+  if (STAT2 == 21u) { let d = rosetteAbstand(z, tp); if (d < *mn) { *mn = d; s.z = atan2(z.y, z.x); s.w = f32(i); } *st = s; *n += 1u; return; }   // Rosettenfalle: kleinster Abstand (mn), dazu Winkel (s.z) und Schritt (s.w) des Kontakts
   if (STAT2 == 17u) { *mn = min(*mn, length(z - tp.xy)); *n += 1u; return; }   // Punktfalle: kleinster Abstand zum Punkt (tp.x, tp.y)
   if (STAT2 == 1u) { s.x = min(s.x, min(abs(z.x), abs(z.y))); }
   else if (STAT2 == 2u) { s.x = min(s.x, abs(z.x)); s.y = min(s.y, abs(z.y)); }
@@ -4465,6 +4579,7 @@ fn stAus2(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT2 == 18u) { let f = select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
   if (STAT2 == 16u) { return bitcast<u32>(select(atan2(st.y, st.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Schwerpunkt: sein Winkel in Umläufen
   if (STAT2 == 19u) { return bitcast<u32>(mn); }   // Spiralfalle roh: Textur und Färbung nehmen den Logarithmus
+  if (STAT2 == 21u) { let tq = P.texQ[1]; let wahl = u32(tq.z + 0.5); if (wahl == 1u) { return bitcast<u32>(clamp(st.w / f32(max(P.maxIter, 1u)), 0.0, 1.0)); } if (wahl == 2u) { return bitcast<u32>(st.z * (1.0 / 6.2831853) + 0.5); } return bitcast<u32>(exp(-pow(min(mn / max(tq.x, 1.0e-6), 1.0e3), max(tq.y, 1.0e-3)))); }   // Rosettenfalle: Maske e^−(d/w)^h des kleinsten Abstands, Kontaktiteration (Anteil der Iterationszahl) oder Kontaktwinkel (Umläufe)
   if (STAT2 == 17u) { return bitcast<u32>(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Punktfalle: logarithmisch wie die Ursprungsnähe
   if (STAT2 == 2u) { return pack2x16float(clamp(log(max(st.xy, vec2f(1.0e-30))), vec2f(-6.0e4), vec2f(6.0e4))); }   // log-Abstände
   if (STAT2 == 5u) { return pack2x16float(st.xy / nn); }                                                              // Anteile
@@ -4482,6 +4597,7 @@ fn stNimm3(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f,
   if (!nimm) { return; }
   if (STAT3 == 20u) { eigenNimm(2u, st, n, z, zv, cc, w, i); return; }   // eigener Ausdruck dieses Platzes
   var s = *st;
+  if (fallenSammler(STAT3)) { let pol = P.texQ[2].w; if (!fallenSchritt(pol, i)) { return; } if (pol < -0.5) { *mn = 1.0e30; s.x = 1.0e30; } }   // Auswertung der Falle: Stichproben lassen Schritte aus; „am Ende“ beginnt das Minimum jedes Mal neu, es bleibt der letzte Bahnpunkt
   if (STAT3 == 6u || STAT3 == 7u) { *mn = min(*mn, length(z)); }   // Ursprungsnähe: kleinster Betrag der Bahn
   if (STAT3 == 7u) { *n += 1u; return; }
   if (STAT3 == 10u) { let r2 = dot(z, z); if (r2 < *mn) { *mn = r2; s.w = f32(i); } *st = s; *n += 1u; return; }   // Periodengebiete: der Schritt der größten Nähe zum Ursprung
@@ -4493,6 +4609,7 @@ fn stNimm3(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f,
   if (STAT3 == 15u) { s.x += w * (1.0 - exp(-length(z - zv) / tp.x)); s.z += w; *st = s; *n += 1u; return; }   // Weglänge: gewichtetes Mittel der gedämpften Schrittlängen
   if (STAT3 == 16u) { if (dot(z, z) < tp.x * tp.x) { s.x += w * z.x; s.y += w * z.y; s.z += w; } *st = s; *n += 1u; return; }   // Schwerpunkt der Bahnpunkte im Kreis |z| < 2
   if (STAT3 == 19u) { let v = z - tp.yz; let r = max(length(v), 1.0e-30); let b = max(tp.x, 1.0e-3); let ph = atan2(v.y, v.x); let kk = round((log(r) / b - ph) * (1.0 / 6.2831853)); *mn = min(*mn, abs(r - exp(b * (ph + 6.2831853 * kk)))); *n += 1u; return; }   // Spiralfalle: radialer Abstand zur nächsten Windung von r = e^(b·φ) um (tp.y, tp.z)
+  if (STAT3 == 21u) { let d = rosetteAbstand(z, tp); if (d < *mn) { *mn = d; s.z = atan2(z.y, z.x); s.w = f32(i); } *st = s; *n += 1u; return; }   // Rosettenfalle: kleinster Abstand (mn), dazu Winkel (s.z) und Schritt (s.w) des Kontakts
   if (STAT3 == 17u) { *mn = min(*mn, length(z - tp.xy)); *n += 1u; return; }   // Punktfalle: kleinster Abstand zum Punkt (tp.x, tp.y)
   if (STAT3 == 1u) { s.x = min(s.x, min(abs(z.x), abs(z.y))); }
   else if (STAT3 == 2u) { s.x = min(s.x, abs(z.x)); s.y = min(s.y, abs(z.y)); }
@@ -4526,6 +4643,7 @@ fn stAus3(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT3 == 18u) { let f = select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
   if (STAT3 == 16u) { return bitcast<u32>(select(atan2(st.y, st.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Schwerpunkt: sein Winkel in Umläufen
   if (STAT3 == 19u) { return bitcast<u32>(mn); }   // Spiralfalle roh: Textur und Färbung nehmen den Logarithmus
+  if (STAT3 == 21u) { let tq = P.texQ[2]; let wahl = u32(tq.z + 0.5); if (wahl == 1u) { return bitcast<u32>(clamp(st.w / f32(max(P.maxIter, 1u)), 0.0, 1.0)); } if (wahl == 2u) { return bitcast<u32>(st.z * (1.0 / 6.2831853) + 0.5); } return bitcast<u32>(exp(-pow(min(mn / max(tq.x, 1.0e-6), 1.0e3), max(tq.y, 1.0e-3)))); }   // Rosettenfalle: Maske e^−(d/w)^h des kleinsten Abstands, Kontaktiteration (Anteil der Iterationszahl) oder Kontaktwinkel (Umläufe)
   if (STAT3 == 17u) { return bitcast<u32>(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Punktfalle: logarithmisch wie die Ursprungsnähe
   if (STAT3 == 2u) { return pack2x16float(clamp(log(max(st.xy, vec2f(1.0e-30))), vec2f(-6.0e4), vec2f(6.0e4))); }   // log-Abstände
   if (STAT3 == 5u) { return pack2x16float(st.xy / nn); }                                                              // Anteile
@@ -4543,6 +4661,7 @@ fn stNimm4(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f,
   if (!nimm) { return; }
   if (STAT4 == 20u) { eigenNimm(3u, st, n, z, zv, cc, w, i); return; }   // eigener Ausdruck dieses Platzes
   var s = *st;
+  if (fallenSammler(STAT4)) { let pol = P.texQ[3].w; if (!fallenSchritt(pol, i)) { return; } if (pol < -0.5) { *mn = 1.0e30; s.x = 1.0e30; } }   // Auswertung der Falle: Stichproben lassen Schritte aus; „am Ende“ beginnt das Minimum jedes Mal neu, es bleibt der letzte Bahnpunkt
   if (STAT4 == 6u || STAT4 == 7u) { *mn = min(*mn, length(z)); }   // Ursprungsnähe: kleinster Betrag der Bahn
   if (STAT4 == 7u) { *n += 1u; return; }
   if (STAT4 == 10u) { let r2 = dot(z, z); if (r2 < *mn) { *mn = r2; s.w = f32(i); } *st = s; *n += 1u; return; }   // Periodengebiete: der Schritt der größten Nähe zum Ursprung
@@ -4554,6 +4673,7 @@ fn stNimm4(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f,
   if (STAT4 == 15u) { s.x += w * (1.0 - exp(-length(z - zv) / tp.x)); s.z += w; *st = s; *n += 1u; return; }   // Weglänge: gewichtetes Mittel der gedämpften Schrittlängen
   if (STAT4 == 16u) { if (dot(z, z) < tp.x * tp.x) { s.x += w * z.x; s.y += w * z.y; s.z += w; } *st = s; *n += 1u; return; }   // Schwerpunkt der Bahnpunkte im Kreis |z| < 2
   if (STAT4 == 19u) { let v = z - tp.yz; let r = max(length(v), 1.0e-30); let b = max(tp.x, 1.0e-3); let ph = atan2(v.y, v.x); let kk = round((log(r) / b - ph) * (1.0 / 6.2831853)); *mn = min(*mn, abs(r - exp(b * (ph + 6.2831853 * kk)))); *n += 1u; return; }   // Spiralfalle: radialer Abstand zur nächsten Windung von r = e^(b·φ) um (tp.y, tp.z)
+  if (STAT4 == 21u) { let d = rosetteAbstand(z, tp); if (d < *mn) { *mn = d; s.z = atan2(z.y, z.x); s.w = f32(i); } *st = s; *n += 1u; return; }   // Rosettenfalle: kleinster Abstand (mn), dazu Winkel (s.z) und Schritt (s.w) des Kontakts
   if (STAT4 == 17u) { *mn = min(*mn, length(z - tp.xy)); *n += 1u; return; }   // Punktfalle: kleinster Abstand zum Punkt (tp.x, tp.y)
   if (STAT4 == 1u) { s.x = min(s.x, min(abs(z.x), abs(z.y))); }
   else if (STAT4 == 2u) { s.x = min(s.x, abs(z.x)); s.y = min(s.y, abs(z.y)); }
@@ -4587,6 +4707,7 @@ fn stAus4(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT4 == 18u) { let f = select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
   if (STAT4 == 16u) { return bitcast<u32>(select(atan2(st.y, st.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Schwerpunkt: sein Winkel in Umläufen
   if (STAT4 == 19u) { return bitcast<u32>(mn); }   // Spiralfalle roh: Textur und Färbung nehmen den Logarithmus
+  if (STAT4 == 21u) { let tq = P.texQ[3]; let wahl = u32(tq.z + 0.5); if (wahl == 1u) { return bitcast<u32>(clamp(st.w / f32(max(P.maxIter, 1u)), 0.0, 1.0)); } if (wahl == 2u) { return bitcast<u32>(st.z * (1.0 / 6.2831853) + 0.5); } return bitcast<u32>(exp(-pow(min(mn / max(tq.x, 1.0e-6), 1.0e3), max(tq.y, 1.0e-3)))); }   // Rosettenfalle: Maske e^−(d/w)^h des kleinsten Abstands, Kontaktiteration (Anteil der Iterationszahl) oder Kontaktwinkel (Umläufe)
   if (STAT4 == 17u) { return bitcast<u32>(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Punktfalle: logarithmisch wie die Ursprungsnähe
   if (STAT4 == 2u) { return pack2x16float(clamp(log(max(st.xy, vec2f(1.0e-30))), vec2f(-6.0e4), vec2f(6.0e4))); }   // log-Abstände
   if (STAT4 == 5u) { return pack2x16float(st.xy / nn); }                                                              // Anteile
@@ -4604,6 +4725,7 @@ fn stNimm5(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f,
   if (!nimm) { return; }
   if (STAT5 == 20u) { eigenNimm(4u, st, n, z, zv, cc, w, i); return; }   // eigener Ausdruck dieses Platzes
   var s = *st;
+  if (fallenSammler(STAT5)) { let pol = P.texQ[4].w; if (!fallenSchritt(pol, i)) { return; } if (pol < -0.5) { *mn = 1.0e30; s.x = 1.0e30; } }   // Auswertung der Falle: Stichproben lassen Schritte aus; „am Ende“ beginnt das Minimum jedes Mal neu, es bleibt der letzte Bahnpunkt
   if (STAT5 == 6u || STAT5 == 7u) { *mn = min(*mn, length(z)); }   // Ursprungsnähe: kleinster Betrag der Bahn
   if (STAT5 == 7u) { *n += 1u; return; }
   if (STAT5 == 10u) { let r2 = dot(z, z); if (r2 < *mn) { *mn = r2; s.w = f32(i); } *st = s; *n += 1u; return; }   // Periodengebiete: der Schritt der größten Nähe zum Ursprung
@@ -4615,6 +4737,7 @@ fn stNimm5(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f,
   if (STAT5 == 15u) { s.x += w * (1.0 - exp(-length(z - zv) / tp.x)); s.z += w; *st = s; *n += 1u; return; }   // Weglänge: gewichtetes Mittel der gedämpften Schrittlängen
   if (STAT5 == 16u) { if (dot(z, z) < tp.x * tp.x) { s.x += w * z.x; s.y += w * z.y; s.z += w; } *st = s; *n += 1u; return; }   // Schwerpunkt der Bahnpunkte im Kreis |z| < 2
   if (STAT5 == 19u) { let v = z - tp.yz; let r = max(length(v), 1.0e-30); let b = max(tp.x, 1.0e-3); let ph = atan2(v.y, v.x); let kk = round((log(r) / b - ph) * (1.0 / 6.2831853)); *mn = min(*mn, abs(r - exp(b * (ph + 6.2831853 * kk)))); *n += 1u; return; }   // Spiralfalle: radialer Abstand zur nächsten Windung von r = e^(b·φ) um (tp.y, tp.z)
+  if (STAT5 == 21u) { let d = rosetteAbstand(z, tp); if (d < *mn) { *mn = d; s.z = atan2(z.y, z.x); s.w = f32(i); } *st = s; *n += 1u; return; }   // Rosettenfalle: kleinster Abstand (mn), dazu Winkel (s.z) und Schritt (s.w) des Kontakts
   if (STAT5 == 17u) { *mn = min(*mn, length(z - tp.xy)); *n += 1u; return; }   // Punktfalle: kleinster Abstand zum Punkt (tp.x, tp.y)
   if (STAT5 == 1u) { s.x = min(s.x, min(abs(z.x), abs(z.y))); }
   else if (STAT5 == 2u) { s.x = min(s.x, abs(z.x)); s.y = min(s.y, abs(z.y)); }
@@ -4648,6 +4771,7 @@ fn stAus5(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT5 == 18u) { let f = select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
   if (STAT5 == 16u) { return bitcast<u32>(select(atan2(st.y, st.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Schwerpunkt: sein Winkel in Umläufen
   if (STAT5 == 19u) { return bitcast<u32>(mn); }   // Spiralfalle roh: Textur und Färbung nehmen den Logarithmus
+  if (STAT5 == 21u) { let tq = P.texQ[4]; let wahl = u32(tq.z + 0.5); if (wahl == 1u) { return bitcast<u32>(clamp(st.w / f32(max(P.maxIter, 1u)), 0.0, 1.0)); } if (wahl == 2u) { return bitcast<u32>(st.z * (1.0 / 6.2831853) + 0.5); } return bitcast<u32>(exp(-pow(min(mn / max(tq.x, 1.0e-6), 1.0e3), max(tq.y, 1.0e-3)))); }   // Rosettenfalle: Maske e^−(d/w)^h des kleinsten Abstands, Kontaktiteration (Anteil der Iterationszahl) oder Kontaktwinkel (Umläufe)
   if (STAT5 == 17u) { return bitcast<u32>(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Punktfalle: logarithmisch wie die Ursprungsnähe
   if (STAT5 == 2u) { return pack2x16float(clamp(log(max(st.xy, vec2f(1.0e-30))), vec2f(-6.0e4), vec2f(6.0e4))); }   // log-Abstände
   if (STAT5 == 5u) { return pack2x16float(st.xy / nn); }                                                              // Anteile
@@ -4665,6 +4789,7 @@ fn stNimm6(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f,
   if (!nimm) { return; }
   if (STAT6 == 20u) { eigenNimm(5u, st, n, z, zv, cc, w, i); return; }   // eigener Ausdruck dieses Platzes
   var s = *st;
+  if (fallenSammler(STAT6)) { let pol = P.texQ[5].w; if (!fallenSchritt(pol, i)) { return; } if (pol < -0.5) { *mn = 1.0e30; s.x = 1.0e30; } }   // Auswertung der Falle: Stichproben lassen Schritte aus; „am Ende“ beginnt das Minimum jedes Mal neu, es bleibt der letzte Bahnpunkt
   if (STAT6 == 6u || STAT6 == 7u) { *mn = min(*mn, length(z)); }   // Ursprungsnähe: kleinster Betrag der Bahn
   if (STAT6 == 7u) { *n += 1u; return; }
   if (STAT6 == 10u) { let r2 = dot(z, z); if (r2 < *mn) { *mn = r2; s.w = f32(i); } *st = s; *n += 1u; return; }   // Periodengebiete: der Schritt der größten Nähe zum Ursprung
@@ -4676,6 +4801,7 @@ fn stNimm6(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f,
   if (STAT6 == 15u) { s.x += w * (1.0 - exp(-length(z - zv) / tp.x)); s.z += w; *st = s; *n += 1u; return; }   // Weglänge: gewichtetes Mittel der gedämpften Schrittlängen
   if (STAT6 == 16u) { if (dot(z, z) < tp.x * tp.x) { s.x += w * z.x; s.y += w * z.y; s.z += w; } *st = s; *n += 1u; return; }   // Schwerpunkt der Bahnpunkte im Kreis |z| < 2
   if (STAT6 == 19u) { let v = z - tp.yz; let r = max(length(v), 1.0e-30); let b = max(tp.x, 1.0e-3); let ph = atan2(v.y, v.x); let kk = round((log(r) / b - ph) * (1.0 / 6.2831853)); *mn = min(*mn, abs(r - exp(b * (ph + 6.2831853 * kk)))); *n += 1u; return; }   // Spiralfalle: radialer Abstand zur nächsten Windung von r = e^(b·φ) um (tp.y, tp.z)
+  if (STAT6 == 21u) { let d = rosetteAbstand(z, tp); if (d < *mn) { *mn = d; s.z = atan2(z.y, z.x); s.w = f32(i); } *st = s; *n += 1u; return; }   // Rosettenfalle: kleinster Abstand (mn), dazu Winkel (s.z) und Schritt (s.w) des Kontakts
   if (STAT6 == 17u) { *mn = min(*mn, length(z - tp.xy)); *n += 1u; return; }   // Punktfalle: kleinster Abstand zum Punkt (tp.x, tp.y)
   if (STAT6 == 1u) { s.x = min(s.x, min(abs(z.x), abs(z.y))); }
   else if (STAT6 == 2u) { s.x = min(s.x, abs(z.x)); s.y = min(s.y, abs(z.y)); }
@@ -4709,6 +4835,7 @@ fn stAus6(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT6 == 18u) { let f = select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
   if (STAT6 == 16u) { return bitcast<u32>(select(atan2(st.y, st.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Schwerpunkt: sein Winkel in Umläufen
   if (STAT6 == 19u) { return bitcast<u32>(mn); }   // Spiralfalle roh: Textur und Färbung nehmen den Logarithmus
+  if (STAT6 == 21u) { let tq = P.texQ[5]; let wahl = u32(tq.z + 0.5); if (wahl == 1u) { return bitcast<u32>(clamp(st.w / f32(max(P.maxIter, 1u)), 0.0, 1.0)); } if (wahl == 2u) { return bitcast<u32>(st.z * (1.0 / 6.2831853) + 0.5); } return bitcast<u32>(exp(-pow(min(mn / max(tq.x, 1.0e-6), 1.0e3), max(tq.y, 1.0e-3)))); }   // Rosettenfalle: Maske e^−(d/w)^h des kleinsten Abstands, Kontaktiteration (Anteil der Iterationszahl) oder Kontaktwinkel (Umläufe)
   if (STAT6 == 17u) { return bitcast<u32>(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Punktfalle: logarithmisch wie die Ursprungsnähe
   if (STAT6 == 2u) { return pack2x16float(clamp(log(max(st.xy, vec2f(1.0e-30))), vec2f(-6.0e4), vec2f(6.0e4))); }   // log-Abstände
   if (STAT6 == 5u) { return pack2x16float(st.xy / nn); }                                                              // Anteile
@@ -4775,10 +4902,15 @@ fn texWert(kind: u32, roh: u32, z: vec2f, nu: f32, dist: f32, tp: vec4f) -> f32 
   return clamp(y, 0.0, 1.0);
 }
 fn stGewicht(i: u32) -> f32 { return select(pow(f32(i), P.extra2.x), 1.0, P.extra2.x == 0.0); }   // Gewicht des Schritts i (i ≥ 1)
+// Rosettenfalle (Sammler 21): Abstand des Bahnpunkts zur Kurve ln r = a·cos(k·θ + τ·ln r + φ) in Polarkoordinaten; tp = (a, k, τ, φ in Grad)
+fn rosetteAbstand(z: vec2f, tp: vec4f) -> f32 { let lr = log(max(length(z), 1.0e-30)); return abs(lr - tp.x * cos(tp.y * atan2(z.y, z.x) + tp.z * lr + tp.w * 0.017453292)); }
+fn fallenSammler(stat: u32) -> bool { return stat == 1u || stat == 7u || stat == 13u || stat == 14u || stat == 17u || stat == 19u || stat == 21u; }   // Sammler der Fallen (Kreuz, Ursprung, Gitter, Ring, Punkt, Spirale, Rosette): für sie gilt die Auswertung texQ.w
+fn fallenSchritt(pol: f32, i: u32) -> bool { return !(pol > 0.5 && (i % u32(pol + 0.5)) != 0u); }   // zählt der Schritt i bei dieser Auswertung? Stichproben (pol = n) nehmen nur jeden n-ten
 fn stNimm(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f, cc: vec2f, nimm: bool, w: f32, mn: ptr<function, f32>, i: u32, tp: vec4f) {   // w = Gewicht des Schritts (Mittel), mn = Ursprungsnähe, i = Schritt
   if (!nimm) { return; }
   if (STAT == 20u) { eigenNimm(0u, st, n, z, zv, cc, w, i); return; }   // eigener Ausdruck dieses Platzes
   var s = *st;
+  if (fallenSammler(STAT)) { let pol = P.texQ[0].w; if (!fallenSchritt(pol, i)) { return; } if (pol < -0.5) { *mn = 1.0e30; s.x = 1.0e30; } }   // Auswertung der Falle: Stichproben lassen Schritte aus; „am Ende“ beginnt das Minimum jedes Mal neu, es bleibt der letzte Bahnpunkt
   if (STAT == 6u || STAT == 7u) { *mn = min(*mn, length(z)); }   // Ursprungsnähe: kleinster Betrag der Bahn
   if (STAT == 7u) { *n += 1u; return; }
   if (STAT == 10u) { let r2 = dot(z, z); if (r2 < *mn) { *mn = r2; s.w = f32(i); } *st = s; *n += 1u; return; }   // Periodengebiete: der Schritt der größten Nähe zum Ursprung
@@ -4790,6 +4922,7 @@ fn stNimm(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f, 
   if (STAT == 15u) { s.x += w * (1.0 - exp(-length(z - zv) / tp.x)); s.z += w; *st = s; *n += 1u; return; }   // Weglänge: gewichtetes Mittel der gedämpften Schrittlängen
   if (STAT == 16u) { if (dot(z, z) < tp.x * tp.x) { s.x += w * z.x; s.y += w * z.y; s.z += w; } *st = s; *n += 1u; return; }   // Schwerpunkt der Bahnpunkte im Kreis |z| < 2
   if (STAT == 19u) { let v = z - tp.yz; let r = max(length(v), 1.0e-30); let b = max(tp.x, 1.0e-3); let ph = atan2(v.y, v.x); let kk = round((log(r) / b - ph) * (1.0 / 6.2831853)); *mn = min(*mn, abs(r - exp(b * (ph + 6.2831853 * kk)))); *n += 1u; return; }   // Spiralfalle: radialer Abstand zur nächsten Windung von r = e^(b·φ) um (tp.y, tp.z)
+  if (STAT == 21u) { let d = rosetteAbstand(z, tp); if (d < *mn) { *mn = d; s.z = atan2(z.y, z.x); s.w = f32(i); } *st = s; *n += 1u; return; }   // Rosettenfalle: kleinster Abstand (mn), dazu Winkel (s.z) und Schritt (s.w) des Kontakts
   if (STAT == 17u) { *mn = min(*mn, length(z - tp.xy)); *n += 1u; return; }   // Punktfalle: kleinster Abstand zum Punkt (tp.x, tp.y)
   if (STAT == 1u) { s.x = min(s.x, min(abs(z.x), abs(z.y))); }
   else if (STAT == 2u) { s.x = min(s.x, abs(z.x)); s.y = min(s.y, abs(z.y)); }
@@ -4823,6 +4956,7 @@ fn stAus(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   /
   if (STAT == 18u) { let f = select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
   if (STAT == 16u) { return bitcast<u32>(select(atan2(st.y, st.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Schwerpunkt: sein Winkel in Umläufen
   if (STAT == 19u) { return bitcast<u32>(mn); }   // Spiralfalle roh: Textur und Färbung nehmen den Logarithmus
+  if (STAT == 21u) { let tq = P.texQ[0]; let wahl = u32(tq.z + 0.5); if (wahl == 1u) { return bitcast<u32>(clamp(st.w / f32(max(P.maxIter, 1u)), 0.0, 1.0)); } if (wahl == 2u) { return bitcast<u32>(st.z * (1.0 / 6.2831853) + 0.5); } return bitcast<u32>(exp(-pow(min(mn / max(tq.x, 1.0e-6), 1.0e3), max(tq.y, 1.0e-3)))); }   // Rosettenfalle: Maske e^−(d/w)^h des kleinsten Abstands, Kontaktiteration (Anteil der Iterationszahl) oder Kontaktwinkel (Umläufe)
   if (STAT == 17u) { return bitcast<u32>(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Punktfalle: logarithmisch wie die Ursprungsnähe
   if (STAT == 2u) { return pack2x16float(clamp(log(max(st.xy, vec2f(1.0e-30))), vec2f(-6.0e4), vec2f(6.0e4))); }   // log-Abstände
   if (STAT == 5u) { return pack2x16float(st.xy / nn); }                                                              // Anteile
@@ -4951,7 +5085,8 @@ fn jitter(px: vec2u, seed: u32) -> vec2f {
 // Schlanker Kern wie in der Urfassung: z² + c ohne Inversion, Ableitung, Zyklus und Näherung (eigene Funktion, damit
 // der Prolog und Epilog des allgemeinen Shaders nicht im Registerhaushalt landen)
 var<private> gVb: f32 = 1.0e30;   // Fallenverbund: kleinstes weiches Minimum der Fallenabstände entlang der Bahn
-fn fallenArt(kind: u32) -> bool { return kind == 4u || kind == 5u || kind == 14u || kind == 15u || kind == 19u || kind == 20u; }   // Fallen-Texturarten: Kreuz, Ursprung, Gitter, Ring, Punkt, Spirale
+var<private> gVbE: f32 = 1.0e30;  // dasselbe für Fallen mit Auswertung „am Ende“: nur der jüngste Bahnschritt (ohne solche Fallen bleibt es 1e30 und ändert nichts)
+fn fallenArt(kind: u32) -> bool { return kind == 4u || kind == 5u || kind == 14u || kind == 15u || kind == 19u || kind == 20u || kind == 23u; }   // Fallen-Texturarten: Kreuz, Ursprung, Gitter, Ring, Punkt, Spirale, Rosette
 fn fallenAbstand(stat: u32, z: vec2f, tp: vec4f) -> f32 {   // Abstand eines Bahnpunkts zur Form des Sammlers; −1: keine Falle
   if (stat == 1u) { return min(abs(z.x), abs(z.y)); }
   if (stat == 7u) { return length(z); }
@@ -4959,21 +5094,23 @@ fn fallenAbstand(stat: u32, z: vec2f, tp: vec4f) -> f32 {   // Abstand eines Bah
   if (stat == 14u) { return ringAbstand(z, tp); }
   if (stat == 17u) { return length(z - tp.xy); }
   if (stat == 19u) { let v = z - tp.yz; let r = max(length(v), 1.0e-30); let b = max(tp.x, 1.0e-3); let ph = atan2(v.y, v.x); let kk = round((log(r) / b - ph) * (1.0 / 6.2831853)); return abs(r - exp(b * (ph + 6.2831853 * kk))); }
+  if (stat == 21u) { return rosetteAbstand(z, tp); }
   return -1.0;
 }
 fn smin(a: f32, b: f32, k: f32) -> f32 { let h = max(k - abs(a - b), 0.0) / k; return min(a, b) - h * h * k * 0.25; }   // weiches Minimum (polynomial)
-fn fallenVerbund(z: vec2f) -> f32 {   // weiches Minimum über die Fallen-Sammler der Maske P.extra2.w, Weichheit P.extra2.z
-  let mk = u32(P.extra2.w); let k = P.extra2.z; var d = 1.0e30;
-  if ((mk & 1u) != 0u) { let a = fallenAbstand(STAT, z, P.texP[0]); if (a >= 0.0) { d = smin(d, a, k); } }
-  if ((mk & 2u) != 0u) { let a = fallenAbstand(STAT2, z, P.texP[1]); if (a >= 0.0) { d = smin(d, a, k); } }
-  if ((mk & 4u) != 0u) { let a = fallenAbstand(STAT3, z, P.texP[2]); if (a >= 0.0) { d = smin(d, a, k); } }
-  if ((mk & 8u) != 0u) { let a = fallenAbstand(STAT4, z, P.texP[3]); if (a >= 0.0) { d = smin(d, a, k); } }
-  if ((mk & 16u) != 0u) { let a = fallenAbstand(STAT5, z, P.texP[4]); if (a >= 0.0) { d = smin(d, a, k); } }
-  if ((mk & 32u) != 0u) { let a = fallenAbstand(STAT6, z, P.texP[5]); if (a >= 0.0) { d = smin(d, a, k); } }
-  return d;
+fn fallenVerbundNimm(z: vec2f, i: u32) {   // ein Bahnschritt: weiches Minimum über die Fallen-Sammler der Maske P.extra2.w (Weichheit P.extra2.z); je Auswertung des Sammlers in gVb (Minimum der Bahn) oder gVbE (nur der letzte Schritt)
+  let mk = u32(P.extra2.w); let k = P.extra2.z; var d = 1.0e30; var e = 1.0e30;
+  if ((mk & 1u) != 0u) { let pol = P.texQ[0].w; if (fallenSchritt(pol, i)) { let a = fallenAbstand(STAT, z, P.texP[0]); if (a >= 0.0) { if (pol < -0.5) { e = smin(e, a, k); } else { d = smin(d, a, k); } } } }
+  if ((mk & 2u) != 0u) { let pol = P.texQ[1].w; if (fallenSchritt(pol, i)) { let a = fallenAbstand(STAT2, z, P.texP[1]); if (a >= 0.0) { if (pol < -0.5) { e = smin(e, a, k); } else { d = smin(d, a, k); } } } }
+  if ((mk & 4u) != 0u) { let pol = P.texQ[2].w; if (fallenSchritt(pol, i)) { let a = fallenAbstand(STAT3, z, P.texP[2]); if (a >= 0.0) { if (pol < -0.5) { e = smin(e, a, k); } else { d = smin(d, a, k); } } } }
+  if ((mk & 8u) != 0u) { let pol = P.texQ[3].w; if (fallenSchritt(pol, i)) { let a = fallenAbstand(STAT4, z, P.texP[3]); if (a >= 0.0) { if (pol < -0.5) { e = smin(e, a, k); } else { d = smin(d, a, k); } } } }
+  if ((mk & 16u) != 0u) { let pol = P.texQ[4].w; if (fallenSchritt(pol, i)) { let a = fallenAbstand(STAT5, z, P.texP[4]); if (a >= 0.0) { if (pol < -0.5) { e = smin(e, a, k); } else { d = smin(d, a, k); } } } }
+  if ((mk & 32u) != 0u) { let pol = P.texQ[5].w; if (fallenSchritt(pol, i)) { let a = fallenAbstand(STAT6, z, P.texP[5]); if (a >= 0.0) { if (pol < -0.5) { e = smin(e, a, k); } else { d = smin(d, a, k); } } } }
+  gVb = min(gVb, d); gVbE = e;
 }
+fn fallenVerbundWert() -> f32 { return smin(gVb, gVbE, P.extra2.z); }   // das verbundene Minimum der Bahn samt den Fallen „am Ende“ (ohne solche: gVb wie bisher)
 fn texWertV(slot: u32, kind: u32, roh: u32, z: vec2f, nu: f32, dist: f32, tp: vec4f) -> f32 {   // Fallenverbund: der erste Fallenplatz trägt das verbundene Minimum (logarithmisch wie die Punktfalle), die anderen Fallenplätze lässt der Farbpass aus
-  if (P.extra2.z > 0.0 && fallenArt(kind)) { if (slot + 1u == P.verbundErster) { return clamp(1.0 + 0.1 * log(max(gVb, 1.0e-30)), 0.0, 1.0); } return 0.5; }
+  if (P.extra2.z > 0.0 && fallenArt(kind)) { if (slot + 1u == P.verbundErster) { return clamp(1.0 + 0.1 * log(max(fallenVerbundWert(), 1.0e-30)), 0.0, 1.0); } return 0.5; }
   return texWert(kind, roh, z, nu, dist, tp);
 }
 fn texInnenPack(st: vec4f, stN: u32, stMin: f32, st2: vec4f, stN2: u32, stMin2: f32, st3: vec4f, stN3: u32, stMin3: f32, st4: vec4f, stN4: u32, stMin4: f32, st5: vec4f, stN5: u32, stMin5: f32, st6: vec4f, stN6: u32, stMin6: f32, z: vec2f, nu: f32, dist: f32, bail: f32) -> vec2u {   // Texturen auch innen: die vier Werte gepackt für z und w; Mittel ohne Glättung (r2 = bail)
@@ -5125,7 +5262,7 @@ fn fsFast(pos: vec4f) -> vec4u {
       let r2 = dot(z, z);
       if (select(flucht(z) > bail, !(r2 <= bail) && lyN > 0u, LYAP != 0u)) {   // Lyapunov: der erste Schritt zählt immer; sonst der Fluchttest in der gewählten Form
         if (STAT != 0u || STAT2 != 0u) { stNimm(&st, &stN, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin, i, P.texP[0]); if (STAT2 != 0u) { stNimm2(&st2, &stN2, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin2, i, P.texP[1]); } if (STAT3 != 0u) { stNimm3(&st3, &stN3, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin3, i, P.texP[2]); } if (STAT4 != 0u) { stNimm4(&st4, &stN4, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin4, i, P.texP[3]); } if (STAT5 != 0u) { stNimm5(&st5, &stN5, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin5, i, P.texP[4]); } if (STAT6 != 0u) { stNimm6(&st6, &stN6, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin6, i, P.texP[5]); } }   // der ausbrechende Schritt zählt mit
-        if (P.extra2.z > 0.0 && f32(i) > P.extra.w) { gVb = min(gVb, fallenVerbund(z)); }   // Fallenverbund je Schritt
+        if (P.extra2.z > 0.0 && f32(i) > P.extra.w) { fallenVerbundNimm(z, i); }   // Fallenverbund je Schritt
         nu = f32(i) + 1.0 - (log2(0.5 * log2(r2)) - 2.7317) / lp;
         let r = sqrt(r2);
         dist = r * log(r) / max(fnorm(der), 1.0e-30);
@@ -5196,7 +5333,7 @@ fn fsFast(pos: vec4f) -> vec4u {
       }
       if (LYAP != 0u) { lyNimm(&ly, &lyN, &lyDrin, z, fd, i > 0u); }   // fd = d·z^(d−1), die Ableitung an z
       if (STAT != 0u || STAT2 != 0u) { stNimm(&st, &stN, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin, i, P.texP[0]); if (STAT2 != 0u) { stNimm2(&st2, &stN2, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin2, i, P.texP[1]); } if (STAT3 != 0u) { stNimm3(&st3, &stN3, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin3, i, P.texP[2]); } if (STAT4 != 0u) { stNimm4(&st4, &stN4, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin4, i, P.texP[3]); } if (STAT5 != 0u) { stNimm5(&st5, &stN5, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin5, i, P.texP[4]); } if (STAT6 != 0u) { stNimm6(&st6, &stN6, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin6, i, P.texP[5]); } gZ2 = zAlt; zAlt = z; }
-      if (P.extra2.z > 0.0 && f32(i) > P.extra.w) { gVb = min(gVb, fallenVerbund(z)); }   // Fallenverbund je Schritt
+      if (P.extra2.z > 0.0 && f32(i) > P.extra.w) { fallenVerbundNimm(z, i); }   // Fallenverbund je Schritt
       if (f == 17u) {   // zwei Potenzen: δ' = a·((Z+δ)^b − Z^b) + d·((Z+δ)^f − Z^f) + δc
         if (de) { der = M(P.param * P.param2.x * rPotenz(z, P.param2.x - 1.0) + P.param2.y * P.param2.z * rPotenz(z, P.param2.z - 1.0)) * der + DpsC; }
         let nz = nahZwei(zOff, A17, Wr, d, Z);   // nahe am kritischen Punkt die Reihe ohne linearen Term
@@ -5272,7 +5409,7 @@ fn fsFast(pos: vec4f) -> vec4u {
       let r2 = dot(z, z);
       if (select(flucht(z) > bail, !(r2 <= bail) && lyN > 0u, LYAP != 0u)) {   // Lyapunov: der erste Schritt zählt immer; sonst der Fluchttest in der gewählten Form
         if (STAT != 0u || STAT2 != 0u) { stNimm(&st, &stN, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin, i, P.texP[0]); if (STAT2 != 0u) { stNimm2(&st2, &stN2, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin2, i, P.texP[1]); } if (STAT3 != 0u) { stNimm3(&st3, &stN3, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin3, i, P.texP[2]); } if (STAT4 != 0u) { stNimm4(&st4, &stN4, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin4, i, P.texP[3]); } if (STAT5 != 0u) { stNimm5(&st5, &stN5, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin5, i, P.texP[4]); } if (STAT6 != 0u) { stNimm6(&st6, &stN6, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin6, i, P.texP[5]); } }   // der ausbrechende Schritt zählt mit
-        if (P.extra2.z > 0.0 && f32(i) > P.extra.w) { gVb = min(gVb, fallenVerbund(z)); }   // Fallenverbund je Schritt
+        if (P.extra2.z > 0.0 && f32(i) > P.extra.w) { fallenVerbundNimm(z, i); }   // Fallenverbund je Schritt
         nu = f32(i) + 1.0 - (log2(0.5 * log2(r2)) - 2.7317) / lp;
         let r = sqrt(r2);
         dist = r * log(r) / max(fnorm(der), 1.0e-30);
@@ -5440,7 +5577,7 @@ fn fsFast(pos: vec4f) -> vec4u {
       if (stop) { break; }
       if (LYAP != 0u) { lyNimm(&ly, &lyN, &lyDrin, z, Fm[0], i > 0u); }   // Fm = M(f'(z)): erste Spalte ist die Ableitung
       if (STAT != 0u || STAT2 != 0u) { stNimm(&st, &stN, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin, i, P.texP[0]); if (STAT2 != 0u) { stNimm2(&st2, &stN2, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin2, i, P.texP[1]); } if (STAT3 != 0u) { stNimm3(&st3, &stN3, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin3, i, P.texP[2]); } if (STAT4 != 0u) { stNimm4(&st4, &stN4, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin4, i, P.texP[3]); } if (STAT5 != 0u) { stNimm5(&st5, &stN5, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin5, i, P.texP[4]); } if (STAT6 != 0u) { stNimm6(&st6, &stN6, z, zAlt, cVoll, f32(i) > P.extra.w, stGewicht(i), &stMin6, i, P.texP[5]); } gZ2 = zAlt; zAlt = z; }
-      if (P.extra2.z > 0.0 && f32(i) > P.extra.w) { gVb = min(gVb, fallenVerbund(z)); }   // Fallenverbund je Schritt
+      if (P.extra2.z > 0.0 && f32(i) > P.extra.w) { fallenVerbundNimm(z, i); }   // Fallenverbund je Schritt
       if (de) {
         var dn = Fm * (Jf * der) + Gm * DpsC;   // Kettenregel über die Faltung
         let JpAlt = Jp;
@@ -5658,7 +5795,7 @@ fn paarAchse(wert: u32, roh: f32, nu: f32, faktor: f32, abzug: u32, flags: u32) 
   if ((flags & 2u) != 0u) { w = max(w, 0.0); }
   return w * faktor;
 }
-fn fallenArt(kind: u32) -> bool { return (kind == 4u) | (kind == 5u) | (kind == 14u) | (kind == 15u) | (kind == 19u) | (kind == 20u); }   // Fallen-Texturarten: Kreuz, Ursprung, Gitter, Ring, Punkt, Spirale; ohne Abkürzung, siehe Kopf
+fn fallenArt(kind: u32) -> bool { return (kind == 4u) | (kind == 5u) | (kind == 14u) | (kind == 15u) | (kind == 19u) | (kind == 20u) | (kind == 23u); }   // Fallen-Texturarten: Kreuz, Ursprung, Gitter, Ring, Punkt, Spirale, Rosette; ohne Abkürzung, siehe Kopf
 fn verbundStill(i: u32) -> bool { return (C.opt.y > 0.0) & fallenArt(u32(C.stapel[3u * i].x)) & (i + 1u != u32(C.opt.z)); }   // Fallenverbund: nur der erste Fallenplatz trägt das verbundene Minimum
 fn texZiel(i: u32) -> u32 { return u32(C.stapel[3u * i + 1u].w); }   // Ziel des Platzes: 0 erste Achse, 1 zweite Achse, 2 Helligkeit (Vorgabe)
 fn texAchsen(px: vec4u, kw: f32) -> vec2f {   // Summe der Plätze, die auf eine Achse der Palette wirken (Wert · Stärke)
@@ -6490,6 +6627,7 @@ uniform vec2 uVerbund;   // Fallenverbund: Weichheit (0 = aus), Maske der Sammle
 uniform uint uVerbundErster;   // erster Fallenplatz (1-basiert), 0 = keiner
 uniform vec4 uTexP[6];   // eigene Regler der Texturarten je Sammler
 uniform vec4 uTexR[4];   // dieselben je Platz des Stapels (für texWert)
+uniform vec4 uTexQ[6];   // je Sammler: Regler 5 und 6 der Art, Wertwahl, Auswertung der Falle (wie P.texQ im WGSL-Shader)
 float steigRichtung(vec2 z, mat2 J) { vec2 g = vec2(dot(J[0], z), dot(J[1], z)); return atan(-g.y, -g.x); }   // wie im WGSL-Shader
 vec2 rot2(vec2 v) { return vec2(v.x * uRot.x - v.y * uRot.y, v.x * uRot.y + v.y * uRot.x); }   // wie im WGSL-Shader
 float flucht(vec2 z) {   // wie im WGSL-Shader
@@ -6715,9 +6853,13 @@ float ringAbstand(vec2 z, vec4 tp) {   // wie im WGSL-Shader
   float r = length(z), rr = max(tp.x + tp.y * round((r - tp.x) / tp.y), tp.x - tp.y * floor(tp.x / tp.y));
   return abs(r - rr);
 }
+float rosetteAbstand(vec2 z, vec4 tp) { float lr = log(max(length(z), 1.0e-30)); return abs(lr - tp.x * cos(tp.y * atan(z.y, z.x) + tp.z * lr + tp.w * 0.017453292)); }   // Rosettenfalle wie im WGSL-Shader
+bool fallenSammler(int stat) { return stat == 1 || stat == 7 || stat == 13 || stat == 14 || stat == 17 || stat == 19 || stat == 21; }   // wie im WGSL-Shader
+bool fallenSchritt(float pol, uint i) { return !(pol > 0.5 && (i % uint(pol + 0.5)) != 0u); }   // wie im WGSL-Shader
 void stNimm2(inout vec4 st, inout uint n, vec2 z, vec2 zv, vec2 cc, bool nimm, float w, inout float mn, uint i, vec4 tp) {   // Bahnstatistik wie im WGSL-Shader
   if (!nimm) return;
   if (STAT2 == 20) { eigenNimm(1u, st, n, z, zv, cc, w, i); return; }   // eigener Ausdruck dieses Platzes
+  if (fallenSammler(STAT2)) { float pol = uTexQ[1].w; if (!fallenSchritt(pol, i)) return; if (pol < -0.5) { mn = 1.0e30; st.x = 1.0e30; } }   // Auswertung der Falle wie im WGSL-Shader
   if (STAT2 == 6 || STAT2 == 7) mn = min(mn, length(z));
   if (STAT2 == 7) { n++; return; }
   if (STAT2 == 10) { float r2 = dot(z, z); if (r2 < mn) { mn = r2; st.w = float(i); } n++; return; }
@@ -6729,6 +6871,7 @@ void stNimm2(inout vec4 st, inout uint n, vec2 z, vec2 zv, vec2 cc, bool nimm, f
   if (STAT2 == 15) { st.x += w * (1.0 - exp(-length(z - zv) / tp.x)); st.z += w; n++; return; }
   if (STAT2 == 16) { if (dot(z, z) < tp.x * tp.x) { st.x += w * z.x; st.y += w * z.y; st.z += w; } n++; return; }
   if (STAT2 == 19) { vec2 v = z - tp.yz; float r = max(length(v), 1.0e-30); float b = max(tp.x, 1.0e-3); float ph = atan(v.y, v.x); float kk = round((log(r) / b - ph) / 6.2831853); mn = min(mn, abs(r - exp(b * (ph + 6.2831853 * kk)))); n++; return; }   // Spiralfalle wie im WGSL-Shader
+  if (STAT2 == 21) { float d = rosetteAbstand(z, tp); if (d < mn) { mn = d; st.z = atan(z.y, z.x); st.w = float(i); } n++; return; }   // Rosettenfalle wie im WGSL-Shader
   if (STAT2 == 17) { mn = min(mn, length(z - tp.xy)); n++; return; }
   if (STAT2 == 1) st.x = min(st.x, min(abs(z.x), abs(z.y)));
   else if (STAT2 == 2) { st.x = min(st.x, abs(z.x)); st.y = min(st.y, abs(z.y)); }
@@ -6758,6 +6901,7 @@ uint stAus2(vec4 st, uint n, float r2, float bail, float mn, vec4 tp) {
   if (STAT2 == 18) { float f = n >= 2u ? clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0) : 1.0; vec2 v = st.xy - (1.0 - f) * mn * vec2(cos(st.w), sin(st.w)); return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(v.y, v.x) / 6.2831853 + 0.5); }
   if (STAT2 == 16) return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(st.y, st.x) / 6.2831853 + 0.5);
   if (STAT2 == 19) return floatBitsToUint(mn);
+  if (STAT2 == 21) { vec4 tq = uTexQ[1]; uint wahl = uint(tq.z + 0.5); if (wahl == 1u) return floatBitsToUint(clamp(st.w / float(max(uMaxIter, 1u)), 0.0, 1.0)); if (wahl == 2u) return floatBitsToUint(st.z / 6.2831853 + 0.5); return floatBitsToUint(exp(-pow(min(mn / max(tq.x, 1.0e-6), 1.0e3), max(tq.y, 1.0e-3)))); }   // Rosettenfalle wie im WGSL-Shader
   if (STAT2 == 17) return floatBitsToUint(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0));
   if (STAT2 == 2) return packHalf2x16(clamp(log(max(st.xy, vec2(1.0e-30))), vec2(-6.0e4), vec2(6.0e4)));
   if (STAT2 == 5) return packHalf2x16(st.xy / nn);
@@ -6770,6 +6914,7 @@ uint stAus2(vec4 st, uint n, float r2, float bail, float mn, vec4 tp) {
 void stNimm3(inout vec4 st, inout uint n, vec2 z, vec2 zv, vec2 cc, bool nimm, float w, inout float mn, uint i, vec4 tp) {   // Bahnstatistik wie im WGSL-Shader
   if (!nimm) return;
   if (STAT3 == 20) { eigenNimm(2u, st, n, z, zv, cc, w, i); return; }   // eigener Ausdruck dieses Platzes
+  if (fallenSammler(STAT3)) { float pol = uTexQ[2].w; if (!fallenSchritt(pol, i)) return; if (pol < -0.5) { mn = 1.0e30; st.x = 1.0e30; } }   // Auswertung der Falle wie im WGSL-Shader
   if (STAT3 == 6 || STAT3 == 7) mn = min(mn, length(z));
   if (STAT3 == 7) { n++; return; }
   if (STAT3 == 10) { float r2 = dot(z, z); if (r2 < mn) { mn = r2; st.w = float(i); } n++; return; }
@@ -6781,6 +6926,7 @@ void stNimm3(inout vec4 st, inout uint n, vec2 z, vec2 zv, vec2 cc, bool nimm, f
   if (STAT3 == 15) { st.x += w * (1.0 - exp(-length(z - zv) / tp.x)); st.z += w; n++; return; }
   if (STAT3 == 16) { if (dot(z, z) < tp.x * tp.x) { st.x += w * z.x; st.y += w * z.y; st.z += w; } n++; return; }
   if (STAT3 == 19) { vec2 v = z - tp.yz; float r = max(length(v), 1.0e-30); float b = max(tp.x, 1.0e-3); float ph = atan(v.y, v.x); float kk = round((log(r) / b - ph) / 6.2831853); mn = min(mn, abs(r - exp(b * (ph + 6.2831853 * kk)))); n++; return; }   // Spiralfalle wie im WGSL-Shader
+  if (STAT3 == 21) { float d = rosetteAbstand(z, tp); if (d < mn) { mn = d; st.z = atan(z.y, z.x); st.w = float(i); } n++; return; }   // Rosettenfalle wie im WGSL-Shader
   if (STAT3 == 17) { mn = min(mn, length(z - tp.xy)); n++; return; }
   if (STAT3 == 1) st.x = min(st.x, min(abs(z.x), abs(z.y)));
   else if (STAT3 == 2) { st.x = min(st.x, abs(z.x)); st.y = min(st.y, abs(z.y)); }
@@ -6810,6 +6956,7 @@ uint stAus3(vec4 st, uint n, float r2, float bail, float mn, vec4 tp) {
   if (STAT3 == 18) { float f = n >= 2u ? clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0) : 1.0; vec2 v = st.xy - (1.0 - f) * mn * vec2(cos(st.w), sin(st.w)); return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(v.y, v.x) / 6.2831853 + 0.5); }
   if (STAT3 == 16) return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(st.y, st.x) / 6.2831853 + 0.5);
   if (STAT3 == 19) return floatBitsToUint(mn);
+  if (STAT3 == 21) { vec4 tq = uTexQ[2]; uint wahl = uint(tq.z + 0.5); if (wahl == 1u) return floatBitsToUint(clamp(st.w / float(max(uMaxIter, 1u)), 0.0, 1.0)); if (wahl == 2u) return floatBitsToUint(st.z / 6.2831853 + 0.5); return floatBitsToUint(exp(-pow(min(mn / max(tq.x, 1.0e-6), 1.0e3), max(tq.y, 1.0e-3)))); }   // Rosettenfalle wie im WGSL-Shader
   if (STAT3 == 17) return floatBitsToUint(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0));
   if (STAT3 == 2) return packHalf2x16(clamp(log(max(st.xy, vec2(1.0e-30))), vec2(-6.0e4), vec2(6.0e4)));
   if (STAT3 == 5) return packHalf2x16(st.xy / nn);
@@ -6822,6 +6969,7 @@ uint stAus3(vec4 st, uint n, float r2, float bail, float mn, vec4 tp) {
 void stNimm4(inout vec4 st, inout uint n, vec2 z, vec2 zv, vec2 cc, bool nimm, float w, inout float mn, uint i, vec4 tp) {   // Bahnstatistik wie im WGSL-Shader
   if (!nimm) return;
   if (STAT4 == 20) { eigenNimm(3u, st, n, z, zv, cc, w, i); return; }   // eigener Ausdruck dieses Platzes
+  if (fallenSammler(STAT4)) { float pol = uTexQ[3].w; if (!fallenSchritt(pol, i)) return; if (pol < -0.5) { mn = 1.0e30; st.x = 1.0e30; } }   // Auswertung der Falle wie im WGSL-Shader
   if (STAT4 == 6 || STAT4 == 7) mn = min(mn, length(z));
   if (STAT4 == 7) { n++; return; }
   if (STAT4 == 10) { float r2 = dot(z, z); if (r2 < mn) { mn = r2; st.w = float(i); } n++; return; }
@@ -6833,6 +6981,7 @@ void stNimm4(inout vec4 st, inout uint n, vec2 z, vec2 zv, vec2 cc, bool nimm, f
   if (STAT4 == 15) { st.x += w * (1.0 - exp(-length(z - zv) / tp.x)); st.z += w; n++; return; }
   if (STAT4 == 16) { if (dot(z, z) < tp.x * tp.x) { st.x += w * z.x; st.y += w * z.y; st.z += w; } n++; return; }
   if (STAT4 == 19) { vec2 v = z - tp.yz; float r = max(length(v), 1.0e-30); float b = max(tp.x, 1.0e-3); float ph = atan(v.y, v.x); float kk = round((log(r) / b - ph) / 6.2831853); mn = min(mn, abs(r - exp(b * (ph + 6.2831853 * kk)))); n++; return; }   // Spiralfalle wie im WGSL-Shader
+  if (STAT4 == 21) { float d = rosetteAbstand(z, tp); if (d < mn) { mn = d; st.z = atan(z.y, z.x); st.w = float(i); } n++; return; }   // Rosettenfalle wie im WGSL-Shader
   if (STAT4 == 17) { mn = min(mn, length(z - tp.xy)); n++; return; }
   if (STAT4 == 1) st.x = min(st.x, min(abs(z.x), abs(z.y)));
   else if (STAT4 == 2) { st.x = min(st.x, abs(z.x)); st.y = min(st.y, abs(z.y)); }
@@ -6862,6 +7011,7 @@ uint stAus4(vec4 st, uint n, float r2, float bail, float mn, vec4 tp) {
   if (STAT4 == 18) { float f = n >= 2u ? clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0) : 1.0; vec2 v = st.xy - (1.0 - f) * mn * vec2(cos(st.w), sin(st.w)); return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(v.y, v.x) / 6.2831853 + 0.5); }
   if (STAT4 == 16) return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(st.y, st.x) / 6.2831853 + 0.5);
   if (STAT4 == 19) return floatBitsToUint(mn);
+  if (STAT4 == 21) { vec4 tq = uTexQ[3]; uint wahl = uint(tq.z + 0.5); if (wahl == 1u) return floatBitsToUint(clamp(st.w / float(max(uMaxIter, 1u)), 0.0, 1.0)); if (wahl == 2u) return floatBitsToUint(st.z / 6.2831853 + 0.5); return floatBitsToUint(exp(-pow(min(mn / max(tq.x, 1.0e-6), 1.0e3), max(tq.y, 1.0e-3)))); }   // Rosettenfalle wie im WGSL-Shader
   if (STAT4 == 17) return floatBitsToUint(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0));
   if (STAT4 == 2) return packHalf2x16(clamp(log(max(st.xy, vec2(1.0e-30))), vec2(-6.0e4), vec2(6.0e4)));
   if (STAT4 == 5) return packHalf2x16(st.xy / nn);
@@ -6874,6 +7024,7 @@ uint stAus4(vec4 st, uint n, float r2, float bail, float mn, vec4 tp) {
 void stNimm5(inout vec4 st, inout uint n, vec2 z, vec2 zv, vec2 cc, bool nimm, float w, inout float mn, uint i, vec4 tp) {   // Bahnstatistik wie im WGSL-Shader
   if (!nimm) return;
   if (STAT5 == 20) { eigenNimm(4u, st, n, z, zv, cc, w, i); return; }   // eigener Ausdruck dieses Platzes
+  if (fallenSammler(STAT5)) { float pol = uTexQ[4].w; if (!fallenSchritt(pol, i)) return; if (pol < -0.5) { mn = 1.0e30; st.x = 1.0e30; } }   // Auswertung der Falle wie im WGSL-Shader
   if (STAT5 == 6 || STAT5 == 7) mn = min(mn, length(z));
   if (STAT5 == 7) { n++; return; }
   if (STAT5 == 10) { float r2 = dot(z, z); if (r2 < mn) { mn = r2; st.w = float(i); } n++; return; }
@@ -6885,6 +7036,7 @@ void stNimm5(inout vec4 st, inout uint n, vec2 z, vec2 zv, vec2 cc, bool nimm, f
   if (STAT5 == 15) { st.x += w * (1.0 - exp(-length(z - zv) / tp.x)); st.z += w; n++; return; }
   if (STAT5 == 16) { if (dot(z, z) < tp.x * tp.x) { st.x += w * z.x; st.y += w * z.y; st.z += w; } n++; return; }
   if (STAT5 == 19) { vec2 v = z - tp.yz; float r = max(length(v), 1.0e-30); float b = max(tp.x, 1.0e-3); float ph = atan(v.y, v.x); float kk = round((log(r) / b - ph) / 6.2831853); mn = min(mn, abs(r - exp(b * (ph + 6.2831853 * kk)))); n++; return; }   // Spiralfalle wie im WGSL-Shader
+  if (STAT5 == 21) { float d = rosetteAbstand(z, tp); if (d < mn) { mn = d; st.z = atan(z.y, z.x); st.w = float(i); } n++; return; }   // Rosettenfalle wie im WGSL-Shader
   if (STAT5 == 17) { mn = min(mn, length(z - tp.xy)); n++; return; }
   if (STAT5 == 1) st.x = min(st.x, min(abs(z.x), abs(z.y)));
   else if (STAT5 == 2) { st.x = min(st.x, abs(z.x)); st.y = min(st.y, abs(z.y)); }
@@ -6914,6 +7066,7 @@ uint stAus5(vec4 st, uint n, float r2, float bail, float mn, vec4 tp) {
   if (STAT5 == 18) { float f = n >= 2u ? clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0) : 1.0; vec2 v = st.xy - (1.0 - f) * mn * vec2(cos(st.w), sin(st.w)); return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(v.y, v.x) / 6.2831853 + 0.5); }
   if (STAT5 == 16) return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(st.y, st.x) / 6.2831853 + 0.5);
   if (STAT5 == 19) return floatBitsToUint(mn);
+  if (STAT5 == 21) { vec4 tq = uTexQ[4]; uint wahl = uint(tq.z + 0.5); if (wahl == 1u) return floatBitsToUint(clamp(st.w / float(max(uMaxIter, 1u)), 0.0, 1.0)); if (wahl == 2u) return floatBitsToUint(st.z / 6.2831853 + 0.5); return floatBitsToUint(exp(-pow(min(mn / max(tq.x, 1.0e-6), 1.0e3), max(tq.y, 1.0e-3)))); }   // Rosettenfalle wie im WGSL-Shader
   if (STAT5 == 17) return floatBitsToUint(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0));
   if (STAT5 == 2) return packHalf2x16(clamp(log(max(st.xy, vec2(1.0e-30))), vec2(-6.0e4), vec2(6.0e4)));
   if (STAT5 == 5) return packHalf2x16(st.xy / nn);
@@ -6926,6 +7079,7 @@ uint stAus5(vec4 st, uint n, float r2, float bail, float mn, vec4 tp) {
 void stNimm6(inout vec4 st, inout uint n, vec2 z, vec2 zv, vec2 cc, bool nimm, float w, inout float mn, uint i, vec4 tp) {   // Bahnstatistik wie im WGSL-Shader
   if (!nimm) return;
   if (STAT6 == 20) { eigenNimm(5u, st, n, z, zv, cc, w, i); return; }   // eigener Ausdruck dieses Platzes
+  if (fallenSammler(STAT6)) { float pol = uTexQ[5].w; if (!fallenSchritt(pol, i)) return; if (pol < -0.5) { mn = 1.0e30; st.x = 1.0e30; } }   // Auswertung der Falle wie im WGSL-Shader
   if (STAT6 == 6 || STAT6 == 7) mn = min(mn, length(z));
   if (STAT6 == 7) { n++; return; }
   if (STAT6 == 10) { float r2 = dot(z, z); if (r2 < mn) { mn = r2; st.w = float(i); } n++; return; }
@@ -6937,6 +7091,7 @@ void stNimm6(inout vec4 st, inout uint n, vec2 z, vec2 zv, vec2 cc, bool nimm, f
   if (STAT6 == 15) { st.x += w * (1.0 - exp(-length(z - zv) / tp.x)); st.z += w; n++; return; }
   if (STAT6 == 16) { if (dot(z, z) < tp.x * tp.x) { st.x += w * z.x; st.y += w * z.y; st.z += w; } n++; return; }
   if (STAT6 == 19) { vec2 v = z - tp.yz; float r = max(length(v), 1.0e-30); float b = max(tp.x, 1.0e-3); float ph = atan(v.y, v.x); float kk = round((log(r) / b - ph) / 6.2831853); mn = min(mn, abs(r - exp(b * (ph + 6.2831853 * kk)))); n++; return; }   // Spiralfalle wie im WGSL-Shader
+  if (STAT6 == 21) { float d = rosetteAbstand(z, tp); if (d < mn) { mn = d; st.z = atan(z.y, z.x); st.w = float(i); } n++; return; }   // Rosettenfalle wie im WGSL-Shader
   if (STAT6 == 17) { mn = min(mn, length(z - tp.xy)); n++; return; }
   if (STAT6 == 1) st.x = min(st.x, min(abs(z.x), abs(z.y)));
   else if (STAT6 == 2) { st.x = min(st.x, abs(z.x)); st.y = min(st.y, abs(z.y)); }
@@ -6966,6 +7121,7 @@ uint stAus6(vec4 st, uint n, float r2, float bail, float mn, vec4 tp) {
   if (STAT6 == 18) { float f = n >= 2u ? clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0) : 1.0; vec2 v = st.xy - (1.0 - f) * mn * vec2(cos(st.w), sin(st.w)); return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(v.y, v.x) / 6.2831853 + 0.5); }
   if (STAT6 == 16) return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(st.y, st.x) / 6.2831853 + 0.5);
   if (STAT6 == 19) return floatBitsToUint(mn);
+  if (STAT6 == 21) { vec4 tq = uTexQ[5]; uint wahl = uint(tq.z + 0.5); if (wahl == 1u) return floatBitsToUint(clamp(st.w / float(max(uMaxIter, 1u)), 0.0, 1.0)); if (wahl == 2u) return floatBitsToUint(st.z / 6.2831853 + 0.5); return floatBitsToUint(exp(-pow(min(mn / max(tq.x, 1.0e-6), 1.0e3), max(tq.y, 1.0e-3)))); }   // Rosettenfalle wie im WGSL-Shader
   if (STAT6 == 17) return floatBitsToUint(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0));
   if (STAT6 == 2) return packHalf2x16(clamp(log(max(st.xy, vec2(1.0e-30))), vec2(-6.0e4), vec2(6.0e4)));
   if (STAT6 == 5) return packHalf2x16(st.xy / nn);
@@ -7021,6 +7177,7 @@ float stGewicht(uint i) { return uGewicht == 0.0 ? 1.0 : pow(float(i), uGewicht)
 void stNimm(inout vec4 st, inout uint n, vec2 z, vec2 zv, vec2 cc, bool nimm, float w, inout float mn, uint i, vec4 tp) {   // Bahnstatistik wie im WGSL-Shader
   if (!nimm) return;
   if (STAT == 20) { eigenNimm(0u, st, n, z, zv, cc, w, i); return; }   // eigener Ausdruck dieses Platzes
+  if (fallenSammler(STAT)) { float pol = uTexQ[0].w; if (!fallenSchritt(pol, i)) return; if (pol < -0.5) { mn = 1.0e30; st.x = 1.0e30; } }   // Auswertung der Falle wie im WGSL-Shader
   if (STAT == 6 || STAT == 7) mn = min(mn, length(z));
   if (STAT == 7) { n++; return; }
   if (STAT == 10) { float r2 = dot(z, z); if (r2 < mn) { mn = r2; st.w = float(i); } n++; return; }
@@ -7032,6 +7189,7 @@ void stNimm(inout vec4 st, inout uint n, vec2 z, vec2 zv, vec2 cc, bool nimm, fl
   if (STAT == 15) { st.x += w * (1.0 - exp(-length(z - zv) / tp.x)); st.z += w; n++; return; }
   if (STAT == 16) { if (dot(z, z) < tp.x * tp.x) { st.x += w * z.x; st.y += w * z.y; st.z += w; } n++; return; }
   if (STAT == 19) { vec2 v = z - tp.yz; float r = max(length(v), 1.0e-30); float b = max(tp.x, 1.0e-3); float ph = atan(v.y, v.x); float kk = round((log(r) / b - ph) / 6.2831853); mn = min(mn, abs(r - exp(b * (ph + 6.2831853 * kk)))); n++; return; }   // Spiralfalle wie im WGSL-Shader
+  if (STAT == 21) { float d = rosetteAbstand(z, tp); if (d < mn) { mn = d; st.z = atan(z.y, z.x); st.w = float(i); } n++; return; }   // Rosettenfalle wie im WGSL-Shader
   if (STAT == 17) { mn = min(mn, length(z - tp.xy)); n++; return; }
   if (STAT == 1) st.x = min(st.x, min(abs(z.x), abs(z.y)));
   else if (STAT == 2) { st.x = min(st.x, abs(z.x)); st.y = min(st.y, abs(z.y)); }
@@ -7061,6 +7219,7 @@ uint stAus(vec4 st, uint n, float r2, float bail, float mn, vec4 tp) {
   if (STAT == 18) { float f = n >= 2u ? clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0) : 1.0; vec2 v = st.xy - (1.0 - f) * mn * vec2(cos(st.w), sin(st.w)); return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(v.y, v.x) / 6.2831853 + 0.5); }
   if (STAT == 16) return floatBitsToUint(st.z == 0.0 ? 0.5 : atan(st.y, st.x) / 6.2831853 + 0.5);
   if (STAT == 19) return floatBitsToUint(mn);
+  if (STAT == 21) { vec4 tq = uTexQ[0]; uint wahl = uint(tq.z + 0.5); if (wahl == 1u) return floatBitsToUint(clamp(st.w / float(max(uMaxIter, 1u)), 0.0, 1.0)); if (wahl == 2u) return floatBitsToUint(st.z / 6.2831853 + 0.5); return floatBitsToUint(exp(-pow(min(mn / max(tq.x, 1.0e-6), 1.0e3), max(tq.y, 1.0e-3)))); }   // Rosettenfalle wie im WGSL-Shader
   if (STAT == 17) return floatBitsToUint(clamp(1.0 + 0.1 * log(max(mn, 1.0e-30)), 0.0, 1.0));
   if (STAT == 2) return packHalf2x16(clamp(log(max(st.xy, vec2(1.0e-30))), vec2(-6.0e4), vec2(6.0e4)));
   if (STAT == 5) return packHalf2x16(st.xy / nn);
@@ -7126,8 +7285,8 @@ mat2 j2(vec2 q, uint f) {
   if (f >= 19u && f <= 22u) return dg(sgn(q.x), 1.0);
   return dg(1.0, 1.0);
 }
-float gVb = 1.0e30;   // Fallenverbund wie im WGSL-Shader
-bool fallenArt(uint kind) { return kind == 4u || kind == 5u || kind == 14u || kind == 15u || kind == 19u || kind == 20u; }
+float gVb = 1.0e30, gVbE = 1.0e30;   // Fallenverbund wie im WGSL-Shader
+bool fallenArt(uint kind) { return kind == 4u || kind == 5u || kind == 14u || kind == 15u || kind == 19u || kind == 20u || kind == 23u; }
 float fallenAbstand(int stat, vec2 z, vec4 tp) {
   if (stat == 1) return min(abs(z.x), abs(z.y));
   if (stat == 7) return length(z);
@@ -7135,21 +7294,23 @@ float fallenAbstand(int stat, vec2 z, vec4 tp) {
   if (stat == 14) return ringAbstand(z, tp);
   if (stat == 17) return length(z - tp.xy);
   if (stat == 19) { vec2 v = z - tp.yz; float r = max(length(v), 1.0e-30); float b = max(tp.x, 1.0e-3); float ph = atan(v.y, v.x); float kk = round((log(r) / b - ph) / 6.2831853); return abs(r - exp(b * (ph + 6.2831853 * kk))); }
+  if (stat == 21) return rosetteAbstand(z, tp);
   return -1.0;
 }
 float smin(float a, float b, float k) { float h = max(k - abs(a - b), 0.0) / k; return min(a, b) - h * h * k * 0.25; }
-float fallenVerbund(vec2 z) {
-  uint mk = uint(uVerbund.y); float k = uVerbund.x; float d = 1.0e30; float a;
-  if ((mk & 1u) != 0u) { a = fallenAbstand(STAT, z, uTexP[0]); if (a >= 0.0) d = smin(d, a, k); }
-  if ((mk & 2u) != 0u) { a = fallenAbstand(STAT2, z, uTexP[1]); if (a >= 0.0) d = smin(d, a, k); }
-  if ((mk & 4u) != 0u) { a = fallenAbstand(STAT3, z, uTexP[2]); if (a >= 0.0) d = smin(d, a, k); }
-  if ((mk & 8u) != 0u) { a = fallenAbstand(STAT4, z, uTexP[3]); if (a >= 0.0) d = smin(d, a, k); }
-  if ((mk & 16u) != 0u) { a = fallenAbstand(STAT5, z, uTexP[4]); if (a >= 0.0) d = smin(d, a, k); }
-  if ((mk & 32u) != 0u) { a = fallenAbstand(STAT6, z, uTexP[5]); if (a >= 0.0) d = smin(d, a, k); }
-  return d;
+void fallenVerbundNimm(vec2 z, uint i) {   // wie im WGSL-Shader
+  uint mk = uint(uVerbund.y); float k = uVerbund.x; float d = 1.0e30, e = 1.0e30, a, pol;
+  if ((mk & 1u) != 0u) { pol = uTexQ[0].w; if (fallenSchritt(pol, i)) { a = fallenAbstand(STAT, z, uTexP[0]); if (a >= 0.0) { if (pol < -0.5) e = smin(e, a, k); else d = smin(d, a, k); } } }
+  if ((mk & 2u) != 0u) { pol = uTexQ[1].w; if (fallenSchritt(pol, i)) { a = fallenAbstand(STAT2, z, uTexP[1]); if (a >= 0.0) { if (pol < -0.5) e = smin(e, a, k); else d = smin(d, a, k); } } }
+  if ((mk & 4u) != 0u) { pol = uTexQ[2].w; if (fallenSchritt(pol, i)) { a = fallenAbstand(STAT3, z, uTexP[2]); if (a >= 0.0) { if (pol < -0.5) e = smin(e, a, k); else d = smin(d, a, k); } } }
+  if ((mk & 8u) != 0u) { pol = uTexQ[3].w; if (fallenSchritt(pol, i)) { a = fallenAbstand(STAT4, z, uTexP[3]); if (a >= 0.0) { if (pol < -0.5) e = smin(e, a, k); else d = smin(d, a, k); } } }
+  if ((mk & 16u) != 0u) { pol = uTexQ[4].w; if (fallenSchritt(pol, i)) { a = fallenAbstand(STAT5, z, uTexP[4]); if (a >= 0.0) { if (pol < -0.5) e = smin(e, a, k); else d = smin(d, a, k); } } }
+  if ((mk & 32u) != 0u) { pol = uTexQ[5].w; if (fallenSchritt(pol, i)) { a = fallenAbstand(STAT6, z, uTexP[5]); if (a >= 0.0) { if (pol < -0.5) e = smin(e, a, k); else d = smin(d, a, k); } } }
+  gVb = min(gVb, d); gVbE = e;
 }
+float fallenVerbundWert() { return smin(gVb, gVbE, uVerbund.x); }   // wie im WGSL-Shader
 float texWertV(int slot, uint kind, uint roh, vec2 z, float nu, float dist, vec4 tp) {
-  if (uVerbund.x > 0.0 && fallenArt(kind)) { if (uint(slot + 1) == uVerbundErster) return clamp(1.0 + 0.1 * log(max(gVb, 1.0e-30)), 0.0, 1.0); return 0.5; }
+  if (uVerbund.x > 0.0 && fallenArt(kind)) { if (uint(slot + 1) == uVerbundErster) return clamp(1.0 + 0.1 * log(max(fallenVerbundWert(), 1.0e-30)), 0.0, 1.0); return 0.5; }
   return texWert(kind, roh, z, nu, dist, tp);
 }
 uvec2 texInnenPack(vec4 st, uint stN, float stMin, vec4 st2, uint stN2, float stMin2, vec4 st3, uint stN3, float stMin3, vec4 st4, uint stN4, float stMin4, vec4 st5, uint stN5, float stMin5, vec4 st6, uint stN6, float stMin6, vec2 z, float nu, float dist, float bail) {   // Texturen auch innen wie im WGSL-Shader
@@ -7260,7 +7421,7 @@ void main() {
       float r2 = dot(z, z);
       if (LYAP != 0 ? (!(r2 <= bail) && lyN > 0u) : (flucht(z) > bail)) {
         if (STAT != 0 || STAT2 != 0) { stNimm(st, stN, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin, i, uTexP[0]); if (STAT2 != 0) stNimm2(st2, stN2, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin2, i, uTexP[1]); if (STAT3 != 0) stNimm3(st3, stN3, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin3, i, uTexP[2]); if (STAT4 != 0) stNimm4(st4, stN4, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin4, i, uTexP[3]); if (STAT5 != 0) stNimm5(st5, stN5, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin5, i, uTexP[4]); if (STAT6 != 0) stNimm6(st6, stN6, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin6, i, uTexP[5]); }
-        if (uVerbund.x > 0.0 && float(i) > uVorlauf) gVb = min(gVb, fallenVerbund(z));   // Fallenverbund je Schritt
+        if (uVerbund.x > 0.0 && float(i) > uVorlauf) fallenVerbundNimm(z, i);   // Fallenverbund je Schritt
         nu = float(i) + 1.0 - (log2(0.5 * log2(r2)) - 2.7317) / lp;
         float r = sqrt(r2);
         dist = r * log(r) / max(fnorm(der), 1.0e-30);
@@ -7333,7 +7494,7 @@ void main() {
       }
       if (LYAP != 0) lyNimm(ly, lyN, lyDrin, z, fd, i > 0u);
       if (STAT != 0 || STAT2 != 0) { stNimm(st, stN, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin, i, uTexP[0]); if (STAT2 != 0) stNimm2(st2, stN2, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin2, i, uTexP[1]); if (STAT3 != 0) stNimm3(st3, stN3, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin3, i, uTexP[2]); if (STAT4 != 0) stNimm4(st4, stN4, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin4, i, uTexP[3]); if (STAT5 != 0) stNimm5(st5, stN5, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin5, i, uTexP[4]); if (STAT6 != 0) stNimm6(st6, stN6, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin6, i, uTexP[5]); gZ2 = zAlt; zAlt = z; }
-      if (uVerbund.x > 0.0 && float(i) > uVorlauf) gVb = min(gVb, fallenVerbund(z));   // Fallenverbund je Schritt
+      if (uVerbund.x > 0.0 && float(i) > uVorlauf) fallenVerbundNimm(z, i);   // Fallenverbund je Schritt
       if (f == 17u) {   // zwei Potenzen wie im WGSL-Shader
         if (de) der = M(uParam * uParam2.x * rPotenz(z, uParam2.x - 1.0) + uParam2.y * uParam2.z * rPotenz(z, uParam2.z - 1.0)) * der + DpsC;
         vec3 nz = nahZwei(zOff, A17, Wr, d, Z);   // wie im WGSL-Shader
@@ -7404,7 +7565,7 @@ void main() {
       float r2 = dot(z, z);
       if (LYAP != 0 ? (!(r2 <= bail) && lyN > 0u) : (flucht(z) > bail)) {
         if (STAT != 0 || STAT2 != 0) { stNimm(st, stN, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin, i, uTexP[0]); if (STAT2 != 0) stNimm2(st2, stN2, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin2, i, uTexP[1]); if (STAT3 != 0) stNimm3(st3, stN3, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin3, i, uTexP[2]); if (STAT4 != 0) stNimm4(st4, stN4, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin4, i, uTexP[3]); if (STAT5 != 0) stNimm5(st5, stN5, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin5, i, uTexP[4]); if (STAT6 != 0) stNimm6(st6, stN6, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin6, i, uTexP[5]); }
-        if (uVerbund.x > 0.0 && float(i) > uVorlauf) gVb = min(gVb, fallenVerbund(z));   // Fallenverbund je Schritt
+        if (uVerbund.x > 0.0 && float(i) > uVorlauf) fallenVerbundNimm(z, i);   // Fallenverbund je Schritt
         nu = float(i) + 1.0 - (log2(0.5 * log2(r2)) - 2.7317) / lp;
         float r = sqrt(r2);
         dist = r * log(r) / max(fnorm(der), 1.0e-30);
@@ -7523,7 +7684,7 @@ void main() {
       if (stop) break;
       if (LYAP != 0) lyNimm(ly, lyN, lyDrin, z, Fm[0], i > 0u);
       if (STAT != 0 || STAT2 != 0) { stNimm(st, stN, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin, i, uTexP[0]); if (STAT2 != 0) stNimm2(st2, stN2, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin2, i, uTexP[1]); if (STAT3 != 0) stNimm3(st3, stN3, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin3, i, uTexP[2]); if (STAT4 != 0) stNimm4(st4, stN4, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin4, i, uTexP[3]); if (STAT5 != 0) stNimm5(st5, stN5, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin5, i, uTexP[4]); if (STAT6 != 0) stNimm6(st6, stN6, z, zAlt, cVoll, float(i) > uVorlauf, stGewicht(i), stMin6, i, uTexP[5]); gZ2 = zAlt; zAlt = z; }
-      if (uVerbund.x > 0.0 && float(i) > uVorlauf) gVb = min(gVb, fallenVerbund(z));   // Fallenverbund je Schritt
+      if (uVerbund.x > 0.0 && float(i) > uVorlauf) fallenVerbundNimm(z, i);   // Fallenverbund je Schritt
       if (de) {
         mat2 dn = Fm * (Jf * der) + Gm * DpsC;   // Kettenregel über die Faltung
         mat2 JpAlt = Jp;
@@ -7714,7 +7875,7 @@ float paarAchse(uint wert, float roh, float nu, float faktor, uint abzug, uint f
   if ((flags & 2u) != 0u) w = max(w, 0.0);
   return w * faktor;
 }
-bool fallenArt(uint kind) { return (int(kind == 4u) + int(kind == 5u) + int(kind == 14u) + int(kind == 15u) + int(kind == 19u) + int(kind == 20u)) > 0; }   // ohne Abkürzung, wie im WGSL-Shader
+bool fallenArt(uint kind) { return (int(kind == 4u) + int(kind == 5u) + int(kind == 14u) + int(kind == 15u) + int(kind == 19u) + int(kind == 20u) + int(kind == 23u)) > 0; }   // ohne Abkürzung, wie im WGSL-Shader
 bool verbundStill(int i) { return all(bvec3(uOpt.y > 0.0, fallenArt(uint(uStapel[3 * i].x)), i + 1 != int(uOpt.z))); }
 uint texZiel(int i) { return uint(uStapel[3 * i + 1].w); }   // wie im WGSL-Shader
 uint texWo(int i) { return uint(uStapel[3 * i + 2].w); }   // wie im WGSL-Shader
@@ -8352,7 +8513,7 @@ class GpuRenderer {
     this.pipeCache = new Map([['0|0|0|0|0|2|1|0|0|0', this.pipeF]]);   // Schlüssel wie in _pipeVariant: die Standardvariante ist schon gebaut
     this._prewarm();
     const U = GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST;
-    this.ubF = d.createBuffer({ size: 464, usage: U });   // FP samt texP (6 vec4), texW (4 vec4), Inversionsmitte und Ebenenabbildung
+    this.ubF = d.createBuffer({ size: 560, usage: U });   // FP samt texP (6 vec4), texW (4 vec4), Inversionsmitte, Ebenenabbildung und texQ (6 vec4)
     this.ubU = d.createBuffer({ size: 16, usage: U });
     this.ubC = d.createBuffer({ size: 2032, usage: U });
     this.bglK = d.createBindGroupLayout({ entries: [{ binding: 0, visibility: F, buffer: { type: 'uniform' } }].concat([1, 2, 3, 4, 5, 6].map(b => ({ binding: b, visibility: F, texture: { sampleType: 'unfilterable-float', viewDimension: '2d' } }))) });   // Verbund: bis zu sechs Ebenen
@@ -8604,7 +8765,7 @@ class GpuRenderer {
     return mod;
   }
   renderFractal(target, rects, p, layer = 0) {
-    const buf = new ArrayBuffer(464), f = new Float32Array(buf), u = new Uint32Array(buf);
+    const buf = new ArrayBuffer(560), f = new Float32Array(buf), u = new Uint32Array(buf);
     f[0] = p.dcScale[0]; f[1] = p.dcScale[1]; f[2] = p.dcOffset[0]; f[3] = p.dcOffset[1];
     u[4] = p.maxIter; u[5] = p.lenA; u[6] = p.baseB; u[7] = p.lenB; u[8] = p.isJulia; u[9] = TW; f[11] = p.ps;
     u[13] = p.invert; f[10] = p.rotC === undefined ? 1 : p.rotC; f[12] = p.rotS || 0;   // Drehung der Ansicht
@@ -8612,7 +8773,7 @@ class GpuRenderer {
     f[16] = p.pRef[0]; f[17] = p.pRef[1]; f[18] = p.cRef[0]; f[19] = p.cRef[1];
     f[20] = p.param; u[21] = p.flip; f[22] = p.zRef[0]; f[23] = p.zRef[1]; u[24] = p.seqBits; u[25] = p.seqLen; u[26] = p.jit || 0; u[27] = p.adapt || 0;
     u.set(p.blaN, 28); u.set(p.blaMisc, 32); f[36] = p.sigma || 0.45; f[37] = p.lyGrenze === undefined ? 2 : p.lyGrenze; f[38] = p.streifen === undefined ? STREIFEN.def : p.streifen; f[39] = p.vorlauf || 0; f[40] = p.gewicht || 0; f[41] = p.fluchtRadius || 0;   // 0 ist ein gültiger Wert
-    if (p.texP) f.set(p.texP, 44); if (p.texW) f.set(p.texW, 68);   // eigene Regler der Texturarten: je Sammler, je Platz
+    if (p.texP) f.set(p.texP, 44); if (p.texW) f.set(p.texW, 68); if (p.texQ) f.set(p.texQ, 116);   // eigene Regler der Texturarten: je Sammler, je Platz; Zusatzwerte je Sammler (Rosette, Auswertung der Fallen)
     f[84] = p.invM ? p.invM[0] : 0; f[85] = p.invM ? p.invM[1] : 0; f[86] = p.biomorph || 0;   // Inversionsmitte; Biomorph-Nachtest
     u[87] = p.abb || 0; f[88] = p.abbRef ? p.abbRef[0] : 0; f[89] = p.abbRef ? p.abbRef[1] : 0; f[90] = p.richtungY || 0; f[91] = p.abkl === undefined ? 1 : p.abkl; if (p.param2) { f[92] = p.param2[0]; f[93] = p.param2[1]; f[94] = p.param2[2]; f[95] = p.param2[3] || 0; } f[96] = p.faltung || 0; f[97] = p.gedaechtnis || 0; f[98] = p.startC ? 1 : 0; f[99] = p.eigenAgg || 0;   // opt: Faltung, Gedächtnis, Start im Bildpunkt, Zusammenfassungen der eigenen Sammler
     f[100] = p.fn || 0; f[101] = p.formelB || 0; f[102] = p.paramB || 0; f[103] = p.nzAnzahl || 0; if (p.wurzeln) f.set(p.wurzeln, 104);   // opt2 und Nullstellen   // Ebenenabbildung und ihr Referenzpunkt
@@ -9167,7 +9328,7 @@ class GlRenderer {
       let src = GLSL_FRACTAL.replace('#version 300 es\n', '#version 300 es\n#define FORMULA ' + formula + 'u\n#define NEED_DE ' + (de ? 1 : 0) + '\n#define NEED_INT ' + (ni ? 1 : 0) + '\n#define CYCLE ' + (cyc ? 1 : 0) + '\n#define BLA ' + (bla ? 1 : 0) + '\n#define POWER ' + pw + 'u\n#define FAST ' + (fast ? 1 : 0) + '\n#define LYAP ' + lyap + '\n#define WINKEL ' + winkel + '\n#define STAT ' + stat + '\n#define STAT2 ' + stat2 + '\n#define TEX1 ' + tex1 + 'u\n#define TEX2 ' + tex2 + 'u\n#define FORM ' + form + 'u\n#define TEXZ ' + texz + '\n#define STAT3 ' + stat3 + '\n#define STAT4 ' + stat4 + '\n#define STAT5 ' + stat5 + '\n#define TEX3 ' + tex3 + 'u\n#define TEX4 ' + tex4 + 'u\n#define STAT6 ' + stat6 + '\n#define PAAR ' + paar + '\n#define PAARA ' + paarA + 'u\n#define PAARB ' + paarB + 'u\n#define PAARVOLL ' + paarVoll + '\n#define HYBRID ' + hybrid + '\n');
       if (eigen) for (const [re, , g] of eigen.ers) src = src.replace(re, () => g);   // eigene Ausdrücke (Marken ersetzt)
       const prog = this._program(GLSL_VS, src), u = {};
-      for (const n of ['uOrbit', 'uDcScale', 'uDcOffset', 'uMaxIter', 'uLenA', 'uBaseB', 'uLenB', 'uJulia', 'uTexW', 'uPs', 'uInvert', 'uPRef', 'uCRef', 'uZRef', 'uParam', 'uFlip', 'uSeqBits', 'uSeqLen', 'uBlaR', 'uBlaAB', 'uBlaR4', 'uBlaN', 'uBlaMisc', 'uNeed', 'uJit', 'uAdapt', 'uSigma', 'uLyGrenze', 'uStreifen', 'uVorlauf', 'uGewicht', 'uFluchtRadius', 'uRot', 'uInvM', 'uBiomorph', 'uAbb', 'uAbbRef', 'uRichtungY', 'uAbkl', 'uParam2', 'uOptF', 'uOpt2F', 'uWurzeln', 'uTexInnen', 'uVerbund', 'uVerbundErster', 'uTexP', 'uTexR'])
+      for (const n of ['uOrbit', 'uDcScale', 'uDcOffset', 'uMaxIter', 'uLenA', 'uBaseB', 'uLenB', 'uJulia', 'uTexW', 'uPs', 'uInvert', 'uPRef', 'uCRef', 'uZRef', 'uParam', 'uFlip', 'uSeqBits', 'uSeqLen', 'uBlaR', 'uBlaAB', 'uBlaR4', 'uBlaN', 'uBlaMisc', 'uNeed', 'uJit', 'uAdapt', 'uSigma', 'uLyGrenze', 'uStreifen', 'uVorlauf', 'uGewicht', 'uFluchtRadius', 'uRot', 'uInvM', 'uBiomorph', 'uAbb', 'uAbbRef', 'uRichtungY', 'uAbkl', 'uParam2', 'uOptF', 'uOpt2F', 'uWurzeln', 'uTexInnen', 'uVerbund', 'uVerbundErster', 'uTexP', 'uTexR', 'uTexQ'])
         u[n] = this.gl.getUniformLocation(prog, n);
       v = { prog, u }; this.progCache.set(key, v);
       if (eigen) { const alt = [...this.progCache.keys()].filter(k => k.includes('|X')); if (alt.length > 12) { const w = this.progCache.get(alt[0]); if (w && w.prog) this.gl.deleteProgram(w.prog); this.progCache.delete(alt[0]); } }
@@ -9294,7 +9455,7 @@ class GlRenderer {
     gl.useProgram(v.prog); gl.bindVertexArray(this.vao);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.orbitTex); gl.uniform1i(u.uOrbit, 0);
     gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, this.aa ? this.aa.need[0].tex : this.dummyU); gl.uniform1i(u.uNeed, 4);
-    gl.uniform1ui(u.uJit, p.jit || 0); gl.uniform1ui(u.uAdapt, p.adapt || 0); gl.uniform1f(u.uSigma, p.sigma || 0.45); gl.uniform1f(u.uLyGrenze, p.lyGrenze === undefined ? 2 : p.lyGrenze); gl.uniform1f(u.uStreifen, p.streifen === undefined ? STREIFEN.def : p.streifen); gl.uniform1f(u.uVorlauf, p.vorlauf || 0); gl.uniform1f(u.uGewicht, p.gewicht || 0); gl.uniform1f(u.uFluchtRadius, p.fluchtRadius || 0); gl.uniform4fv(u.uTexP, p.texP || new Float32Array(24)); gl.uniform4fv(u.uTexR, p.texW || new Float32Array(16));
+    gl.uniform1ui(u.uJit, p.jit || 0); gl.uniform1ui(u.uAdapt, p.adapt || 0); gl.uniform1f(u.uSigma, p.sigma || 0.45); gl.uniform1f(u.uLyGrenze, p.lyGrenze === undefined ? 2 : p.lyGrenze); gl.uniform1f(u.uStreifen, p.streifen === undefined ? STREIFEN.def : p.streifen); gl.uniform1f(u.uVorlauf, p.vorlauf || 0); gl.uniform1f(u.uGewicht, p.gewicht || 0); gl.uniform1f(u.uFluchtRadius, p.fluchtRadius || 0); gl.uniform4fv(u.uTexP, p.texP || new Float32Array(24)); gl.uniform4fv(u.uTexR, p.texW || new Float32Array(16)); gl.uniform4fv(u.uTexQ, p.texQ || new Float32Array(24));
     gl.uniform2f(u.uDcScale, p.dcScale[0], p.dcScale[1]);
     gl.uniform2f(u.uDcOffset, p.dcOffset[0], p.dcOffset[1]); gl.uniform2f(u.uRot, p.rotC === undefined ? 1 : p.rotC, p.rotS || 0); gl.uniform2f(u.uInvM, p.invM ? p.invM[0] : 0, p.invM ? p.invM[1] : 0); gl.uniform1f(u.uBiomorph, p.biomorph || 0); gl.uniform1ui(u.uAbb, p.abb || 0); gl.uniform2f(u.uAbbRef, p.abbRef ? p.abbRef[0] : 0, p.abbRef ? p.abbRef[1] : 0); gl.uniform1f(u.uRichtungY, p.richtungY || 0); gl.uniform1f(u.uAbkl, p.abkl === undefined ? 1 : p.abkl); gl.uniform4f(u.uParam2, p.param2 ? p.param2[0] : 0, p.param2 ? p.param2[1] : 0, p.param2 ? p.param2[2] : 0, p.param2 ? (p.param2[3] || 0) : 0); gl.uniform4f(u.uOptF, p.faltung || 0, p.gedaechtnis || 0, p.startC ? 1 : 0, p.eigenAgg || 0); gl.uniform4f(u.uOpt2F, p.fn || 0, p.formelB || 0, p.paramB || 0, p.nzAnzahl || 0); gl.uniform4fv(u.uWurzeln, p.wurzeln || new Float32Array(12)); gl.uniform1ui(u.uTexInnen, p.texInnen || 0); gl.uniform2f(u.uVerbund, p.verbund || 0, p.verbundMaske || 0); gl.uniform1ui(u.uVerbundErster, p.verbundErster || 0);
     gl.uniform1ui(u.uMaxIter, p.maxIter); gl.uniform1ui(u.uLenA, p.lenA);
@@ -10509,7 +10670,7 @@ function statPipeline6() { return paarKonfig() ? texStat(4) : 0; }
 function texturZ() { return statFaerbung() && texturAktiv() ? 1 : 0; }   // Textur über einer Färbung nach Bahnwerten: die Texturwerte kommen in den z- und w-Kanal
 function texInnenIrgend() { for (let n = 1; n <= TEX_SLOTS; n++) { const t = texSlot(n); if (t.art !== 0 && t.an && (t.wo || TEX_WO_VOR) >= 1) return true; } return false; }   // wirkt irgendein Platz innen?
 function texturBreit() { return !!(texturZ() || texturZahl() >= 3 || (texInnenIrgend() && texturZahl() >= 1) || richtungModus() === 2); }   // braucht die Kanäle z und w: Iterationstextur rgba32uint (auch für Texturen innen)
-const FALLEN_ARTEN = [4, 5, 14, 15, 19, 20];   // Texturarten, die Fallen sind: Kreuz, Ursprung, Gitter, Ring, Punkt, Spirale
+const FALLEN_ARTEN = [4, 5, 14, 15, 19, 20, 23];   // Texturarten, die Fallen sind: Kreuz, Ursprung, Gitter, Ring, Punkt, Spirale, Rosette
 function verbundK() { return S.texVerbund > 0 && texArten().some(a => FALLEN_ARTEN.includes(a)) ? S.texVerbund : 0; }   // Fallenverbund: Weichheit, 0 = aus (auch ohne Fallen)
 function verbundErster() { if (!verbundK()) return 0; for (let m = 1; m <= texturZahl(); m++) if (FALLEN_ARTEN.includes(texArtAn(m))) return m; return 0; }   // erster Fallenplatz (1-basiert)
 function verbundMaske() { if (!verbundK()) return 0; let mk = 0; for (let k = 1; k <= 6; k++) { const m = statSlot(k); if (m && FALLEN_ARTEN.includes(texArtAn(m))) mk |= 1 << (k - 1); } return mk; }   // welche Sammler Fallen-Texturen sind
@@ -10538,7 +10699,7 @@ function fractalParams(s, maxIter, layer = 0) {
     dcOffset: drehOffset((ox - W / 2) * ps, yd ? (H / 2 - oy) * ps : (oy - H / 2) * ps, shift), rotC: drehCS()[0], rotS: drehCS()[1], invM: S.invM, biomorph: S.biomorph ? 1 : 0, richtungY: richtungModus(), abkl: 1 - S.abklingen, param2: [...S.param2, S.zweig || 0],   // Drehung der Ansicht: der feste Teil hier, der Pixelanteil im Shader; Inversionsmitte
     maxIter, lenA: orbitLenA, baseB: orbitBaseB, lenB: orbitLenB,
     isJulia: S.mode === 'julia' ? 1 : 0,
-    needDE: brauchtAbstand() ? 1 : 0, ps, cycle: cycleOn(maxIter) && !hybridAktiv(), lyap: lyapModus(), winkel: winkelModus(), texP: texWerteSammler(), texW: texWertePlaetze(), texInnen: texInnenIrgend() && texturZahl() > 0 ? 1 : 0, verbund: verbundK(), verbundMaske: verbundMaske(), verbundErster: verbundErster(), stat: statPipeline(), stat2: statPipeline2(), stat3: statPipeline3(), stat4: statPipeline4(), stat5: statPipeline5(), stat6: statPipeline6(), ...paarPipeline(), texz: texturZ(), ...texArtenParam(), lyGrenze: S.lyGrenze, streifen: S.streifen, vorlauf: S.vorlauf, gewicht: S.gewicht, fluchtForm: S.fluchtForm, fluchtRadius: S.fluchtRadius || (FORMULAS[S.formula].bail || 0),
+    needDE: brauchtAbstand() ? 1 : 0, ps, cycle: cycleOn(maxIter) && !hybridAktiv(), lyap: lyapModus(), winkel: winkelModus(), texP: texWerteSammler(), texW: texWertePlaetze(), texQ: texZusatzSammler(), texInnen: texInnenIrgend() && texturZahl() > 0 ? 1 : 0, verbund: verbundK(), verbundMaske: verbundMaske(), verbundErster: verbundErster(), stat: statPipeline(), stat2: statPipeline2(), stat3: statPipeline3(), stat4: statPipeline4(), stat5: statPipeline5(), stat6: statPipeline6(), ...paarPipeline(), texz: texturZ(), ...texArtenParam(), lyGrenze: S.lyGrenze, streifen: S.streifen, vorlauf: S.vorlauf, gewicht: S.gewicht, fluchtForm: S.fluchtForm, fluchtRadius: S.fluchtRadius || (FORMULAS[S.formula].bail || 0),
     power: potenzEff(), invert: S.invert ? 1 : 0, needInt: brauchtInnen() ? 1 : 0, pRef: [pr[0], pi[0]],
   });
 }
@@ -11537,6 +11698,12 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
   const tvAlt = h.get('ti') === '1';   // alter Link: ein Schalter für alle Plätze — er wird zu „überall“ auf jedem belegten Platz
   for (let m = 1; m <= TEX_SLOTS; m++) { const k = texKeys(m); const v = parseInt(h.get(m === 1 ? 'tw' : 't' + m + 'w'), 10); S[k.wo] = v >= 0 && v <= 2 ? v : (tvAlt ? 2 : TEX_WO_VOR); }   // die Arten stehen hier noch nicht: der alte Schalter gilt für alle Plätze, im Link steht er nur bei den belegten
   const tv = parseFloat(h.get('tv')); S.texVerbund = Number.isFinite(tv) ? clamp(tv, 0, 2) : 0;   // Fallenverbund (Weichheit, 0 = aus)
+  for (let m = 1; m <= TEX_SLOTS; m++) {   // je Platz die Wertwahl der Rosette (tr, t2r …: 0 … 2) und die Auswertung der Falle (tf, t2f …: Modus[:n]); fehlt der Schlüssel, gilt die Vorgabe
+    const k = texKeys(m), q = m === 1 ? 't' : 't' + m;
+    const r = parseInt(h.get(q + 'r'), 10); S[k.wahl] = r >= 0 && r <= 2 ? r : 0;
+    const f = (h.get(q + 'f') || '').split(':'), fm = parseInt(f[0], 10), fnr = parseInt(f[1], 10);
+    S[k.fallen] = fm === 1 || fm === 2 ? fm : 0; S[k.stich] = Number.isFinite(fnr) ? clamp(fnr, STICH.min, STICH.max) : STICH.def;
+  }
   const sk = parseInt(h.get('sk'), 10); S.vorlauf = Number.isFinite(sk) ? clamp(sk, VORLAUF.min, VORLAUF.max) : VORLAUF.def;
   const sw = parseFloat(h.get('sw')); S.gewicht = Number.isFinite(sw) ? clamp(sw, GEWICHT.min, GEWICHT.max) : GEWICHT.def;
   const se = parseFloat(h.get('se')); S.abklingen = Number.isFinite(se) ? clamp(se, 0, ABKL.max) : 0;   // Abklingen der Bahnmittel
@@ -11683,6 +11850,8 @@ function buildParamsRoh() {   // die Adresswerte der Ebene in S samt Ansicht und
     if (S.texAn === false) p.set('ta', '0');   // ausgeschaltet, Einstellungen bleiben
     if (texZielWirkt(S.texZiel) !== TEX_ZIEL_VOR) p.set('tz', String(S.texZiel));   // Ziel nur abseits der Helligkeit
     if ((S.texWo || TEX_WO_VOR) !== TEX_WO_VOR) p.set('tw', String(S.texWo));   // wo der Platz wirkt, nur abseits von außen
+    if (S.textur === 23 && S.texWahl) p.set('tr', String(S.texWahl));   // Wertwahl der Rosette, nur abseits der Maske
+    if (FALLEN_ARTEN.includes(S.textur) && S.texFallen) p.set('tf', fallenText(S.texFallen, S.texStich));   // Auswertung der Falle, nur abseits von „jede Iteration“
   }
   {   // die weiteren Plätze des Stapels, auch wenn Platz 1 leer ist (der Shader rechnet sie trotzdem; leere Plätze fehlen im Link und bleiben so leer)
     for (let n = 2; n <= texturBelegt(); n++) {
@@ -11699,6 +11868,8 @@ function buildParamsRoh() {   // die Adresswerte der Ebene in S samt Ansicht und
       if (!t.an) p.set(q + 'a', '0');
       if (texZielWirkt(t.ziel) !== TEX_ZIEL_VOR) p.set(q + 'z', String(t.ziel));
       if ((t.wo || TEX_WO_VOR) !== TEX_WO_VOR) p.set(q + 'w', String(t.wo));
+      if (t.art === 23 && t.wahl) p.set(q + 'r', String(t.wahl));
+      if (FALLEN_ARTEN.includes(t.art) && t.fallen) p.set(q + 'f', fallenText(t.fallen, t.stich));
     }
   }
   if ((statMittel() || texArten().some(a => a >= 1 && a <= 3)) && S.gewicht !== GEWICHT.def) p.set('sw', String(+S.gewicht.toFixed(2)));   // Gewichtung nur bei den Mitteln (19, 20, 22, 23, 25)
@@ -12061,6 +12232,14 @@ function syncFarbUI() {   // Bereich Farbe: was je nach Familie, Formel und Fär
     const wr = $('texWoRow' + n), ws = $('texWo' + n);   // wo der Platz wirkt
     if (wr) wr.hidden = !(zeigen && belegt && !zu);
     if (ws) { ws.value = String(sl.wo || TEX_WO_VOR); if (ws._sync) ws._sync(); }
+    const wahlR = $('texWahlRow' + n), wahlS = $('texWahl' + n);   // Wertwahl: nur bei der Rosette
+    if (wahlR) wahlR.hidden = !(zeigen && belegt && !zu && sl.art === 23);
+    if (wahlS) { wahlS.value = String(sl.wahl || 0); if (wahlS._sync) wahlS._sync(); }
+    const fallR = $('texFallenRow' + n), fallS = $('texFallen' + n), stichR = $('texStichRow' + n), stichF = $('texStich' + n);   // Auswertung: nur bei Fallen; die Schrittweite nur bei Stichproben
+    if (fallR) fallR.hidden = !(zeigen && belegt && !zu && FALLEN_ARTEN.includes(sl.art));
+    if (fallS) { fallS.value = String(sl.fallen || 0); if (fallS._sync) fallS._sync(); }
+    if (stichR) stichR.hidden = !fallR || fallR.hidden || sl.fallen !== 1;
+    if (stichF && document.activeElement !== stichF) stichF.value = String(sl.stich);
     const zielW = texZielWirkt(sl.ziel), zr = $('texZielRow' + n), zs = $('texZiel' + n);   // Ziel des Platzes
     if (zr) zr.hidden = !(zeigen && belegt && !zu);
     if (zs) {
@@ -13392,11 +13571,11 @@ function texWerteZeigen(n, e, offen) {   // Zeile mit den eigenen Reglern: nur, 
   texWerteBauen(n);
   const k = texKeys(n), regler = texRegler(S[k.art]), w = S[k.werte] || texWerteVorgabe(S[k.art]);
   e.werteRow.hidden = !(offen && regler.length);
-  regler.forEach((r, i) => { const reg = $('texW' + n + '_' + i), feld = $('texW' + n + '_' + i + 'Val'); if (reg) { reg.value = String(w[i]); feld.value = fmtZahl(w[i], 2); } });
+  regler.forEach((r, i) => { const reg = $('texW' + n + '_' + i), feld = $('texW' + n + '_' + i + 'Val'); if (reg) { reg.value = String(w[i]); feld.value = fmtZahl(w[i], r.ganz ? 0 : 2); } });
 }
 function texWertSetzen(n, i, v) {   // ein eigener Regler: geht der Wert in den Fraktal-Shader ein, neu rechnen, sonst nur umfärben
   const k = texKeys(n), r = texRegler(S[k.art])[i]; if (!r) return;
-  const w = (S[k.werte] || texWerteVorgabe(S[k.art])).slice(); w[i] = clamp(v, r.min, r.max); S[k.werte] = w;
+  const w = (S[k.werte] || texWerteVorgabe(S[k.art])).slice(); w[i] = clamp(r.ganz ? Math.round(v) : v, r.min, r.max); S[k.werte] = w;   // ganzzahlige Regler runden das Getippte
   syncFarbUI(); scheduleHash();
   if (r.neu) viewChanged(); else { colorDirty = true; requestFrame(); }
 }
@@ -13404,9 +13583,15 @@ function statSlot(k) {   // welcher Platz des Stapels speist den Sammler k (0 = 
   const paar = !!paarKonfig(), st = !!statModus();
   return [0, paar || st ? 0 : 1, paar ? 0 : (st ? 1 : 2), paar ? 1 : (st ? 2 : 3), paar ? 2 : (st ? 3 : 4), paar ? 3 : (st ? 4 : 0), paar ? 4 : 0][k];
 }
-function texWerteVec(n) { if (!(n >= 1 && n <= TEX_SLOTS && n <= texturZahl() && texArtAn(n))) return [0, 0, 0, 0]; const w = texSlot(n).werte; return texArtAn(n) === 21 && !aussenWinkelFormel() ? [w[0], 0, w[2], w[3]] : w; }   // Karte ohne z^d + c: keine Strahlen   // die vier Zahlen eines wirksamen Platzes
+function texWerteVec(n) { if (!(n >= 1 && n <= TEX_SLOTS && n <= texturZahl() && texArtAn(n))) return [0, 0, 0, 0]; const w = texSlot(n).werte; return texArtAn(n) === 21 && !aussenWinkelFormel() ? [w[0], 0, w[2], w[3]] : w.slice(0, 4); }   // Karte ohne z^d + c: keine Strahlen   // die ersten vier Zahlen eines wirksamen Platzes (weitere: texZusatzVec)
 function texWerteSammler() { const a = new Float32Array(24); for (let k = 1; k <= 6; k++) a.set(texWerteVec(statSlot(k)), (k - 1) * 4); if (statModus() === 19 && !paarKonfig()) a.set([S.spirale, 0, 0, 0], 0); return a; }   // je Sammler die Werte seines Platzes; die Färbung Spiralfalle bringt ihre Windung selbst mit
 function texWertePlaetze() { const a = new Float32Array(16); for (let n = 1; n <= TEX_SLOTS; n++) a.set(texWerteVec(n), (n - 1) * 4); return a; }   // je Platz
+function texZusatzVec(n) {   // die Zusatzwerte eines wirksamen Platzes (texQ): Regler 5 und 6 der Art (Rosette: Weite, Härte), die Wertwahl der Rosette, die Auswertung der Falle (0 jede Iteration, n Stichproben, −1 am Ende)
+  if (!(n >= 1 && n <= TEX_SLOTS && n <= texturZahl() && texArtAn(n))) return [0, 0, 0, 0];
+  const t = texSlot(n), w = t.werte, falle = FALLEN_ARTEN.includes(t.art);
+  return [w[4] || 0, w[5] || 0, t.art === 23 ? t.wahl : 0, falle && t.fallen === 1 ? t.stich : (falle && t.fallen === 2 ? -1 : 0)];
+}
+function texZusatzSammler() { const a = new Float32Array(24); for (let k = 1; k <= 6; k++) a.set(texZusatzVec(statSlot(k)), (k - 1) * 4); return a; }   // je Sammler die Zusatzwerte seines Platzes
 function texMaskeUniform() {   // je Platz drei vec4 wie bei den Ebenen (Art, umkehren, zeigen, weicher Rand; acht Zahlen); [12] = (Kantenmaske vorhanden, eine Maske aktiv)
   const a = new Float32Array(52); let aktiv = false, kante = false;
   for (let n = 1; n <= TEX_SLOTS; n++) {
@@ -14075,6 +14260,12 @@ for (let n = 1; n <= TEX_SLOTS; n++) {
   if (zsel) zsel.addEventListener('change', () => { S[k.ziel] = clamp(parseInt(zsel.value, 10) || 0, 0, 2); syncFarbUI(); scheduleHash(); colorDirty = true; requestFrame(); });   // nur umfärben: der Wert liegt schon im Puffer
   const wsel = $('texWo' + n);
   if (wsel) wsel.addEventListener('change', () => { S[k.wo] = clamp(parseInt(wsel.value, 10) || 0, 0, 2); syncFarbUI(); scheduleHash(); viewChanged(); });   // innen entstehen die Werte im Fraktal-Shader: neu rechnen
+  const wahlSel = $('texWahl' + n);   // Wertwahl der Rosette und Auswertung der Falle: beides entsteht beim Iterieren, neu rechnen
+  if (wahlSel) wahlSel.addEventListener('change', () => { S[k.wahl] = clamp(parseInt(wahlSel.value, 10) || 0, 0, 2); syncFarbUI(); scheduleHash(); viewChanged(); });
+  const fallenSel = $('texFallen' + n);
+  if (fallenSel) fallenSel.addEventListener('change', () => { S[k.fallen] = clamp(parseInt(fallenSel.value, 10) || 0, 0, 2); syncFarbUI(); scheduleHash(); viewChanged(); });
+  const stichFeld = $('texStich' + n);
+  if (stichFeld) zahlFeld(stichFeld, () => S[k.stich] || STICH.def, v => { S[k.stich] = clamp(Math.round(v), STICH.min, STICH.max); syncFarbUI(); scheduleHash(); if (S[k.fallen] === 1) viewChanged(); });
   griffBinden(e.griff, n, TEX_STAPEL);
 }
 // Übertragungskurve (Färbung 28): stückweise linear durch die Punkte, als Tabelle mit CDF_N Einträgen wie die Verteilungsfunktion
@@ -14499,6 +14690,19 @@ function leseZahl(text) {
 }
 // Feld, Regler, Wertebereich, Wert → Reglerstellung, und wahlweise ein eigener Weg für Werte, die genau gelten sollen:
 // Der Regler hat nur tausend Stellungen, aus getippten 12.000 Iterationen würden sonst 11.995.
+function zahlFeld(w, lesen, setzen) {   // Zahlenfeld ohne Regler: Enter oder Verlassen übernimmt (nur, wenn etwas getippt wurde), Escape stellt den alten Wert zurück, Unlesbares bleibt außen vor
+  const uebernehmen = () => {
+    if (w.value === w.dataset.vorher) return;
+    const v = leseZahl(w.value); if (Number.isFinite(v)) setzen(v); else w.value = String(lesen());
+    w.dataset.vorher = w.value;
+  };
+  w.addEventListener('focus', () => { w.dataset.vorher = w.value; w.select(); });
+  w.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { w.value = w.dataset.vorher || w.value; w.blur(); e.stopPropagation(); e.preventDefault(); }
+    else if (e.key === 'Enter') { uebernehmen(); w.blur(); }
+  });
+  w.addEventListener('change', uebernehmen);
+}
 function wertFeld(w, r, grenzen, zuStellung, genau) {
   const uebernehmen = () => {
     if (w.value === w.dataset.vorher) return;                                            // nichts getippt
@@ -15581,7 +15785,7 @@ async function exportPoster() {
             const base = Object.assign({
             dcScale: [g.psX, yd ? -g.psY : g.psY],
             maxIter: mi, lenA: orbitLenA, baseB: orbitBaseB, lenB: orbitLenB,
-            isJulia: S.mode === 'julia' ? 1 : 0, needDE: brauchtAbstand() ? 1 : 0, ps: g.psX, cycle: cycleOn(mi) && !hybridAktiv(), lyap: lyapModus(), winkel: winkelModus(), texP: texWerteSammler(), texW: texWertePlaetze(), texInnen: texInnenIrgend() && texturZahl() > 0 ? 1 : 0, verbund: verbundK(), verbundMaske: verbundMaske(), verbundErster: verbundErster(), stat: statPipeline(), stat2: statPipeline2(), stat3: statPipeline3(), stat4: statPipeline4(), stat5: statPipeline5(), stat6: statPipeline6(), ...paarPipeline(), texz: texturZ(), ...texArtenParam(), lyGrenze: S.lyGrenze, streifen: S.streifen, vorlauf: S.vorlauf, gewicht: S.gewicht, fluchtForm: S.fluchtForm, fluchtRadius: S.fluchtRadius || (FORMULAS[S.formula].bail || 0),
+            isJulia: S.mode === 'julia' ? 1 : 0, needDE: brauchtAbstand() ? 1 : 0, ps: g.psX, cycle: cycleOn(mi) && !hybridAktiv(), lyap: lyapModus(), winkel: winkelModus(), texP: texWerteSammler(), texW: texWertePlaetze(), texQ: texZusatzSammler(), texInnen: texInnenIrgend() && texturZahl() > 0 ? 1 : 0, verbund: verbundK(), verbundMaske: verbundMaske(), verbundErster: verbundErster(), stat: statPipeline(), stat2: statPipeline2(), stat3: statPipeline3(), stat4: statPipeline4(), stat5: statPipeline5(), stat6: statPipeline6(), ...paarPipeline(), texz: texturZ(), ...texArtenParam(), lyGrenze: S.lyGrenze, streifen: S.streifen, vorlauf: S.vorlauf, gewicht: S.gewicht, fluchtForm: S.fluchtForm, fluchtRadius: S.fluchtRadius || (FORMULAS[S.formula].bail || 0),
             power: potenzEff(), invert: S.invert ? 1 : 0, needInt: brauchtInnen() ? 1 : 0, pRef: [g.pr[0], g.pi[0]], rotC: drehCS()[0], rotS: drehCS()[1], invM: S.invM, biomorph: S.biomorph ? 1 : 0, richtungY: richtungModus(), abkl: 1 - S.abklingen, param2: [...S.param2, S.zweig || 0],
           }, directParams(g.pr, g.pi), blaParams());
             const params = offsK.map(([ox, oy]) => Object.assign({}, base, {   // ein Parametersatz je Probenebene

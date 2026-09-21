@@ -1015,8 +1015,8 @@ describe('Färbungen nach Bahnstatistik', () => {
     const B = 'mode=mandel&re=-0.9&im=0.6&z=1&it=400';
     const deutlich = (a, b, text) => cy.task('pngDiff', { a: a.file, b: b.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, text).to.be.greaterThan(1.5));   // leiser als „anders“: manche Arten zeichnen fein
     cy.visitApp(B);
-    cy.get('#textur option').should('have.length', 23);   // Keine und 22 Arten (mit der Karte und dem eigenen Ausdruck)
-    cy.get('#textur4 option').should('have.length', 23);
+    cy.get('#textur option').should('have.length', 24);   // Keine und 23 Arten (mit der Karte, dem eigenen Ausdruck und der Rosettenfalle)
+    cy.get('#textur4 option').should('have.length', 24);
     cy.shotStats('arten-ohne').then(ohne => {
       for (const art of [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]) {
         cy.visitApp(B + '&tx=' + art + '&ts=0.8');
