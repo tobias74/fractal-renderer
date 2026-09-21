@@ -26,7 +26,7 @@ describe('Palettenübergang', () => {
     cy.get('#palPfadSpanneVal').should('have.value', '6,00');
     cy.get('#palPfadBeginnVal').should('have.value', '-2,00');
     cy.get('#palZwei').should('have.value', '4');
-    cy.get('#resetAll').click();
+    cy.revealInDetails('reset'); cy.get('#reset').click();
     cy.expectHash('pps', null); cy.expectHash('pp2', null); cy.expectHash('ppb', null);
   });
 

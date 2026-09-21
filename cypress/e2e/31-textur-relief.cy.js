@@ -34,7 +34,8 @@ describe('Texturen über Abstand und Relief', () => {
     const H = B + '&map=6&mt=2&mg=0.7&tx=1&ts=2&tc=6';
     cy.visitApp(H);
     cy.pane('texturen');
-    cy.get('#texZiel1 option[value="8"]').should('not.have.attr', 'hidden').and('have.text', 'Relief-Höhe');
+    cy.get('#texZiel1 option[value="8"]').should('not.have.attr', 'hidden');
+    cy.get('#texZiel1 option[value="8"]').should('have.text', 'Relief-Höhe');   // eigene Zusicherung: eine Prüfung auf ein fehlendes Attribut gibt das Element nicht weiter
     cy.visitApp(B + '&map=2&tx=1&ts=2');        // gewöhnliche Färbung: kein Höhenfeld, also kein Ziel
     cy.pane('texturen');
     cy.get('#texZiel1 option[value="8"]').should('have.attr', 'hidden');

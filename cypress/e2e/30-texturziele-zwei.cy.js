@@ -49,7 +49,7 @@ describe('Ziele der Texturplätze: Farbton, Glühen und Deckkraft', () => {
     cy.visitApp(KANTE + ZWEI + '&tz=6');                    // ohne Kantenlinien ebenso das Glühen
     cy.pane('texturen'); cy.get('#texZiel1').should('have.value', '2'); cy.expectHash('tz', null);
     cy.visitApp(KANTE + '&glow=1&gw=8' + ZWEI + '&tz=5');   // „Alles zurücksetzen“ räumt den Schlüssel weg
-    cy.get('#resetAll').click();
+    cy.revealInDetails('reset'); cy.get('#reset').click();
     cy.expectHash('tz', null);
   });
 

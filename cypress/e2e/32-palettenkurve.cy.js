@@ -29,7 +29,7 @@ describe('Palettenkurve', () => {
     cy.get('#palKurveMitteVal').should('have.value', '0,400');
     cy.rerender(() => cy.get('#palKurveVal').clear().type('8{enter}'));   // weiter als der Regler reicht
     cy.expectHash('plk', '5');                                            // auf die Grenze geklemmt
-    cy.get('#resetAll').click();
+    cy.revealInDetails('reset'); cy.get('#reset').click();
     cy.expectHash('plk', null); cy.expectHash('plm', null);
   });
 
