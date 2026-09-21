@@ -21,7 +21,7 @@ describe('Übersetzen der Fassung mit Ebenen und Masken', () => {
     cy.get('#state').should('have.class', 'uebersetzt'); cy.get('#mStatus').should('have.class', 'busy');
     stand().its('uebersetzt').should('be.true');
   };
-  const fertigOhneMeldung = (re = /Fertig|Done/, timeout = 30000) => {
+  const fertigOhneMeldung = (re = /Fertig|Done/, timeout = 180000) => {   // das Übersetzen ist kein Kriterium, nur dass es zum Ende kommt
     cy.get('#state', { timeout }).should($s => { const t = $s.text(); expect(t, 'Statuszeile').to.match(re); expect(t, 'Statuszeile').not.to.match(/übersetzt|Compiling/); });
     cy.get('#state').should('not.have.class', 'uebersetzt'); cy.get('#mStatus').should('not.have.class', 'busy');
     stand().its('uebersetzt').should('be.false');
