@@ -1365,6 +1365,7 @@
             <option value="4" data-i18n="colour.pair-target-saturation"></option>
             <option value="5" data-i18n="colour.pair-target-hue"></option>
             <option value="6" data-i18n="colour.pair-target-glow"></option>
+            <option value="8" data-i18n="colour.pair-target-relief"></option>
             <option value="3" data-i18n="colour.pair-target-palette"></option>
             <option value="0" data-i18n="colour.pair-target-axis-a"></option>
             <option value="1" data-i18n="colour.pair-target-axis-b"></option>
@@ -1467,6 +1468,7 @@
             <option value="4" data-i18n="colour.pair-target-saturation"></option>
             <option value="5" data-i18n="colour.pair-target-hue"></option>
             <option value="6" data-i18n="colour.pair-target-glow"></option>
+            <option value="8" data-i18n="colour.pair-target-relief"></option>
             <option value="3" data-i18n="colour.pair-target-palette"></option>
             <option value="0" data-i18n="colour.pair-target-axis-a"></option>
             <option value="1" data-i18n="colour.pair-target-axis-b"></option>
@@ -1569,6 +1571,7 @@
             <option value="4" data-i18n="colour.pair-target-saturation"></option>
             <option value="5" data-i18n="colour.pair-target-hue"></option>
             <option value="6" data-i18n="colour.pair-target-glow"></option>
+            <option value="8" data-i18n="colour.pair-target-relief"></option>
             <option value="3" data-i18n="colour.pair-target-palette"></option>
             <option value="0" data-i18n="colour.pair-target-axis-a"></option>
             <option value="1" data-i18n="colour.pair-target-axis-b"></option>
@@ -1671,6 +1674,7 @@
             <option value="4" data-i18n="colour.pair-target-saturation"></option>
             <option value="5" data-i18n="colour.pair-target-hue"></option>
             <option value="6" data-i18n="colour.pair-target-glow"></option>
+            <option value="8" data-i18n="colour.pair-target-relief"></option>
             <option value="3" data-i18n="colour.pair-target-palette"></option>
             <option value="0" data-i18n="colour.pair-target-axis-a"></option>
             <option value="1" data-i18n="colour.pair-target-axis-b"></option>
@@ -2565,6 +2569,7 @@ const TEXTE = {
   'colour.pair-target-saturation': { de: 'Sättigung', en: 'Saturation' },
   'colour.pair-target-hue': { de: 'Farbton', en: 'Hue' },
   'colour.pair-target-glow': { de: 'Glühen', en: 'Glow' },
+  'colour.pair-target-relief': { de: 'Relief-Höhe', en: 'Relief height' },
   'colour.palette-curve': { de: 'Palettenkurve', en: 'Palette curve' },
   'colour.palette-curve-title': { de: 'Wie die Farben innerhalb eines Palettenumlaufs verteilt sind: 1 gleichmäßig, kleiner als 1 drängt sie an den Anfang des Umlaufs, größer als 1 an sein Ende. Die Umlaufgrenze bleibt unberührt, es entstehen also keine Sprünge.', en: 'How the colours are spread within one turn of the palette: 1 is even, below 1 crowds them at the start of the turn, above 1 at its end. The turn boundary is untouched, so no jumps appear.' },
   'colour.palette-curve-centre': { de: 'Schwerpunkt der Kurve', en: 'Centre of the curve' },
@@ -4109,8 +4114,9 @@ function nachLesen(text) {   // aus dem Link; Unbekanntes wird ausgelassen
   return aus;
 }
 const TEXTUR_LEER = { art: 0, staerke: TEXTUR.staerke.def, kontrast: TEXTUR.kontrast.def, mitte: TEXTUR.mitte.def, hell: '#ffffff', dunkel: '#000000', an: true, ziel: TEX_ZIEL_VOR, wo: TEX_WO_VOR, maske: null, wahl: 0, fallen: 0, stich: STICH.def };   // maske: siehe MASKE_TEX_ARTEN; wahl: Wertwahl der Rosette; fallen, stich: Auswertung der Falle
+const reliefWirkt = () => S.mapping === 6 || S.mapping === 12;   // Relief-Höhe: nur die beiden beleuchteten Färbungen haben ein Höhenfeld
 const glowWirkt = () => S.glowMode !== 0 && !lyapModus() && !(winkelModus() & 1) && !statIrgend() && !paarKonfig();   // Kantenlinien: dieselbe Bedingung, mit der colorParams den Glühmodus setzt
-const texZielWirkt = z => { const v = z === undefined ? TEX_ZIEL_VOR : z; const paar = !!paarKonfig(); if ((v === 0 || v === 1) && !paar) return TEX_ZIEL_VOR; if (v === 3 && paar) return TEX_ZIEL_VOR; if (v === 6 && !glowWirkt()) return TEX_ZIEL_VOR; if (v === 7) return TEX_ZIEL_VOR; if (v === 8) return TEX_ZIEL_VOR; return v; };   // 7 war die Deckkraft der Ebene: nicht umsetzbar, der Wert fällt auf die Helligkeit   // Achsen nur bei „Werte kombinieren“, die eine Palettenposition nur sonst, das Glühen nur mit Kantenlinien
+const texZielWirkt = z => { const v = z === undefined ? TEX_ZIEL_VOR : z; const paar = !!paarKonfig(); if ((v === 0 || v === 1) && !paar) return TEX_ZIEL_VOR; if (v === 3 && paar) return TEX_ZIEL_VOR; if (v === 6 && !glowWirkt()) return TEX_ZIEL_VOR; if (v === 7) return TEX_ZIEL_VOR; if (v === 8 && !reliefWirkt()) return TEX_ZIEL_VOR; return v; };   // 7 war die Deckkraft der Ebene: nicht umsetzbar, der Wert fällt auf die Helligkeit   // Achsen nur bei „Werte kombinieren“, die eine Palettenposition nur sonst, das Glühen nur mit Kantenlinien
 function texKeys(n) { const p = n === 1 ? 'tex' : 'tex' + n; return { art: n === 1 ? 'textur' : 'textur' + n, staerke: p + 'Staerke', kontrast: p + 'Kontrast', mitte: p + 'Mitte', hell: p + 'Hell', dunkel: p + 'Dunkel', an: p + 'An', werte: p + 'Werte', ziel: p + 'Ziel', wo: p + 'Wo', maske: p + 'Maske', eigen: p + 'Eigen', wahl: p + 'Wahl', fallen: p + 'Fallen', stich: p + 'Stich' }; }
 function texSlot(n) { const k = texKeys(n); return { art: S[k.art], staerke: S[k.staerke], kontrast: S[k.kontrast], mitte: S[k.mitte], hell: S[k.hell], dunkel: S[k.dunkel], an: S[k.an] !== false, werte: S[k.werte] || texWerteVorgabe(S[k.art]), ziel: S[k.ziel] === undefined ? TEX_ZIEL_VOR : S[k.ziel], wo: S[k.wo] === undefined ? TEX_WO_VOR : S[k.wo], maske: S[k.maske] || maskeNeu(0), eigen: S[k.eigen] || null, wahl: S[k.wahl] || 0, fallen: S[k.fallen] || 0, stich: S[k.stich] || STICH.def }; }
 function texSlotSetzen(n, t) { const k = texKeys(n); S[k.art] = t.art; S[k.staerke] = t.staerke; S[k.kontrast] = t.kontrast; S[k.mitte] = t.mitte; S[k.hell] = t.hell; S[k.dunkel] = t.dunkel; S[k.an] = t.an !== false; S[k.ziel] = t.ziel === undefined ? TEX_ZIEL_VOR : t.ziel; S[k.wo] = t.wo === undefined ? TEX_WO_VOR : t.wo; S[k.werte] = (t.werte || texWerteVorgabe(t.art)).slice(); S[k.maske] = t.maske ? Object.assign({}, t.maske, { p: t.maske.p.slice() }) : maskeNeu(0); S[k.eigen] = t.eigen ? Object.assign({}, t.eigen) : null; S[k.wahl] = t.wahl || 0; S[k.fallen] = t.fallen || 0; S[k.stich] = t.stich || STICH.def; }
@@ -5823,11 +5829,11 @@ fn heightAt(xy: vec2i, k: i32, fallback: f32) -> f32 {
   if (xy.x < 0 || xy.y < 0 || xy.x >= dims.x || xy.y >= dims.y) { return fallback; }
   let q = textureLoad(iter, xy, k, 0);
   if (q.x == 0xFFFFFFFFu || (q.x & 0x80000000u) != 0u) { return fallback; }
-  return log2(max(bitcast<f32>(q.y), 1.0e-6) + 1.0);
+  return log2(max(bitcast<f32>(q.y), 1.0e-6) + 1.0) + texSumme(texWerte(q.z, q.w, gKw), false, 8u);   // Ziel Relief-Höhe: die Plätze heben und senken das Höhenfeld, aus dem die Beleuchtung ihre Normale bildet
 }
 // Relief: der log-Abstand als Höhenfeld, beleuchtet mit Diffus- und Glanzanteil (Licht von oben links); base = Grundfarbe
 fn reliefLight(xy: vec2i, k: i32, dist: f32, base: vec3f) -> vec3f {
-  let h = log2(max(dist, 1.0e-6) + 1.0);
+  let h = log2(max(dist, 1.0e-6) + 1.0) + texSumme(gTw, false, 8u);   // eigene Höhe wie beim Nachbarn, damit das Gefälle stimmt
   let hx = heightAt(xy + vec2i(1, 0), k, h) - heightAt(xy - vec2i(1, 0), k, h);
   let hy = heightAt(xy + vec2i(0, 1), k, h) - heightAt(xy - vec2i(0, 1), k, h);
   let nrm = normalize(vec3f(-hx * 1.6, -hy * 1.6, 1.0));
@@ -5844,7 +5850,7 @@ fn himmelFarbe(r: vec3f) -> vec3f { return pal(C.mat2.z + C.mat2.w * clamp(r.z, 
 // Glanzlicht (mat.y: 0 matt … 1 spiegelnd), Himmelsreflexion über den gespiegelten Blick (mat.z), lokale Schatten aus dem
 // Höhenfeld (mat2.x): sechs Proben entlang der Lichtrichtung im Bild bis mat2.y px, Höhe des Nachbarn gegen die eigene plus Lichtsteigung
 fn reliefMaterial(xy: vec2i, k: i32, dist: f32, base: vec3f) -> vec3f {
-  let h = log2(max(dist, 1.0e-6) + 1.0);
+  let h = log2(max(dist, 1.0e-6) + 1.0) + texSumme(gTw, false, 8u);   // wie in reliefLight
   let hx = heightAt(xy + vec2i(1, 0), k, h) - heightAt(xy - vec2i(1, 0), k, h);
   let hy = heightAt(xy + vec2i(0, 1), k, h) - heightAt(xy - vec2i(0, 1), k, h);
   let st = 1.6 * C.mat.w;   // Neigung 1 = die Steilheit des einfachen Reliefs
@@ -7992,15 +7998,39 @@ vec3 pal(float tRoh) {
 }
 float gKw = 0.0;   // wie im WGSL-Shader
 vec4 gTw = vec4(0.0);   // wie im WGSL-Shader
+// Bausteine der Texturplätze, die das Höhenfeld unten braucht: sie stehen hier, statt vorab deklariert zu werden
+// (eine Vorabdeklaration bekommt der GLSL-Binder nicht mit der Definition zusammen).
+float texWertGeformt(float v, vec4 p) { return p.y * (2.0 * clamp(0.5 + (v - p.w) * p.z, 0.0, 1.0) - 1.0); }   // wie im WGSL-Shader
+bool fallenArt(uint kind) { return (int(kind == 4u) + int(kind == 5u) + int(kind == 14u) + int(kind == 15u) + int(kind == 19u) + int(kind == 20u) + int(kind == 23u)) > 0; }   // ohne Abkürzung, wie im WGSL-Shader
+bool verbundStill(int i) { return all(bvec3(uOpt.y > 0.0, fallenArt(uint(uStapel[3 * i].x)), i + 1 != int(uOpt.z))); }
+uint texZiel(int i) { return uint(uStapel[3 * i + 1].w); }   // Ziel des Platzes wie im WGSL-Shader: 0 erste Achse, 1 zweite Achse, 2 Helligkeit, 3 Palettenposition, 4 Sättigung
+uint texWo(int i) { return uint(uStapel[3 * i + 2].w); }   // wie im WGSL-Shader
+float kanteHell(float g, float empf) { return 0.5 * exp(-0.5 * g * empf); }
+float texStapelWert(int i, float v, float kw) { return mix(v, kanteHell(kw, uStapelW[i].x), float(int(uStapel[3 * i].x) == 11)); }
+vec4 texWerte(uint a, uint b, float kw) {   // wie im WGSL-Shader
+  vec2 v = unpackUnorm2x16(a), w = uTex2.z > 2.5 ? unpackUnorm2x16(b) : vec2(0.0);
+  return vec4(texStapelWert(0, v.x, kw), texStapelWert(1, v.y, kw), texStapelWert(2, w.x, kw), texStapelWert(3, w.y, kw));
+}
+float texSummeEin(int i, float v, bool innen, uint ziel) {   // wie im WGSL-Shader
+  uint wo = texWo(i);
+  if (uStapel[3 * i].x < 0.5 || texZiel(i) != ziel || (innen ? wo == 0u : wo == 1u) || verbundStill(i)) return 0.0;
+  return texWertGeformt(v, uStapel[3 * i]);
+}
+float texSumme(vec4 t, bool innen, uint ziel) {   // wie im WGSL-Shader: feste Indizes, kein dynamischer
+  float v = texSummeEin(0, t.x, innen, ziel) + texSummeEin(1, t.y, innen, ziel);
+  if (uTex2.z > 2.5) v += texSummeEin(2, t.z, innen, ziel);
+  if (uTex2.z > 3.5) v += texSummeEin(3, t.w, innen, ziel);
+  return v;
+}
 float heightAt(ivec2 xy, int k, float fallback) {
   ivec2 dims = textureSize(uIter, 0).xy;
   if (xy.x < 0 || xy.y < 0 || xy.x >= dims.x || xy.y >= dims.y) return fallback;
   uvec4 q = texelFetch(uIter, ivec3(xy, k), 0);
   if (q.x == 0xFFFFFFFFu || (q.x & 0x80000000u) != 0u) return fallback;
-  return log2(max(uintBitsToFloat(q.y), 1.0e-6) + 1.0);
+  return log2(max(uintBitsToFloat(q.y), 1.0e-6) + 1.0) + texSumme(texWerte(q.z, q.w, gKw), false, 8u);   // wie im WGSL-Shader
 }
 vec3 reliefLight(ivec2 xy, int k, float dist, vec3 base) {
-  float h = log2(max(dist, 1.0e-6) + 1.0);
+  float h = log2(max(dist, 1.0e-6) + 1.0) + texSumme(gTw, false, 8u);   // wie im WGSL-Shader
   float hx = heightAt(xy + ivec2(1, 0), k, h) - heightAt(xy - ivec2(1, 0), k, h);
   float hy = heightAt(xy + ivec2(0, 1), k, h) - heightAt(xy - ivec2(0, 1), k, h);
   vec3 nrm = normalize(vec3(-hx * 1.6, -hy * 1.6, 1.0));
@@ -8011,7 +8041,7 @@ vec3 reliefLight(ivec2 xy, int k, float dist, vec3 base) {
 }
 vec3 himmelFarbe(vec3 r) { return pal(uMat2.z + uMat2.w * clamp(r.z, -1.0, 1.0) + uMisc.y); }   // wie im WGSL-Shader
 vec3 reliefMaterial(ivec2 xy, int k, float dist, vec3 base) {   // Materialmodell wie im WGSL-Shader (Auswahl per ?: über Uniforms, nicht per mix)
-  float h = log2(max(dist, 1.0e-6) + 1.0);
+  float h = log2(max(dist, 1.0e-6) + 1.0) + texSumme(gTw, false, 8u);   // wie im WGSL-Shader
   float hx = heightAt(xy + ivec2(1, 0), k, h) - heightAt(xy - ivec2(1, 0), k, h);
   float hy = heightAt(xy + ivec2(0, 1), k, h) - heightAt(xy - ivec2(0, 1), k, h);
   float st = 1.6 * uMat.w;
@@ -8128,7 +8158,6 @@ float texMaskeVon(int i) { return gTm[i]; }
 #else
 void texMaskeMerken(float nu, float kw) {} bool texMaskeZeigt(int i) { return false; } void texMaskenAlle(vec3 col) {} float texMaskeVon(int i) { return 1.0; }
 #endif
-float texWertGeformt(float v, vec4 p) { return p.y * (2.0 * clamp(0.5 + (v - p.w) * p.z, 0.0, 1.0) - 1.0); }   // wie im WGSL-Shader
 vec3 texturMit(vec3 col, float v, vec4 p, vec3 hell, vec3 dunkel) {   // Textur wie im WGSL-Shader
   float d = texWertGeformt(v, p);
   return d > 0.0 ? mix(col, hell, d) : mix(col, dunkel, -d);
@@ -8150,10 +8179,6 @@ float paarAchse(uint wert, float roh, float nu, float faktor, uint abzug, uint f
   if ((flags & 2u) != 0u) w = max(w, 0.0);
   return w * faktor;
 }
-bool fallenArt(uint kind) { return (int(kind == 4u) + int(kind == 5u) + int(kind == 14u) + int(kind == 15u) + int(kind == 19u) + int(kind == 20u) + int(kind == 23u)) > 0; }   // ohne Abkürzung, wie im WGSL-Shader
-bool verbundStill(int i) { return all(bvec3(uOpt.y > 0.0, fallenArt(uint(uStapel[3 * i].x)), i + 1 != int(uOpt.z))); }
-uint texZiel(int i) { return uint(uStapel[3 * i + 1].w); }   // Ziel des Platzes wie im WGSL-Shader: 0 erste Achse, 1 zweite Achse, 2 Helligkeit, 3 Palettenposition, 4 Sättigung
-uint texWo(int i) { return uint(uStapel[3 * i + 2].w); }   // wie im WGSL-Shader
 vec3 texturN(vec3 col, int i, float v, bool innen) {   // wie im WGSL-Shader
   uint wo = texWo(i); uint z = texZiel(i);
   bool gilt = all(bvec3(innen ? wo != 0u : wo != 1u, z == 2u || z == 4u || z == 5u, !verbundStill(i)));
@@ -8178,12 +8203,6 @@ float kanteWert(ivec2 xy, int k) {   // wie im WGSL-Shader
   float gy = nuAt(xy + ivec2(0, 1), k, dims, nu) - nuAt(xy - ivec2(0, 1), k, dims, nu);
   return length(vec2(gx, gy));
 }
-float kanteHell(float g, float empf) { return 0.5 * exp(-0.5 * g * empf); }
-float texStapelWert(int i, float v, float kw) { return mix(v, kanteHell(kw, uStapelW[i].x), float(int(uStapel[3 * i].x) == 11)); }
-vec4 texWerte(uint a, uint b, float kw) {   // wie im WGSL-Shader
-  vec2 v = unpackUnorm2x16(a), w = uTex2.z > 2.5 ? unpackUnorm2x16(b) : vec2(0.0);
-  return vec4(texStapelWert(0, v.x, kw), texStapelWert(1, v.y, kw), texStapelWert(2, w.x, kw), texStapelWert(3, w.y, kw));
-}
 vec2 texAchsen(vec4 t) {   // wie im WGSL-Shader
   vec2 a = vec2(0.0);
   for (int i = 0; i < 4; i++) {
@@ -8192,17 +8211,6 @@ vec2 texAchsen(vec4 t) {   // wie im WGSL-Shader
     a[z] += texWertGeformt(t[i], uStapel[3 * i]);
   }
   return a;
-}
-float texSummeEin(int i, float v, bool innen, uint ziel) {   // wie im WGSL-Shader
-  uint wo = texWo(i);
-  if (uStapel[3 * i].x < 0.5 || texZiel(i) != ziel || (innen ? wo == 0u : wo == 1u) || verbundStill(i)) return 0.0;
-  return texWertGeformt(v, uStapel[3 * i]);
-}
-float texSumme(vec4 t, bool innen, uint ziel) {   // wie im WGSL-Shader: feste Indizes, kein dynamischer
-  float v = texSummeEin(0, t.x, innen, ziel) + texSummeEin(1, t.y, innen, ziel);
-  if (uTex2.z > 2.5) v += texSummeEin(2, t.z, innen, ziel);
-  if (uTex2.z > 3.5) v += texSummeEin(3, t.w, innen, ziel);
-  return v;
 }
 vec3 texturAnwenden(vec3 col, vec4 t, bool innen) {   // wie im WGSL-Shader
   texMaskeWerte(t); texMaskenAlle(col);
@@ -8280,6 +8288,7 @@ vec3 sampleColor(uvec4 px, ivec2 xy, int k) {   // Farbe einer Probe; k = Ebene,
   bool gepackt = any(bvec3(uTex2.z > 1.5, uOpt.x > 0.5, int(uTex.x) == 21));
   vec4 tw = vec4(0.0);
   if (uTex2.z > 0.5) tw = (uTex2.y > 0.5 || innen0) ? texWerte(px.z, px.w, kw) : (gepackt ? texWerte(px.y, px.z, kw) : vec4(int(uTex.x) == 11 ? kanteHell(kw, uStapelW[0].x) : texturWert(px), 0.0, 0.0, 0.0));
+  gTw = tw;   // wie im WGSL-Shader: das Relief liest sie als Höhenfeld (Ziel Relief-Höhe)
   float vz = texSumme(tw, innen0, 3u);   // wie im WGSL-Shader: die Summe der Palettenposition einmal je Probe
   vec3 col = vec3(0.0);
   bool zwei = uZ2.x > 0.5;   // wie im WGSL-Shader
@@ -10987,8 +10996,8 @@ function texArtenParam() { const g = texturAktiv2() || texturZ() || (texInnenIrg
  return { tex1: g ? texArtAn(1) : 0, tex2: g ? texArtAn(2) : 0, tex3: g ? texArtAn(3) : 0, tex4: g ? texArtAn(4) : 0 }; }   // gepackter Weg: die wirksamen Arten der Plätze (sonst der rohe Wert im y-Kanal)
 function texZielRueckfall() {   // was die Färbung nicht anbietet, fällt auf die Helligkeit zurück — sichtbar, nicht heimlich
   const paar = !!paarKonfig();
-  const glow = glowWirkt();
-  for (let m = 1; m <= TEX_SLOTS; m++) { const k = texKeys(m); const z = S[k.ziel]; if ((paar ? z === 3 : (z === 0 || z === 1)) || (z === 6 && !glow) || z === 7 || z === 8) S[k.ziel] = TEX_ZIEL_VOR; }   // ohne Achsen fallen die Achsen zurück, mit Achsen die Palettenposition, ohne Kantenlinien das Glühen, ohne zweite Ebene die Deckkraft
+  const glow = glowWirkt(), relief = reliefWirkt();
+  for (let m = 1; m <= TEX_SLOTS; m++) { const k = texKeys(m); const z = S[k.ziel]; if ((paar ? z === 3 : (z === 0 || z === 1)) || (z === 6 && !glow) || z === 7 || (z === 8 && !relief)) S[k.ziel] = TEX_ZIEL_VOR; }   // ohne Achsen fallen die Achsen zurück, mit Achsen die Palettenposition, ohne Kantenlinien das Glühen, ohne zweite Ebene die Deckkraft
 }
 function texFarbParam(n) { const t = texSlot(n); if (!t.an || t.art === 0) return TEXTUR_AUS; return { art: t.art, staerke: t.staerke, kontrast: t.kontrast, mitte: t.mitte, hell: farbe01(t.hell), dunkel: farbe01(t.dunkel), ziel: texZielWirkt(t.ziel), wo: t.wo === undefined ? TEX_WO_VOR : t.wo }; }   // ausgeschaltet: wirkt wie keine
 function statIrgend() { return statPipeline() || statPipeline2() || statPipeline3() || statPipeline4() || statPipeline5() || statPipeline6(); }   // rechnet der Shader irgendeine Bahnstatistik? (BLA, Zyklen, Abstand)
@@ -12637,7 +12646,7 @@ function syncFarbUI() {   // Bereich Farbe: was je nach Familie, Formel und Fär
     const zielW = texZielWirkt(sl.ziel), zr = $('texZielRow' + n), zs = $('texZiel' + n);   // Ziel des Platzes
     if (zr) zr.hidden = !(zeigen && belegt && !zu);
     if (zs) {
-      for (const o of zs.options) { if (o.value === '0' || o.value === '1') o.hidden = !paarKonfig(); if (o.value === '3') o.hidden = !!paarKonfig(); if (o.value === '6') o.hidden = !glowWirkt(); if (o.value === '7') o.hidden = true; if (o.value === '8') o.hidden = true; }   // Achsen nur, wenn die Färbung welche liefert; sonst die eine Palettenposition; das Glühen nur mit Kantenlinien, die Deckkraft nur mit einer zweiten Ebene
+      for (const o of zs.options) { if (o.value === '0' || o.value === '1') o.hidden = !paarKonfig(); if (o.value === '3') o.hidden = !!paarKonfig(); if (o.value === '6') o.hidden = !glowWirkt(); if (o.value === '7') o.hidden = true; if (o.value === '8') o.hidden = !reliefWirkt(); }   // Achsen nur, wenn die Färbung welche liefert; sonst die eine Palettenposition; das Glühen nur mit Kantenlinien, die Deckkraft nur mit einer zweiten Ebene
       zs.value = String(zielW); if (zs._rebuild) zs._rebuild(); if (zs._sync) zs._sync();
     }
     if (zielW !== TEX_ZIEL_VOR) e.reihen[3].hidden = true;   // helle und dunkle Farbe gelten nur für die Helligkeit
