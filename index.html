@@ -3391,7 +3391,7 @@ function zeigeTexte(wurzel = document.body) {
     for (const el of wurzel.querySelectorAll('[data-' + (attr === 'aria-label' ? 'i18n-aria-label' : 'i18n-' + attr) + ']')) el.setAttribute(attr, t(el.dataset[feld]));
 }
 window.__i18n = () => ({ sprache: LANG, fehlende: [...FEHLENDE_TEXTE], eintraege: Object.keys(TEXTE).length });   // für die Tests
-window.__kontextVerlieren = () => { if (renderer && renderer.onLost) { renderer.onLost({ message: 'Testhaken' }); return true; } return false; };   // Testhaken (Cypress): den Verlust des Grafikkontexts melden, ohne das Gerät wirklich zu verwerfen (das nähme die Seite mit)
+window.__kontextVerlieren = () => { kontextVerluste++; initRenderer(); return true; };   // Testhaken (Cypress): den Wiederanlauf nach einem Kontextverlust anstoßen; das Gerät bleibt unberührt, sonst nähme es die Seite mit
 function festerText(el, schluessel) { el.dataset.i18n = schluessel; el.textContent = t(schluessel); return el; }   // vom Code gebaut, aber nur einmal
 function festesAttribut(el, attr, schluessel) { el.dataset[MARKEN[attr]] = schluessel; el.setAttribute(attr, t(schluessel)); return el; }
 function setLang(l) {   // Sprache wechseln: erst die Texte mit Marke, dann alles, was der Code selbst beschriftet

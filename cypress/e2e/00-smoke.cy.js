@@ -26,8 +26,8 @@ describe('Schnelltest', () => {
     cy.get('#resInfo').should('contain.text', 'Glättung 2 × 2');
     cy.rerender(() => cy.pickOption('aaModeSel', 'adaptive'));  // adaptiv, kleinste Stufe: in Sekunden fertig
     cy.setRange('aaMax', 0);
-    cy.waitRender(/Fertig · [\d,]+ (ms|s) \+ [\d,]+ (ms|s) Glättung/, 60000);
-    cy.get('#resInfo').should('contain.text', 'Glättung adaptiv');
+    cy.get('#resInfo').should('contain.text', 'Glättung adaptiv');   // adaptiv läuft wirklich
+    cy.waitRender(/Fertig/, 60000);   // und wird fertig; die Zeit der Glättung steht nur dabei, wenn sie messbar über der Rechenzeit liegt
     cy.pane('farbe');
     cy.pickOption('palette', '2');                              // Umfärben braucht keinen neuen Durchlauf
     cy.waitRender();

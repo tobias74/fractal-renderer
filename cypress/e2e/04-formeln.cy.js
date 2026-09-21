@@ -282,6 +282,7 @@ describe('Formelfamilie', () => {
   it('Lyapunov reicht in alle vier Quadranten: auch mit negativen a und b bleibt die Bahn beschränkt', () => {
     // Ausschnitt a ≈ −1,35 … −0,18, b ≈ −0,9 … −0,08: früher ganz grau (nicht definiert), jetzt überall ein Exponent
     for (const r of ['webgpu']) {
+      cy.visitApp('mode=mandel&f=13&re=-0.5&im=-0.5&z=3');
       cy.shotStats('lyapunov-quadrant-' + r).then(s => {
         expect(s.mean, r + ': hell (Gold) statt Grau').to.be.greaterThan(80);
         expect(s.colors, r + ': ein Verlauf statt einer Fläche').to.be.greaterThan(20);

@@ -65,6 +65,7 @@ describe('Fraktalfamilien', () => {
   // bis die neue Skala von der Grafikkarte zurück war. Beim Ziehen eines Reglers flackerte es deshalb stark.
   // Die Zwischenstände werden immer gezeigt; unter WebGL wachsen sie über die CPU-Worker sichtbar heran.
   for (const rend of ['auto']) it(`kein Aufblitzen beim Verstellen, Zwischenstände sichtbar (Renderer ${rend})`, () => {
+    cy.visitApp('fam=dejong&at=10000000');
     cy.get('#accSteps').should('not.exist');               // kein Häkchen mehr: Zwischenstände gibt es immer
     cy.waitRender(/Fertig|Done/, 60000);
     cy.wait(400);
