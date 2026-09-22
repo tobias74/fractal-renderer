@@ -872,7 +872,7 @@
 <div id="stage"></div>
 <div id="uebersetzenToast" class="toast" role="status" hidden>   <!-- Hinweis beim Übersetzen der Fassung mit Ebenen und Masken: über dem Bild, wegklickbar, in Technik abschaltbar -->
   <span class="toast-lauf" aria-hidden="true"></span>
-  <span class="toast-text"><span data-i18n="status.post-compiling"></span> <span id="toastDetail" class="mono"></span></span>
+  <span class="toast-text"><span id="toastText" data-i18n="status.post-compiling"></span> <span id="toastDetail" class="mono"></span></span>
   <button type="button" id="toastWeg" class="toast-weg" data-i18n-aria-label="toast.close" data-i18n-title="toast.close">×</button>
 </div>
 <div id="fadenkreuz" class="fadenkreuz" hidden></div>   <!-- Fraktal-Ebenen: Fadenkreuz beim Ausrichten -->
@@ -3244,6 +3244,7 @@ const TEXTE = {
   'status.collecting-m-points-s': { de: 'Sammelt · {0} Mio. Punkte · {1} s', en: 'Collecting · {0} M points · {1} s' },
   'status.done': { de: 'Fertig · {0}', en: 'Done · {0}' },
   'status.post-compiling': { de: 'Ebenen und Masken werden übersetzt …', en: 'Compiling layers and masks …' },
+  'status.formula-compiling': { de: 'Die Formel wird übersetzt …', en: 'Compiling the formula …' },
   'status.post-error': { de: 'Ebenen und Masken nicht übersetzt: {0}', en: 'Layers and masks not compiled: {0}' },
   'status.compiling-step': { de: 'Schritt {0} von {1} · {2} s', en: 'step {0} of {1} · {2} s' },
   'status.compiling-seconds': { de: '{0} s', en: '{0} s' },
@@ -6887,6 +6888,7 @@ class GpuRenderer {
     });
     [this.pipeF, this.pipeU, this.pipeC] = await Promise.all([
       pipe(mF, this.bglF, 'rg32uint'), pipe(mU, this.bglU, 'rg32uint'), pipe(mC, this.bglC, this.format) ]);
+    this.variantLaeuft = new Set(); this.onFormelBereit = null;   // Vorlagen, die gerade nebenher übersetzt werden
     this.pipeV0 = null; this.pipeV1 = null; this.pipeP = null; this.nachWartet = false; this.onBereit = null;   // Farbpass „voll“ (ohne/mit Texturmasken) und Nachbearbeitung: erst, wenn eine Ebene oder Maske wirkt (siehe _pipeVoll)
     this.bglP = d.createBindGroupLayout({ entries: [   // Nachbearbeitung: Iterationstextur (Masken), Uniforms, Zwischenbild, Texturwerte, Kurven
       { binding: 0, visibility: F, texture: { sampleType: 'uint', viewDimension: '2d-array' } },
@@ -7031,6 +7033,25 @@ class GpuRenderer {
         primitive: { topology: 'triangle-list' },
       }).then(pl => { if (!this.pipeCache.has(key)) this.pipeCache.set(key, pl); }).catch(() => { /* wird bei Bedarf synchron gebaut */ });
     }
+  }
+  _variantSchluessel(p) {
+    const fmt = this.iterFormat || 'rg32uint';
+    return variantenSchluessel(p.formula, p.needDE === 1, p.needInt === 1, p.cycle === 1, p.bla === 1, p.power, fastPath(p), p.lyap || 0, p.winkel || 0, p.stat || 0, p.stat2 || 0, p.tex1 || 0, p.tex2 || 0, p.fluchtForm || 0, p.texz || 0, p.stat3 || 0, p.stat4 || 0, p.stat5 || 0, p.tex3 || 0, p.tex4 || 0, p.stat6 || 0, p.paar || 0, p.paarA || 0, p.paarB || 0, p.paarVoll || 0, p.hybrid || 0, p.eigen || null, fmt === 'rgba32uint');
+  }
+  variantBereit(p) { return this.pipeCache.has(this._variantSchluessel(p)); }   // liegt die Vorlage schon übersetzt bereit?
+  variantVorbereiten(p) {   // nebenher übersetzen, statt den Faden mit createRenderPipeline anzuhalten
+    const key = this._variantSchluessel(p);
+    if (this.pipeCache.has(key) || this.variantLaeuft.has(key)) { return; }
+    this.variantLaeuft.add(key);
+    const fmt = this.iterFormat || 'rg32uint', eigen = p.eigen || null;
+    this.device.createRenderPipelineAsync({
+      layout: this.layoutF,
+      vertex: { module: eigen ? this._modEigen(eigen) : this.modF, entryPoint: 'vs' },
+      fragment: { module: eigen ? this._modEigen(eigen) : this.modF, entryPoint: 'fs', targets: [{ format: fmt }], constants: { FORMULA: p.formula, NEED_DE: p.needDE === 1 ? 1 : 0, NEED_INT: p.needInt === 1 ? 1 : 0, CYCLE: p.cycle === 1 ? 1 : 0, BLA: p.bla === 1 ? 1 : 0, POWER: p.power, FAST: fastPath(p) ? 1 : 0, LYAP: p.lyap || 0, WINKEL: p.winkel || 0, STAT: p.stat || 0, STAT2: p.stat2 || 0, TEX1: p.tex1 || 0, TEX2: p.tex2 || 0, FORM: p.fluchtForm || 0, TEXZ: p.texz || 0, STAT3: p.stat3 || 0, STAT4: p.stat4 || 0, STAT5: p.stat5 || 0, TEX3: p.tex3 || 0, TEX4: p.tex4 || 0, STAT6: p.stat6 || 0, PAAR: p.paar || 0, PAARA: p.paarA || 0, PAARB: p.paarB || 0, PAARVOLL: p.paarVoll || 0, HYBRID: p.hybrid || 0 } },
+      primitive: { topology: 'triangle-list' },
+    }).then(pl => { if (!this.pipeCache.has(key)) this.pipeCache.set(key, pl); })
+      .catch(() => { /* dann baut _pipeVariant sie beim Zeichnen, wie bisher */ })
+      .finally(() => { this.variantLaeuft.delete(key); if (this.onFormelBereit) this.onFormelBereit(); });
   }
   _pipeVariant(formula, de, ni, cyc, bla, pw, fast, lyap = 0, winkel = 0, stat = 0, stat2 = 0, tex1 = 0, tex2 = 0, form = 0, texz = 0, stat3 = 0, stat4 = 0, stat5 = 0, tex3 = 0, tex4 = 0, stat6 = 0, paar = 0, paarA = 0, paarB = 0, paarVoll = 0, hybrid = 0, eigen = null) {   // eine Pipeline je Formel, Ableitungsbedarf, Zykluserkennung, BLA, Potenz, schlankem Kern, Lyapunov-Färbung und Winkel (Override-Konstanten)
     const fmt = this.iterFormat || 'rg32uint';
@@ -8670,6 +8691,11 @@ function frameKern(now) {
       }
     }
     if (fractalDirty) {
+      if (renderer.variantBereit && !renderer.variantBereit(fractalParams(1, maxIter, 0))) {
+        renderer.variantVorbereiten(fractalParams(1, maxIter, 0));   // nebenher übersetzen; fractalDirty bleibt, bis die Vorlage steht
+        formelWartet = true; lastStatusKey = ''; updateStatus(); requestFrame(); return;
+      }
+      formelWartet = false;
       fractalDirty = false;
       if (stripMode) { stripMode = false; computeTiles(); }
       if (orbitDirty) { computeOrbits(maxIter); orbitDirty = false; }
@@ -8771,6 +8797,7 @@ function updateStatus() {
     stateTxt = renderMs < 0 ? t('status.rendering-2') : t('status.smoothing', fmtMs(renderMs), aaPct()) + (rest > 900 ? t('status.about', fmtMs(rest)) : '');
   }
   else if (gpuBusy || renderMs < 0) stateTxt = t('status.rendering-2');
+  else if (formelWartet) stateTxt = t('status.formula-compiling');   // die Vorlage dieser Formel entsteht gerade
   else if (renderer && renderer.nachWartet) stateTxt = t('status.post-compiling') + ' ' + uebersetzenDetail();   // die Ebenen erscheinen, sobald ihre Fassung übersetzt ist
   else stateTxt = t('status.done', fmtMs(renderMs)) + (refineMs > renderMs + 1 ? t('status.smoothing-2', fmtMs(refineMs - renderMs)) : '') + t('status.iterations', fmtGanz(maxIter)) + (blaActive ? ' · BLA' : '');
   if (ebenen.length > 1 && renderEbene !== ebeneAktiv && (phase !== 'idle' || gpuBusy)) stateTxt += ' · ' + t('layers.layer-n', renderEbene + 1);   // welche Ebene gerade nachrechnet
@@ -8790,12 +8817,12 @@ function updateStatus() {
   // Handy: der Zoom steht in der Statuspille, Zustand, Tiefe und Koordinaten in ihrem Aufklapper
   $('mZoom').innerHTML = zoomTxt; $('mState').textContent = stateTxt; $('mCoords').textContent = $('coords').textContent;
   $('mDepthVal').textContent = $('depthVal').textContent; $('mDepthFill').style.width = $('depthFill').style.width;
-  const uebersetzt = !!(renderer && renderer.nachWartet);   // die Fassung mit Ebenen und Masken wird nebenher übersetzt: unbestimmte Laufanzeige
+  const uebersetzt = !!(renderer && renderer.nachWartet) || formelWartet;   // eine Fassung wird übersetzt: unbestimmte Laufanzeige
   const beschaeftigt = (S.family === 'accum' ? accRunning : phase !== 'idle' || gpuBusy || renderMs < 0) || uebersetzt;
   $('mStatus').classList.toggle('busy', beschaeftigt);
   $('mKurz').textContent = beschaeftigt && performance.now() >= noticeUntil ? stateTxt : '';   // Handy: der Zustand im Statusknopf, solange etwas läuft (sonst steckte er hinter dem Aufklapper)
   $('state').classList.toggle('uebersetzt', uebersetzt); $('mState').classList.toggle('uebersetzt', uebersetzt);
-  uebersetzenAnzeige(uebersetzt);
+  uebersetzenAnzeige(uebersetzt, formelWartet ? 'status.formula-compiling' : 'status.post-compiling');
   if (S.autoIter) { $('iterVal').value = fmtGanz(maxIter); $('iterRange').value = iterToPos(maxIter); }
 }
 function uebersetzenDetail() {   // Fortschritt der Übersetzung: Schritt x von y (WebGPU: die Programme entstehen nacheinander) und die Sekunden seit dem Start
@@ -8805,13 +8832,15 @@ function uebersetzenDetail() {   // Fortschritt der Übersetzung: Schritt x von 
 }
 // Hinweis beim Übersetzen: der Streifen über dem Bild (wegklickbar, in Technik abschaltbar) und der Takt, der Sekunden und Schritte auch ohne Bildschleife weiterzählt
 let toastWeg = false, toastSeit = 0, toastTakt = 0;
-function uebersetzenAnzeige(aktiv) {
+let formelWartet = false;   // die Fraktal-Variante wird im nächsten Bild übersetzt: solange steht der Hinweis
+function uebersetzenAnzeige(aktiv, marke = 'status.post-compiling') {
   const el = $('uebersetzenToast');
+  $('toastText').dataset.i18n = marke; $('toastText').textContent = t(marke);   // beide Fälle teilen sich den Streifen
   if (!aktiv) { toastWeg = false; toastSeit = 0; el.hidden = true; if (toastTakt) { clearInterval(toastTakt); toastTakt = 0; } return; }
   if (!toastSeit) toastSeit = performance.now();
   if (!toastTakt) toastTakt = setInterval(() => { lastStatusKey = ''; updateStatus(); }, 500);
   const zeigen = toastAn && !toastWeg && performance.now() - toastSeit > 400;   // kurze Übersetzungen blitzen nicht auf
-  if (zeigen) $('toastDetail').textContent = uebersetzenDetail();
+  if (zeigen) $('toastDetail').textContent = formelWartet ? '' : uebersetzenDetail();   // die Formel hat keine Schrittzahl: sie entsteht in einem Stück
   el.hidden = !zeigen;
 }
 $('toastWeg').addEventListener('click', () => { toastWeg = true; $('uebersetzenToast').hidden = true; });
@@ -8938,7 +8967,8 @@ async function initRenderer() {
   }
   $('fatal').hidden = true; neustartVersuche = 0;
   badge.hidden = true; badge.textContent = ''; badge.className = 'badge ' + renderer.kind;   // läuft alles, braucht es keinen Namen: es gibt nur einen Renderer
-  renderer.onBereit = () => { lastStatusKey = ''; colorDirty = true; ebenenMaskenVeraltet(); requestFrame(); };   // WebGL 2: die Fassung des Farbpasses mit Nachbearbeitung ist übersetzt – umfärben
+  renderer.onBereit = () => { lastStatusKey = ''; colorDirty = true; ebenenMaskenVeraltet(); requestFrame(); };   // die Fassung des Farbpasses mit Nachbearbeitung ist übersetzt – umfärben
+  renderer.onFormelBereit = () => { lastStatusKey = ''; requestFrame(); };   // die Vorlage der Formel steht: die Schleife rechnet weiter
   renderer.onNachFehler = text => notify('status.post-error', text);   // die Fassung ließ sich nicht übersetzen: sagen, statt still ohne Ebenen zu zeichnen
   applyPalette();
   zeigeTechInfo();
@@ -13469,9 +13499,10 @@ window.addEventListener('keydown', e => {
     }
     const links = zL ? r - w : l;   // gezogene Kante bewegt sich, die gegenüberliegende hält
     const oben = zO ? u + h : o;
+    const [ex, ey] = ebeneVonPixel(links + w / 2, oben - h / 2);   // die Mitte wandert in Bildrichtung: bei gedrehter Ansicht erst in die Ebene drehen (wie beim Verschieben)
     crop.w = w; crop.h = h;
-    crop.cx = dd.addD(c.cx, links + w / 2);
-    crop.cy = dd.addD(c.cy, oben - h / 2);
+    crop.cx = dd.addD(c.cx, ex);
+    crop.cy = dd.addD(c.cy, ey);
     syncCropBox();
   });
   const up = e => { if (drag && e.pointerId === drag.id) drag = null; };

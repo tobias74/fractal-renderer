@@ -241,8 +241,9 @@ describe('Farbe und Farbschema-Editor', () => {
     cy.rerender(() => cy.pickOption('mapping', 2));                  // zurück: alles wie vorher
     cy.get('#glowMode').should('have.value', '1').parent().should('not.have.attr', 'hidden');
     cy.get('#palette').parent().should('not.have.attr', 'hidden');
-    cy.rerender(() => cy.pickOption('formula', 11));                 // Newton/Nova färbt nach Wurzeln: Lyapunov und Winkel fehlen
-    cy.get('#mapping optgroup[data-ohne-newton]').should('have.length', 4).each($g => expect($g.prop('hidden')).to.eq(true));
+    cy.rerender(() => cy.pickOption('formula', 11));                 // Newton/Nova: Lyapunov und die Winkel fehlen, die Bahn-Gruppen bleiben
+    cy.get('#mapping optgroup[data-ohne-newton]').should('have.length', 2).each($g => expect($g.prop('hidden')).to.eq(true));
+    cy.get('#mapping optgroup:not([data-ohne-newton])').each($g => expect($g.prop('hidden'), $g.attr('label') + ' bleibt').to.eq(false));   // Bahnmittel und Bahnfallen lesen die Bahn aus: sie gelten auch hier
   });
 
   it('Farbanker: mit „Farbe beim Dichte-Regler halten“ bleibt die Bildmitte beim Verstellen der Dichte stehen', () => {
@@ -695,9 +696,9 @@ describe('Färbungen nach Bahnstatistik', () => {
         cy.shotStats('stat-' + m).then(b => anders(a, b, 'Färbung ' + m));
       }
     });
-    cy.rerender(() => cy.pickOption('formula', 11));                 // Newton/Nova färbt nach Wurzeln
-    cy.get('#mapping optgroup[label="Bahnmittel"]').should('have.prop', 'hidden', true);
-    cy.get('#mapping').should('have.value', '2');
+    cy.rerender(() => cy.pickOption('formula', 11));                 // Newton/Nova: die Bahn-Färbungen bleiben, denn eine Bahn gibt es auch dort
+    cy.get('#mapping optgroup[label="Bahnmittel"]').should('have.prop', 'hidden', false);
+    cy.get('#mapping').should('have.value', '21');   // die zuletzt gewählte bleibt stehen, sie bedeutet hier ebenfalls etwas
   });
 
   // Die Bahnstatistik malt seidige Schleier, die Fluchtzeit malt Ringe. Beides in einem Bild geht nur, wenn die Färbung
