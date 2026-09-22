@@ -458,4 +458,32 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
     cy.pickOption('posterFmt', 'png');
     cy.get('#posterCancel').click();
   });
+  // Am Handy trifft ein Finger den kleinen Griff oft nicht. Solange der Rahmen steht, darf darum nichts an die
+  // Leinwand durchkommen: kein Verschieben, kein Kneifen. Ein Zug daneben bewegt stattdessen den Rahmen.
+  it('der Ausschnittrahmen fängt Berührungen ab: die Ansicht bleibt stehen, ein Zug daneben verschiebt den Rahmen', () => {
+    cy.viewport(375, 812);
+    cy.visitApp('mode=mandel'); cy.waitRender();
+    cy.get('#tabSave').click();
+    cy.get('#cropPick').click();
+    cy.get('#cropBox').should('be.visible');
+    cy.document().then(doc => {
+      const el = doc.elementFromPoint(40, 120);
+      expect(el && el.id, 'neben dem Rahmen liegt die Maske, nicht die Leinwand').to.eq('crop');
+    });
+    cy.hashParams().then(h => cy.wrap(h.get('re')).as('reVorher'));
+    cy.get('#cropBox').then($b => {
+      const links = $b[0].getBoundingClientRect().left, breit = $b[0].getBoundingClientRect().width;
+      cy.get('#crop').trigger('pointerdown', { pointerId: 7, pointerType: 'touch', button: 0, buttons: 1, clientX: 40, clientY: 120, force: true });
+      cy.get('#crop').trigger('pointermove', { pointerId: 7, pointerType: 'touch', buttons: 1, clientX: 90, clientY: 120, force: true });
+      cy.get('#crop').trigger('pointerup', { pointerId: 7, pointerType: 'touch', button: 0, buttons: 0, clientX: 90, clientY: 120, force: true });
+      cy.get('@reVorher').then(vorher => cy.expectHash('re', r => expect(r, 'die Ansicht blieb stehen').to.eq(vorher)));
+      cy.expectHash('z', z => expect(parseFloat(z), 'kein Zoom').to.eq(1));
+      cy.get('#cropBox').should($n => {
+        const r = $n[0].getBoundingClientRect();
+        expect(r.left, 'der Rahmen ging mit').to.be.closeTo(links + 50, 3);
+        expect(r.width, 'und blieb gleich groß').to.be.closeTo(breit, 1);
+      });
+    });
+    cy.get('#cropCancel').click();
+  });
 });

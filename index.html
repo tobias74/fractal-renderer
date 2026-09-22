@@ -513,7 +513,7 @@
     border: 1px solid var(--line-strong); border-radius: 6px; padding: 7px 8px; font: 13px var(--font-mono);
   }
   .poster-card .thumb { max-height: 140px; width: auto; max-width: 100%; border-radius: 6px; display: block; margin: 0 auto; }
-  #crop { position: fixed; inset: 0; z-index: 6; pointer-events: none; }
+  #crop { position: fixed; inset: 0; z-index: 6; pointer-events: auto; cursor: move; touch-action: none; }   /* fängt alles ab: solange der Rahmen steht, bewegt kein Finger die Ansicht darunter */
   #cropBox {
     position: absolute; box-sizing: border-box;
     border: 1.5px solid rgba(255, 255, 255, .95);
@@ -542,6 +542,19 @@
   #cropBox .h[data-h=w] { left: -8px; }
   #cropBox .h[data-h=e] { right: -8px; }
   #cropBox .h[data-h=w]::after, #cropBox .h[data-h=e]::after { width: 12px; height: 36px; }
+  @media (pointer: coarse) {   /* Finger treffen keinen 22-Pixel-Griff: die Fläche wächst, das sichtbare Zeichen bleibt */
+    #cropBox .h { width: 36px; height: 36px; }
+    #cropBox .h[data-h=nw] { left: -18px; top: -18px; }
+    #cropBox .h[data-h=se] { right: -18px; bottom: -18px; }
+    #cropBox .h[data-h=ne] { right: -18px; top: -18px; }
+    #cropBox .h[data-h=sw] { left: -18px; bottom: -18px; }
+    #cropBox .h[data-h=n], #cropBox .h[data-h=s] { left: 22px; right: 22px; width: auto; height: 30px; }
+    #cropBox .h[data-h=n] { top: -15px; }
+    #cropBox .h[data-h=s] { bottom: -15px; }
+    #cropBox .h[data-h=w], #cropBox .h[data-h=e] { top: 22px; bottom: 22px; width: 30px; height: auto; }
+    #cropBox .h[data-h=w] { left: -15px; }
+    #cropBox .h[data-h=e] { right: -15px; }
+  }
   .crop-label {
     position: absolute; left: 0; top: 100%; margin-top: 6px; white-space: nowrap;
     font: 11.5px var(--font-mono); color: var(--text); background: rgba(11, 13, 18, .75);
@@ -13407,14 +13420,14 @@ window.addEventListener('keydown', e => {
 });
 (() => {                            // Ziehen und Skalieren des Rahmens
   let drag = null;
-  cropBox.addEventListener('pointerdown', e => {
-    if (!crop) return;
+  cropEl.addEventListener('pointerdown', e => {
+    if (!crop || (e.target instanceof Element && e.target.closest('.crop-bar'))) return;   // die Leiste unten bedient sich selbst
     e.preventDefault(); e.stopPropagation();
-    try { cropBox.setPointerCapture(e.pointerId); } catch (err) { /* synthetische Zeiger */ }
+    try { cropEl.setPointerCapture(e.pointerId); } catch (err) { /* synthetische Zeiger */ }
     const hh = e.target.dataset.h || null;
     drag = { id: e.pointerId, hh, x: e.clientX, y: e.clientY, c: { cx: crop.cx, cy: crop.cy, w: crop.w, h: crop.h } };
   });
-  cropBox.addEventListener('pointermove', e => {
+  cropEl.addEventListener('pointermove', e => {
     if (!drag || e.pointerId !== drag.id) return;
     const k = cssPerPlane(), dxp = (e.clientX - drag.x) / k, dyp = -(e.clientY - drag.y) / k, c = drag.c;
     if (!drag.hh) { const [ex, ey] = ebeneVonPixel(dxp, dyp); crop.cx = dd.addD(c.cx, ex); crop.cy = dd.addD(c.cy, ey); syncCropBox(); return; }
@@ -13440,8 +13453,8 @@ window.addEventListener('keydown', e => {
     syncCropBox();
   });
   const up = e => { if (drag && e.pointerId === drag.id) drag = null; };
-  cropBox.addEventListener('pointerup', up); cropBox.addEventListener('pointercancel', up);
-  cropBox.addEventListener('wheel', e => e.preventDefault(), { passive: false });
+  cropEl.addEventListener('pointerup', up); cropEl.addEventListener('pointercancel', up);
+  cropEl.addEventListener('wheel', e => e.preventDefault(), { passive: false });
 })();
 
 // Eine Exportkachel adaptiv rechnen, mit demselben Kriterium wie am Bildschirm. Die Kachel liegt dabei in der linken
