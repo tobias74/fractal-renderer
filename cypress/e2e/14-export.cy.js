@@ -300,7 +300,7 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
     cy.get('#posterCancel').click();
   });
 
-  it('Kanten des Rahmens: jede Kante zieht ihre Seite, die Gegenseite steht; mit festem Verhältnis folgt die andere Achse mittig', () => {
+  it('Kanten des Rahmens: jede Kante zieht ihre Seite, die Gegenseite steht; mit festem Verhältnis wächst die andere Achse von der haltenden Kante aus', () => {
     cy.get('#save').click(); cy.get('#cropPick').click(); cy.get('#cropBox').should('be.visible');
     for (const k of ['n', 's', 'w', 'e']) cy.get(`#cropBox .h[data-h=${k}]`).should('exist');   // seit 19.09.2026 auch die Kanten, nicht nur die Ecken
     const zieh = (kante, dx, dy) => cy.get(`#cropBox .h[data-h=${kante}]`).then($h => {
@@ -316,8 +316,8 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
     rahmen().then(r0 => { zieh('w', 20, 0); rahmen().then(r1 => { expect(r1.left, 'linke Kante folgt nach innen').to.be.closeTo(r0.left + 20, 3); expect(r1.right, 'rechte Kante steht').to.be.closeTo(r0.right, 1); }); });
     rahmen().then(r0 => { zieh('s', 0, 25); rahmen().then(r1 => { expect(r1.bottom, 'untere Kante folgt').to.be.closeTo(r0.bottom + 25, 3); expect(r1.top, 'obere Kante steht').to.be.closeTo(r0.top, 1); }); });
     cy.pickOption('cropFmt', '16_9');
-    rahmen().then(r0 => { zieh('e', 64, 0); rahmen().then(r1 => { expect(r1.right, 'rechte Kante folgt').to.be.closeTo(r0.right + 64, 3); expect(r1.left, 'linke Kante steht').to.be.closeTo(r0.left, 1); expect(r1.width / r1.height, '16:9 bleibt').to.be.closeTo(16 / 9, 0.02); expect((r1.top + r1.bottom) / 2, 'senkrecht mittig gewachsen').to.be.closeTo((r0.top + r0.bottom) / 2, 1); }); });
-    rahmen().then(r0 => { zieh('s', 0, 18); rahmen().then(r1 => { expect(r1.bottom, 'untere Kante folgt').to.be.closeTo(r0.bottom + 18, 3); expect(r1.top, 'obere Kante steht').to.be.closeTo(r0.top, 1); expect(r1.width / r1.height, '16:9 bleibt').to.be.closeTo(16 / 9, 0.02); expect((r1.left + r1.right) / 2, 'waagerecht mittig gewachsen').to.be.closeTo((r0.left + r0.right) / 2, 1); }); });
+    rahmen().then(r0 => { zieh('e', 64, 0); rahmen().then(r1 => { expect(r1.right, 'rechte Kante folgt').to.be.closeTo(r0.right + 64, 3); expect(r1.left, 'linke Kante steht').to.be.closeTo(r0.left, 1); expect(r1.width / r1.height, '16:9 bleibt').to.be.closeTo(16 / 9, 0.02); expect(r1.top, 'die obere Kante steht ebenfalls: gewachsen wird nach unten').to.be.closeTo(r0.top, 1); }); });
+    rahmen().then(r0 => { zieh('s', 0, 18); rahmen().then(r1 => { expect(r1.bottom, 'untere Kante folgt').to.be.closeTo(r0.bottom + 18, 3); expect(r1.top, 'obere Kante steht').to.be.closeTo(r0.top, 1); expect(r1.width / r1.height, '16:9 bleibt').to.be.closeTo(16 / 9, 0.02); expect(r1.left, 'die linke Kante steht ebenfalls: gewachsen wird nach rechts').to.be.closeTo(r0.left, 1); }); });
     cy.get('#cropBox .h[data-h=se]').then($h => {   // die Ecken ziehen weiter wie bisher
       const r = $h[0].getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
       rahmen().then(r0 => {
@@ -459,8 +459,9 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
     cy.get('#posterCancel').click();
   });
   // Am Handy trifft ein Finger den kleinen Griff oft nicht. Solange der Rahmen steht, darf darum nichts an die
-  // Leinwand durchkommen: kein Verschieben, kein Kneifen. Ein Zug daneben bewegt stattdessen den Rahmen.
-  it('der Ausschnittrahmen fängt Berührungen ab: die Ansicht bleibt stehen, ein Zug daneben verschiebt den Rahmen', () => {
+  // Leinwand durchkommen: kein Verschieben, kein Kneifen. Mit dem Zeiger fasst der Rahmen nur an sich selbst an;
+  // erst bei grobem Zeiger (Finger) verschiebt ihn auch ein Zug in der abgedunkelten Fläche.
+  it('der Ausschnittrahmen fängt Berührungen ab: die Ansicht bleibt stehen, der Rahmen wird am Rahmen angefasst', () => {
     cy.viewport(375, 812);
     cy.visitApp('mode=mandel'); cy.waitRender();
     cy.get('#tabSave').click();
@@ -480,8 +481,8 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
       cy.expectHash('z', z => expect(parseFloat(z), 'kein Zoom').to.eq(1));
       cy.get('#cropBox').should($n => {
         const r = $n[0].getBoundingClientRect();
-        expect(r.left, 'der Rahmen ging mit').to.be.closeTo(links + 50, 3);
-        expect(r.width, 'und blieb gleich groß').to.be.closeTo(breit, 1);
+        expect(r.left, 'mit dem Zeiger fasst nur der Rahmen an: er bleibt stehen').to.be.closeTo(links, 1);
+        expect(r.width, 'und bleibt gleich groß').to.be.closeTo(breit, 1);
       });
     });
     cy.get('#cropCancel').click();

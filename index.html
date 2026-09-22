@@ -1100,7 +1100,7 @@
           <option value="15" data-i18n="colour.escape-angle"></option>
           <option value="34" data-i18n="colour.external-angle"></option>
         </optgroup>
-        <optgroup data-i18n-label="colour.orbit-averages" data-ohne-newton>
+        <optgroup data-i18n-label="colour.orbit-averages">
           <option value="19" data-i18n="colour.stripe-average"></option>
           <option value="20" data-i18n="colour.triangle-inequality-average-mitchell"></option>
           <option value="26" data-i18n="colour.total-turning"></option>
@@ -1108,7 +1108,7 @@
           <option value="21" data-i18n="colour.sign-changes"></option>
           <option value="35" data-i18n="colour.custom"></option>
         </optgroup>
-        <optgroup data-i18n-label="colour.orbit-traps" data-ohne-newton>
+        <optgroup data-i18n-label="colour.orbit-traps">
           <option value="17" data-i18n="colour.cross-trap-pickover"></option>
           <option value="18" data-i18n="colour.cross-trap-two-values"></option>
           <option value="24" data-i18n="colour.closest-to-origin"></option>
@@ -3877,7 +3877,7 @@ const PAAR_ZIELE = 4;   // 0 erste Achse, 1 zweite Achse, 2 Helligkeit, 3 Sätti
 const PAAR_ZIEL_VOR = { a: 0, b: 1 };   // Vorgabe je Platz: der erste Wert auf die erste Achse, der zweite auf die zweite
 const PAAR_EIGEN = () => ({ a: { wert: 1, faktor: 1, abzug: 0, klemme: false, anker: true, ziel: 0 }, b: { wert: 2, faktor: 30, abzug: 0, klemme: false, anker: true, ziel: 1 } });   // Vorgabe: Fluchtzeit auf Achse A, Streifenmittel ×30 auf Achse B
 function paarKonfig() {   // die Werte der Färbung „Werte kombinieren“ oder null
-  if (S.family !== 'escape' || wurzelFormel(S.formula) || FORMULAS[S.formula].seq) return null;
+  if (S.family !== 'escape' || FORMULAS[S.formula].seq) return null;
   return S.mapping === 31 ? S.paar : null;
 }
 function paarAbzug() { const k = paarKonfig(); return !!k && (k.a.abzug !== 0 || k.b.abzug !== 0); }   // eine Achse zieht die Fluchtzeit ab: der β-Regler gilt
@@ -6182,7 +6182,7 @@ fn sampleColor(px: vec4u, xy: vec2i, k: i32) -> vec3f {
       if (zwei) { col = farbe2(v0, vec2f(p.x, p.y + C.misc.y), v0.x == 0.0 && v0.y == 0.0); }   // hier dreht der Versatz beide Teile
       else { col = pal(p.x + p.y + C.misc.y); }
     }
-  } else if ((u32(C.misc.w) == 16u || u32(C.misc.w) == 17u || u32(C.misc.w) == 18u || u32(C.misc.w) == 21u || u32(C.misc.w) == 24u || u32(C.misc.w) == 29u || u32(C.misc.w) == 32u || u32(C.misc.w) == 35u) && u32(C.misc3.x) != 11u && u32(C.misc3.x) != 23u) {   // innen wie außen
+  } else if (u32(C.misc.w) == 16u || u32(C.misc.w) == 17u || u32(C.misc.w) == 18u || u32(C.misc.w) == 21u || u32(C.misc.w) == 24u || u32(C.misc.w) == 29u || u32(C.misc.w) == 32u || u32(C.misc.w) == 35u) {   // innen wie außen, auch über den Wurzelformeln (die Bahn liefert die Werte, nicht das Fliehen)
     let m = u32(C.misc.w); let k = C.misc.x / 0.04;          // Farbdichte 0,04 = Standard
     if (m == 29u) { col = pal(bitcast<f32>(px.y) * C.misc.x * 2.5 + C.misc.y + vz); }   // vz: Plätze mit Ziel Palettenposition verschieben in Palettenumläufen wie der Farbversatz (innen wie außen)   // Periodengebiete: Standarddichte 0,04 → zehn Schritte je Umlauf
     else if (m == 17u || m == 24u || m == 32u) { col = pal(log(max(bitcast<f32>(px.y), 1.0e-30)) * 0.12 * k + C.misc.y + vz); }
@@ -6210,7 +6210,7 @@ fn sampleColor(px: vec4u, xy: vec2i, k: i32) -> vec3f {
       if (zwei) { col = farbe2(vec2f(r, th), p, false); } else { col = pal(p.x + p.y + C.misc.y); }
     } else if (interior == 4u) { col = C.innen.xyz; }    // eigene Farbe
     if (C.opt.x > 0.5 && C.tex2.z > 0.5 && C.tex2.y < 0.5) { col = texturAnwenden(col, tw, true); }   // Plätze, die innen wirken (über Statistik-Färbungen unten, dort gilt dieselbe Bedingung)
-  } else if (u32(C.misc3.x) == 11u || u32(C.misc3.x) == 23u) {                 // Newton/Nova: jede Wurzel beginnt an ihrer Stelle der Palette,
+  } else if ((u32(C.misc3.x) == 11u || u32(C.misc3.x) == 23u) && C.paar.x < 0.5 && u32(C.misc.w) != 19u && u32(C.misc.w) != 20u && u32(C.misc.w) != 26u) {   // Newton/Nova, sofern keine Bahn-Färbung und kein Paar gewählt ist: jede Wurzel beginnt an ihrer Stelle der Palette,
     let root = (u >> 26u) & 7u;                        // die Schritte bis zur Konvergenz laufen wie Iterationen weiter
     let nu = f32(u & 0x03FFFFFFu) * (1.0 / 256.0);
     if (zwei) { col = farbe2(vec2f(1.0), vec2f((mapNu(nu) - anchorV()) * C.misc.x, f32(root) / max(C.misc3.y, 1.0)), false); }   // zweidimensional: Dauer und Wurzel
@@ -7794,6 +7794,9 @@ function nzKreis(K) { return Array.from({ length: K }, (_, k) => [+Math.cos(2 * 
 function nzWurzeln() { const a = new Float32Array(12); S.nz.forEach((r, k) => { a[2 * k] = r[0]; a[2 * k + 1] = r[1]; }); return a; }   // für die Uniforms
 function nzVorgabe() { const v = nzKreis(3); return S.nz.length === 3 && S.nz.every((r, k) => Math.abs(r[0] - v[k][0]) < 1e-4 && Math.abs(r[1] - v[k][1]) < 1e-4); }
 function wurzelFormel(nr) { return nr === 11 || nr === 23 || nullstellenFormel(nr); }   // Newton/Nova und Halley/Nova: konvergieren gegen Wurzeln, Färbung nach Wurzel und Schrittzahl
+// Ohne Fliehen gibt es keinen Lyapunov-Exponenten (13, 14, 16) und keinen Fluchtwinkel (15, 34); die Bahn-Mittel und
+// Bahn-Fallen dagegen lesen nur die Bahn aus und gelten dort wie überall
+function faerbungMoeglich(m) { return !(m === 13 || m === 14 || m === 15 || m === 16 || m === 34); }
 function kritStart() {   // Startwert der Referenzbahn: bei Tₙ mit ungeradem n ist 0 kein kritischer Punkt, sin(π/2n) der nächste; z₀ bleibt als Versatz dazu
   const nT = Math.max(2, Math.round(S.param));
   return S.formula === 28 && nT % 2 === 1 ? [S.z0[0] + Math.sin(Math.PI / (2 * nT)), S.z0[1]] : S.z0;
@@ -8277,7 +8280,7 @@ function lyapModus() { return S.family === 'escape' && !wurzelFormel(S.formula) 
 // Färbung nach Bahnstatistik (Verfahren 17 bis 21): 1 Kreuzfalle, 2 Kreuzfalle je Achse, 3 Streifenmittel, 4 Dreiecksmittel,
 // 5 Vorzeichenwechsel. Der Wert liegt wie beim Lyapunov-Exponenten im zweiten Kanal; Streifen- und Dreiecksmittel gibt es nur außen.
 function statModus() {   // Sammler der Färbung: bei Paaren der der ersten Achse (statModus2: der zweiten), sonst der des einwertigen Verfahrens
-  if (!(S.family === 'escape' && !wurzelFormel(S.formula) && !FORMULAS[S.formula].seq)) return 0;
+  if (!(S.family === 'escape' && !FORMULAS[S.formula].seq)) return 0;   // auch über den Wurzelformeln: die Sammler lesen die Bahn aus
   const k = paarKonfig(); if (k) return PAAR_STAT[k.a.wert] || 0;
   return { 17: 1, 18: 2, 19: 3, 20: 4, 21: 5, 24: 7, 26: 8, 29: 10, 32: 19, 35: 20 }[S.mapping] || 0;
 }
@@ -9504,6 +9507,7 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
   { const t = (h.get('nz') || '').split(',').map(parseFloat), K = Math.floor(t.length / 2);   // Nullstellen: Paare re,im; sonst drei im Kreis
     S.nz = K >= 2 && K <= 6 && t.length === 2 * K && t.every(Number.isFinite) ? Array.from({ length: K }, (_, k) => [clamp(t[2 * k], -4, 4), clamp(t[2 * k + 1], -4, 4)]) : nzKreis(3); }
   if (mode === 'julia' && FORMULAS[S.formula].seq) S.formula = 0;   // Lyapunov hat keine Julia-Menge
+  if (wurzelFormel(S.formula) && !faerbungMoeglich(S.mapping)) { S.mapping = 2; }   // aus einem Link: was ohne Fliehen nichts bedeutet, fällt auf die Wurzelfärbung (die Formel steht erst hier fest)
   { const fl = FORMULAS[S.formula].fn, fk = parseInt(h.get('fn'), 10); S.fn = fl ? (fl.some(e => e[0] === fk) ? fk : fl[0][0]) : 0; }   // Funktion: nur eine, die die Formel kennt, sonst ihre erste
   { const x = h.get('xf'); S.xf = x && eigenGueltig('formel', x) ? AUSDRUCK.uebersetze(x, 'formel').ascii : EIGEN_VORGABE.xf; }   // eigene Formel
   { const hb = parseInt(h.get('hb'), 10); S.formelB = Number.isFinite(hb) && hb >= 0 && hb < FORMULAS.length && hybridB(hb) && !FORMULAS[S.formula].seq ? hb : -1; }   // Hybrid-Folge: zweite Formel
@@ -10294,7 +10298,7 @@ formSel.addEventListener('change', () => {
   else if (wurzelFormel(vorher) && !wurzelFormel(S.formula) && newtonHob && S.power === 3) S.power = 2;
   if (!wurzelFormel(S.formula)) newtonHob = false;
   powSel.value = String(S.power);
-  if (wurzelFormel(S.formula) && S.mapping >= 13) { S.mapping = 2; $('mapping').value = '2'; }   // Newton/Nova färbt nach Wurzeln
+  if (wurzelFormel(S.formula) && !faerbungMoeglich(S.mapping)) { S.mapping = 2; $('mapping').value = '2'; }   // was ohne Fliehen nichts bedeutet, fällt auf die Wurzelfärbung zurück
   const fm = FORMULAS[S.formula];
   if (fm.param) S.param = fm.param[3];
   if (fm.param2) { S.param2 = fm.param2.map(q => q[3]); S.zweig = 0; }
@@ -11453,6 +11457,7 @@ function syncPaar() {
   if (!k) return;
   for (const [ach, K] of [['a', 'A'], ['b', 'B']]) {
     const x = k[ach];
+    for (const o of $('paar' + K).options) if (o.value === '8') o.hidden = wurzelFormel(S.formula);   // Fluchtwinkel als Achse: nur, wo etwas flieht
     $('paar' + K).value = String(x.wert); if ($('paar' + K)._sync) $('paar' + K)._sync();
     $('paarFaktor' + K).value = String(Math.round(faktorZuPos(x.faktor))); $('paarFaktor' + K + 'Val').value = fmtZahl(x.faktor, x.faktor < 1 ? 3 : 2);
     $('paarAbzug' + K).value = String(x.abzug); if ($('paarAbzug' + K)._sync) $('paarAbzug' + K)._sync();
@@ -13435,6 +13440,8 @@ window.addEventListener('keydown', e => {
   cropEl.addEventListener('pointerdown', e => {
     if (!crop || (e.target instanceof Element && e.target.closest('.crop-bar'))) return;   // die Leiste unten bedient sich selbst
     e.preventDefault(); e.stopPropagation();
+    const amRahmen = e.target instanceof Element && !!e.target.closest('#cropBox');
+    if (!amRahmen && !matchMedia('(pointer: coarse)').matches) { return; }   // mit der Maus fasst nur der Rahmen an; mit dem Finger auch die Fläche daneben, weil der Griff schwer zu treffen ist
     try { cropEl.setPointerCapture(e.pointerId); } catch (err) { /* synthetische Zeiger */ }
     const hh = e.target.dataset.h || null;
     drag = { id: e.pointerId, hh, x: e.clientX, y: e.clientY, c: { cx: crop.cx, cy: crop.cy, w: crop.w, h: crop.h } };
@@ -13443,25 +13450,28 @@ window.addEventListener('keydown', e => {
     if (!drag || e.pointerId !== drag.id) return;
     const k = cssPerPlane(), dxp = (e.clientX - drag.x) / k, dyp = -(e.clientY - drag.y) / k, c = drag.c;
     if (!drag.hh) { const [ex, ey] = ebeneVonPixel(dxp, dyp); crop.cx = dd.addD(c.cx, ex); crop.cy = dd.addD(c.cy, ey); syncCropBox(); return; }
-    if (drag.hh.length === 1) {   // Kante: eine Achse ziehen, die Gegenkante steht; mit festem Verhältnis folgt die andere Achse und bleibt mittig
-      const waag = drag.hh === 'e' || drag.hh === 'w', kx = drag.hh === 'e' ? 1 : drag.hh === 'w' ? -1 : 0, ky = drag.hh === 's' ? -1 : drag.hh === 'n' ? 1 : 0;
-      const minK = S.ps * Math.min(W, H) * 0.03, ak = cropAspect();
-      let w = c.w, h = c.h;
-      if (waag) { w = Math.max(minK, c.w + kx * dxp); if (ak) h = w / ak; } else { h = Math.max(minK, c.h + ky * dyp); if (ak) w = h * ak; }
-      const fx = c.cx[0] - kx * c.w / 2, fy = c.cy[0] - ky * c.h / 2;   // feste Gegenkante auf der gezogenen Achse
-      crop.w = w; crop.h = h;
-      crop.cx = dd.addD(c.cx, waag ? (fx + kx * w / 2) - c.cx[0] : 0);
-      crop.cy = dd.addD(c.cy, waag ? 0 : (fy + ky * h / 2) - c.cy[0]);
-      syncCropBox(); return;
+    // Der Rahmen wird über seine vier Kanten gezogen, als Abstand zur Mitte beim Anfassen (Ebenenkoordinaten, y nach oben).
+    // Nur was im Griff steht, bewegt sich; alles andere hält. Bei fester Form gibt die gezogene Achse das Maß, und die
+    // andere wächst von der haltenden Kante aus — nicht um die Mitte herum, sonst wandert eine Kante, an der man nicht zieht.
+    const min = S.ps * Math.min(W, H) * 0.03, a = cropAspect(), hh = drag.hh;
+    const zL = hh.includes('w'), zR = hh.includes('e'), zU = hh.includes('s'), zO = hh.includes('n');
+    let l = -c.w / 2, r = c.w / 2, u = -c.h / 2, o = c.h / 2;
+    if (zL) { l = Math.min(l + dxp, r - min); }
+    if (zR) { r = Math.max(r + dxp, l + min); }
+    if (zU) { u = Math.min(u + dyp, o - min); }
+    if (zO) { o = Math.max(o + dyp, u + min); }
+    let w = r - l, h = o - u;
+    if (a) {
+      if ((zL || zR) && (zO || zU)) { if (Math.abs(dxp) >= Math.abs(dyp) * a) { h = w / a; } else { w = h * a; } }   // Ecke: die weiter gezogene Achse führt
+      else if (zL || zR) { h = w / a; } else { w = h * a; }
+      if (w < min) { w = min; h = w / a; }
+      if (h < min) { h = min; w = h * a; }
     }
-    const sx = drag.hh.includes('e') ? 1 : -1, sy = drag.hh.includes('s') ? -1 : 1;
-    const minSize = S.ps * Math.min(W, H) * 0.03, a = cropAspect();
-    let w = Math.max(minSize, c.w + sx * dxp), h = Math.max(minSize, c.h + sy * dyp);
-    if (a) { if (Math.abs(sx * dxp) >= Math.abs(sy * dyp) * a) h = w / a; else w = h * a; }
-    const fx = c.cx[0] - sx * c.w / 2, fy = c.cy[0] - sy * c.h / 2;      // feste Gegenecke (relativ genügt double)
+    const links = zL ? r - w : l;   // gezogene Kante bewegt sich, die gegenüberliegende hält
+    const oben = zO ? u + h : o;
     crop.w = w; crop.h = h;
-    crop.cx = dd.addD(c.cx, (fx + sx * w / 2) - c.cx[0]);
-    crop.cy = dd.addD(c.cy, (fy + sy * h / 2) - c.cy[0]);
+    crop.cx = dd.addD(c.cx, links + w / 2);
+    crop.cy = dd.addD(c.cy, oben - h / 2);
     syncCropBox();
   });
   const up = e => { if (drag && e.pointerId === drag.id) drag = null; };

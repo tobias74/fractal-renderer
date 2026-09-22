@@ -58,4 +58,34 @@ describe('Texturen über den Wurzelformeln', () => {
     });
     cy.expectHash('tx', '1');
   });
+  // Dieselbe Frage eine Ebene höher: die Bahn-Färbungen und „Werte kombinieren“ lesen ebenfalls nur die Bahn aus.
+  // Gesperrt bleiben Lyapunov (passt nicht zu einer Konvergenz) und die beiden Winkel-Färbungen.
+  it('die Bahn-Färbungen und das Paar gelten auch über den Wurzelformeln, Lyapunov und die Winkel nicht', () => {
+    cy.visitApp(B); cy.waitRender();
+    cy.pane('farbe');
+    for (const m of ['17', '19', '20', '24', '26', '29', '31', '32', '35']) cy.get(`#mapping option[value="${m}"]`).should('not.have.attr', 'hidden');
+    for (const m of ['13', '14', '15', '16', '34']) cy.get(`#mapping option[value="${m}"]`).should('have.attr', 'hidden');
+    cy.visitApp(B + '&map=13'); cy.waitRender();   // aus dem Link: fällt auf die Wurzelfärbung zurück
+    cy.pane('farbe'); cy.get('#mapping').should('have.value', '2');
+  });
+
+  it('jede Bahn-Färbung ergibt über Newton ihr eigenes Bild', () => {
+    cy.visitApp(B); cy.waitRender();
+    cy.shotStats('nf-wurzel').then(wurzel => {
+      const bilder = [];
+      for (const m of ['19', '17', '24', '32', '26']) {
+        cy.visitApp(B + '&map=' + m); cy.waitRender();
+        cy.shotStats('nf-' + m).then(a => { bilder.push(a); anders(wurzel, a, 'Färbung ' + m + ' färbt anders als die Wurzelfärbung'); });
+      }
+      cy.then(() => {
+        anders(bilder[0], bilder[1], 'Streifenmittel und Kreuzfalle unterscheiden sich');
+        anders(bilder[1], bilder[2], 'Kreuzfalle und Ursprungsnähe unterscheiden sich');
+        anders(bilder[2], bilder[3], 'Ursprungsnähe und Spiralfalle unterscheiden sich');
+      });
+      cy.visitApp(B + '&map=31&pa=1:1:0:0&pb=2:30:0:0'); cy.waitRender();   // Werte kombinieren: Schrittzahl und Streifenmittel
+      cy.shotStats('nf-paar').then(a => anders(wurzel, a, 'Werte kombinieren färbt anders als die Wurzelfärbung'));
+      cy.pane('farbe'); cy.rowShown('paarRow', true);
+      cy.get('#paarA option[value="8"]').should('have.attr', 'hidden');   // Fluchtwinkel als Achse: nur, wo etwas flieht
+    });
+  });
 });
