@@ -760,6 +760,12 @@
     .m-status.busy .dot { animation: puls 1.1s ease-in-out infinite; }
     .m-status .m-kurz { min-width: 0; max-width: 38vw; overflow: hidden; text-overflow: ellipsis; color: var(--muted); }   /* der Zustand, solange gerechnet oder übersetzt wird; sonst leer */
     .m-status .m-kurz:empty { display: none; }
+    /* Solange etwas läuft, zählt der Zustand mehr als der Titel: der Knopf nimmt sich die Breite, der Titel weicht.
+       Vorher stand dort bei 375 px nach gut zwanzig Zeichen ein Auslassungszeichen — gerade beim langen Übersetzen. */
+    .m-status.busy { flex: 1 1 auto; min-width: 0; height: auto; min-height: 36px; padding-top: 6px; padding-bottom: 6px; align-items: center; }
+    .m-status.busy .m-kurz { max-width: none; white-space: normal; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+    .m-status.busy #mZoom { display: none; }   /* der Zoomwert steht im aufgeklappten Feld; hier zählt, was gerade läuft */
+    .appbar:has(.m-status.busy) .appbar-title { display: none; }   /* der Titel steht ohnehin im Bild, der Zustand nur hier */
     @keyframes puls { 50% { opacity: .2; } }
     .m-info {
       position: fixed; z-index: 9; top: calc(var(--appbar) + 2px); right: calc(8px + env(safe-area-inset-right));

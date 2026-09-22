@@ -226,4 +226,22 @@ describe('Handy im Querformat', () => {
     cy.get('#pane-nach').then($p => expect(ueberstand($p[0], 812), 'Bereich nach').to.deep.eq([]));
     cy.get('#state').invoke('text').should('match', /Fertig/);
   });
+  // Der Zustand steht am Handy im Statusknopf. Solange etwas läuft, muss er ganz lesbar sein: genau dann will man
+  // wissen, warum das Bild noch nicht da ist. Vorher war er nach gut zwanzig Zeichen abgeschnitten.
+  it('der Statusknopf zeigt einen langen Zustand vollständig, solange etwas läuft', () => {
+    cy.viewport(375, 812);
+    cy.visitApp('mode=mandel'); cy.waitRender();
+    cy.window().then(win => {
+      const kurz = win.document.getElementById('mKurz'), knopf = win.document.getElementById('mStatus');
+      kurz.textContent = 'Ebenen und Masken werden übersetzt … Schritt 1 von 4 · 85 s';
+      knopf.classList.add('busy');
+    });
+    cy.get('#mKurz').should($k => {
+      const el = $k[0];
+      expect(el.scrollWidth, 'nichts steht seitlich über').to.be.at.most(el.clientWidth + 1);
+      expect(el.scrollHeight, 'und nichts unten').to.be.at.most(el.clientHeight + 1);
+    });
+    cy.get('#mStatus').then($b => expect($b[0].getBoundingClientRect().right, 'der Knopf bleibt im Bild').to.be.at.most(375));
+    cy.get('.appbar-title').should('not.be.visible');   // der Titel weicht, solange gerechnet wird
+  });
 });
