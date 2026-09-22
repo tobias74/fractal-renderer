@@ -51,4 +51,28 @@ describe('Palettenkurve', () => {
       cy.waitRender();
     });
   });
+  // Rückgängig holt den Zustand zurück — die Regler müssen mit. Sie hingen nur an ihrer eigenen Bedienung und blieben
+  // stehen, wenn der Zustand von außen kam: die Anzeige behauptete dann einen Wert, den das Bild längst nicht mehr hatte.
+  it('Rückgängig und Wiederherstellen nehmen Kurve, Schwerpunkt, Übergang und zweite Palette mit', () => {
+    cy.visitApp(B); cy.waitRender();
+    cy.pane('palette');
+    cy.setRange('palKurve', 3.92); cy.wait(600);
+    cy.setRange('palKurveMitte', 0.423); cy.wait(600);
+    cy.setRange('palPfadSpanne', 13.33); cy.wait(600);
+    cy.pickOption('palZwei', '3'); cy.wait(600);
+    cy.get('#palKurveVal').should('have.value', '3,92');
+    cy.get('#palKurveMitteVal').should('have.value', '0,423');
+    cy.get('#palPfadSpanneVal').should('have.value', '13,33');
+    for (let i = 0; i < 4; i++) { cy.get('#undo').click(); cy.wait(400); }
+    cy.get('#palKurveVal').should('have.value', '1,00');          // die Gleichverteilung
+    cy.get('#palKurveMitteVal').should('have.value', '0,000');
+    cy.get('#palPfadSpanneVal').should('have.value', '0,00');
+    cy.get('#palZwei').should('have.value', '0');
+    cy.expectHash('plk', null); cy.expectHash('plm', null);
+    for (let i = 0; i < 4; i++) { cy.get('#redo').click(); cy.wait(400); }
+    cy.get('#palKurveVal').should('have.value', '3,92');
+    cy.get('#palKurveMitteVal').should('have.value', '0,423');
+    cy.get('#palPfadSpanneVal').should('have.value', '13,33');
+    cy.get('#palZwei').should('have.value', '3');
+  });
 });

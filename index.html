@@ -12639,7 +12639,8 @@ function syncAllUI() {   // Bedienfeld vollständig an den Zustand angleichen
   histDirty = true; lastStatusKey = '';
   powSel.value = String(S.power); syncPlaneUI(); syncFormulaUI();
   iterAuto.checked = S.autoIter; syncIterUI();
-  syncPalSelect(); applyPalette(); densEl.value = densToPos(S.density); showDens(); $('offset').value = Math.round(S.offset * 1000); $('animate').checked = S.animate;
+  syncPalSelect(); applyPalette(); densEl.value = densToPos(S.density); showDens(); $('offset').value = Math.round(S.offset * 1000); $('offsetVal').value = fmtZahl(S.offset, 3); $('animate').checked = S.animate;
+  showPalKurve(); showPalPfad();   // Palettenkurve und Palettenübergang: ohne sie blieben ihre Regler stehen, wenn der Zustand von außen kommt (Rückgängig, Datei, Ebenenwechsel)
   mapSel.value = String(S.mapping); $('comp').value = compToPos(S.comp); showComp(); syncLyGrenze(); syncStreifen(); syncVorlauf(); syncGewicht(); syncAbzug(); syncTextur(); syncKurve(); syncFlucht(); syncDreh(); syncSpirale(); syncTexOptionen(); syncInvMitte(); syncAbklingen(); syncLogmap(); ankerBeschriften(); syncGlowUI(); syncMaterialUI(); intSel.value = String(S.interior); $('innenFarbe').value = S.innenFarbe; $('gestuft').checked = S.gestuft; syncJuliaUI(); syncZ0UI(); syncFamilyUI(); syncAaUI();
 }
 // ============================================================
