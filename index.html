@@ -4136,7 +4136,7 @@ const texZielWirkt = z => { const v = z === undefined ? TEX_ZIEL_VOR : z; const 
 function texKeys(n) { const p = n === 1 ? 'tex' : 'tex' + n; return { art: n === 1 ? 'textur' : 'textur' + n, staerke: p + 'Staerke', kontrast: p + 'Kontrast', mitte: p + 'Mitte', hell: p + 'Hell', dunkel: p + 'Dunkel', an: p + 'An', werte: p + 'Werte', ziel: p + 'Ziel', wo: p + 'Wo', maske: p + 'Maske', eigen: p + 'Eigen', wahl: p + 'Wahl', fallen: p + 'Fallen', stich: p + 'Stich' }; }
 function texSlot(n) { const k = texKeys(n); return { art: S[k.art], staerke: S[k.staerke], kontrast: S[k.kontrast], mitte: S[k.mitte], hell: S[k.hell], dunkel: S[k.dunkel], an: S[k.an] !== false, werte: S[k.werte] || texWerteVorgabe(S[k.art]), ziel: S[k.ziel] === undefined ? TEX_ZIEL_VOR : S[k.ziel], wo: S[k.wo] === undefined ? TEX_WO_VOR : S[k.wo], maske: S[k.maske] || maskeNeu(0), eigen: S[k.eigen] || null, wahl: S[k.wahl] || 0, fallen: S[k.fallen] || 0, stich: S[k.stich] || STICH.def }; }
 function texSlotSetzen(n, t) { const k = texKeys(n); S[k.art] = t.art; S[k.staerke] = t.staerke; S[k.kontrast] = t.kontrast; S[k.mitte] = t.mitte; S[k.hell] = t.hell; S[k.dunkel] = t.dunkel; S[k.an] = t.an !== false; S[k.ziel] = t.ziel === undefined ? TEX_ZIEL_VOR : t.ziel; S[k.wo] = t.wo === undefined ? TEX_WO_VOR : t.wo; S[k.werte] = (t.werte || texWerteVorgabe(t.art)).slice(); S[k.maske] = t.maske ? Object.assign({}, t.maske, { p: t.maske.p.slice() }) : maskeNeu(0); S[k.eigen] = t.eigen ? Object.assign({}, t.eigen) : null; S[k.wahl] = t.wahl || 0; S[k.fallen] = t.fallen || 0; S[k.stich] = t.stich || STICH.def; }
-function texArtAn(n) { const k = texKeys(n); return S[k.an] === false ? 0 : S[k.art]; }   // wirksame Art: 0, wenn der Platz ausgeschaltet ist (die Einstellungen bleiben)
+function texArtAn(n) { const k = texKeys(n); const a = S[k.an] === false ? 0 : S[k.art]; return typeof texArtMoeglich === 'function' && !texArtMoeglich(a) ? 0 : a; }   // wirksame Art: 0, wenn der Platz ausgeschaltet ist oder die Formel die Art nicht hergibt (die Einstellungen bleiben)
 function texturBelegt() { let z = 0; for (let n = 1; n <= TEX_SLOTS; n++) if (S[texKeys(n).art] !== 0) z = n; return z; }   // letzter Platz mit gewählter Art, auch wenn ausgeschaltet (Anzeige, Link)
 // Übertragungskurve (Färbung 28): Punkte (x, y) in 0 … 1, nach x geordnet, erster bei x = 0, letzter bei x = 1; Vorgabe die Gerade
 const KURVE_STD = [[0, 0], [1, 1]], KURVE_MAX = 12;
@@ -4444,6 +4444,7 @@ override BLA: u32 = 0u;          // bilineare Näherung: Iterationsblöcke über
 override POWER: u32 = 2u;        // Potenz d: bei 2 entfällt die Horner-Schleife
 override FAST: u32 = 1u;         // schlanker Kern wie in der Urfassung (Mandelbrot z²+c ohne Ableitung, Zyklus, Näherung)
 override LYAP: u32 = 0u;         // Färbung nach Lyapunov-Exponent: 1 = echter Exponent, 2 = nach Re und Im (sonst fällt der Code weg)
+var<private> gGlatt: f32 = -1.0;   // Glättungsanteil der mittelnden Sammler; unter 0: aus Betrag und Fluchtradius, wie bei den Fluchtzeit-Formeln
 override STAT: u32 = 0u;         // Bahnstatistik: 1 Kreuzfalle, 2 Kreuzfalle je Achse, 3 Streifenmittel, 4 Dreiecksmittel, 5 Vorzeichenwechsel, … 18 Streifenphase
 override STAT2: u32 = 0u;        // zweite Bahnstatistik beim Stapeln von Texturen
 override TEX1: u32 = 0u;         // Arten der gestapelten Texturen (TEX1 ≠ 0: Stapel — beide Werte normiert als 16-Bit-Hälften im y-Kanal)
@@ -4707,7 +4708,7 @@ fn stAus2(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT2 == 12u) { return bitcast<u32>(select(st.x / st.y, 0.0, st.y == 0.0)); }   // Krümmungsmittel
   if (STAT2 == 13u) { return bitcast<u32>(clamp(sqrt(2.0 * min(mn / tp.x, 0.5)), 0.0, 1.0)); }   // Gitterfalle: 0 am Gitterpunkt, 1 bei ½
   if (STAT2 == 14u) { return bitcast<u32>(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Ringfalle: logarithmisch, 0 bei e^−6.7
-  if (STAT2 == 18u) { let f = select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
+  if (STAT2 == 18u) { let f = select(select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u), gGlatt, gGlatt >= 0.0); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
   if (STAT2 == 16u) { return bitcast<u32>(select(atan2(st.y, st.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Schwerpunkt: sein Winkel in Umläufen
   if (STAT2 == 19u) { return bitcast<u32>(mn); }   // Spiralfalle roh: Textur und Färbung nehmen den Logarithmus
   if (STAT2 == 21u) { let tq = P.texQ[1]; let wahl = u32(tq.z + 0.5); if (wahl == 1u) { return bitcast<u32>(clamp(st.w / f32(max(P.maxIter, 1u)), 0.0, 1.0)); } if (wahl == 2u) { return bitcast<u32>(st.z * (1.0 / 6.2831853) + 0.5); } return bitcast<u32>(exp(-pow(min(mn / max(tq.x, 1.0e-6), 1.0e3), max(tq.y, 1.0e-3)))); }   // Rosettenfalle: Maske e^−(d/w)^h des kleinsten Abstands, Kontaktiteration (Anteil der Iterationszahl) oder Kontaktwinkel (Umläufe)
@@ -4716,7 +4717,7 @@ fn stAus2(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT2 == 5u) { return pack2x16float(st.xy / nn); }                                                              // Anteile
   var m = select(st.x / st.z, 0.0, st.z == 0.0);   // ein Schritt: sein Wert; keiner: 0
   if (n >= 2u) {   // Streifen- und Dreiecksmittel: zwischen den letzten beiden gewichteten Mitteln geglättet (Summen durch Gewichte)
-    let f = clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0);
+    let f = select(clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), gGlatt, gGlatt >= 0.0);   // bei Konvergenz trägt nu den Bruchteil, ein Fluchtradius steht dort nicht zur Verfügung
     m = f * st.x / st.z + (1.0 - f) * (st.x - st.y) / (st.z - st.w);
   }
   if (STAT2 == 9u) { return pack2x16float(vec2f(m, select(mn / st.z, 0.0, st.z == 0.0))); }   // Paar: Streifenmittel und mittlere Drehung
@@ -4771,7 +4772,7 @@ fn stAus3(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT3 == 12u) { return bitcast<u32>(select(st.x / st.y, 0.0, st.y == 0.0)); }   // Krümmungsmittel
   if (STAT3 == 13u) { return bitcast<u32>(clamp(sqrt(2.0 * min(mn / tp.x, 0.5)), 0.0, 1.0)); }   // Gitterfalle: 0 am Gitterpunkt, 1 bei ½
   if (STAT3 == 14u) { return bitcast<u32>(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Ringfalle: logarithmisch, 0 bei e^−6.7
-  if (STAT3 == 18u) { let f = select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
+  if (STAT3 == 18u) { let f = select(select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u), gGlatt, gGlatt >= 0.0); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
   if (STAT3 == 16u) { return bitcast<u32>(select(atan2(st.y, st.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Schwerpunkt: sein Winkel in Umläufen
   if (STAT3 == 19u) { return bitcast<u32>(mn); }   // Spiralfalle roh: Textur und Färbung nehmen den Logarithmus
   if (STAT3 == 21u) { let tq = P.texQ[2]; let wahl = u32(tq.z + 0.5); if (wahl == 1u) { return bitcast<u32>(clamp(st.w / f32(max(P.maxIter, 1u)), 0.0, 1.0)); } if (wahl == 2u) { return bitcast<u32>(st.z * (1.0 / 6.2831853) + 0.5); } return bitcast<u32>(exp(-pow(min(mn / max(tq.x, 1.0e-6), 1.0e3), max(tq.y, 1.0e-3)))); }   // Rosettenfalle: Maske e^−(d/w)^h des kleinsten Abstands, Kontaktiteration (Anteil der Iterationszahl) oder Kontaktwinkel (Umläufe)
@@ -4780,7 +4781,7 @@ fn stAus3(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT3 == 5u) { return pack2x16float(st.xy / nn); }                                                              // Anteile
   var m = select(st.x / st.z, 0.0, st.z == 0.0);   // ein Schritt: sein Wert; keiner: 0
   if (n >= 2u) {   // Streifen- und Dreiecksmittel: zwischen den letzten beiden gewichteten Mitteln geglättet (Summen durch Gewichte)
-    let f = clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0);
+    let f = select(clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), gGlatt, gGlatt >= 0.0);   // bei Konvergenz trägt nu den Bruchteil, ein Fluchtradius steht dort nicht zur Verfügung
     m = f * st.x / st.z + (1.0 - f) * (st.x - st.y) / (st.z - st.w);
   }
   if (STAT3 == 9u) { return pack2x16float(vec2f(m, select(mn / st.z, 0.0, st.z == 0.0))); }   // Paar: Streifenmittel und mittlere Drehung
@@ -4835,7 +4836,7 @@ fn stAus4(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT4 == 12u) { return bitcast<u32>(select(st.x / st.y, 0.0, st.y == 0.0)); }   // Krümmungsmittel
   if (STAT4 == 13u) { return bitcast<u32>(clamp(sqrt(2.0 * min(mn / tp.x, 0.5)), 0.0, 1.0)); }   // Gitterfalle: 0 am Gitterpunkt, 1 bei ½
   if (STAT4 == 14u) { return bitcast<u32>(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Ringfalle: logarithmisch, 0 bei e^−6.7
-  if (STAT4 == 18u) { let f = select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
+  if (STAT4 == 18u) { let f = select(select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u), gGlatt, gGlatt >= 0.0); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
   if (STAT4 == 16u) { return bitcast<u32>(select(atan2(st.y, st.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Schwerpunkt: sein Winkel in Umläufen
   if (STAT4 == 19u) { return bitcast<u32>(mn); }   // Spiralfalle roh: Textur und Färbung nehmen den Logarithmus
   if (STAT4 == 21u) { let tq = P.texQ[3]; let wahl = u32(tq.z + 0.5); if (wahl == 1u) { return bitcast<u32>(clamp(st.w / f32(max(P.maxIter, 1u)), 0.0, 1.0)); } if (wahl == 2u) { return bitcast<u32>(st.z * (1.0 / 6.2831853) + 0.5); } return bitcast<u32>(exp(-pow(min(mn / max(tq.x, 1.0e-6), 1.0e3), max(tq.y, 1.0e-3)))); }   // Rosettenfalle: Maske e^−(d/w)^h des kleinsten Abstands, Kontaktiteration (Anteil der Iterationszahl) oder Kontaktwinkel (Umläufe)
@@ -4844,7 +4845,7 @@ fn stAus4(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT4 == 5u) { return pack2x16float(st.xy / nn); }                                                              // Anteile
   var m = select(st.x / st.z, 0.0, st.z == 0.0);   // ein Schritt: sein Wert; keiner: 0
   if (n >= 2u) {   // Streifen- und Dreiecksmittel: zwischen den letzten beiden gewichteten Mitteln geglättet (Summen durch Gewichte)
-    let f = clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0);
+    let f = select(clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), gGlatt, gGlatt >= 0.0);   // bei Konvergenz trägt nu den Bruchteil, ein Fluchtradius steht dort nicht zur Verfügung
     m = f * st.x / st.z + (1.0 - f) * (st.x - st.y) / (st.z - st.w);
   }
   if (STAT4 == 9u) { return pack2x16float(vec2f(m, select(mn / st.z, 0.0, st.z == 0.0))); }   // Paar: Streifenmittel und mittlere Drehung
@@ -4899,7 +4900,7 @@ fn stAus5(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT5 == 12u) { return bitcast<u32>(select(st.x / st.y, 0.0, st.y == 0.0)); }   // Krümmungsmittel
   if (STAT5 == 13u) { return bitcast<u32>(clamp(sqrt(2.0 * min(mn / tp.x, 0.5)), 0.0, 1.0)); }   // Gitterfalle: 0 am Gitterpunkt, 1 bei ½
   if (STAT5 == 14u) { return bitcast<u32>(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Ringfalle: logarithmisch, 0 bei e^−6.7
-  if (STAT5 == 18u) { let f = select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
+  if (STAT5 == 18u) { let f = select(select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u), gGlatt, gGlatt >= 0.0); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
   if (STAT5 == 16u) { return bitcast<u32>(select(atan2(st.y, st.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Schwerpunkt: sein Winkel in Umläufen
   if (STAT5 == 19u) { return bitcast<u32>(mn); }   // Spiralfalle roh: Textur und Färbung nehmen den Logarithmus
   if (STAT5 == 21u) { let tq = P.texQ[4]; let wahl = u32(tq.z + 0.5); if (wahl == 1u) { return bitcast<u32>(clamp(st.w / f32(max(P.maxIter, 1u)), 0.0, 1.0)); } if (wahl == 2u) { return bitcast<u32>(st.z * (1.0 / 6.2831853) + 0.5); } return bitcast<u32>(exp(-pow(min(mn / max(tq.x, 1.0e-6), 1.0e3), max(tq.y, 1.0e-3)))); }   // Rosettenfalle: Maske e^−(d/w)^h des kleinsten Abstands, Kontaktiteration (Anteil der Iterationszahl) oder Kontaktwinkel (Umläufe)
@@ -4908,7 +4909,7 @@ fn stAus5(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT5 == 5u) { return pack2x16float(st.xy / nn); }                                                              // Anteile
   var m = select(st.x / st.z, 0.0, st.z == 0.0);   // ein Schritt: sein Wert; keiner: 0
   if (n >= 2u) {   // Streifen- und Dreiecksmittel: zwischen den letzten beiden gewichteten Mitteln geglättet (Summen durch Gewichte)
-    let f = clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0);
+    let f = select(clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), gGlatt, gGlatt >= 0.0);   // bei Konvergenz trägt nu den Bruchteil, ein Fluchtradius steht dort nicht zur Verfügung
     m = f * st.x / st.z + (1.0 - f) * (st.x - st.y) / (st.z - st.w);
   }
   if (STAT5 == 9u) { return pack2x16float(vec2f(m, select(mn / st.z, 0.0, st.z == 0.0))); }   // Paar: Streifenmittel und mittlere Drehung
@@ -4963,7 +4964,7 @@ fn stAus6(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT6 == 12u) { return bitcast<u32>(select(st.x / st.y, 0.0, st.y == 0.0)); }   // Krümmungsmittel
   if (STAT6 == 13u) { return bitcast<u32>(clamp(sqrt(2.0 * min(mn / tp.x, 0.5)), 0.0, 1.0)); }   // Gitterfalle: 0 am Gitterpunkt, 1 bei ½
   if (STAT6 == 14u) { return bitcast<u32>(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Ringfalle: logarithmisch, 0 bei e^−6.7
-  if (STAT6 == 18u) { let f = select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
+  if (STAT6 == 18u) { let f = select(select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u), gGlatt, gGlatt >= 0.0); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
   if (STAT6 == 16u) { return bitcast<u32>(select(atan2(st.y, st.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Schwerpunkt: sein Winkel in Umläufen
   if (STAT6 == 19u) { return bitcast<u32>(mn); }   // Spiralfalle roh: Textur und Färbung nehmen den Logarithmus
   if (STAT6 == 21u) { let tq = P.texQ[5]; let wahl = u32(tq.z + 0.5); if (wahl == 1u) { return bitcast<u32>(clamp(st.w / f32(max(P.maxIter, 1u)), 0.0, 1.0)); } if (wahl == 2u) { return bitcast<u32>(st.z * (1.0 / 6.2831853) + 0.5); } return bitcast<u32>(exp(-pow(min(mn / max(tq.x, 1.0e-6), 1.0e3), max(tq.y, 1.0e-3)))); }   // Rosettenfalle: Maske e^−(d/w)^h des kleinsten Abstands, Kontaktiteration (Anteil der Iterationszahl) oder Kontaktwinkel (Umläufe)
@@ -4972,7 +4973,7 @@ fn stAus6(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT6 == 5u) { return pack2x16float(st.xy / nn); }                                                              // Anteile
   var m = select(st.x / st.z, 0.0, st.z == 0.0);   // ein Schritt: sein Wert; keiner: 0
   if (n >= 2u) {   // Streifen- und Dreiecksmittel: zwischen den letzten beiden gewichteten Mitteln geglättet (Summen durch Gewichte)
-    let f = clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0);
+    let f = select(clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), gGlatt, gGlatt >= 0.0);   // bei Konvergenz trägt nu den Bruchteil, ein Fluchtradius steht dort nicht zur Verfügung
     m = f * st.x / st.z + (1.0 - f) * (st.x - st.y) / (st.z - st.w);
   }
   if (STAT6 == 9u) { return pack2x16float(vec2f(m, select(mn / st.z, 0.0, st.z == 0.0))); }   // Paar: Streifenmittel und mittlere Drehung
@@ -5084,7 +5085,7 @@ fn stAus(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   /
   if (STAT == 12u) { return bitcast<u32>(select(st.x / st.y, 0.0, st.y == 0.0)); }   // Krümmungsmittel
   if (STAT == 13u) { return bitcast<u32>(clamp(sqrt(2.0 * min(mn / tp.x, 0.5)), 0.0, 1.0)); }   // Gitterfalle: 0 am Gitterpunkt, 1 bei ½
   if (STAT == 14u) { return bitcast<u32>(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Ringfalle: logarithmisch, 0 bei e^−6.7
-  if (STAT == 18u) { let f = select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
+  if (STAT == 18u) { let f = select(select(1.0, clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), n >= 2u), gGlatt, gGlatt >= 0.0); let v = st.xy - (1.0 - f) * mn * vec2f(cos(st.w), sin(st.w)); return bitcast<u32>(select(atan2(v.y, v.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Streifenphase in Umläufen, geglättet
   if (STAT == 16u) { return bitcast<u32>(select(atan2(st.y, st.x) * (1.0 / 6.2831853) + 0.5, 0.5, st.z == 0.0)); }   // Schwerpunkt: sein Winkel in Umläufen
   if (STAT == 19u) { return bitcast<u32>(mn); }   // Spiralfalle roh: Textur und Färbung nehmen den Logarithmus
   if (STAT == 21u) { let tq = P.texQ[0]; let wahl = u32(tq.z + 0.5); if (wahl == 1u) { return bitcast<u32>(clamp(st.w / f32(max(P.maxIter, 1u)), 0.0, 1.0)); } if (wahl == 2u) { return bitcast<u32>(st.z * (1.0 / 6.2831853) + 0.5); } return bitcast<u32>(exp(-pow(min(mn / max(tq.x, 1.0e-6), 1.0e3), max(tq.y, 1.0e-3)))); }   // Rosettenfalle: Maske e^−(d/w)^h des kleinsten Abstands, Kontaktiteration (Anteil der Iterationszahl) oder Kontaktwinkel (Umläufe)
@@ -5093,7 +5094,7 @@ fn stAus(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   /
   if (STAT == 5u) { return pack2x16float(st.xy / nn); }                                                              // Anteile
   var m = select(st.x / st.z, 0.0, st.z == 0.0);   // ein Schritt: sein Wert; keiner: 0
   if (n >= 2u) {   // Streifen- und Dreiecksmittel: zwischen den letzten beiden gewichteten Mitteln geglättet (Summen durch Gewichte)
-    let f = clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0);
+    let f = select(clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), gGlatt, gGlatt >= 0.0);   // bei Konvergenz trägt nu den Bruchteil, ein Fluchtradius steht dort nicht zur Verfügung
     m = f * st.x / st.z + (1.0 - f) * (st.x - st.y) / (st.z - st.w);
   }
   if (STAT == 9u) { return pack2x16float(vec2f(m, select(mn / st.z, 0.0, st.z == 0.0))); }   // Paar: Streifenmittel und mittlere Drehung
@@ -5582,7 +5583,7 @@ fn fsFast(pos: vec4f) -> vec4u {
           root = best;
           if (dot(c, c) > 0.0) { root = 0u; }        // Nova: ein Fixpunkt, keine Wurzeln zu unterscheiden
           nu = f32(i) + 1.0 - log2(max(0.5 * log(max(m2, 1.0e-30)) / log(1.0e-5), 1.0)) * select(0.63092975, 1.0, fs == 35u);   // Halley: log₃, kubische Konvergenz
-          conv = true; escaped = true; stop = true;
+          conv = true; gGlatt = clamp(fract(max(nu, 0.0)), 0.0, 1.0); escaped = true; stop = true;
         }
       }
       if (fs == 29u || fs == 30u) {   // Barnsley 1 und 2: (z − 1)·c oder (z + 1)·c, je nach Vorzeichen (1: Re z; 2: Re z·Im c + Im z·Re c)   // als if vor dem switch (siehe Polynomfamilie)
@@ -5644,7 +5645,7 @@ fn fsFast(pos: vec4f) -> vec4u {
             root = u32(i32(round(ang * f32(pw) / 6.2831853)) + i32(pw) * 4) % pw;
             if (dot(c, c) > 0.0) { root = 0u; }        // Nova: ein Fixpunkt, keine Wurzeln zu unterscheiden
             nu = f32(i) + 1.0 - log2(max(0.5 * log(max(s2, 1.0e-30)) / log(1.0e-5), 1.0));
-            conv = true; escaped = true; stop = true;
+            conv = true; gGlatt = clamp(fract(max(nu, 0.0)), 0.0, 1.0); escaped = true; stop = true;
           }
         }
         case 23u: {   // Halley/Nova: Schritt 2z(z^d − 1)/((d+1)z^d + d − 1); Konvergenz und Wurzeln wie bei Newton/Nova
@@ -5657,7 +5658,7 @@ fn fsFast(pos: vec4f) -> vec4u {
             root = u32(i32(round(ang * f32(pw) / 6.2831853)) + i32(pw) * 4) % pw;
             if (dot(c, c) > 0.0) { root = 0u; }        // Nova: ein Fixpunkt, keine Wurzeln zu unterscheiden
             nu = f32(i) + 1.0 - log2(max(0.5 * log(max(s2, 1.0e-30)) / log(1.0e-5), 1.0)) * 0.63092975;   // log₃: kubische Konvergenz
-            conv = true; escaped = true; stop = true;
+            conv = true; gGlatt = clamp(fract(max(nu, 0.0)), 0.0, 1.0); escaped = true; stop = true;
           }
         }
         case 12u: {
@@ -5679,7 +5680,7 @@ fn fsFast(pos: vec4f) -> vec4u {
           let s2 = dot(dz, dz);
           if (s2 < 1.0e-12) {   // bei Magnet 2 zieht die 1 fast alles an: Konvergenz färbt nach der Schrittzahl wie bei Newton, quadratisch
             nu = f32(i) + 1.0 - log2(max(0.5 * log(max(s2, 1.0e-30)) / log(1.0e-6), 1.0));
-            root = 0u; conv = true; escaped = true; stop = true;
+            root = 0u; conv = true; gGlatt = clamp(fract(max(nu, 0.0)), 0.0, 1.0); escaped = true; stop = true;
           }
           let gp = cmul(cmul(3.0 * z2 + 3.0 * cm1, den) - cmul(num, 6.0 * z + 3.0 * cm2), cmul(idn, idn));   // Ableitung von num/den nach z
           Fm = M(2.0 * cmul(g, gp));
@@ -6213,7 +6214,8 @@ fn sampleColor(px: vec4u, xy: vec2i, k: i32) -> vec3f {
     let root = (u >> 26u) & 7u;                        // die Schritte bis zur Konvergenz laufen wie Iterationen weiter
     let nu = f32(u & 0x03FFFFFFu) * (1.0 / 256.0);
     if (zwei) { col = farbe2(vec2f(1.0), vec2f((mapNu(nu) - anchorV()) * C.misc.x, f32(root) / max(C.misc3.y, 1.0)), false); }   // zweidimensional: Dauer und Wurzel
-    else { col = pal(f32(root) / max(C.misc3.y, 1.0) + (mapNu(nu) - anchorV()) * C.misc.x + C.misc.y); }
+    else { col = pal(f32(root) / max(C.misc3.y, 1.0) + (mapNu(nu) - anchorV()) * C.misc.x + C.misc.y + vz); }   // vz: Plätze mit Ziel Palettenposition
+    col = texturAnwenden(col, tw, false);   // die Plätze wirken hier wie über jeder anderen Färbung; ohne Platz sind ihre Werte null
   } else if (u32(C.misc.w) == 15u || u32(C.misc.w) == 34u) {                  // Fluchtwinkel: Fluchtzeit wie logarithmisch, dazu der Winkel von z beim Ausbruch (Umläufe)
     let nu = f32(u & 0x03FFFFFFu) * (1.0 / 256.0); let th = bitcast<f32>(px.y);
     let p = vec2f((mapNu(nu) - anchorV()) * C.misc.x, th);
@@ -8343,7 +8345,9 @@ function eigenShader() {   // die eigenen Ausdrücke als Ersetzungen für die Sh
 function eigenAgg() { return eigenOrte().reduce((a, o, k) => a + ((o ? o.g : 0) << (3 * k)), 0); }   // die Zusammenfassungen aller Plätze in P.opt.w (je 3 Bit)
 // Textur: eine Bahnstatistik als Helligkeit über der Fluchtzeit-Färbung — nur, wo der zweite Kanal frei ist (kein Relief, keine
 // Lyapunov-Färbung, kein Fluchtwinkel, keine Färbung nach Bahnstatistik)
-function texturMoeglich() { return S.family === 'escape' && !wurzelFormel(S.formula) && !FORMULAS[S.formula].seq && !lyapModus() && S.mapping !== 15 && S.mapping !== 34; }   // auch über den Statistik-Färbungen und über Abstand und Relief (dort im z- und w-Kanal)
+function texturMoeglich() { return S.family === 'escape' && !FORMULAS[S.formula].seq && !lyapModus() && S.mapping !== 15 && S.mapping !== 34; }   // auch über den Statistik-Färbungen, über Abstand und Relief (dort im z- und w-Kanal) und über den Wurzelformeln (dort zählt die Schrittzahl bis zur Wurzel)
+// Arten, die es ohne Fliehen nicht gibt: Randnähe (10) und Karte (21) brauchen die Abstandsschätzung, Strahlen (6) und Wirbel (7) den Fluchtwinkel
+function texArtMoeglich(art) { return !(wurzelFormel(S.formula) && (art === 6 || art === 7 || art === 10 || art === 21)); }
 function texturAktiv() { return texturMoeglich() && texturZahl() > 0; }   // irgendein eingeschalteter Platz mit Art
 function texturAktiv2() { return texturZahl() >= 2; }   // gestapelt: mehr als ein Platz belegt, die Werte kommen gepackt (je zwei 16-Bit-Hälften)
 // Sammler des Shaders: ohne Statistik-Färbung Platz 1 … 4 auf STAT … STAT4; mit ihr belegt die Färbung STAT, die Plätze folgen auf STAT2 … STAT5
@@ -9992,6 +9996,7 @@ function syncFarbUI() {   // Bereich Farbe: was je nach Familie, Formel und Fär
   for (let n = 1; n <= TEX_SLOTS; n++) {
     const e = texElemente(n), sl = texSlot(n), zeigen = n === 1 ? texturMoeglich() : (texturMoeglich() && belegtBis > 0 && n <= belegtBis + 1), belegt = sl.art !== 0, zu = belegt && !!texZu[n];
     const leer = zeigen && !belegt;   // ein freier Platz (auch der erste): nur eine schlanke Zeile „Textur hinzufügen“
+    for (const o of e.sel.options) { const a = parseInt(o.value, 10); if (a > 0) o.hidden = !texArtMoeglich(a); }   // hierarchisch: ohne Fliehen gibt es Randnähe, Karte, Strahlen und Wirbel nicht
     e.karte.hidden = !zeigen; e.row.hidden = !zeigen; for (const r of e.reihen) r.hidden = !(zeigen && belegt && !zu);
     texWerteZeigen(n, e, zeigen && belegt && !zu);   // eigene Regler der Art
     { const er = $('eigenT' + n + 'Row'), an = zeigen && belegt && !zu && sl.art === 22; if (er) { er.hidden = !an; if (an && typeof eigenZeigen === 'function') eigenZeigen('eigenT' + n, eigenTex(n)); } }   // eigener Ausdruck des Platzes
