@@ -487,4 +487,21 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
     });
     cy.get('#cropCancel').click();
   });
+  // Der Knopf zum Rendern muss immer zu sehen sein, ohne Rollen. Zwischen Titel und Knopfzeile liegt dafür ein
+  // rollender Rumpf; die Karte bleibt in der Höhe des Schirms, statt über seinen Rand hinauszuwachsen.
+  it('der Speichern-Dialog passt in die Höhe: der Knopf zum Rendern steht immer im Bild', () => {
+    for (const [b, h] of [[375, 812], [375, 667], [390, 560], [1280, 480]]) {
+      cy.viewport(b, h);
+      cy.visitApp('mode=mandel'); cy.waitRender();
+      cy.get(b < 800 ? '#tabSave' : '#save').click();
+      cy.get('#poster').should('be.visible');
+      cy.get('#posterStart').should($k => {
+        const r = $k[0].getBoundingClientRect();
+        expect(r.bottom, `Rendern steht bei ${b}x${h} im Bild`).to.be.at.most(h + 0.5);
+        expect(r.top, 'und nicht über dem oberen Rand').to.be.at.least(-0.5);
+      });
+      cy.get('#poster .modal-card').should($c => expect($c[0].getBoundingClientRect().height, 'die Karte bleibt in der Höhe des Schirms').to.be.at.most(h + 0.5));
+      cy.get('#posterCancel').click();
+    }
+  });
 });

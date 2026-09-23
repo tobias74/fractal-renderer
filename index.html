@@ -484,21 +484,23 @@
   .pe2-st { display: flex; flex-direction: column; gap: 6px; padding-top: 4px; }
   .pal-ed canvas.pe2-streifen { height: 18px; }   /* Verlauf der Achse, darunter die Marken der Stützstellen */
   .pe2-st .pe-marken { margin-top: -5px; }
-  .poster-card { max-width: 460px; gap: 14px; max-height: calc(100vh - 32px); }   /* passt immer ins Bild: der Metadaten-Abschnitt nimmt den Rest und rollt */
+  .poster-card { --l: 14px; max-width: 460px; gap: var(--l); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); }   /* dvh: am Handy zählt die Adressleiste sonst zur Höhe */
   .poster-card > * { flex-shrink: 0; }
-  .poster-card > .meta-box { flex: 1 1 auto; min-height: 60px; overflow: auto; scrollbar-gutter: stable; }   /* der Platz für die Rollleiste steht von Anfang an: sonst bricht der Text nach ihrem Erscheinen anders um */
-  .poster-card > .meta-box > * { flex-shrink: 0; }   /* sonst drückt der Flex-Container das Textfeld auf die Resthöhe zusammen: overflow hidden, der Abschnitt hat nichts zu rollen, der Rest des Textes ist unerreichbar (19.09.2026) */
+  .poster-card > .poster-body { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: var(--l); }   /* Titel und Knopfzeile stehen fest, der Rumpf rollt: der Knopf zum Rendern bleibt immer zu sehen */
+  .poster-body > * { flex-shrink: 0; }
+  .poster-body > .meta-box { flex: 1 1 auto; min-height: 60px; overflow: auto; scrollbar-gutter: stable; }   /* der Platz für die Rollleiste steht von Anfang an: sonst bricht der Text nach ihrem Erscheinen anders um */
+  .poster-body > .meta-box > * { flex-shrink: 0; }   /* sonst drückt der Flex-Container das Textfeld auf die Resthöhe zusammen: overflow hidden, der Abschnitt hat nichts zu rollen, der Rest des Textes ist unerreichbar (19.09.2026) */
   .poster-lauf { display: flex; flex-direction: column; gap: 6px; }
   .poster-datei { align-items: center; }
   /* Auf niedrigen Schirmen (Handy im Artifact-Rahmen) muss die Karte ohne Rollen bedienbar bleiben: Abstände,
      Schrift und Vorschaubild rücken zusammen, damit Ausschnitt, Auflösung, Infozeile und Knöpfe ins Bild passen. */
   @media (max-height: 780px) {
-    .poster-card { gap: 8px; padding: 10px 12px; }
+    .poster-card { --l: 8px; padding: 10px 12px; }
     .poster-card h2 { font-size: 14px; }
     .poster-card .thumb { max-height: 110px; }
   }
   @media (max-height: 700px) {
-    .poster-card { gap: 6px; }
+    .poster-card { --l: 6px; }
     .poster-card h2 { margin: 0; }
     .poster-card select, .poster-card .menu-btn, .poster-card input[type=number] { padding-top: 5px; padding-bottom: 5px; }
     .poster-card .ghost, .poster-card .primary { padding-top: 6px; padding-bottom: 6px; }
@@ -2209,6 +2211,7 @@
 <div id="poster" class="modal" hidden>
   <div class="modal-card poster-card" role="dialog" aria-modal="true" aria-labelledby="posterTitle">
     <h2 id="posterTitle" data-i18n="export.save-image"></h2>
+    <div class="poster-body">   <!-- alles zwischen Titel und Knopfzeile; rollt, wenn es nicht auf den Schirm passt -->
     <div class="poster-lauf" id="posterLauf" hidden>   <!-- Fortschritt und Zustand: oben, nur während und nach dem Rendern -->
       <div class="track"><div class="fill" id="posterFill"></div></div>
       <div class="state" id="posterState" data-i18n="technical.ready"></div>
@@ -2237,6 +2240,7 @@
       <textarea id="metaText" class="meta-text" readonly rows="3" spellcheck="false"></textarea>
     </div>
     <canvas id="posterThumb" class="thumb" hidden></canvas>
+    </div>
     <div class="btns">
       <button type="button" id="posterCancel" class="ghost" data-i18n="editor.close"></button>
       <a id="posterDl" class="ghost" download hidden data-i18n="status.download"></a>
