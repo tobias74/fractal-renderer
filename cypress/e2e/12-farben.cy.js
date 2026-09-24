@@ -91,8 +91,8 @@ describe('Farbe und Farbschema-Editor', () => {
         cy.task('pngDiff', { a: a.file, b: b.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, 'andere Palette, anderes Bild').to.be.greaterThan(5));
       });
     });
-    cy.rerender(() => cy.pickOption('mapping', 3));
-    cy.expectHash('map', '3');
+    cy.rerender(() => cy.pickOption('mapping', 28));
+    cy.expectHash('map', '28');
     cy.rerender(() => cy.pickOption('glowMode', 1));
     cy.expectHash('glow', '1');
     cy.setRange('glowWidth', 800);
@@ -171,7 +171,7 @@ describe('Farbe und Farbschema-Editor', () => {
   });
 
   it('Verläufe Relief, Doppelt logarithmisch und Logarithmisch + Relief: Adresse, Neurender, andere Bilder', () => {
-    cy.get('#mapping option').should('have.length', 26);   // 25 einwertige (mit dem eigenen Sammler) plus „Werte kombinieren“ (mit Kurve, Ursprungsnähe, Gesamtdrehung, Periodengebiete, Spiralfalle, logmap, äußerer Winkel) plus „Werte kombinieren“
+    cy.get('#mapping option').should('have.length', 25);   // 24 einwertige (mit dem eigenen Sammler; „Histogramm“ ist jetzt die Tabelle der Kurve) plus „Werte kombinieren“ (mit Kurve, Ursprungsnähe, Gesamtdrehung, Periodengebiete, Spiralfalle, logmap, äußerer Winkel) plus „Werte kombinieren“
     cy.rerender(() => cy.pickOption('mapping', 2));
     cy.get('#logStufenRow').should('not.have.attr', 'hidden');       // die Stufen gehören zur logarithmischen Färbung
     for (const st of [2, 3, 4, 5, 6, 10]) {                          // früher fünf eigene Färbungen, heute ein Regler (bis 10)

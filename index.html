@@ -57,6 +57,31 @@
     -webkit-tap-highlight-color: transparent;
   }
   #stage { position: fixed; inset: 0; background: var(--bg); }
+  .kurve-tab { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+  .wurzel-zeile { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+  .wurzel-zeile .seg button { padding: 5px 10px; }
+  .tab-werkzeug { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .daumenrad { position: relative; flex: none; width: 150px; height: 30px; border-radius: 6px; overflow: hidden; cursor: ew-resize; touch-action: pan-y; user-select: none;
+    border: 1px solid var(--line-strong); background: var(--input); }   /* senkrecht wischen blättert weiter, seitwärts dreht */
+  .daumenrad canvas { display: block; width: 100%; height: 100%; }
+  .daumenrad::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(90deg, rgba(var(--deep-rgb), .75), transparent 28%, rgba(var(--tint), .05) 50%, transparent 72%, rgba(var(--deep-rgb), .75)); }   /* Wölbung: die Scheibe dreht sich zu den Rändern weg */
+  .daumenrad:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .rad-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1 1 110px; font-size: 13px; }
+  .rad-text .hint { margin: 0; }
+  .wdh { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+  .wdh button { width: 28px; padding: 4px 0; }
+  .wdh .zahl { min-width: 3ch; text-align: center; }
+  .tab-werkzeuge { display: flex; flex-direction: column; gap: 8px; }
+  .tab-werkzeug button.schalter { width: auto; padding: 4px 10px; }
+  .tab-werkzeug button.schalter.on, #kurveAusAusschnitt.on { background: var(--text); color: var(--accent-ink); }
+  .ausschnitt-wahl { position: fixed; inset: 0; cursor: crosshair; touch-action: none; }
+  .ausschnitt-rahmen { position: fixed; pointer-events: none; box-sizing: border-box; border: 1.5px dashed rgba(255, 255, 255, .9); box-shadow: 0 0 0 1px rgba(0, 0, 0, .45), inset 0 0 0 1px rgba(0, 0, 0, .45); }   /* hell mit dunklem Saum: auf hellen wie dunklen Stellen zu sehen */
+  .wdh-name { color: var(--muted); }
+  .kurve-liste { align-self: flex-start; width: max-content; max-height: 128px; overflow: auto; overscroll-behavior: contain; border: 1px solid var(--line); border-radius: 8px; padding: 4px 6px; display: flex; flex-direction: column; gap: 2px; scrollbar-gutter: stable; }
+  .kurve-liste .kz { display: grid; grid-template-columns: 72px 80px; align-items: center; gap: 8px; font-size: 12px; }
+  .kurve-liste .kz-n { color: var(--muted); text-align: right; }
+  .kurve-liste .kz input { width: 100%; }
   #stage canvas {
     width: 100%; height: 100%; display: block;
     touch-action: none; user-select: none; -webkit-user-select: none;
@@ -872,6 +897,7 @@
 </style>
 
 <div id="stage"></div>
+<div id="ausschnittWahl" class="ausschnitt-wahl" hidden><div id="ausschnittRahmen" class="ausschnitt-rahmen" hidden></div></div>   <!-- „Aus einem Ausschnitt befüllen“: über dem Bild, unter dem Bedienfeld -->
 <div id="uebersetzenToast" class="toast" role="status" hidden>   <!-- Hinweis beim Übersetzen der Fassung mit Ebenen und Masken: über dem Bild, wegklickbar, in Technik abschaltbar -->
   <span class="toast-lauf" aria-hidden="true"></span>
   <span class="toast-text"><span id="toastText" data-i18n="status.post-compiling"></span> <span id="toastDetail" class="mono"></span></span>
@@ -1084,7 +1110,6 @@
           <option value="1" data-i18n="colour.square-root"></option>
           <option value="2" data-i18n="colour.logarithmic"></option>
           <option value="33" data-i18n="colour.logmap"></option>
-          <option value="3" data-i18n="colour.histogram"></option>
           <option value="28" data-i18n="colour.curve"></option>
           <option value="6" data-i18n="colour.logarithmic-relief"></option>
           <option value="11" data-i18n="colour.compression-slider"></option>
@@ -1178,13 +1203,59 @@
       </div>
       <div id="kurveRow" hidden>
         <div class="lbl"><label for="kurveBild" data-i18n-title="colour.curve-title" data-i18n="colour.curve-editor"></label></div>
+        <div class="seg" id="kurveArtSeg" role="group" data-i18n-aria-label="colour.curve-kind">   <!-- die Zuordnung als Kurve aus Punkten oder als Tabelle mit 512 Werten -->
+          <button type="button" id="kurveArtKurve" class="on" aria-pressed="true" data-i18n="colour.curve-kind-curve"></button>
+          <button type="button" id="kurveArtTabelle" aria-pressed="false" data-i18n="colour.curve-kind-table"></button>
+        </div>
         <canvas id="kurveBild" class="kurve" width="480" height="220" tabindex="0" data-i18n-aria-label="colour.curve-canvas"></canvas>
-        <p class="hint" data-i18n="colour.curve-hint"></p>
-        <div class="btns">
+        <p class="hint" id="kurveHinweis" data-i18n="colour.curve-hint"></p>
+        <div class="btns" id="kurveKnoepfe">
           <button type="button" id="kurveGerade" class="ghost" data-i18n="colour.curve-straight"></button>
           <button type="button" id="kurveAusgleich" class="ghost" data-i18n="colour.curve-from-frequencies"></button>
         </div>
-        <label class="chk" data-i18n-title="colour.curve-span-title"><input type="checkbox" id="kurveSpann"> <span data-i18n="colour.curve-span"></span></label>
+        <label class="chk" id="kurveSpannZeile" data-i18n-title="colour.curve-span-title"><input type="checkbox" id="kurveSpann"> <span data-i18n="colour.curve-span"></span></label>
+        <div id="kurveTabZeile" class="kurve-tab" hidden>   <!-- die Tabelle: befüllen aus dem Histogramm, die 512 Zeilen -->
+          <p class="hint" data-i18n="colour.table-hint"></p>
+          <div class="tab-werkzeuge">   <!-- Werkzeuge ohne eigenen Stand: sie verändern nur die Tabelle -->
+            <div class="tab-werkzeug">
+              <div id="kurveRad" class="daumenrad" tabindex="0" role="button" data-i18n-aria-label="colour.table-balance-title" data-i18n-title="colour.table-balance-title"><canvas></canvas></div>
+              <div class="rad-text"><span data-i18n="colour.table-balance"></span><span class="hint" data-i18n="colour.table-balance-hint"></span></div>
+            </div>
+            <div class="tab-werkzeug">
+              <div id="kurveSchiebRad" class="daumenrad" tabindex="0" role="button" data-i18n-aria-label="colour.table-shift-title" data-i18n-title="colour.table-shift-title"><canvas></canvas></div>
+              <div class="rad-text"><span data-i18n="colour.table-shift"></span><span class="hint" data-i18n="colour.table-shift-hint"></span></div>
+            </div>
+            <div class="tab-werkzeug">
+              <div id="kurveWellenRad" class="daumenrad" tabindex="0" role="button" data-i18n-aria-label="colour.table-waves-title" data-i18n-title="colour.table-waves-title"><canvas></canvas></div>
+              <div class="rad-text"><span data-i18n="colour.table-waves"></span><span class="hint" data-i18n="colour.table-waves-hint"></span></div>
+            </div>
+            <div class="tab-werkzeug">
+              <div class="wdh">
+                <button type="button" id="kurveWdhMinus" class="ghost" data-i18n-aria-label="colour.table-repeat-less" data-i18n-title="colour.table-repeat-less">−</button>
+                <span id="kurveWdhZahl" class="mono zahl" aria-live="polite">1</span>
+                <button type="button" id="kurveWdhPlus" class="ghost" data-i18n-aria-label="colour.table-repeat-more" data-i18n-title="colour.table-repeat-more">+</button>
+                <span class="wdh-name" data-i18n="colour.table-repeat"></span>
+              </div>
+              <button type="button" id="kurvePendel" class="ghost schalter" aria-pressed="false" data-i18n="colour.table-swing" data-i18n-title="colour.table-swing-title"></button>
+            </div>
+            <div class="tab-werkzeug">
+              <div class="wdh">
+                <button type="button" id="kurveStufenMinus" class="ghost" data-i18n-aria-label="colour.table-steps-less" data-i18n-title="colour.table-steps-less">−</button>
+                <span id="kurveStufenZahl" class="mono zahl" aria-live="polite"></span>
+                <button type="button" id="kurveStufenPlus" class="ghost" data-i18n-aria-label="colour.table-steps-more" data-i18n-title="colour.table-steps-more">+</button>
+                <span class="wdh-name" data-i18n="colour.table-steps"></span>
+              </div>
+              <button type="button" id="kurveWeicher" class="ghost schalter" data-i18n="colour.table-softer" data-i18n-title="colour.table-softer-title"></button>
+              <button type="button" id="kurveHaerter" class="ghost schalter" data-i18n="colour.table-harder" data-i18n-title="colour.table-harder-title"></button>
+            </div>
+          </div>
+          <div id="kurveWurzelZeile" class="wurzel-zeile" hidden>   <!-- Wurzelformeln: aus welchem Einzugsgebiet befüllt wird -->
+            <span data-i18n="colour.table-basin"></span>
+            <div class="seg" id="kurveWurzel" role="group" data-i18n-aria-label="colour.table-basin"></div>
+          </div>
+          <div class="btns"><button type="button" id="kurveAusHist" class="ghost" data-i18n="colour.table-from-histogram" data-i18n-title="colour.table-from-histogram-title"></button><button type="button" id="kurveAusAusschnitt" class="ghost" aria-pressed="false" data-i18n="colour.table-from-area" data-i18n-title="colour.table-from-area-title"></button></div>
+          <div id="kurveListe" class="kurve-liste" role="list" data-i18n-aria-label="colour.table-rows"></div>
+        </div>
       </div>
       <div id="lyGrenzeRow" hidden>
         <div class="lbl wertzeile"><label for="lyGrenze" data-i18n-title="colour.how-far-an-orbit" data-i18n="colour.boundary"></label><input class="val mono wert" id="lyGrenzeVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
@@ -2340,7 +2411,6 @@ const TEXTE = {
   'mapping.text.0': { de: 'Die Iterationszahl direkt: gleichmäßige Bänder, bei großen Zahlen schnell dicht.', en: 'The iteration count as it is: even bands, quickly dense at large counts.' },
   'mapping.text.1': { de: 'Wurzel der Iterationszahl: dehnt kleine Werte, staucht große.', en: 'Square root of the iteration count: stretches small values, compresses large ones.' },
   'mapping.text.2': { de: 'Logarithmus der Iterationszahl, die übliche Wahl: jede Verdopplung ein gleich großer Schritt.', en: 'Logarithm of the iteration count, the usual choice: every doubling one equal step.' },
-  'mapping.text.3': { de: 'Verteilung der Werte in der Ansicht: jede Farbe bekommt gleich viele Punkte.', en: 'Distribution of the values in the view: every colour gets the same number of points.' },
   'mapping.text.4': { de: 'Abstand zum Rand der Menge als Relief, mit Licht von oben.', en: 'Distance to the boundary of the set as a relief, lit from above.' },
   'mapping.text.6': { de: 'Logarithmische Bänder, vom Abstandsrelief beleuchtet.', en: 'Logarithmic bands, lit by the distance relief.' },
   'mapping.text.11': { de: 'Stauchung mit Regler: stufenlos zwischen linear und logarithmisch.', en: 'Compression with a slider: continuously between linear and logarithmic.' },
@@ -2359,7 +2429,7 @@ const TEXTE = {
   'mapping.text.21': { de: 'Wie oft Real- und Imaginärteil das Vorzeichen wechseln.', en: 'How often real and imaginary part change sign.' },
   'mapping.text.24': { de: 'Kleinster Betrag der Bahn: hell nahe den Urbildern des Ursprungs, innen wie außen.', en: 'Smallest magnitude of the orbit: bright near the preimages of the origin, inside and out.' },
   'mapping.text.26': { de: 'Mittlere Winkeländerung je Schritt: ruhige Bahnen unten, drehende oben in der Palette.', en: 'Mean angle change per step: calm orbits low, turning ones high in the palette.' },
-  'mapping.text.28': { de: 'Übertragungskurve über den Häufigkeiten: du ziehst die Punkte selbst.', en: 'Transfer curve over the frequencies: you drag the points yourself.' },
+  'mapping.text.28': { de: 'Übertragungskurve über der Fluchtzeit: du ziehst die Punkte selbst oder führst eine Tabelle mit 512 Werten, die sich auch aus dem Histogramm befüllen lässt.', en: 'Transfer curve over the escape time: drag the points yourself or keep a table of 512 values, which can also be filled from the histogram.' },
   'mapping.text.29': { de: 'Schritt der größten Nähe zum Ursprung: Gebiete gleicher Periode, innen wie außen.', en: 'Step of closest approach to the origin: domains of equal period, inside and out.' },
   'mapping.text.33': { de: 'Logarithmisch ab einer Startiteration: bis dorthin Farbe 1, danach erst linear, dann logarithmisch bis zur Iterationsgrenze, über 256 Paletteneinträge. Farbdichte 1/256 (0,0039) trifft die Palette Eintrag für Eintrag.', en: 'Logarithmic from a start iteration: colour 1 up to it, then linear, then logarithmic up to the iteration limit, over 256 palette entries. Colour density 1/256 (0.0039) hits the palette entry by entry.' },
   'colour.logmap': { de: 'Logarithmisch ab Iteration (logmap)', en: 'Logarithmic from iteration (logmap)' },
@@ -2386,10 +2456,46 @@ const TEXTE = {
   'editor.stop-markers': { de: 'Marken der Stützstellen', en: 'Colour stop markers' },
   'editor2.gradient-strip': { de: 'Der Verlauf dieser Achse', en: 'The gradient of this axis' },
   'colour.curve': { de: 'Kurve', en: 'Curve' },
+  'colour.curve-kind': { de: 'Art der Zuordnung', en: 'Kind of mapping' },
+  'colour.curve-kind-curve': { de: 'Kurve', en: 'Curve' },
+  'colour.curve-kind-table': { de: 'Tabelle', en: 'Table' },
+  'colour.table-hint': { de: 'Jede Zeile gilt ab der links genannten Fluchtzeit, ihr Wert (0 bis 1) ist die Stelle in der Palette. Die Linie oben zeigt die ganze Tabelle; im Link steht sie fest.', en: 'Each row applies from the escape time on its left; its value (0 to 1) is the position in the palette. The line above shows the whole table; it is fixed in the link.' },
+  'colour.table-from-histogram': { de: 'Aus dem Histogramm befüllen', en: 'Fill from histogram' },
+  'colour.table-from-histogram-title': { de: 'Die Tabelle so befüllen, dass jede Farbe gleich viele Punkte des sichtbaren Bildes bekommt — das Aussehen der Histogramm-Färbung. Danach sind die Werte fest und ändern sich beim Zoomen nicht mehr.', en: 'Fill the table so that each colour gets the same number of points of the visible picture — the look of histogram colouring. Afterwards the values are fixed and no longer change when zooming.' },
+  'colour.table-balance': { de: 'Ausgleich', en: 'Balance' },
+  'colour.table-balance-hint': { de: 'rechts zum Histogramm, links zur geraden Linie', en: 'right towards the histogram, left towards a straight line' },
+  'colour.table-balance-title': { de: 'Ausgleich: seitwärts schieben (Maus oder Finger), Mausrad oder Pfeiltasten. Jede Rastung rückt die Tabelle ein Stück zur Verteilung der Ansicht oder zurück zur geraden Linie. Das Rad hat keinen eigenen Wert, es verändert nur die Tabelle.', en: 'Balance: push it sideways (mouse or finger), mouse wheel or arrow keys. Each notch moves the table a little towards the distribution of the view or back towards a straight line. The dial has no value of its own, it only changes the table.' },
+  'colour.table-basin': { de: 'Befüllen aus', en: 'Fill from' },
+  'colour.table-basin-all': { de: 'allen', en: 'all' },
+  'colour.table-basin-root': { de: 'Einzugsgebiet von Wurzel {0}', en: 'Basin of root {0}' },
+  'colour.table-shift': { de: 'Schieben', en: 'Shift' },
+  'colour.table-shift-hint': { de: 'rechts: Farbbänder nach innen, links nach außen', en: 'right: colour bands inwards, left: outwards' },
+  'colour.table-shift-title': { de: 'Schieben: die Zeilen der Tabelle wandern entlang der Fluchtzeit. Die Farben setzen früher oder später ein, die Palette bleibt dieselbe.', en: 'Shift: the rows of the table move along the escape time. The colours start earlier or later, the palette stays the same.' },
+  'colour.table-waves': { de: 'Wellen', en: 'Waves' },
+  'colour.table-waves-hint': { de: 'rechts stärker, links schwächer und gegenläufig', en: 'right stronger, left weaker and reversed' },
+  'colour.table-waves-title': { de: 'Wellen: eine feine Sinuswelle auf der Tabelle, 24 Perioden über die Achse. Das gibt Rippen in den großen Farbflächen.', en: 'Waves: a fine sine wave on the table, 24 periods across the axis. This adds ripples to the large colour areas.' },
+  'colour.table-swing': { de: 'Pendeln', en: 'Swing' },
+  'colour.table-swing-title': { de: 'Pendeln: jede zweite Wiederholung läuft rückwärts durch die Palette, die harten Kanten an den Rücksprüngen verschwinden. Braucht mindestens zwei Wiederholungen.', en: 'Swing: every second repetition runs backwards through the palette, the hard edges at the jumps disappear. Needs at least two repetitions.' },
+  'colour.table-steps': { de: 'Stufen', en: 'Steps' },
+  'colour.table-steps-off': { de: 'aus', en: 'off' },
+  'colour.table-steps-less': { de: 'Eine Stufe weniger (unter zwei: aus)', en: 'One step less (below two: off)' },
+  'colour.table-steps-more': { de: 'Eine Stufe mehr: flache Farbterrassen, so viele je Runde durch die Palette', en: 'One step more: flat colour terraces, this many per run through the palette' },
+  'colour.table-softer': { de: 'Weicher', en: 'Softer' },
+  'colour.table-softer-title': { de: 'Die Tabelle über benachbarte Zeilen mitteln: weichere Übergänge zwischen den Farbbändern.', en: 'Average the table over neighbouring rows: softer transitions between the colour bands.' },
+  'colour.table-harder': { de: 'Härter', en: 'Harder' },
+  'colour.table-harder-title': { de: 'Die Tabelle schärfen: Übergänge zwischen den Farbbändern werden kantiger.', en: 'Sharpen the table: transitions between the colour bands get crisper.' },
+  'colour.table-from-area': { de: 'Aus einem Ausschnitt befüllen', en: 'Fill from an area' },
+  'colour.table-from-area-active': { de: 'Rechteck im Bild aufziehen … (Esc bricht ab)', en: 'Drag a rectangle in the picture … (Esc cancels)' },
+  'colour.table-from-area-title': { de: 'Ein Rechteck im Bild aufziehen: nur was darin liegt, wird gezählt. Dieses Detail bekommt die volle Farbspanne, der Rest folgt derselben Tabelle.', en: 'Drag a rectangle in the picture: only what lies inside is counted. That detail gets the full colour range, the rest follows the same table.' },
+  'colour.table-repeat': { de: 'Wiederholungen', en: 'Repetitions' },
+  'colour.table-repeat-less': { de: 'Eine Wiederholung weniger', en: 'One repetition less' },
+  'colour.table-repeat-more': { de: 'Eine Wiederholung mehr: die Palette läuft einmal öfter durch die Tabelle', en: 'One repetition more: the palette runs through the table once more' },
+  'colour.table-rows': { de: 'Zeilen der Tabelle', en: 'Rows of the table' },
+  'colour.table-row': { de: 'Palettenstelle ab Fluchtzeit {0}', en: 'Palette position from escape time {0}' },
   'colour.curve-canvas': { de: 'Übertragungskurve: Punkte ziehen', en: 'Transfer curve: drag the points' },
   'colour.curve-editor': { de: 'Übertragungskurve', en: 'Transfer curve' },
   'colour.curve-from-frequencies': { de: 'Aus den Häufigkeiten', en: 'From the frequencies' },
-  'colour.curve-hint': { de: 'Punkte ziehen; ein Klick ins Leere setzt einen Punkt, ein Doppelklick entfernt ihn. Die Balken zeigen, wie oft jeder Wert in der Ansicht vorkommt.', en: 'Drag the points; a click on empty space adds a point, a double click removes it. The bars show how often each value occurs in the view.' },
+  'colour.curve-hint': { de: 'Punkte ziehen; ein Klick ins Leere setzt einen Punkt, ein Doppelklick entfernt ihn. Die Balken zeigen, wie oft jeder Wert im Bild vorkommt.', en: 'Drag the points; a click on empty space adds a point, a double click removes it. The bars show how often each value occurs in the picture.' },
   'colour.curve-span': { de: 'Achse auf die Ansicht spannen', en: 'Span the axis to the view' },
   'colour.curve-span-title': { de: 'Die waagerechte Achse reicht dann vom kleinsten bis zum größten Wert der Ansicht statt bis zur Iterationsgrenze. Die Kurve folgt so der Ansicht beim Bewegen; die Zahlen an den Enden sind Iterationswerte.', en: 'The horizontal axis then runs from the smallest to the largest value in the view instead of up to the iteration limit. The curve follows the view as you move; the numbers at the ends are iteration counts.' },
   'colour.curve-straight': { de: 'Gerade', en: 'Straight' },
@@ -2406,7 +2512,6 @@ const TEXTE = {
   'colour.stripe-phase': { de: 'Streifenphase', en: 'Stripe phase' },
   'colour.escape-angle': { de: 'Fluchtwinkel', en: 'Escape angle' },
   'colour.gradient': { de: 'Verlauf', en: 'Gradient' },
-  'colour.histogram': { de: 'Histogramm', en: 'Histogram' },
   'colour.how-far-an-orbit': { de: 'Bis wohin eine Bahn verfolgt wird: 2 ist die Vorgabe, größer reicht das Muster weiter und verändert es rund um die Menge', en: 'How far an orbit is followed: 2 is the default; larger extends the pattern further and changes it around the set' },
   'colour.interior': { de: 'Innen', en: 'Interior' },
   'colour.keep-colour-while-changing': { de: 'Farbe beim Dichte-Regler halten', en: 'Keep colour while changing density' },
@@ -3871,7 +3976,7 @@ const PAL_PFAD = { beginn: { min: -20, max: 20, def: 0, step: 0.01 }, spanne: { 
 const MATERIAL = { glanz: { min: 0, max: 1, def: 0.5 }, reflexion: { min: 0, max: 10, def: 0 }, lage: { min: 0, max: 1, def: 0 }, spanne: { min: 0, max: 5, def: 0.1 }, neigung: { min: 0.01, max: 50, def: 1 }, laenge: { min: 1, max: 200, def: 8 } };   // Materialmodell des Reliefs: Grenzen der Zahlenfelder (die Regler enden früher) und Vorgaben; Material 0 = einfach (bisheriges Relief), Reflexion 0 = aus   // wie oft der Logarithmus wirkt; stufenlos, ganze Zahlen sind die alten Färbungen (1 = 2, 2 = 5, 3 = 7, 4 = 8, 5 = 9, 6 = 10)
 const LOG_ALT = { 5: 2, 7: 3, 8: 4, 9: 5, 10: 6 };   // alte Nummern und ihre Stufenzahl
 const MAP_MAX = 35;   // höchste Nummer einer Färbung (siehe Liste „Färbung nach“); 35: eigener Sammler
-const MAPPING_TEXT = { 0: 'mapping.text.0', 1: 'mapping.text.1', 2: 'mapping.text.2', 3: 'mapping.text.3', 4: 'mapping.text.4', 6: 'mapping.text.6', 11: 'mapping.text.11', 12: 'mapping.text.12', 13: 'mapping.text.13', 14: 'mapping.text.14', 15: 'mapping.text.15', 16: 'mapping.text.16', 17: 'mapping.text.17', 18: 'mapping.text.18', 19: 'mapping.text.19', 20: 'mapping.text.20', 21: 'mapping.text.21', 24: 'mapping.text.24', 26: 'mapping.text.26', 28: 'mapping.text.28', 29: 'mapping.text.29', 31: 'mapping.text.31', 32: 'mapping.text.32', 33: 'mapping.text.33', 34: 'mapping.text.34', 35: 'mapping.text.35' };   // ein Satz je Färbung, unter der Auswahl
+const MAPPING_TEXT = { 0: 'mapping.text.0', 1: 'mapping.text.1', 2: 'mapping.text.2', 4: 'mapping.text.4', 6: 'mapping.text.6', 11: 'mapping.text.11', 12: 'mapping.text.12', 13: 'mapping.text.13', 14: 'mapping.text.14', 15: 'mapping.text.15', 16: 'mapping.text.16', 17: 'mapping.text.17', 18: 'mapping.text.18', 19: 'mapping.text.19', 20: 'mapping.text.20', 21: 'mapping.text.21', 24: 'mapping.text.24', 26: 'mapping.text.26', 28: 'mapping.text.28', 29: 'mapping.text.29', 31: 'mapping.text.31', 32: 'mapping.text.32', 33: 'mapping.text.33', 34: 'mapping.text.34', 35: 'mapping.text.35' };   // ein Satz je Färbung, unter der Auswahl
 // „Werte kombinieren“ (31): eine Färbung aus zwei Bahnwerten, frei gewählt. Je Achse ein Wert (PAAR_WERTE), ein Faktor,
 // wahlweise ein Fluchtzeit-Abzug (0 keiner, 1 β·log₂(N+1), 2 β·0,1·(log₂(N+1) − 10)), bei 0 geklemmt, mit Farbanker
 // (Fluchtzeit: Farbanker der Fluchtzeit; Mittel: der des Bahnmittels). Die Einstellung steht in S.paar.
@@ -4140,7 +4245,7 @@ const glowWirkt = () => S.glowMode !== 0 && !lyapModus() && !(winkelModus() & 1)
 const texZielWirkt = z => { const v = z === undefined ? TEX_ZIEL_VOR : z; const paar = !!paarKonfig(); if ((v === 0 || v === 1) && !paar) return TEX_ZIEL_VOR; if (v === 3 && paar) return TEX_ZIEL_VOR; if (v === 6 && !glowWirkt()) return TEX_ZIEL_VOR; if (v === 7 && !mischWirkt()) return TEX_ZIEL_VOR; if (v === 8 && !reliefWirkt()) return TEX_ZIEL_VOR; return v; };   // 7 war die Deckkraft der Ebene: nicht umsetzbar, der Wert fällt auf die Helligkeit   // Achsen nur bei „Werte kombinieren“, die eine Palettenposition nur sonst, das Glühen nur mit Kantenlinien
 function texKeys(n) { const p = n === 1 ? 'tex' : 'tex' + n; return { art: n === 1 ? 'textur' : 'textur' + n, staerke: p + 'Staerke', kontrast: p + 'Kontrast', mitte: p + 'Mitte', hell: p + 'Hell', dunkel: p + 'Dunkel', an: p + 'An', werte: p + 'Werte', ziel: p + 'Ziel', wo: p + 'Wo', maske: p + 'Maske', eigen: p + 'Eigen', wahl: p + 'Wahl', fallen: p + 'Fallen', stich: p + 'Stich' }; }
 function texSlot(n) { const k = texKeys(n); return { art: S[k.art], staerke: S[k.staerke], kontrast: S[k.kontrast], mitte: S[k.mitte], hell: S[k.hell], dunkel: S[k.dunkel], an: S[k.an] !== false, werte: S[k.werte] || texWerteVorgabe(S[k.art]), ziel: S[k.ziel] === undefined ? TEX_ZIEL_VOR : S[k.ziel], wo: S[k.wo] === undefined ? TEX_WO_VOR : S[k.wo], maske: S[k.maske] || maskeNeu(0), eigen: S[k.eigen] || null, wahl: S[k.wahl] || 0, fallen: S[k.fallen] || 0, stich: S[k.stich] || STICH.def }; }
-function texSlotSetzen(n, t) { const k = texKeys(n); S[k.art] = t.art; S[k.staerke] = t.staerke; S[k.kontrast] = t.kontrast; S[k.mitte] = t.mitte; S[k.hell] = t.hell; S[k.dunkel] = t.dunkel; S[k.an] = t.an !== false; S[k.ziel] = t.ziel === undefined ? TEX_ZIEL_VOR : t.ziel; S[k.wo] = t.wo === undefined ? TEX_WO_VOR : t.wo; S[k.werte] = (t.werte || texWerteVorgabe(t.art)).slice(); S[k.maske] = t.maske ? Object.assign({}, t.maske, { p: t.maske.p.slice() }) : maskeNeu(0); S[k.eigen] = t.eigen ? Object.assign({}, t.eigen) : null; S[k.wahl] = t.wahl || 0; S[k.fallen] = t.fallen || 0; S[k.stich] = t.stich || STICH.def; }
+function texSlotSetzen(n, t, Z = S) { const k = texKeys(n); Z[k.art] = t.art; Z[k.staerke] = t.staerke; Z[k.kontrast] = t.kontrast; Z[k.mitte] = t.mitte; Z[k.hell] = t.hell; Z[k.dunkel] = t.dunkel; Z[k.an] = t.an !== false; Z[k.ziel] = t.ziel === undefined ? TEX_ZIEL_VOR : t.ziel; Z[k.wo] = t.wo === undefined ? TEX_WO_VOR : t.wo; Z[k.werte] = (t.werte || texWerteVorgabe(t.art)).slice(); Z[k.maske] = t.maske ? Object.assign({}, t.maske, { p: t.maske.p.slice() }) : maskeNeu(0); Z[k.eigen] = t.eigen ? Object.assign({}, t.eigen) : null; Z[k.wahl] = t.wahl || 0; Z[k.fallen] = t.fallen || 0; Z[k.stich] = t.stich || STICH.def; }   // Z: der Zustand, in den geschrieben wird (Vorgabe S)
 function texArtAn(n) { const k = texKeys(n); const a = S[k.an] === false ? 0 : S[k.art]; return typeof texArtMoeglich === 'function' && !texArtMoeglich(a) ? 0 : a; }   // wirksame Art: 0, wenn der Platz ausgeschaltet ist oder die Formel die Art nicht hergibt (die Einstellungen bleiben)
 function texturBelegt() { let z = 0; for (let n = 1; n <= TEX_SLOTS; n++) if (S[texKeys(n).art] !== 0) z = n; return z; }   // letzter Platz mit gewählter Art, auch wenn ausgeschaltet (Anzeige, Link)
 // Übertragungskurve (Färbung 28): Punkte (x, y) in 0 … 1, nach x geordnet, erster bei x = 0, letzter bei x = 1; Vorgabe die Gerade
@@ -6075,7 +6180,7 @@ fn mapNu(nu: f32) -> f32 {
     if (x / log(x) <= mlf) { return x; }
     return floor(mlf * log(x)) + 1.0;
   }
-  if (m == 3u || m == 28u) {   // Histogramm und Kurve: Tabelle (Verteilungsfunktion bzw. Übertragungskurve) über der logarithmischen Fluchtzeit
+  if (m == 28u) {   // Kurve: Tabelle (aus den Punkten oder die 512 Werte) über der logarithmischen Fluchtzeit
     let x = clamp(log2(nu + 1.0) / C.misc2.w, 0.0, 0.999) * 511.0;
     let i = i32(x); let fr = x - f32(i);
     let c0 = textureLoad(cdf, vec2i(i, 0), 0).x;
@@ -7617,11 +7722,11 @@ class GpuRenderer {
     for (const t of [this.accBuf, this.accStage, this.accTex]) if (t) t.destroy();
     this.accBuf = this.accStage = this.accTex = null;
   }
-  async readRegion(w, h, kanaele = 1) {   // liest den x-Kanal (Iterationen) aus der Vorschau-Textur; kanaele = 2: den y-Kanal dazu, verschränkt
+  async readRegion(w, h, kanaele = 1, x0 = 0, y0 = 0) {   // liest den x-Kanal (Iterationen) aus der Vorschau-Textur ab (x0, y0); kanaele = 2: den y-Kanal dazu, verschränkt
     const d = this.device, bpp = (this.iterFormat || 'rg32uint') === 'rgba32uint' ? 16 : 8, bpr = Math.ceil(w * bpp / 256) * 256;   // Bytes je Texel nach Format
     const buf = d.createBuffer({ size: bpr * h, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
     const enc = d.createCommandEncoder();
-    enc.copyTextureToBuffer({ texture: this.previewTex }, { buffer: buf, bytesPerRow: bpr, rowsPerImage: h }, [w, h]);
+    enc.copyTextureToBuffer({ texture: this.previewTex, origin: { x: x0, y: y0 } }, { buffer: buf, bytesPerRow: bpr, rowsPerImage: h }, [w, h]);
     d.queue.submit([enc.finish()]);
     await buf.mapAsync(GPUMapMode.READ);
     const src = new Uint32Array(buf.getMappedRange()), out = new Uint32Array(w * h * kanaele);
@@ -7677,7 +7782,11 @@ function accPercentile(a, W, H, stride) {   // Perzentil je Kanal über jede 3. 
 // ============================================================
 //  Zustand
 // ============================================================
-const S = {
+const EIGEN_VORGABE = { x: '|z|', s: '', g: 1, xm: 'c^3', xf: 'z^2 + c' };   // vor dem Grundzustand: er legt die Ausdrücke damit an
+// Der Grundzustand: jedes Zustandsfeld genau hier, mit seiner Vorgabe. Der Start und „Alles zurücksetzen“ kommen beide
+// daraus — ein neues Feld gehört hierher, dann setzen es auch Zurücksetzen und das Öffnen einer Datei zurück.
+function standardZustand() {
+  const z = {
   mode: 'mandel',
   jc: [-0.8, 0.156],
   z0: [0, 0],                                              // Startwert z₀ der Mandelbrot-Familie (0 = klassisch)
@@ -7687,10 +7796,10 @@ const S = {
   pal2: {}, pal2Eigen: null,                               // zweidimensionale Palette je Färbung mit zwei Werten (siehe quelle2), Entwurf bzw. Schema aus dem Link
   palKurve: PAL_KURVE.kurve.def, palKurveMitte: PAL_KURVE.mitte.def,
   palZwei: 0, palPfadBeginn: PAL_PFAD.beginn.def, palPfadSpanne: PAL_PFAD.spanne.def,
-  mapping: 2, logStufen: LOG_STUFEN.def, logDichteMit: false, material: 0, glanz: MATERIAL.glanz.def, reflexion: MATERIAL.reflexion.def, himmelLage: MATERIAL.lage.def, himmelSpanne: MATERIAL.spanne.def, neigung: MATERIAL.neigung.def, schatten: false, schattenLaenge: MATERIAL.laenge.def, glowMode: 0, glowWidth: 1.5, interior: 0, innenFarbe: '#000000', gestuft: false, lyGrenze: 2, fluchtForm: 0, fluchtRadius: 0, dreh: 0, spirale: SPIRALE.def, texInnen: false, texVerbund: 0, invM: [0, 0], biomorph: false, abb: 0, abklingen: 0, logmap: 0, streifen: STREIFEN.def, vorlauf: VORLAUF.def, gewicht: GEWICHT.def, abzug: ABZUG.def, nach: [], textur: 0, texWerte: [0, 0, 0, 0], tex2Werte: [0, 0, 0, 0], tex3Werte: [0, 0, 0, 0], tex4Werte: [0, 0, 0, 0], texStaerke: TEXTUR.staerke.def, texKontrast: TEXTUR.kontrast.def, texMitte: TEXTUR.mitte.def, textur2: 0, tex2Staerke: TEXTUR.staerke.def, tex2Kontrast: TEXTUR.kontrast.def, tex2Mitte: TEXTUR.mitte.def, texHell: '#ffffff', texDunkel: '#000000', tex2Hell: '#ffffff', tex2Dunkel: '#000000', textur3: 0, tex3Staerke: TEXTUR.staerke.def, tex3Kontrast: TEXTUR.kontrast.def, tex3Mitte: TEXTUR.mitte.def, tex3Hell: '#ffffff', tex3Dunkel: '#000000', textur4: 0, tex4Staerke: TEXTUR.staerke.def, tex4Kontrast: TEXTUR.kontrast.def, tex4Mitte: TEXTUR.mitte.def, tex4Hell: '#ffffff', tex4Dunkel: '#000000', texAn: true, tex2An: true, tex3An: true, tex4An: true, paar: PAAR_EIGEN(), kurve: KURVE_STD.map(p => p.slice()), kurveSpann: false,   // Verlaufsart (Standard logarithmisch), Randlinien, Randbreite px, Innen
+  mapping: 2, logStufen: LOG_STUFEN.def, logDichteMit: false, material: 0, glanz: MATERIAL.glanz.def, reflexion: MATERIAL.reflexion.def, himmelLage: MATERIAL.lage.def, himmelSpanne: MATERIAL.spanne.def, neigung: MATERIAL.neigung.def, schatten: false, schattenLaenge: MATERIAL.laenge.def, glowMode: 0, glowWidth: 1.5, interior: 0, innenFarbe: '#000000', gestuft: false, lyGrenze: 2, fluchtForm: 0, fluchtRadius: 0, dreh: 0, spirale: SPIRALE.def, texInnen: false, texVerbund: 0, invM: [0, 0], biomorph: false, abb: 0, abklingen: 0, logmap: 0, streifen: STREIFEN.def, vorlauf: VORLAUF.def, gewicht: GEWICHT.def, abzug: ABZUG.def, nach: [], textur: 0, texWerte: [0, 0, 0, 0], tex2Werte: [0, 0, 0, 0], tex3Werte: [0, 0, 0, 0], tex4Werte: [0, 0, 0, 0], texStaerke: TEXTUR.staerke.def, texKontrast: TEXTUR.kontrast.def, texMitte: TEXTUR.mitte.def, textur2: 0, tex2Staerke: TEXTUR.staerke.def, tex2Kontrast: TEXTUR.kontrast.def, tex2Mitte: TEXTUR.mitte.def, texHell: '#ffffff', texDunkel: '#000000', tex2Hell: '#ffffff', tex2Dunkel: '#000000', textur3: 0, tex3Staerke: TEXTUR.staerke.def, tex3Kontrast: TEXTUR.kontrast.def, tex3Mitte: TEXTUR.mitte.def, tex3Hell: '#ffffff', tex3Dunkel: '#000000', textur4: 0, tex4Staerke: TEXTUR.staerke.def, tex4Kontrast: TEXTUR.kontrast.def, tex4Mitte: TEXTUR.mitte.def, tex4Hell: '#ffffff', tex4Dunkel: '#000000', texAn: true, tex2An: true, tex3An: true, tex4An: true, paar: PAAR_EIGEN(), kurve: KURVE_STD.map(p => p.slice()), kurveSpann: false, kurveArt: 0, kurveWerte: null,   // Verlaufsart (Standard logarithmisch), Randlinien, Randbreite px, Innen
   colAnchor: null,                                         // Farbanker: Iterationswert, an dem der Dichte-Regler die Farbe hält (null = keiner)
   statAnker: null,                                         // Farbanker des Bahnmittels (Färbungen 19, 20, 22, 23): das Mittel, an dem die Farbe hält (null = keiner)
-  eigenF: { x: '|z|', s: '', g: 1 }, xm: 'c^3', xf: 'z^2 + c',   // eigene Ausdrücke (AUSDRUCK): der Sammler der Färbung, Ebenenabbildung, Formel — Vorgaben wie EIGEN_VORGABE; Paar-Achsen und Texturplätze tragen ihre eigenen
+  eigenF: eigenNeu(), xm: EIGEN_VORGABE.xm, xf: EIGEN_VORGABE.xf,   // eigene Ausdrücke (AUSDRUCK): der Sammler der Färbung, Ebenenabbildung, Formel — Vorgaben wie EIGEN_VORGABE; Paar-Achsen und Texturplätze tragen ihre eigenen
   anchorAuto: true,                                        // Standard an: ohne Wert im Link wird beim ersten Bild der Median der Ansicht verankert
   comp: 0,                                                 // Stauchung p für die Verläufe 11/12: 1 linear, 0,5 Wurzel, 0 Log, negativ stärker
   power: 2, invert: false,                                 // z^power + c, Bildebene invertiert (1/z)
@@ -7703,8 +7812,20 @@ const S = {
   quality: 1,
   theme: 'dunkel', stapelMs: STAPEL_MS.def, uiVorrang: true, traegheit: false, aa: DEFAULT_AA, aaMode: 'grid', aaTol: AA_TOL.def, aaMax: 64, aaSigma: AA_SIGMA.def,   // Glättung: Raster-Stufe, Verfahren (grid | adaptive | fast), Regler der adaptiven Verfahren
   palFilter: false, palFilterK: PALK.def,                  // Palette über den Bereich mitteln, den sie innerhalb eines Pixels durchläuft; Faktor auf die Breite
-};
+  };
+  for (let n = 1; n <= TEX_SLOTS; n++) { texSlotSetzen(n, TEXTUR_LEER, z); z[texKeys(n).eigen] = eigenNeu(); }   // die Texturplätze mit allen ihren Feldern, auch dem Ausdruck (den legte sonst erst die Oberfläche beim Start an)
+  return z;
+}
+const S = standardZustand();
+// Was „Alles zurücksetzen“ stehen lässt: die Wahl (Familie, Mandelbrot/Julia, welche Wolke) und Einstellungen des Geräts.
+// Die Ansicht (Mitte, Zoom, Pixelgröße) setzen die Aufrufer gleich danach selbst; die Drehung gehört zum Bild und geht zurück.
+const RESET_BEHAELT = new Set(['family', 'mode', 'accKind', 'theme', 'quality', 'traegheit', 'cx', 'cy', 'zoom', 'ps']);
 const views = { mandel: null, julia: null };
+window.__zustand = {   // Testhaken: den Zustand roh lesen und für die Prüfung des Zurücksetzens jedes Feld verstellen
+  roh: () => JSON.parse(JSON.stringify(S)),
+  vergiften: () => { for (const k of Object.keys(S)) if (!RESET_BEHAELT.has(k)) S[k] = '__verstellt__'; S.__spaeter = 1; },
+  behalten: () => [...RESET_BEHAELT],
+};
 // Punktwolken: kind wählt den Zweig in Compute-Shader und Worker. prm: Anfangsstellung der Regler;
 // bereiche: Spanne je Regler (sonst −3 bis 3), ganz: Nummer des Reglers mit ganzen Zahlen; lauf: Schritte je Kette, verworfene
 // Anfangsschritte und Startbereich (Ecke, Breite, Höhe), sonst 2000, 20 und [−1, 1]²; view: feste Ansicht, sonst eingepasst
@@ -8066,7 +8187,7 @@ function zoomAt(px, py, f) {
   if (S.family === 'escape' && hasImage && !fractalDirty && !panDirty && renderer) {
     // Vorschau aus dem vorhandenen Bild: neue Probe (x, y) → alte Probe (a·x + bx, a·y + by)
     const a = S.ps / oldPs;
-    const [dx, dy] = ansichtVersatz({ cx: oldCx, cy: oldCy, ps: oldPs, dreh: S.dreh }, { cx: S.cx, cy: S.cy });
+    const [dx, dy] = ansichtVersatz({ cx: oldCx, cy: oldCy, ps: oldPs, dreh: drehWirksam() }, { cx: S.cx, cy: S.cy });
     const t = { ax: a, ay: a, bx: dx + W / 2 * (1 - a), by: (renderer.yDown ? -dy : dy) + H / 2 * (1 - a) };
     // mehrere Radschritte vor einem Frame: Abbildungen verketten (neuestes Raster → Texturraster)
     zoomPending = (zoomDirty && zoomPending) ? { ax: zoomPending.ax * t.ax, ay: zoomPending.ay * t.ay, bx: zoomPending.ax * t.bx + zoomPending.bx, by: zoomPending.ay * t.by + zoomPending.by } : t;
@@ -8110,6 +8231,7 @@ function panFein(dx, dy) {   // feines Ziehen (auch um Bruchteile eines Pixels):
   ebenenGesteNach(vorG); viewChanged();
 }
 function drehGeste(d) {   // Drehung als Geste (eckige Klammern): mit „Alle“ drehen die gelösten Ebenen mit
+  if (S.family !== 'escape') return;   // Punktwolken drehen nicht: sonst änderte die Taste unsichtbar einen Winkel, der erst bei der nächsten Julia- oder Mandelbrot-Menge wieder auftaucht
   liveZurueck(); const vorG = ebenenGesteVor();
   S.dreh = drehNorm((S.dreh || 0) + d); syncDreh();
   ebenenGesteNach(vorG); scheduleHash(); viewChanged();
@@ -8333,7 +8455,6 @@ function statAnkerWirkt() { const k = paarKonfig(); if (k) return [k.a, k.b].som
 function statMittel() { return [statModus(), statModus2()].some(m => m === 3 || m === 4 || m === 8 || m === 20); }   // auch der eigene Sammler: Gewicht und Abklingen gelten für sein Mittel
 // ---- Eigene Ausdrücke: je Stelle einer — die Färbung (S.eigenF), jede Paar-Achse (S.paar.a.eigen), jeder Texturplatz (S[texKeys(n).eigen]);
 // ein Objekt { x: Wert je Schritt, s: Zustandszeile, g: Zusammenfassung }. Dazu die Ebenenabbildung (S.xm) und die Formel (S.xf).
-const EIGEN_VORGABE = { x: '|z|', s: '', g: 1, xm: 'c^3', xf: 'z^2 + c' };
 const EIGEN_AGG = 6;   // Zusammenfassungen: 0 Mittel, 1 Minimum, 2 Maximum, 3 Summe, 4 letzter Wert, 5 Schritt des Minimums
 function eigenNeu() { return { x: EIGEN_VORGABE.x, s: EIGEN_VORGABE.s, g: EIGEN_VORGABE.g }; }
 function eigenVon(o) { if (!o.eigen) o.eigen = eigenNeu(); return o.eigen; }   // der Ausdruck einer Paar-Achse (bei Bedarf angelegt)
@@ -8402,7 +8523,7 @@ function texZielRueckfall() {   // was die Färbung nicht anbietet, fällt auf d
 }
 function texFarbParam(n) { const t = texSlot(n); if (!t.an || t.art === 0) return TEXTUR_AUS; return { art: t.art, staerke: t.staerke, kontrast: t.kontrast, mitte: t.mitte, hell: farbe01(t.hell), dunkel: farbe01(t.dunkel), ziel: texZielWirkt(t.ziel), wo: t.wo === undefined ? TEX_WO_VOR : t.wo }; }   // ausgeschaltet: wirkt wie keine
 function statIrgend() { return statPipeline() || statPipeline2() || statPipeline3() || statPipeline4() || statPipeline5() || statPipeline6(); }   // rechnet der Shader irgendeine Bahnstatistik? (BLA, Zyklen, Abstand)
-function histAktiv() { return S.mapping === 3 || S.mapping === 28; }   // Färbungen mit Tabelle: Histogramm und Kurve
+function histAktiv() { return S.mapping === 28; }   // die Kurve: ihr Editor zeigt die Verteilung, ihre Tabelle lässt sich daraus befüllen
 // Werteprobe: kleines Abbild der Ansicht rendern und die Abbildungswerte (mapNuJS) der entkommenen Punkte lesen — für „Anpassen“
 // bei der Farbdichte und die Häufigkeiten je Palettenstelle im Farbschema-Editor. Sinnvoll nur, wo die Färbung solche Werte hat.
 function werteSinnvoll() { return S.family === 'escape' && !FORMULAS[S.formula].seq && !lyapModus() && !statFaerbung() && !(winkelModus() & 1) && S.mapping !== 4 && !wurzelFormel(S.formula); }
@@ -8497,13 +8618,14 @@ function colorParams() {
     formula: S.formula, roots: nullstellenFormel(S.formula) ? S.nz.length : S.power,
     nach: nachUniform(), nachInfo: nachInfoUniform(), maske: maskeUniform(), texMaske: texMaskeUniform(), nachBild: [0, renderer && renderer.yDown ? 0 : H - 1, W, H] };   // Nachbearbeitung: Ebenen, Nachbar-Ebene, Lage im Bild (am Bildschirm das ganze Bild)
 }
-function buildCdf(vals, maxIter) {
+function buildCdf(vals, maxIter, wurzel = -1) {   // wurzel ≥ 0: nur die Punkte, die gegen diese Wurzel laufen (Wurzelformeln)
   const L = Math.log2(maxIter + 1), hist = new Float64Array(CDF_N);
   let total = 0;
   for (let k = 0; k < vals.length; k++) {
     const v = vals[k];
     if (v & 0x80000000) continue;
-    const b = Math.min(CDF_N - 1, Math.floor(Math.log2(v / 256 + 1) / L * CDF_N));
+    if (wurzel >= 0 && ((v >>> 26) & 7) !== wurzel) continue;
+    const b = Math.min(CDF_N - 1, Math.floor(Math.log2((v & 0x03FFFFFF) / 256 + 1) / L * CDF_N));   // ohne die Wurzelnummer der Wurzelformeln (Bits 26 bis 28), wie im Farbpass
     hist[b]++; total++;
   }
   const cdf = new Float32Array(CDF_N);
@@ -8512,8 +8634,55 @@ function buildCdf(vals, maxIter) {
   lastHist = hist;   // für den Kurveneditor
   return cdf;
 }
-function runHistPass(maxIter) {          // kleines Abbild der Ansicht rendern und Häufigkeiten zählen
-  const sH = Math.max(2, Math.ceil(Math.max(W / 320, H / 320)));
+// Bezugsregion: das Quadrat um die Mitte, dessen Seite die kurze Bildkante umfasst (3/Zoom — auf jedem Gerät gleich),
+// gedreht wie die Ansicht, in fester Auflösung. Was die App „aus der Ansicht“ ableitet, misst sie hier: so hängt es nur am Link.
+const BEZUG_N = 256;
+function bezugN() { return Math.min(BEZUG_N, W, H); }   // unter 256 Bildpunkten Kantenlänge (praktisch nie) geht es nicht ganz ohne das Gerät
+function bezugsParams(maxIter) {
+  const p = fractalParams(1, maxIter, 0), N = bezugN(), L = 3 / S.zoom, q = L / N, yd = renderer.yDown, shift = refPoint()[2];
+  p.dcScale = [q, yd ? -q : q];
+  p.dcOffset = drehOffset(-L / 2, yd ? L / 2 : -L / 2, shift);   // linke obere Ecke des Quadrats, gedreht wie die Ansicht
+  p.ps = q;
+  return p;
+}
+function bezugsRegion(maxIter, kanaele = 1) {   // die Bezugsregion rechnen und lesen
+  const N = bezugN();
+  renderer.renderFractal('preview', [{ x: 0, y: 0, w: N, h: N }], bezugsParams(maxIter));
+  return renderer.readRegion(N, N, kanaele);
+}
+// Die Verteilung in der Form, in der sie auch im Link steht: alle 512 Fächer, jeder Wert auf 12 Bit gerundet. Das laufende
+// Histogramm rundet genauso — so ändert das Festhalten nichts am Bild.
+const HF_STUFEN = 4095, HF_ZEICHEN = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+function cdfRunden(cdf) { const t = new Float32Array(CDF_N); for (let j = 0; j < CDF_N; j++) t[j] = Math.round(clamp(cdf[j], 0, 1) * HF_STUFEN) / HF_STUFEN; return t; }
+function cdfText(cdf) {   // je Wert zwei Zeichen; „.“ + Anzahl (1 … 64) wiederholt den vorigen Wert
+  let t = '', vorher = -1, lauf = 0;
+  const lauflaenge = () => { while (lauf > 0) { const k = Math.min(64, lauf); t += '.' + HF_ZEICHEN[k - 1]; lauf -= k; } };
+  for (let j = 0; j < CDF_N; j++) {
+    const v = Math.round(clamp(cdf[j], 0, 1) * HF_STUFEN);
+    if (v === vorher) { lauf++; continue; }
+    lauflaenge(); t += HF_ZEICHEN[v >> 6] + HF_ZEICHEN[v & 63]; vorher = v;
+  }
+  lauflaenge();
+  return t;
+}
+function cdfAusText(t) {   // null, wenn der Text keine vollständige Tabelle ist (512 Werte)
+  if (typeof t !== 'string' || !t.length || t.length > 4 * CDF_N) return null;
+  const out = new Float32Array(CDF_N); let j = 0, vorher = -1;
+  for (let i = 0; i < t.length;) {
+    if (t[i] === '.') {
+      const k = HF_ZEICHEN.indexOf(t[i + 1]) + 1; if (k < 1 || vorher < 0 || j + k > CDF_N) return null;
+      for (let r = 0; r < k; r++) out[j++] = vorher / HF_STUFEN;
+      i += 2; continue;
+    }
+    const a = HF_ZEICHEN.indexOf(t[i]), b = HF_ZEICHEN.indexOf(t[i + 1]); if (a < 0 || b < 0 || j >= CDF_N) return null;
+    const v = a * 64 + b;
+    out[j++] = v / HF_STUFEN; vorher = v; i += 2;
+  }
+  return j === CDF_N ? out : null;
+}
+let histBefuellen = false;   // „Aus dem Histogramm befüllen“ wartet auf das nächste Histogramm
+function runHistPass(maxIter) {          // die Verteilung des ganzen sichtbaren Bildes zählen (verkleinertes Abbild): Balken im Kurven-Editor und Vorlage für die Tabelle
+  const sH = Math.max(2, Math.ceil(Math.max(W / 320, H / 320)));   // was befüllt wird, steht danach als Tabelle im Link: die Messung darf vom Bildschirm abhängen
   const hw = Math.ceil(W / sH), hh = Math.ceil(H / sH);
   renderer.renderFractal('preview', [{ x: 0, y: 0, w: hw, h: hh }], fractalParams(sH, maxIter));
   histDirty = false;
@@ -8521,13 +8690,283 @@ function runHistPass(maxIter) {          // kleines Abbild der Ansicht rendern u
   renderer.readRegion(hw, hh).then(vals => {
     if (renderer !== my || eb !== renderEbene) return;
     mitEbene(eb, () => {   // die Rückgabe gehört der Ebene, die gerechnet hat
-      lastVerteilung = buildCdf(vals, maxIter);   // Verteilungsfunktion der Ansicht (die Kurve kann davon ausgehen)
-      lastCdf = S.mapping === 28 ? kurveTabelle() : lastVerteilung; renderer.setCdf(lastCdf); cdfVersion++;
-      if (S.mapping === 28 && eb === ebeneAktiv) zeichneKurve();
+      histWurzelnMerken(vals);
+      lastVerteilung = cdfRunden(buildCdf(vals, maxIter, histWurzelWirkt() ? histWurzel : -1));   // Verteilungsfunktion des sichtbaren Bildes, in voller Auflösung
+      if (histBefuellen && S.mapping === 28) { histBefuellen = false; tabFuellen(lastVerteilung); }   // in die Tabelle: ab jetzt feste Werte im Link; Wiederholungen, Pendeln, Stufen und Welle bleiben
+      lastCdf = kurveCdf(); renderer.setCdf(lastCdf); cdfVersion++;
+      if (S.mapping === 28 && eb === ebeneAktiv) { zeichneKurve(); kurveListeZeigen(); }
     });
     colorDirty = true; requestFrame();
   }).catch(e => console.warn('Histogramm:', e));
 }
+function syncKurveArt() {   // Kurve oder Tabelle: was zur gewählten Art gehört, ist zu sehen
+  const tab = S.kurveArt === 1;
+  $('kurveArtKurve').classList.toggle('on', !tab); $('kurveArtKurve').setAttribute('aria-pressed', String(!tab));
+  $('kurveArtTabelle').classList.toggle('on', tab); $('kurveArtTabelle').setAttribute('aria-pressed', String(tab));
+  $('kurveKnoepfe').hidden = tab; $('kurveSpannZeile').hidden = tab; $('kurveHinweis').hidden = tab; $('kurveTabZeile').hidden = !tab;
+  histWurzelZeigen();
+  if (tab) kurveListeZeigen();
+}
+function setzeKurveArt(art) {
+  if (art === S.kurveArt) return;
+  if (art === 1 && !(Array.isArray(S.kurveWerte) && S.kurveWerte.length === CDF_N)) S.kurveWerte = Array.from(cdfRunden(kurveTabelle()));   // aus der Kurve vorbefüllt: das Bild springt nicht
+  S.kurveArt = art; syncKurveArt(); setzeKurve();
+}
+$('kurveArtKurve').addEventListener('click', () => setzeKurveArt(0));
+$('kurveArtTabelle').addEventListener('click', () => setzeKurveArt(1));
+$('kurveAusHist').addEventListener('click', () => { histBefuellen = true; histDirty = true; requestFrame(); });
+let kurveListeGebaut = false;
+function kurveListeZeigen() {   // die 512 Zeilen: links die Fluchtzeit, ab der die Zeile gilt, rechts ihre Palettenstelle
+  if (S.kurveArt !== 1 || $('kurveTabZeile').hidden) return;
+  const liste = $('kurveListe');
+  if (!kurveListeGebaut) {
+    const frag = document.createDocumentFragment();
+    for (let i = 0; i < CDF_N; i++) {
+      const z = document.createElement('div'); z.className = 'kz';
+      const nm = document.createElement('span'); nm.className = 'kz-n mono';
+      const f = document.createElement('input'); f.className = 'val mono wert'; f.type = 'text'; f.inputMode = 'decimal'; f.spellcheck = false; f.autocomplete = 'off'; f.dataset.i = String(i);
+      z.append(nm, f); frag.append(z);
+    }
+    liste.append(frag); kurveListeGebaut = true;
+  }
+  kurveWerkzeugZeigen();
+  const L = Math.log2(currentMaxIter() + 1), w = S.kurveWerte || [];
+  for (let i = 0; i < CDF_N; i++) {
+    const z = liste.children[i], nm = z.firstChild, f = z.lastChild;
+    const x = Math.pow(2, i / (CDF_N - 1) * L) - 1; nm.textContent = fmtZahl(x, x < 10 ? 2 : x < 100 ? 1 : 0);   // die Zeile i liegt bei i/511 der Achse, wie im Farbpass nachgeschlagen
+    if (document.activeElement !== f) f.value = fmtZahl(w[i] ?? 0, 3);
+    f.setAttribute('aria-label', t('colour.table-row', nm.textContent));
+  }
+}
+let histWurzel = -1, histWurzeln = [];   // Einzugsgebiet fürs Befüllen (−1: alle Punkte) und die Wurzeln, die das gemessene Bild enthält
+function histWurzelWirkt() { return wurzelFormel(S.formula) && histWurzel >= 0 && histWurzeln.includes(histWurzel); }
+function histWurzelnMerken(vals) {
+  const da = new Set();
+  if (wurzelFormel(S.formula)) for (let k = 0; k < vals.length; k++) { const v = vals[k]; if (!(v & 0x80000000)) da.add((v >>> 26) & 7); }
+  const neu = [...da].sort((a, b) => a - b);
+  if (neu.join() !== histWurzeln.join()) { histWurzeln = neu; histWurzelZeigen(); }
+}
+function histWurzelZeigen() {   // „alle“ und je Wurzel ein Knopf; nur bei einer Wurzelformel mit mehr als einer Wurzel im Bild
+  const zeile = $('kurveWurzelZeile'), seg = $('kurveWurzel');
+  zeile.hidden = !(wurzelFormel(S.formula) && histWurzeln.length > 1);
+  if (zeile.hidden) return;
+  const wahl = histWurzelWirkt() ? histWurzel : -1;
+  seg.replaceChildren(...[-1, ...histWurzeln].map(w => {
+    const b = document.createElement('button'); b.type = 'button'; b.dataset.w = String(w);
+    b.textContent = w < 0 ? t('colour.table-basin-all') : String(w + 1);
+    if (w >= 0) b.setAttribute('aria-label', t('colour.table-basin-root', String(w + 1)));
+    b.classList.toggle('on', w === wahl); b.setAttribute('aria-pressed', String(w === wahl));
+    return b;
+  }));
+  seg.style.gridTemplateColumns = 'repeat(' + (histWurzeln.length + 1) + ', auto)';
+}
+$('kurveWurzel').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  histWurzel = +b.dataset.w; histWurzelZeigen(); histDirty = true; requestFrame();   // neu messen: Balken und Rad zeigen gleich das gewählte Gebiet
+});
+const KURVE_WDH_MAX = 64, KURVE_STUFEN_MAX = 32, AUSGLEICH_SCHRITT = 1 / 40;   // Ausgleich: eine Rastung ist ein Vierzigstel der Strecke gerade Linie → Verteilung
+const WELLE = { perioden: 24, schritt: 0.01, max: 0.2 };   // Wellen: 24 Perioden über die Achse, je Rastung 1 % einer Palettenrunde, höchstens 20 %
+function kurveEntfalten(w) {   // Tabelle → steigende Grundlinie 0 … 1, Wiederholungen, Pendeln
+  const u = new Float64Array(CDF_N);
+  let saege = false;
+  for (let i = 1; i < CDF_N; i++) if (w[i] < w[i - 1] - 0.5) { saege = true; break; }
+  if (saege || CDF_N < 2) {   // Sägezahn: jeder Rücksprung um mehr als eine halbe Palette ist eine Runde mehr
+    let runde = 0;
+    for (let i = 0; i < CDF_N; i++) { if (i && w[i] < w[i - 1] - 0.5) runde++; u[i] = w[i] + runde; }
+    for (let i = 0; i < CDF_N; i++) u[i] /= runde + 1;
+    return { u, wdh: runde + 1, pendel: false };
+  }
+  // Pendeln: Wendestellen oben (ab 0,75) und unten (bis 0,25), mit Abstand dazwischen, damit Wellen (höchstens ±0,2) nicht zählen
+  const wende = []; let auf = true, kand = -1, kandW = 0;
+  for (let i = 0; i < CDF_N; i++) {
+    const v = w[i];
+    if (auf) { if (v >= 0.75 && (kand < 0 || v > kandW)) { kand = i; kandW = v; } if (kand >= 0 && v <= 0.25) { wende.push(kand); auf = false; kand = i; kandW = v; } }
+    else { if (v <= 0.25 && v < kandW) { kand = i; kandW = v; } if (v >= 0.75) { wende.push(kand); auf = true; kand = i; kandW = v; } }
+  }
+  const wdh = wende.length + 1;
+  let r = 0;
+  for (let i = 0; i < CDF_N; i++) { while (r < wende.length && i > wende[r]) r++; u[i] = (r + (r % 2 ? 1 - w[i] : w[i])) / wdh; }
+  return { u, wdh, pendel: wende.length > 0 };
+}
+function tabStufenAblesen(w) { const m = new Set(w).size; return m >= 2 && m <= KURVE_STUFEN_MAX ? m : 0; }   // wenige verschiedene Werte: so viele Stufen
+const welleBei = i => Math.sin(2 * Math.PI * WELLE.perioden * i / (CDF_N - 1));
+let tabRoh = null;   // die ungerundete Zerlegung der zuletzt geschriebenen Tabelle, solange die Tabelle genau deren Rundung ist (nur Genauigkeit, kein Stand)
+const zKopie = z => ({ ...z, u: Float64Array.from(z.u), sq: z.sq ? Float64Array.from(z.sq) : null });
+function tabZerlegen() {   // z: u (Grundlinie), wdh, pendel, stufen (0 aus), welle (Amplitude), sq/sv (Quelle und Versatz des Schiebens)
+  const w = S.kurveWerte;
+  if (tabRoh && tabRoh.gerundet.length === w.length && tabRoh.gerundet.every((v, i) => v === w[i])) return zKopie(tabRoh.z);
+  const e = kurveEntfalten(w);
+  return { u: e.u, wdh: e.wdh, pendel: e.pendel, stufen: tabStufenAblesen(w), welle: 0, sq: null, sv: 0 };
+}
+function tabZusammensetzen(z) {   // Grundlinie wdh-mal durch die Palette (Werte in (0, 1], das Ende einer Runde ist 1), pendelnd, gewellt, gestuft, auf 12 Bit
+  const w = new Array(CDF_N);
+  for (let i = 0; i < CDF_N; i++) {
+    const b = clamp(z.u[i], 0, 1) * z.wdh, r = b > 0 ? Math.ceil(b) - 1 : 0;
+    let f = b - r;
+    if (z.pendel && r % 2) f = 1 - f;
+    f = clamp(f + z.welle * welleBei(i), 0, 1);
+    if (z.stufen >= 2) f = Math.min(z.stufen - 1, Math.floor(f * z.stufen)) / z.stufen;
+    w[i] = Math.round(f * HF_STUFEN) / HF_STUFEN;
+  }
+  return w;
+}
+function tabSchreiben(z) { S.kurveWerte = tabZusammensetzen(z); tabRoh = { z: zKopie(z), gerundet: S.kurveWerte.slice() }; kurveListeZeigen(); setzeKurve(); }
+function tabBereit() { return S.kurveArt === 1 && Array.isArray(S.kurveWerte) && S.kurveWerte.length === CDF_N; }
+function tabFuellen(cdf) {   // Befüllen: die Verteilung wird die Grundlinie; Wiederholungen, Pendeln, Stufen und Welle bleiben
+  const z = tabBereit() ? tabZerlegen() : { wdh: 1, pendel: false, stufen: 0, welle: 0, sv: 0 };
+  z.u = Float64Array.from(cdf); z.sq = null;
+  S.kurveArt = 1; tabSchreiben(z); syncKurveArt(); scheduleHash();
+}
+function kurveWerkzeugZeigen() {   // was die Werkzeuge aus der Tabelle ablesen: nur Anzeige
+  if (!tabBereit()) return;
+  const z = tabZerlegen();
+  $('kurveWdhZahl').textContent = String(z.wdh);
+  $('kurveWdhMinus').disabled = z.wdh <= 1; $('kurveWdhPlus').disabled = z.wdh >= KURVE_WDH_MAX;
+  $('kurvePendel').disabled = z.wdh < 2;
+  $('kurvePendel').classList.toggle('on', z.pendel); $('kurvePendel').setAttribute('aria-pressed', String(z.pendel));
+  $('kurveStufenZahl').textContent = z.stufen ? String(z.stufen) : t('colour.table-steps-off');
+  $('kurveStufenMinus').disabled = !z.stufen; $('kurveStufenPlus').disabled = z.stufen >= KURVE_STUFEN_MAX;
+}
+function tabWerkzeug(tun) { if (!tabBereit()) return; const z = tabZerlegen(); if (tun(z) !== false) tabSchreiben(z); }   // tun gibt false zurück, wenn es nichts zu tun gab
+$('kurveWdhMinus').addEventListener('click', () => tabWerkzeug(z => { if (z.wdh <= 1) return false; z.wdh--; }));
+$('kurveWdhPlus').addEventListener('click', () => tabWerkzeug(z => { if (z.wdh >= KURVE_WDH_MAX) return false; z.wdh++; }));
+$('kurvePendel').addEventListener('click', () => tabWerkzeug(z => { if (z.wdh < 2) return false; z.pendel = !z.pendel; }));
+$('kurveStufenMinus').addEventListener('click', () => tabWerkzeug(z => { if (!z.stufen) return false; z.stufen = z.stufen <= 2 ? 0 : z.stufen - 1; }));
+$('kurveStufenPlus').addEventListener('click', () => tabWerkzeug(z => { if (z.stufen >= KURVE_STUFEN_MAX) return false; z.stufen = z.stufen ? z.stufen + 1 : 2; }));
+function glaetten(u, r) {   // gleitendes Mittel über 2r + 1 Zeilen, zweimal (fast eine Glocke); an den Enden der Randwert
+  let a = u;
+  for (let durchgang = 0; durchgang < 2; durchgang++) {
+    const b = new Float64Array(CDF_N);
+    for (let i = 0; i < CDF_N; i++) { let sum = 0; for (let k = -r; k <= r; k++) sum += a[clamp(i + k, 0, CDF_N - 1)]; b[i] = sum / (2 * r + 1); }
+    a = b;
+  }
+  return a;
+}
+$('kurveWeicher').addEventListener('click', () => tabWerkzeug(z => { z.u = glaetten(z.u, 4); z.sq = null; }));
+$('kurveHaerter').addEventListener('click', () => tabWerkzeug(z => { const g = glaetten(z.u, 4); z.u = z.u.map((v, i) => clamp(v + 0.6 * (v - g[i]), 0, 1)); z.sq = null; }));
+function kurveAusgleichen(richtung) {   // eine Rastung: rechts zur Verteilung der Ansicht, links zur geraden Linie; hin und zurück heben sich auf
+  if (!tabBereit()) return;
+  if (!lastVerteilung) { histDirty = true; requestFrame(); return; }
+  tabWerkzeug(z => {
+    const G = i => (i + 0.5) / CDF_N;   // die gerade Linie wie aus der Kurve
+    let zaehler = 0, nenner = 0;
+    for (let i = 0; i < CDF_N; i++) { const dv = lastVerteilung[i] - G(i); zaehler += (z.u[i] - G(i)) * dv; nenner += dv * dv; }
+    if (nenner < 1e-12) return false;   // Verteilung und gerade Linie fallen zusammen: nichts zu tun
+    const tt = zaehler / nenner, t2 = clamp(tt + richtung * AUSGLEICH_SCHRITT, 0, 1);   // die Lage auf der Strecke, aus der Tabelle abgelesen; an den Enden ein Anschlag
+    if (t2 === tt) return false;
+    for (let i = 0; i < CDF_N; i++) z.u[i] += (t2 - tt) * (lastVerteilung[i] - G(i));
+    z.sq = null;
+  });
+}
+function kurveSchieben(richtung) {   // eine Rastung: eine Zeile weiter entlang der Fluchtzeit (rechts: die Farben kommen später, die Bänder rücken nach innen)
+  tabWerkzeug(z => {
+    if (!z.sq) { z.sq = Float64Array.from(z.u); z.sv = 0; }   // Quelle festhalten: so geht beim Zurückschieben nichts verloren
+    const sv = clamp(z.sv + richtung, -(CDF_N - 1), CDF_N - 1);
+    if (sv === z.sv) return false;
+    z.sv = sv; z.u = z.sq.map((_, i) => z.sq[clamp(i - sv, 0, CDF_N - 1)]);
+  });
+}
+function kurveWellen(richtung) {   // eine Rastung: die Welle ein Stück stärker (rechts) oder schwächer bzw. gegenläufig (links)
+  tabWerkzeug(z => {
+    const a = clamp(Math.round((z.welle + richtung * WELLE.schritt) * 1e6) / 1e6, -WELLE.max, WELLE.max);
+    if (a === z.welle) return false;
+    z.welle = a;
+  });
+}
+function daumenrad(rad, rastung) {   // seitwärts schieben (Maus, Finger), Mausrad, Pfeiltasten; alle 8 px eine Rastung. Seine Stellung ist nur Anblick.
+  const bild = rad.querySelector('canvas'), RAST = 8, RILLE = 0.26;   // RILLE: Winkelabstand der Rillen (Bogenmaß)
+  let winkel = 0, rest = 0, vorherX = null;
+  const zeichnen = () => {   // die sichtbare Kante: Rillen bei winkel + k·RILLE, projiziert auf die Breite; zum Rand hin enger und dunkler
+    const r = rad.getBoundingClientRect(), dpr = window.devicePixelRatio || 1, w = Math.round(r.width * dpr), h = Math.round(r.height * dpr);
+    if (!w || !h) return;
+    if (bild.width !== w || bild.height !== h) { bild.width = w; bild.height = h; }
+    const g = bild.getContext('2d'), cs = getComputedStyle(rad), tint = cs.getPropertyValue('--tint').trim() || '255, 255, 255', R = w / 2;
+    g.clearRect(0, 0, w, h);
+    const k0 = Math.ceil((-Math.PI / 2 - winkel) / RILLE), k1 = Math.floor((Math.PI / 2 - winkel) / RILLE);
+    for (let k = k0; k <= k1; k++) {
+      const th = winkel + k * RILLE, c = Math.cos(th); if (c <= 0) continue;
+      const x = R + R * Math.sin(th), breite = Math.max(1, 2.2 * dpr * c);
+      g.fillStyle = 'rgba(' + tint + ', ' + (0.08 + 0.38 * c * c).toFixed(3) + ')';
+      g.fillRect(x - breite / 2, 3 * dpr, breite, h - 6 * dpr);
+    }
+  };
+  const drehen = px => {
+    winkel += px / (rad.clientWidth / 2 || 1); rest += px;   // die Kante läuft mit dem Finger mit
+    while (rest >= RAST) { rest -= RAST; rastung(1); }
+    while (rest <= -RAST) { rest += RAST; rastung(-1); }
+    zeichnen();
+  };
+  rad.addEventListener('pointerdown', e => { try { rad.setPointerCapture(e.pointerId); } catch (_) { /* nachgestellte Zeiger */ } vorherX = e.clientX; rest = 0; rad.classList.add('dreht'); rad.focus(); e.preventDefault(); });   // kein Markieren von Text beim Schieben
+  rad.addEventListener('pointermove', e => { if (vorherX === null) return; const dx = e.clientX - vorherX; vorherX = e.clientX; drehen(dx); });
+  const los = () => { vorherX = null; rest = 0; rad.classList.remove('dreht'); };
+  rad.addEventListener('pointerup', los); rad.addEventListener('pointercancel', los);
+  rad.addEventListener('wheel', e => { e.preventDefault(); drehen(e.deltaY < 0 || e.deltaX > 0 ? RAST : -RAST); }, { passive: false });
+  rad.addEventListener('keydown', e => {
+    const r = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1 }[e.key];
+    if (r) { e.preventDefault(); e.stopPropagation(); drehen(r * RAST); }   // die Pfeile gehören dem Rad, nicht dem Verschieben des Bildes
+  });
+  new ResizeObserver(zeichnen).observe(rad);   // erscheint das Rad (Tabelle gewählt, Bereich geöffnet), wird es gezeichnet
+}
+daumenrad($('kurveRad'), kurveAusgleichen);
+daumenrad($('kurveSchiebRad'), kurveSchieben);
+daumenrad($('kurveWellenRad'), kurveWellen);
+// Aus einem Ausschnitt befüllen: ein Rechteck im Bild aufziehen; gezählt wird nur, was darin liegt.
+let ausschnittAuftrag = null;
+function ausschnittWahl(an) {
+  $('ausschnittWahl').hidden = !an; $('ausschnittRahmen').hidden = true;
+  $('kurveAusAusschnitt').classList.toggle('on', an); $('kurveAusAusschnitt').setAttribute('aria-pressed', String(an));
+  $('kurveAusAusschnitt').textContent = t(an ? 'colour.table-from-area-active' : 'colour.table-from-area');
+}
+$('kurveAusAusschnitt').addEventListener('click', () => ausschnittWahl($('ausschnittWahl').hidden));
+{
+  const wahl = $('ausschnittWahl'), rahmen = $('ausschnittRahmen');
+  let start = null;
+  const ecke = e => [e.clientX, e.clientY];
+  const zeigen = (a, b) => {
+    rahmen.hidden = false;
+    rahmen.style.left = Math.min(a[0], b[0]) + 'px'; rahmen.style.top = Math.min(a[1], b[1]) + 'px';
+    rahmen.style.width = Math.abs(b[0] - a[0]) + 'px'; rahmen.style.height = Math.abs(b[1] - a[1]) + 'px';
+  };
+  wahl.addEventListener('pointerdown', e => { try { wahl.setPointerCapture(e.pointerId); } catch (_) { /* nachgestellte Zeiger */ } start = ecke(e); zeigen(start, start); e.preventDefault(); });
+  wahl.addEventListener('pointermove', e => { if (start) zeigen(start, ecke(e)); });
+  wahl.addEventListener('pointerup', e => {
+    if (!start) return;
+    const a = start, b = ecke(e); start = null;
+    const cv = document.querySelector('#stage canvas'); ausschnittWahl(false);
+    if (!cv || Math.abs(b[0] - a[0]) < 6 || Math.abs(b[1] - a[1]) < 6) return;   // ein Klick ohne Rechteck bricht ab
+    const r = cv.getBoundingClientRect(), fx = W / r.width, fy = H / r.height;
+    const x0 = clamp((Math.min(a[0], b[0]) - r.left) * fx, 0, W), x1 = clamp((Math.max(a[0], b[0]) - r.left) * fx, 0, W);
+    const y0 = clamp((Math.min(a[1], b[1]) - r.top) * fy, 0, H), y1 = clamp((Math.max(a[1], b[1]) - r.top) * fy, 0, H);
+    if (x1 - x0 < 2 || y1 - y0 < 2) return;
+    ausschnittAuftrag = { x0, y0, x1, y1 }; requestFrame();
+  });
+  wahl.addEventListener('pointercancel', () => { start = null; ausschnittWahl(false); });
+  window.addEventListener('keydown', e => { if (e.key === 'Escape' && !wahl.hidden) { e.preventDefault(); ausschnittWahl(false); } });
+}
+function runAusschnitt(maxIter) {   // den Ausschnitt in eigener Auflösung rechnen (höchstens 320 Proben je Seite) und seine Verteilung in die Tabelle
+  const a = ausschnittAuftrag; ausschnittAuftrag = null;
+  const sA = Math.max(1, Math.ceil(Math.max(a.x1 - a.x0, a.y1 - a.y0) / 320));
+  const x = Math.floor(a.x0 / sA), y = Math.floor(a.y0 / sA), w = Math.max(1, Math.ceil((a.x1 - a.x0) / sA)), h = Math.max(1, Math.ceil((a.y1 - a.y0) / sA));
+  renderer.renderFractal('preview', [{ x, y, w, h }], fractalParams(sA, maxIter));
+  const my = renderer, eb = ebeneInS;
+  renderer.readRegion(w, h, 1, x, y).then(vals => {
+    if (renderer !== my || eb !== renderEbene) return;
+    mitEbene(eb, () => {
+      lastVerteilung = cdfRunden(buildCdf(vals, maxIter, histWurzelWirkt() ? histWurzel : -1));   // bis zum nächsten Messen zeigen Balken und Ausgleichsrad den Ausschnitt
+      if (S.mapping === 28) tabFuellen(lastVerteilung);
+      lastCdf = kurveCdf(); renderer.setCdf(lastCdf); cdfVersion++;
+      if (S.mapping === 28 && eb === ebeneAktiv) { zeichneKurve(); kurveListeZeigen(); }
+    });
+    colorDirty = true; requestFrame();
+  }).catch(e => console.warn('Ausschnitt:', e));
+}
+$('kurveListe').addEventListener('change', e => {   // ein getippter Wert: 0 … 1, auf 12 Bit wie im Link
+  const f = e.target; if (!(f instanceof HTMLInputElement) || f.dataset.i === undefined || !Array.isArray(S.kurveWerte)) return;
+  const v = leseZahl(f.value), i = +f.dataset.i;
+  if (!isFinite(v)) { f.value = fmtZahl(S.kurveWerte[i], 3); return; }
+  S.kurveWerte[i] = Math.round(clamp(v, 0, 1) * HF_STUFEN) / HF_STUFEN; f.value = fmtZahl(S.kurveWerte[i], 3);
+  kurveWerkzeugZeigen(); setzeKurve();
+});
 function accDisplayParams() {
   // Zähler wachsen proportional zur Probenzahl: die Skala wächst mit, damit das Bild zwischen zwei Messungen nicht heller wird
   const ratio = accNormSamples > 0 ? Math.max(1, accShownSamples) / accNormSamples : 1;
@@ -8721,6 +9160,12 @@ function frameKern(now) {
       deInTexture = brauchtAbstand(); richtungInTexture = richtungModus(); intInTexture = brauchtInnen(); lyapInTexture = lyapModus(); winkelInTexture = winkelModus(); statInTexture = statPipeline(); stat2InTexture = statPipeline2(); paarInTexture = paarKey();
       if (histAktiv()) runHistPass(maxIter);
       submitted = true; hasImage = true; colorDirty = true;
+    } else if (ausschnittAuftrag && histAktiv() && hasImage) {   // „Aus einem Ausschnitt befüllen“: gleich, nicht erst nach der Glättung
+      runAusschnitt(maxIter);
+      submitted = true;
+    } else if (histDirty && histAktiv() && hasImage) {   // vor Kacheln und Glättung: es rechnet sein eigenes verkleinertes Abbild und braucht das Hauptbild nicht — sonst warteten Häkchen und Regler die ganze Glättung ab
+      runHistPass(maxIter);
+      submitted = true;
     } else if (phase === 'tiles' && (now >= interactUntil || stripMode)) {
       if (orbitDirty) { computeOrbits(maxIter); orbitDirty = false; }   // nach einem Ebenenwechsel (vertagte Glättung) gehört die Referenzbahn dieser Ebene
       const t0 = tiles[tileIdx], layer = t0.layer || 0, tilePix = Math.max(1, t0.w * t0.h);
@@ -8739,9 +9184,6 @@ function frameKern(now) {
       let work = 0, steps = 0;
       while (phase === 'refine' && work < budget && steps < 12) { const w = aaRefineStep(maxIter, budget - work); if (!w) break; work += w; steps++; }
       if (work) { lastWork = work; submitted = true; colorDirty = true; }
-    } else if (histDirty && histAktiv() && hasImage) {
-      runHistPass(maxIter);
-      submitted = true;
     } else if (renderEbene === ebeneAktiv && (werteWunsch.length || (S.logDichteMit && S.mapping === 2 && nusVeraltet)) && !wertePending && hasImage) {   // Werteprobe, wenn jemand darauf wartet oder die Dichte mitgeführt wird
       runWerteProbe(maxIter); submitted = true;
     } else if (renderEbene === ebeneAktiv && !anchorPending && (anchorProbe || (S.anchorAuto && S.colAnchor === null && ankerVonSelbst())) && hasImage && ankerWirkt()) {   // Anker lesen: auf Wunsch oder als Standard beim ersten Bild
@@ -9518,6 +9960,8 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
     if (pts.length >= 2) { pts[0][0] = 0; pts[pts.length - 1][0] = 1; S.kurve = pts; }
   }
   S.kurveSpann = h.get('ks') === '1';   // Kurve: Achse auf die Ansicht gespannt
+  { const kt = cdfAusText(h.get('kt')); S.kurveArt = kt ? 1 : 0; S.kurveWerte = kt ? Array.from(kt) : null; }   // Tabelle der Kurve: 512 Werte; ohne sie die Punkte
+  if (map === 3) { S.mapping = 28; S.kurveArt = 1; S.kurveWerte = null; histBefuellen = true; }   // die frühere Färbung „Histogramm“: die Tabelle der Kurve, einmal aus dem Histogramm befüllt
   const sc = parseFloat(h.get('sc')); if (Number.isFinite(sc)) S.comp = clamp(sc, -2, 1);
   const caRaw = h.get('ca'), ca = parseFloat(caRaw);
   S.colAnchor = Number.isFinite(ca) && ca >= 0 ? ca : null;
@@ -9635,8 +10079,9 @@ function buildParamsRoh() {   // die Adresswerte der Ebene in S samt Ansicht und
   if (S.texVerbund > 0) p.set('tv', String(+S.texVerbund.toFixed(2)));   // Fallenverbund
   if (statIrgend() && S.vorlauf !== VORLAUF.def) p.set('sk', String(S.vorlauf));   // Vorlauf bei jeder Bahnstatistik
   if (S.mapping === 31) { const q = (x, ach) => { const t = [x.wert, +x.faktor.toFixed(3), x.abzug, x.klemme ? 1 : 0]; if ((x.ziel || 0) !== PAAR_ZIEL_VOR[ach]) t.push(x.ziel); return t.join(':'); }; p.set('pa', q(S.paar.a, 'a')); p.set('pb', q(S.paar.b, 'b')); if (S.paar.a.wert === 10) eigenSchreiben(p, 'pae', eigenVon(S.paar.a)); if (S.paar.b.wert === 10) eigenSchreiben(p, 'pbe', eigenVon(S.paar.b)); }   // je Wert Wert:Faktor:Abzug:Klemme, das Ziel nur abweichend vom Platz
-  if (S.mapping === 28 && !kurveIstGerade()) p.set('kv', S.kurve.map(([x, y]) => +x.toFixed(3) + ':' + +y.toFixed(3)).join(','));   // Kurve nur, wo sie färbt
-  if (S.mapping === 28 && S.kurveSpann) p.set('ks', '1');
+  if (S.mapping === 28 && S.kurveArt !== 1 && !kurveIstGerade()) p.set('kv', S.kurve.map(([x, y]) => +x.toFixed(3) + ':' + +y.toFixed(3)).join(','));   // Kurve nur, wo sie färbt
+  if (S.mapping === 28 && S.kurveArt !== 1 && S.kurveSpann) p.set('ks', '1');
+  if (S.mapping === 28 && S.kurveArt === 1 && Array.isArray(S.kurveWerte)) p.set('kt', cdfText(S.kurveWerte));   // die Tabelle: 512 Werte, zusammengefasst
   if (S.textur !== 0) {   // Textur samt Reglern, sofern sie von der Vorgabe abweichen
     p.set('tx', String(S.textur));
     if (texWerteEigen(S.textur, S.texWerte)) p.set('tq', texWerteText(S.textur, S.texWerte));   // eigene Regler der Art, nur abseits der Vorgabe
@@ -10069,6 +10514,7 @@ function syncFarbUI() {   // Bereich Farbe: was je nach Familie, Formel und Fär
     e.weg.hidden = !belegt; e.griff.hidden = belegtBis < 2 || !belegt;
   }
   $('kurveRow').hidden = S.mapping !== 28 || verlauf || lyap; if (!$('kurveRow').hidden) zeichneKurve();   // Übertragungskurve nur bei der Färbung „Kurve“
+  syncKurveArt();   // Kurve oder Tabelle
   $('abzugRow').hidden = !paarAbzug();   // Fluchtzeit-Abzug nur, wo eine Achse des Paars ihn nutzt
   const newton = wurzelFormel(S.formula);       // Newton/Nova färbt nach Wurzeln: keine Lyapunov-Färbung, kein Fluchtwinkel
   let neu = false;
@@ -11221,9 +11667,10 @@ function syncFlucht() {
 }
 // Drehung der Ansicht: ein Versatz in Pixelrichtung (mal Pixelgröße) wird um den Winkel gedreht, bevor er in die Ebene geht – und zurück
 function drehNorm(a) { const b = ((a + 180) % 360 + 360) % 360 - 180; return b === -180 ? 180 : Math.round(b * 10) / 10; }   // −180 … 180 Grad
-function drehCS() { const a = S.dreh * Math.PI / 180; return [Math.cos(a), -Math.sin(a)]; }   // positiv: das Bild dreht gegen den Uhrzeigersinn (Pixel → Ebene dreht also mit −a)
-function ebeneVonPixel(dx, dy) { if (!S.dreh) return [dx, dy]; const [c, si] = drehCS(); return [dx * c - dy * si, dx * si + dy * c]; }   // Pixelrichtung → Ebene
-function pixelVonEbene(ox, oy) { if (!S.dreh) return [ox, oy]; const [c, si] = drehCS(); return [ox * c + oy * si, -ox * si + oy * c]; }   // Ebene → Pixelrichtung
+function drehWirksam() { return S.family === 'escape' ? (S.dreh || 0) : 0; }   // Punktwolken zeichnen achsenparallel: dort dreht auch die Eingabe nicht (der Winkel bleibt für den Rückweg stehen)
+function drehCS() { const a = drehWirksam() * Math.PI / 180; return [Math.cos(a), -Math.sin(a)]; }   // positiv: das Bild dreht gegen den Uhrzeigersinn (Pixel → Ebene dreht also mit −a)
+function ebeneVonPixel(dx, dy) { if (!drehWirksam()) return [dx, dy]; const [c, si] = drehCS(); return [dx * c - dy * si, dx * si + dy * c]; }   // Pixelrichtung → Ebene
+function pixelVonEbene(ox, oy) { if (!drehWirksam()) return [ox, oy]; const [c, si] = drehCS(); return [ox * c + oy * si, -ox * si + oy * c]; }   // Ebene → Pixelrichtung
 function drehOffset(rx, ry, shift) { const [ex, ey] = ebeneVonPixel(rx, ry); return [ex - shift[0], ey - shift[1]]; }   // Versatz der Probe 0 gegen den Referenzpunkt
 function syncDreh() { $('dreh').value = String(Math.round(S.dreh)); $('drehVal').value = String(S.dreh); }
 const setzeDreh = v => { S.dreh = drehNorm(v); syncDreh(); scheduleHash(); viewChanged(); };
@@ -12142,7 +12589,7 @@ for (let n = 1; n <= TEX_SLOTS; n++) {
 }
 // Übertragungskurve (Färbung 28): stückweise linear durch die Punkte, als Tabelle mit CDF_N Einträgen wie die Verteilungsfunktion
 function kurveFenster() {   // waagerechte Achse: 0 … 1 (bis zur Iterationsgrenze) oder, gespannt, vom 0,5-%- bis zum 99,5-%-Wert der Ansicht
-  if (!S.kurveSpann || !lastHist) return [0, 1];
+  if (S.kurveArt === 1 || !S.kurveSpann || !lastHist) return [0, 1];   // die Tabelle liegt immer über der ganzen Achse
   let total = 0; for (let i = 0; i < CDF_N; i++) total += lastHist[i];
   if (!total) return [0, 1];
   let acc = 0, a = 0, b = CDF_N - 1;
@@ -12162,9 +12609,12 @@ function kurveTabelle() {
   }
   return tab;
 }
+function kurveCdf() {   // die geltende Tabelle der Färbung „Kurve“: die 512 Werte der Tabelle oder die aus den Punkten der Kurve
+  return S.kurveArt === 1 && Array.isArray(S.kurveWerte) && S.kurveWerte.length === CDF_N ? Float32Array.from(S.kurveWerte) : kurveTabelle();
+}
 function kurveIstGerade() { return S.kurve.length === 2 && S.kurve[0][1] === 0 && S.kurve[1][1] === 1; }
 function setzeKurve() {   // Kurve übernehmen: Tabelle hochladen, neu färben (kein Neurechnen)
-  if (S.mapping === 28 && renderer) { lastCdf = kurveTabelle(); renderer.setCdf(lastCdf); cdfVersion++; }
+  if (S.mapping === 28 && renderer) { lastCdf = kurveCdf(); renderer.setCdf(lastCdf); cdfVersion++; }
   zeichneKurve(); colorDirty = true; scheduleHash(); requestFrame();
 }
 const KURVE_RAND = 8;   // Rand im Bild, damit die Punkte an den Enden ganz zu sehen sind
@@ -12185,10 +12635,15 @@ function zeichneKurve() {
   g.beginPath(); g.moveTo(px(0), py(0)); g.lineTo(px(1), py(1)); g.stroke(); g.setLineDash([]);
   const akzent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#82cbbe';
   g.strokeStyle = akzent; g.lineWidth = 2; g.beginPath();
-  S.kurve.forEach(([x, y], i) => { if (i) g.lineTo(px(x), py(y)); else g.moveTo(px(x), py(y)); });
-  g.stroke();
-  g.fillStyle = akzent;
-  for (const [x, y] of S.kurve) { g.beginPath(); g.arc(px(x), py(y), 5, 0, 2 * Math.PI); g.fill(); }
+  if (S.kurveArt === 1 && Array.isArray(S.kurveWerte)) {   // die Tabelle als Linie: jede Zeile ein Stützpunkt, keine Anfasser
+    S.kurveWerte.forEach((y, i) => { const x = i / (CDF_N - 1); if (i) g.lineTo(px(x), py(y)); else g.moveTo(px(x), py(y)); });
+    g.stroke();
+  } else {
+    S.kurve.forEach(([x, y], i) => { if (i) g.lineTo(px(x), py(y)); else g.moveTo(px(x), py(y)); });
+    g.stroke();
+    g.fillStyle = akzent;
+    for (const [x, y] of S.kurve) { g.beginPath(); g.arc(px(x), py(y), 5, 0, 2 * Math.PI); g.fill(); }
+  }
   const L = Math.log2(currentMaxIter() + 1), N = x => Math.round(Math.pow(2, x * L) - 1);   // Iterationswerte an den Enden der Achse
   g.fillStyle = 'rgba(255, 255, 255, .45)'; g.font = '11px ui-monospace, Consolas, monospace'; g.textBaseline = 'bottom';
   g.textAlign = 'left'; g.fillText(String(N(f0)), R + 4, H - 2);
@@ -12209,6 +12664,7 @@ function kurveNaechster(e) {   // Index des Punkts nahe dem Zeiger (12 Bildschir
 }
 let kurveZieh = null;   // Index des gezogenen Punkts
 $('kurveBild').addEventListener('pointerdown', e => {
+  if (S.kurveArt === 1) return;   // die Tabelle wird in der Liste bearbeitet, nicht mit Anfassern
   e.preventDefault();
   let i = kurveNaechster(e);
   if (i < 0) {   // ins Leere: neuer Punkt, zwischen seinen Nachbarn (höchstens KURVE_MAX)
@@ -12229,7 +12685,8 @@ $('kurveBild').addEventListener('pointermove', e => {
 });
 const kurveLos = () => { kurveZieh = null; };
 $('kurveBild').addEventListener('pointerup', kurveLos); $('kurveBild').addEventListener('pointercancel', kurveLos);
-$('kurveBild').addEventListener('dblclick', e => {   // Doppelklick auf einen Zwischenpunkt entfernt ihn
+$('kurveBild').addEventListener('dblclick', e => {
+  if (S.kurveArt === 1) return;   // Doppelklick auf einen Zwischenpunkt entfernt ihn
   const i = kurveNaechster(e);
   if (i > 0 && i < S.kurve.length - 1) { S.kurve.splice(i, 1); setzeKurve(); }
 });
@@ -12280,12 +12737,9 @@ $('animate').addEventListener('change', e => { S.animate = e.target.checked; req
 // Farbanker: beim Einschalten den Iterationswert der Bildmitte lesen (kleines Abbild, sobald die GPU frei ist) und festhalten
 let werteWunsch = [], wertePending = false, letzteWerte = null;   // Werteprobe: wartende Abnehmer, läuft gerade?, letzte sortierte Werte
 function werteProbe(cb) { werteWunsch.push(cb); requestFrame(); }
-function runWerteProbe(maxIter) {
-  const sH = Math.max(2, Math.ceil(Math.max(W / 320, H / 320)));
-  const hw = Math.ceil(W / sH), hh = Math.ceil(H / sH);
-  renderer.renderFractal('preview', [{ x: 0, y: 0, w: hw, h: hh }], fractalParams(sH, maxIter));
+function runWerteProbe(maxIter) {   // die Werte der Bezugsregion: dieselben Proben auf jedem Gerät
   const my = renderer, cbs = werteWunsch; werteWunsch = []; wertePending = true;
-  renderer.readRegion(hw, hh).then(vals => {
+  bezugsRegion(maxIter).then(vals => {
     wertePending = false;
     if (renderer !== my) return;
     const v = [], roh = [];
@@ -12309,7 +12763,7 @@ function mapNuJS(nu) {   // dieselbe Abbildung wie im Shader (mapNu), für den A
   if (m === 1) return Math.sqrt(nu * 50);
   if (m === 2) return logStufigJS(nu, S.logStufen);   // mit den Stufen des Reglers, wie logStufig im Shader
   if (m === 6 || m === 15) return 50 * Math.log2(nu + 1) / Math.log2(51);
-  if (m === 3 || m === 28) {   // Histogramm und Kurve: die geladene Tabelle
+  if (m === 28) {   // Kurve: die geladene Tabelle
     if (!lastCdf) return 0;
     const x = clamp(Math.log2(nu + 1) / Math.log2(currentMaxIter() + 1), 0, 0.999) * 511, i = Math.floor(x), fr = x - i;
     return 100 * (lastCdf[i] * (1 - fr) + lastCdf[Math.min(i + 1, 511)] * fr);
@@ -12360,13 +12814,14 @@ $('colAnchor').addEventListener('change', e => {
 });
 ankerBeschriften();
 function runAnchorProbe(maxIter, vonSelbst = false) {
+  const at = anchorAt, bezug = !at;   // ohne angeklickte Stelle: Median der Bezugsregion, auf jedem Gerät derselbe; Alt+Klick misst um die Stelle am Bildschirm (der Wert steht danach im Link)
   const sH = Math.max(2, Math.ceil(Math.max(W / 320, H / 320)));
-  const hw = Math.ceil(W / sH), hh = Math.ceil(H / sH);
-  renderer.renderFractal('preview', [{ x: 0, y: 0, w: hw, h: hh }], fractalParams(sH, maxIter));
+  const hw = bezug ? bezugN() : Math.ceil(W / sH), hh = bezug ? bezugN() : Math.ceil(H / sH);
   const my = renderer;
-  const at = anchorAt; anchorAt = null; anchorPending = true;
+  anchorAt = null; anchorPending = true;
   const mitMittel = statAnkerWirkt(), kan = mitMittel ? 2 : 1, frisch = ankerFrisch; ankerFrisch = false;   // Bahnmittel: auch den y-Kanal lesen
-  renderer.readRegion(hw, hh, kan).then(vals => {
+  const lesen = bezug ? bezugsRegion(maxIter, kan) : (renderer.renderFractal('preview', [{ x: 0, y: 0, w: hw, h: hh }], fractalParams(sH, maxIter)), renderer.readRegion(hw, hh, kan));
+  lesen.then(vals => {
     anchorPending = false;
     if (renderer !== my) return;
     const nus = [], mittel = [], flo = new Float32Array(vals.buffer, vals.byteOffset, vals.length);   // y-Kanal: das Mittel als float
@@ -12663,18 +13118,11 @@ beschrifteWertfelder();
 // ============================================================
 //  Los geht's
 // ============================================================
-function resetState() {   // Zustandsfelder auf Standard (Familie und Mandelbrot/Julia bleiben)
-  S.power = 2; S.invert = false; S.flip = false; S.invM = [0, 0]; S.formula = 0; S.param = -0.5; S.seq = 'AB'; S.fluchtForm = 0; S.fluchtRadius = 0; S.faltung = 0; S.gedaechtnis = 0; S.startC = false; S.fn = 0; S.nz = nzKreis(3); S.formelB = -1;
-  S.exposure = 1; S.gamma = 2; S.accTarget = 5e7;
+function resetState() {   // alles aus dem Grundzustand; stehen bleibt nur RESET_BEHAELT (Wahl, Gerät, Ansicht)
+  const v = standardZustand();
+  for (const k of Object.keys(S)) if (!RESET_BEHAELT.has(k) && !(k in v)) delete S[k];   // später angelegte Felder ohne Vorgabe: fort, wie beim frischen Laden
+  for (const k of Object.keys(v)) if (!RESET_BEHAELT.has(k)) S[k] = v[k];
   if (S.family === 'accum') S.cloudPrm = CLOUDS[CLOUD_KEYS[S.accKind]].prm.slice();   // Punktwolke: ihre eigenen Vorgaben
-  S.autoIter = true; S.manualIter = 1000;
-  S.palette = 0; S.customPal = null; S.pal2 = {}; S.pal2Eigen = null; S.density = 0.04; S.offset = 0; S.animate = false;
-  S.palKurve = PAL_KURVE.kurve.def; S.palKurveMitte = PAL_KURVE.mitte.def;
-  S.palZwei = 0; S.palPfadBeginn = PAL_PFAD.beginn.def; S.palPfadSpanne = PAL_PFAD.spanne.def;
-  S.mapping = 2; S.logStufen = LOG_STUFEN.def; S.logDichteMit = false; S.material = 0; S.glanz = MATERIAL.glanz.def; S.reflexion = MATERIAL.reflexion.def; S.himmelLage = MATERIAL.lage.def; S.himmelSpanne = MATERIAL.spanne.def; S.neigung = MATERIAL.neigung.def; S.schatten = false; S.schattenLaenge = MATERIAL.laenge.def; S.glowMode = 0; S.glowWidth = 1.5; S.interior = 0; S.innenFarbe = '#000000'; S.gestuft = false; S.lyGrenze = 2; S.streifen = STREIFEN.def; S.vorlauf = VORLAUF.def; S.gewicht = GEWICHT.def; S.abzug = ABZUG.def; S.nach = []; S.textur = 0; S.texStaerke = TEXTUR.staerke.def; S.texKontrast = TEXTUR.kontrast.def; S.texMitte = TEXTUR.mitte.def; S.textur2 = 0; S.tex2Staerke = TEXTUR.staerke.def; S.tex2Kontrast = TEXTUR.kontrast.def; S.tex2Mitte = TEXTUR.mitte.def; for (let n = 1; n <= TEX_SLOTS; n++) texSlotSetzen(n, TEXTUR_LEER); S.paar = PAAR_EIGEN(); S.kurve = KURVE_STD.map(p => p.slice()); S.kurveSpann = false; S.colAnchor = null; S.statAnker = null; S.anchorAuto = true; S.comp = 0;
-  S.jc = [-0.8, 0.156]; S.z0 = [0, 0];
-  S.stapelMs = STAPEL_MS.def; S.uiVorrang = true;
-  S.aa = DEFAULT_AA; S.aaMode = 'grid'; S.aaTol = AA_TOL.def; S.aaMax = 64; S.aaSigma = AA_SIGMA.def; S.palFilter = false; S.palFilterK = PALK.def; S.cycle = 'auto'; S.bla = 'auto';
 }
 function syncAllUI() {   // Bedienfeld vollständig an den Zustand angleichen
   nachKartenBauen();   // Nachbearbeitung: die Karten des Stapels
