@@ -65,4 +65,27 @@ function pngDiff(bufA, bufB, region) {
   return { meanDiff: +(diff / n).toFixed(2), changedShare: +(changed / n).toFixed(3), samples: n };
 }
 
-module.exports = { decodePng, pngStats, pngDiff };
+// Feine Linien (etwa an Kachelgrenzen): je Spalte und Zeile, wie weit sie im Mittel von ihren beiden Nachbarn abweicht,
+// im Verhältnis zum Median. Die äußersten drei Spalten und Zeilen zählen nicht (dort fehlt ein Nachbar wirklich).
+function pngNaht(buf) {
+  const { w, h, ch, data } = decodePng(buf);
+  const Y = (x, y) => { const i = (y * w + x) * ch; return (data[i] + data[i + 1] + data[i + 2]) / 3; };
+  const wert = (n, m, f) => { const a = []; for (let i = 3; i < n - 3; i++) { let s = 0; for (let j = 0; j < m; j++) s += f(i, j); a.push([i, s / m]); } return a; };
+  const auswerten = a => { const med = a.map(v => v[1]).sort((p, q) => p - q)[a.length >> 1] || 1e-9; const [i, v] = a.reduce((m, e) => e[1] > m[1] ? e : m); return { stelle: i, faktor: +(v / med).toFixed(2) }; };
+  return {
+    w, h,
+    spalte: auswerten(wert(w, h, (x, y) => Math.abs(Y(x, y) - (Y(x - 1, y) + Y(x + 1, y)) / 2))),
+    zeile: auswerten(wert(h, w, (y, x) => Math.abs(Y(x, y) - (Y(x, y - 1) + Y(x, y + 1)) / 2))),
+  };
+}
+
+// Pixel für Pixel: wie viele weichen ab, und wie weit höchstens (0 = bitgleich)
+function pngGleich(bufA, bufB) {
+  const A = decodePng(bufA), B = decodePng(bufB);
+  if (A.w !== B.w || A.h !== B.h) return { fehler: 'Größe verschieden' };
+  let anders = 0, max = 0;
+  for (let i = 0; i < A.data.length; i++) { const d = Math.abs(A.data[i] - B.data[i]); if (d) { max = Math.max(max, d); if (i % A.ch === 0) anders++; } }
+  return { anders, max, pixel: A.w * A.h };
+}
+
+module.exports = { decodePng, pngStats, pngDiff, pngNaht, pngGleich };

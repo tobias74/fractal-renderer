@@ -57,6 +57,7 @@
     -webkit-tap-highlight-color: transparent;
   }
   #stage { position: fixed; inset: 0; background: var(--bg); }
+  .hybrid-regler { display: flex; flex-direction: column; gap: 6px; padding-left: 10px; border-left: 2px solid var(--line); }   /* gehört sichtbar zur zweiten Formel darüber */
   .kurve-tab { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
   .wurzel-zeile { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
   .wurzel-zeile .seg button { padding: 5px 10px; }
@@ -1013,6 +1014,25 @@
         <input id="dreh" type="range" min="-180" max="180" step="1" value="0">
       </div>
       <div id="hybridRow" class="lbl" hidden><label for="formelB" data-i18n-title="subject.second-formula-title" data-i18n="subject.second-formula"></label><select id="formelB" style="width:56%"></select></div>
+      <div id="hybridRegler" class="hybrid-regler" hidden>   <!-- eigene Regler der Formel B: Potenz, Parameter, zweite Zeile -->
+        <div class="lbl"><label for="powerB" data-i18n-title="subject.power-b-title" data-i18n="subject.power-b"></label>
+          <select id="powerB" style="width:56%">
+            <option value="0" data-i18n="subject.power-b-like-a"></option>
+            <option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option>
+          </select></div>
+        <div id="paramBRow" hidden>
+          <div class="lbl wertzeile"><label for="paramB" id="paramBLabel"></label><input class="val mono wert" id="paramBVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+          <input id="paramB" type="range" min="0" max="1000" value="500">
+        </div>
+        <div id="param2BRow" hidden>
+          <div class="lbl wertzeile"><label for="param2Ba" id="param2BaLabel"></label><input class="val mono wert" id="param2BaVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+          <input id="param2Ba" type="range" min="0" max="1000" value="500">
+          <div class="lbl wertzeile"><label for="param2Bb" id="param2BbLabel"></label><input class="val mono wert" id="param2BbVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+          <input id="param2Bb" type="range" min="0" max="1000" value="500">
+          <div class="lbl wertzeile"><label for="param2Bc" id="param2BcLabel"></label><input class="val mono wert" id="param2BcVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+          <input id="param2Bc" type="range" min="0" max="1000" value="500">
+        </div>
+      </div>
       <div id="faltRow" hidden>   <!-- Faltung und Gedächtnis: nur die direkt gerechneten Formeln -->
         <div class="lbl"><label for="faltung" data-i18n-title="subject.folding-title" data-i18n="subject.folding"></label>
           <select id="faltung" style="width:56%">
@@ -3466,7 +3486,11 @@ const TEXTE = {
   'subject.start-at-pixel': { de: 'Start im Bildpunkt (z₀ = c)', en: 'Start at the pixel (z₀ = c)' },
   'subject.start-at-pixel-title': { de: 'Jede Bahn beginnt in ihrem eigenen Punkt c statt im Startwert — auch das vorige z beim Gedächtnis. Ergibt bei vielen Formeln eine zweite, andere Menge.', en: 'Every orbit starts at its own point c instead of the start value — the previous z of the memory as well. Gives a second, different set for many formulas.' },
   'subject.second-formula': { de: 'Zweite Formel (Hybrid-Folge)', en: 'Second formula (hybrid sequence)' },
-  'subject.second-formula-title': { de: 'Zwei Formeln im Wechsel: die Folge aus A und B sagt je Schritt, welche rechnet (AB, AAB …). B nimmt die Vorgaben seiner Regler. Mit Folge rechnet die App direkt in fp32, also bis 10^5.', en: 'Two formulas taking turns: the sequence of A and B says which one computes each step (AB, AAB …). B takes the defaults of its sliders. With a sequence the app computes directly in fp32, i.e. up to 10^5.' },
+  'subject.second-formula-title': { de: 'Zwei Formeln im Wechsel: die Folge aus A und B sagt je Schritt, welche rechnet (AB, AAB …). B hat eigene Regler darunter (Potenz, Parameter); unverstellt rechnet B mit der Potenz von A und den Vorgaben seiner Formel. Mit Folge rechnet die App direkt in fp32, also bis 10^5.', en: 'Two formulas taking turns: the sequence of A and B says which one computes each step (AB, AAB …). B has its own sliders below (power, parameters); left alone, B uses the power of A and the defaults of its formula. With a sequence the app computes directly in fp32, i.e. up to 10^5.' },
+  'subject.power-b': { de: 'Potenz d von B', en: 'Power d of B' },
+  'subject.power-b-title': { de: 'Die Potenz der zweiten Formel. „wie A“ nimmt die Potenz der ersten; eine eigene macht etwa z² + c im Wechsel mit z³ + c möglich.', en: 'The power of the second formula. “like A” takes the power of the first; a power of its own allows e.g. z² + c alternating with z³ + c.' },
+  'subject.power-b-like-a': { de: 'wie A', en: 'like A' },
+  'subject.formula-b-value': { de: '{0} (B)', en: '{0} (B)' },
   'subject.folding': { de: 'Faltung je Schritt', en: 'Folding per step' },
   'subject.folding-title': { de: 'Vor jedem Schritt werden Real- oder Imaginärteil gespiegelt — das, was aus Mandelbrot Burning Ship, Celtic und Perpendicular macht, hier für jede direkt gerechnete Formel.', en: 'Before every step the real or imaginary part is mirrored — what turns Mandelbrot into Burning Ship, Celtic and Perpendicular, here for every directly computed formula.' },
   'subject.folding-none': { de: 'Keine', en: 'None' },
@@ -4540,6 +4564,8 @@ struct FP {
   opt2: vec4f,                                       // x = Funktion (Lambda, fn(z^d) + c), y = zweite Formel der Hybrid-Folge (+1, 0 = keine), z = deren Parameter, w = frei
   wurzeln: array<vec4f, 3>,                          // bis zu sechs Nullstellen (je zwei je vec4) für Newton/Halley auf eigenes Polynom
   texQ: array<vec4f, 6>,                             // je Sammler: x, y = fünfter und sechster Regler der Art (Rosette: Weite, Härte der Maske), z = Wertwahl (Rosette: 0 Maske, 1 Kontaktiteration, 2 Kontaktwinkel), w = Auswertung der Falle (0 jede Iteration, n > 0 jede n-te, −1 nur der letzte Bahnpunkt)
+  param2B: vec4f,                                    // Hybrid-Folge: x, y, z = zweite Parameterzeile der Formel B (wie param2 für A), w frei
+  origin: vec2f, frei2: vec2f,                       // Export: ganzzahlige Lage der Kachel im Bild (Pixel), am Bildschirm 0 — Koordinate und Zufallsversatz aus dem Index im ganzen Bild
 };
 @group(0) @binding(0) var<uniform> P: FP;
 @group(0) @binding(1) var orbit: texture_2d<f32>;
@@ -4570,7 +4596,7 @@ override PAAR: u32 = 0u;         // Paar aus zwei Bahnwerten: STAT und STAT2 sin
 override PAARA: u32 = 0u;
 override PAARB: u32 = 0u;
 override PAARVOLL: u32 = 0u;
-override HYBRID: u32 = 0u;       // Hybrid-Folge: zwei Formeln im Wechsel, direkt in fp32 (ohne sie bleibt der Schalter auf die Formel A gefaltet)
+override HYBRID: u32 = 0u;       // Hybrid-Folge: zwei Formeln im Wechsel, direkt in fp32 (ohne sie bleibt der Schalter auf die Formel A gefaltet); Bit 0 = an, Bits 1 … 4 = eigene Potenz von B (0 = wie A), Bit 5 = B nutzt param2B — nur dann greift der Shader darauf zu, sonst rechnet er bitgleich wie zuvor
 override TEXZ: u32 = 0u;         // Textur über einer Färbung, die den y-Kanal selbst braucht: 1 = Bahnwerte, 2 = Abstand oder Relief; die Texturwerte stehen als 16-Bit-Hälften in z und w (rgba32uint)
 override FORM: u32 = 0u;         // Form der Fluchtgrenze: 0 Kreis (|z|), 1 Quadrat (max |Re|, |Im|), 2 Raute (|Re| + |Im|), 3 Streifen |Re|, 4 Streifen |Im|, 5 Produkt |Re·Im|, 6 Differenz der Quadrate |Re² − Im²|, 7 Differenz der Beträge ||Re| − |Im||
 override WINKEL: u32 = 0u;       // Winkel von z in den zweiten Kanal: Bit 0 beim Ausbruch (Färbung nach Fluchtwinkel), Bit 1 innen am Ende (Innen: Winkel); Bit 2: äußerer Winkel sammeln (mit Bit 0 statt des Fluchtwinkels ausgegeben)
@@ -5440,8 +5466,8 @@ fn fsFast(pos: vec4f) -> vec4u {
 // Ausgabe: x = Iterationen (24.8) | Wurzel<<26 bzw. innen-Flag + |z|, y = Abstand zum Rand bzw. innen: log-Konvergenzrate
 @fragment fn fs(@builtin(position) pos0: vec4f) -> @location(0) vec4u {
   if (P.adapt != 0u && textureLoad(need, vec2i(pos0.xy), 0).x == 0u) { discard; return vec4u(0u, 0u, 0u, 1u); }   // Pixel ist fertig
-  var pos = pos0;
-  if (P.jit != 0u) { pos = vec4f(pos0.xy + jitter(vec2u(pos0.xy), P.jit), pos0.zw); }
+  var pos = vec4f(pos0.xy + P.origin, pos0.zw);   // Pixelmitte im ganzen Bild (Export: Lage der Kachel + Pixel, beides ganzzahlig, also exakt)
+  if (P.jit != 0u) { pos = vec4f(pos.xy + jitter(vec2u(pos.xy), P.jit), pos0.zw); }
   if (FAST == 1u) { return fsFast(pos); }
   let dp = P.dcOffset + rot2(pos.xy * P.dcScale);
   var dcv = dp;
@@ -5669,6 +5695,8 @@ fn fsFast(pos: vec4f) -> vec4u {
       let useB = HYBRID != 0u && ((P.seqBits >> (i % max(P.seqLen, 1u))) & 1u) == 1u;   // Hybrid-Folge: in diesem Schritt rechnet B
       let fs = select(f, u32(P.opt2.y) - 1u, useB);
       let prm = select(P.param, P.opt2.z, useB);
+      var pw = POWER;   // Potenz des Schritts; B mit eigener Potenz steht in HYBRID (Bits 1 … 4): ohne sie bleibt pw die Konstante von A
+      if (((HYBRID >> 1u) & 15u) >= 2u && useB) { pw = (HYBRID >> 1u) & 15u; }
       var zn = z;
       var Fm = dg(1.0, 1.0);
       var Gm = dg(1.0, 1.0);
@@ -5703,7 +5731,7 @@ fn fsFast(pos: vec4f) -> vec4u {
         zn = cmul(sv, c); Fm = M(c); Gm = M(sv);
       }
       switch fs {
-        case 26u: { let z2 = cmul(z, z); let a = vec2f(prm, P.param2.x); zn = cmul(z2, z) + cmul(a, z2) + c; Fm = M(3.0 * z2 + 2.0 * cmul(a, z)); }   // Kubisch direkt
+        case 26u: { var q2 = P.param2; if ((HYBRID & 32u) != 0u) { q2 = select(P.param2, P.param2B, useB); } let z2 = cmul(z, z); let a = vec2f(prm, q2.x); zn = cmul(z2, z) + cmul(a, z2) + c; Fm = M(3.0 * z2 + 2.0 * cmul(a, z)); }   // Kubisch direkt
         case 27u: { let z2 = cmul(z, z); zn = cmul(z2, z) + cmul(c - one, z) - c; Fm = M(3.0 * z2 + c - one); }   // Ikenaga direkt
         case 28u: {   // Tschebyschow direkt: Tₙ über die Rekursion, Ableitung n·Uₙ₋₁
           let nT = max(u32(round(prm)), 2u);
@@ -5733,7 +5761,7 @@ fn fsFast(pos: vec4f) -> vec4u {
           zn = cpow(z, pw) + cmul(c, zi);
           Fm = M(f32(pw) * cpow(z, pw - 1u) - f32(mm) * cmul(c, cmul(zi, cinv(z)))); Gm = M(zi);
         }
-        case 17u: { zn = prm * rPotenz(z, P.param2.x) + P.param2.y * rPotenz(z, P.param2.z) + c; Fm = M(prm * P.param2.x * rPotenz(z, P.param2.x - 1.0) + P.param2.y * P.param2.z * rPotenz(z, P.param2.z - 1.0)); }   // zwei Potenzen a·z^b + d·z^f + c
+        case 17u: { var q2 = P.param2; if ((HYBRID & 32u) != 0u) { q2 = select(P.param2, P.param2B, useB); } zn = prm * rPotenz(z, q2.x) + q2.y * rPotenz(z, q2.z) + c; Fm = M(prm * q2.x * rPotenz(z, q2.x - 1.0) + q2.y * q2.z * rPotenz(z, q2.z - 1.0)); }   // zwei Potenzen a·z^b + d·z^f + c
         case 14u: {   // z^p + c mit reeller Potenz: |z|^p·(cos, sin)(p·arg z); Ableitung p·z^(p−1)
           let r = length(z);
           if (r < 1.0e-30) { zn = c; Fm = M(vec2f(0.0)); }
@@ -5913,7 +5941,7 @@ const WGSL_FILL = /* wgsl */`
 @fragment fn fs() -> @location(0) vec4u { return vec4u(0xFFFFFFFFu, 0u, 0u, 1u); }`;
 
 const WGSL_COLOR_LIB = /* wgsl */`
-struct CP { a: vec4f, b: vec4f, c: vec4f, d: vec4f, misc: vec4f, misc2: vec4f, misc3: vec4f, shift: vec4f, extra: vec4f, z2: vec4f, leer: vec4f, tex: vec4f, innen: vec4f, tex2: vec4f, tex3: vec4f, q: array<vec4f, 20>, stapel: array<vec4f, 12>, paar: vec4f, paar2: vec4f, stapelW: array<vec4f, 4>, nach: array<vec4f, 32>, nachInfo: vec4f, nachBild: vec4f, maske: array<vec4f, 25>, texMaske: array<vec4f, 13>, opt: vec4f, opt2: vec4f, mat: vec4f, mat2: vec4f, palk: vec4f }   // mat = (Material: 0 einfach, 1 Dielektrikum, 2 Metall; Glanz; Reflexion; Neigung), mat2 = (Schatten an, Schattenlänge px, Himmel-Lage, Himmel-Spanne)   // texMaske: je Texturplatz drei vec4 wie maske, [12] = (Kantenmaske vorhanden, eine Maske aktiv)   // maske: je Ebene drei vec4 (Art, umkehren, zeigen, weicher Rand; acht Zahlen), [24] = (Abstand vorhanden, eine Maske aktiv);   // paar = (Wert A, Wert B, Faktor A, Faktor B), paar2 = (Abzug A, Abzug B, Flags A, Flags B: Bit 0 Anker, 1 Klemme, 2 voll im Kanal)   // stapel: je Platz (Art, Stärke, Kontrast, Mitte), helle und dunkle Farbe (Vorgabe Weiß und Schwarz); tex2.y = 1: Texturwerte im z-/w-Kanal (über einer Statistik-Färbung), tex2.z = belegte Plätze   // tex = Textur: x Art (0 keine), y Stärke, z Kontrast, w Mitte; innen = eigene Innenfarbe (xyz), w = gestuft; tex2.x = Streifen für die Winkel-Texturen und Periodengebiete; tex3 = zweite Textur (Art, Stärke, Kontrast, Mitte)   // shift.xy = Versatz während des Ziehens, extra.x = Stauchung p, extra.y = Palette vorfiltern (0 = aus, sonst Faktor auf die Breite), extra.z = Farbanker des Bahnmittels (negativ = keiner), extra.w = Fluchtzeit-Abzug β (Färbung 25)
+struct CP { a: vec4f, b: vec4f, c: vec4f, d: vec4f, misc: vec4f, misc2: vec4f, misc3: vec4f, shift: vec4f, extra: vec4f, z2: vec4f, leer: vec4f, tex: vec4f, innen: vec4f, tex2: vec4f, tex3: vec4f, q: array<vec4f, 20>, stapel: array<vec4f, 12>, paar: vec4f, paar2: vec4f, stapelW: array<vec4f, 4>, nach: array<vec4f, 32>, nachInfo: vec4f, nachBild: vec4f, maske: array<vec4f, 25>, texMaske: array<vec4f, 13>, opt: vec4f, opt2: vec4f, mat: vec4f, mat2: vec4f, palk: vec4f, gueltig: vec4f } fn gueltig(d: vec2i) -> vec2i { return select(d, min(d, vec2i(C.gueltig.xy)), C.gueltig.x > 0.5); }   // gueltig: im Export die gerechnete Fläche der Kachel (die Textur ist so groß wie die größte), am Bildschirm 0 = die ganze Textur; die Hilfe steht in derselben Zeile, weil WGSL_POST nur diese Zeile übernimmt   // mat = (Material: 0 einfach, 1 Dielektrikum, 2 Metall; Glanz; Reflexion; Neigung), mat2 = (Schatten an, Schattenlänge px, Himmel-Lage, Himmel-Spanne)   // texMaske: je Texturplatz drei vec4 wie maske, [12] = (Kantenmaske vorhanden, eine Maske aktiv)   // maske: je Ebene drei vec4 (Art, umkehren, zeigen, weicher Rand; acht Zahlen), [24] = (Abstand vorhanden, eine Maske aktiv);   // paar = (Wert A, Wert B, Faktor A, Faktor B), paar2 = (Abzug A, Abzug B, Flags A, Flags B: Bit 0 Anker, 1 Klemme, 2 voll im Kanal)   // stapel: je Platz (Art, Stärke, Kontrast, Mitte), helle und dunkle Farbe (Vorgabe Weiß und Schwarz); tex2.y = 1: Texturwerte im z-/w-Kanal (über einer Statistik-Färbung), tex2.z = belegte Plätze   // tex = Textur: x Art (0 keine), y Stärke, z Kontrast, w Mitte; innen = eigene Innenfarbe (xyz), w = gestuft; tex2.x = Streifen für die Winkel-Texturen und Periodengebiete; tex3 = zweite Textur (Art, Stärke, Kontrast, Mitte)   // shift.xy = Versatz während des Ziehens, extra.x = Stauchung p, extra.y = Palette vorfiltern (0 = aus, sonst Faktor auf die Breite), extra.z = Farbanker des Bahnmittels (negativ = keiner), extra.w = Fluchtzeit-Abzug β (Färbung 25)
 // zweidimensionale Palette (PAL2): z2 = (Art: 0 keine, 1 Formel, 2 Tabelle; Achse u; Achse v; –), leer.xyz = Farbe ohne Wert, q = je Quadrant a, b, cu, cv, d
 @group(0) @binding(0) var iter: texture_2d_array<u32>;   // eine Ebene je Probe der Glättung
 @group(0) @binding(1) var<uniform> C: CP;
@@ -5950,7 +5978,7 @@ fn pal(tRoh: f32) -> vec3f {
 // misc = (Dichte, Versatz, Probenebenen (0 = adaptiv), Verlaufsart), misc2 = (Randmodus, Randbreite px, Innen, log2(maxIter+1))
 // Höhe = log2(Abstand in Pixeln + 1) eines Nachbartexels; außerhalb, ungerechnet oder innen: Rückfallwert (kein Gefälle)
 fn heightAt(xy: vec2i, k: i32, fallback: f32) -> f32 {
-  let dims = vec2i(textureDimensions(iter).xy);
+  let dims = gueltig(vec2i(textureDimensions(iter).xy));
   if (xy.x < 0 || xy.y < 0 || xy.x >= dims.x || xy.y >= dims.y) { return fallback; }
   let q = textureLoad(iter, xy, k, 0);
   if (q.x == 0xFFFFFFFFu || (q.x & 0x80000000u) != 0u) { return fallback; }
@@ -6147,7 +6175,7 @@ fn nuAt(xy: vec2i, k: i32, dims: vec2i, fallback: f32) -> f32 {   // glatte Iter
   return f32(q.x & 0x03FFFFFFu) * (1.0 / 256.0);
 }
 fn kanteWert(xy: vec2i, k: i32) -> f32 {   // Kanten (Art 11): Steilheit der Fluchtzeit zu den Nachbarn (Betrag des Gradienten)
-  let dims = vec2i(textureDimensions(iter).xy);
+  let dims = gueltig(vec2i(textureDimensions(iter).xy));
   let nu = f32(textureLoad(iter, xy, k, 0).x & 0x03FFFFFFu) * (1.0 / 256.0);
   let gx = nuAt(xy + vec2i(1, 0), k, dims, nu) - nuAt(xy - vec2i(1, 0), k, dims, nu);
   let gy = nuAt(xy + vec2i(0, 1), k, dims, nu) - nuAt(xy - vec2i(0, 1), k, dims, nu);
@@ -6206,7 +6234,7 @@ fn tAt(xy: vec2i, k: i32, dims: vec2i) -> vec2f {
 // Breite des Bereichs in Zyklen: je Achse die kleinere der beiden Nachbarsteigungen, damit ein Sprung (ferner Nachbar) keinen
 // grauen Saum verwäscht; fehlt ein Nachbar (innen, ungerechnet, Bildrand), zählt die Achse nicht
 fn palWidth(xy: vec2i, k: i32) -> f32 {
-  let dims = vec2i(textureDimensions(iter).xy);
+  let dims = gueltig(vec2i(textureDimensions(iter).xy));
   let c = tAt(xy, k, dims);
   if (c.y < 0.5) { return 0.0; }
   var w2 = 0.0;
@@ -6383,7 +6411,7 @@ fn farbeRoh(xy0: vec2i, dims: vec2i) -> vec3f {   // die Farbe eines Pixels vor 
 }
 @fragment fn fs(@builtin(position) pos: vec4f) -> @location(0) vec4f {
   let xy = vec2i(pos.xy) - vec2i(C.shift.xy);
-  let dims = vec2i(textureDimensions(iter).xy);
+  let dims = gueltig(vec2i(textureDimensions(iter).xy));
   if (xy.x < 0 || xy.y < 0 || xy.x >= dims.x || xy.y >= dims.y) { return vec4f(0.043, 0.051, 0.071, 1.0); }   // freigezogener Rand
   return vec4f(farbeRoh(xy, dims), 1.0);
 }`;
@@ -6537,7 +6565,7 @@ fn nNachbar(mitte: vec3f, mittel: vec3f, gx: f32, gy: f32, j: u32, xy: vec2i, ka
       let q = C.nach[4u * j + 2u]; let r = C.nach[4u * j + 3u]; let hh = p.y * 8.0;
       let gyUp = select(gy, -gy, C.nachInfo.w > 0.0);   // Bildzeilen nach unten: die Steigung nach oben umdrehen
       var sg = vec2f(gx, gyUp); if (u32(p.x) == 7u) { let lg = length(sg); sg = select(vec2f(0.0), sg * (0.125 / lg), lg > 1.0e-9); }   // nur die Richtung: überall dieselbe Neigung, auch wo die Fluchtzeit kaum steigt
-      if (u32(p.x) == 7u && C.maske[24].z > 0.5) { let dI = vec2i(textureDimensions(iter).xy); let pxR = textureLoad(iter, clamp(xy, vec2i(0), dI - vec2i(1)), 0, 0); let aR = bitcast<f32>(select(pxR.y, pxR.z, C.maske[24].z > 1.5)); sg = select(vec2f(cos(aR), sin(aR)) * 0.125, vec2f(0.0), (pxR.x & 0x80000000u) != 0u); }   // analytisch aus dem Fraktalpass: ohne Rundung und ohne Nähte
+      if (u32(p.x) == 7u && C.maske[24].z > 0.5) { let dI = gueltig(vec2i(textureDimensions(iter).xy)); let pxR = textureLoad(iter, clamp(xy, vec2i(0), dI - vec2i(1)), 0, 0); let aR = bitcast<f32>(select(pxR.y, pxR.z, C.maske[24].z > 1.5)); sg = select(vec2f(cos(aR), sin(aR)) * 0.125, vec2f(0.0), (pxR.x & 0x80000000u) != 0u); }   // analytisch aus dem Fraktalpass: ohne Rundung und ohne Nähte
       let nrm = normalize(vec3f(-sg.x * hh, -sg.y * hh, 1.0));
       let az = radians(p.z); let el = radians(p.w); let L = vec3f(cos(az) * cos(el), sin(az) * cos(el), sin(el)); let V = vec3f(0.0, 0.0, 1.0);
       let dif = max(dot(nrm, L), 0.0); let spec = pow(max(dot(nrm, normalize(L + V)), 0.0), max(q.z, 1.0));
@@ -6623,7 +6651,7 @@ fn gTWert(sl: u32) -> f32 { return select(select(gM.tw.x, gM.tw.y, sl == 1u), se
 ` + WGSL_POST_ABSCHNITT + /* wgsl */`
 fn farbeRoh(xyS: vec2i, rdims: vec2i) -> vec3f { return textureLoad(roh, clamp(xyS, vec2i(0), rdims - vec2i(1)), 0).xyz; }   // die Farbe aus dem Zwischenbild (Bildschirmpixel)
 @fragment fn fs(@builtin(position) pos: vec4f) -> @location(0) vec4f {
-  let xyS = vec2i(pos.xy); let rdims = vec2i(textureDimensions(roh).xy); let dims = vec2i(textureDimensions(iter).xy);
+  let xyS = vec2i(pos.xy); let rdims = gueltig(vec2i(textureDimensions(roh).xy)); let dims = gueltig(vec2i(textureDimensions(iter).xy));
   let xy = xyS - vec2i(C.shift.xy);   // Lage in der Iterationstextur, wie sie die Ebenen bisher sahen (Vignette, Körnung)
 ` + WGSL_POST_MAIN + `}`;
 
@@ -6634,7 +6662,7 @@ fn farbeRoh(xyS: vec2i, rdims: vec2i) -> vec3f { return textureLoad(roh, clamp(x
 // Iterationstextur der Ebene; die Maske steht im Platz 7 der Maskenwerte, C.maske[24].w sagt, ob eine wirkt)
 const WGSL_EBENE = WGSL_POST.slice(0, WGSL_POST.indexOf('@fragment fn fs(')) + /* wgsl */`
 @fragment fn fs(@builtin(position) pos: vec4f) -> @location(0) vec4f {
-  let xyS = vec2i(pos.xy); let rdims = vec2i(textureDimensions(roh).xy); let dims = vec2i(textureDimensions(iter).xy);
+  let xyS = vec2i(pos.xy); let rdims = gueltig(vec2i(textureDimensions(roh).xy)); let dims = gueltig(vec2i(textureDimensions(iter).xy));
   let c = farbeRoh(xyS, rdims);
   var m = 1.0;
   if (C.maske[24].w > 0.5) { maskeLaden(xyS, dims, rdims); m = nMaske(7u, xyS - vec2i(C.shift.xy), c, 0.0); }
@@ -6920,7 +6948,7 @@ function palPrefix(lut) {   // Stammfunktion der stückweise linearen 256er-Tabe
 function fastPath(p) { return p.formula === 0 && p.power === 2 && !p.startC && !p.hybrid && !p.lyap && !p.winkel && !p.stat && !p.stat2 && !p.paar && !p.fluchtForm && !p.fluchtRadius && !p.biomorph && !p.abb && p.needDE !== 1 && p.needInt !== 1 && p.cycle !== 1 && p.bla !== 1 && p.invert !== 1 && p.flip !== 1 && S.z0[0] === 0 && S.z0[1] === 0; }
 
 function variantenSchluessel(formula, de, ni, cyc, bla, pw, fast, lyap, winkel, stat, stat2, tex1, tex2, form, texz, stat3, stat4, stat5, tex3, tex4, stat6, paar, paarA, paarB, paarVoll, hybrid, eigen, breit) {   // Schlüssel einer Shader-Variante, für beide Renderer derselbe (breit: Iterationstextur rgba32uint, nur WebGPU unterscheidet die Pipeline danach)
-  return formula + '|' + (de ? 1 : 0) + '|' + (ni ? 1 : 0) + '|' + (cyc ? 1 : 0) + '|' + (bla ? 1 : 0) + '|' + pw + '|' + (fast ? 1 : 0) + '|' + lyap + '|' + winkel + '|' + stat + (tex1 || tex2 ? '|' + stat2 + '|' + tex1 + '|' + tex2 : '') + (form ? '|F' + form : '') + (texz ? '|Z' + stat3 : '') + (breit ? '|A' : '') + (stat4 || stat5 || tex3 || tex4 || stat6 ? '|S' + stat4 + '|' + stat5 + '|' + tex3 + '|' + tex4 + '|' + stat6 : '') + (stat2 && !tex1 && !tex2 ? '|s2' + stat2 : '') + (paar ? '|P' + paarA + '|' + paarB + '|' + paarVoll : '') + (hybrid ? '|H' : '') + (eigen ? '|X' + eigen.key : '');
+  return formula + '|' + (de ? 1 : 0) + '|' + (ni ? 1 : 0) + '|' + (cyc ? 1 : 0) + '|' + (bla ? 1 : 0) + '|' + pw + '|' + (fast ? 1 : 0) + '|' + lyap + '|' + winkel + '|' + stat + (tex1 || tex2 ? '|' + stat2 + '|' + tex1 + '|' + tex2 : '') + (form ? '|F' + form : '') + (texz ? '|Z' + stat3 : '') + (breit ? '|A' : '') + (stat4 || stat5 || tex3 || tex4 || stat6 ? '|S' + stat4 + '|' + stat5 + '|' + tex3 + '|' + tex4 + '|' + stat6 : '') + (stat2 && !tex1 && !tex2 ? '|s2' + stat2 : '') + (paar ? '|P' + paarA + '|' + paarB + '|' + paarVoll : '') + (hybrid ? '|H' + hybrid : '') + (eigen ? '|X' + eigen.key : '');
 }
 class GpuRenderer {
   static async create(canvas) {
@@ -7018,9 +7046,9 @@ class GpuRenderer {
     this.pipeCache = new Map([['0|0|0|0|0|2|1|0|0|0', this.pipeF]]);   // Schlüssel wie in _pipeVariant: die Standardvariante ist schon gebaut
     this._prewarm();
     const U = GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST;
-    this.ubF = d.createBuffer({ size: 560, usage: U });   // FP samt texP (6 vec4), texW (4 vec4), Inversionsmitte, Ebenenabbildung und texQ (6 vec4)
+    this.ubF = d.createBuffer({ size: 592, usage: U });   // FP samt texP (6 vec4), texW (4 vec4), Inversionsmitte, Ebenenabbildung, texQ (6 vec4), die zweite Zeile der Formel B und die Lage der Exportkachel
     this.ubU = d.createBuffer({ size: 16, usage: U });
-    this.ubC = d.createBuffer({ size: 2080, usage: U });
+    this.ubC = d.createBuffer({ size: 2096, usage: U });
     this.bglK = d.createBindGroupLayout({ entries: [{ binding: 0, visibility: F, buffer: { type: 'uniform' } }].concat([1, 2, 3, 4, 5, 6].map(b => ({ binding: b, visibility: F, texture: { sampleType: 'unfilterable-float', viewDimension: '2d' } }))) });   // Verbund: bis zu sechs Ebenen
     this.pipeK = await d.createRenderPipelineAsync({ layout: d.createPipelineLayout({ bindGroupLayouts: [this.bglK] }), vertex: { module: mK, entryPoint: 'vs' }, fragment: { module: mK, entryPoint: 'fs', targets: [{ format: this.format }] }, primitive: { topology: 'triangle-list' } });
     this.ubK = d.createBuffer({ size: 208, usage: U });
@@ -7289,7 +7317,7 @@ class GpuRenderer {
     return mod;
   }
   renderFractal(target, rects, p, layer = 0) {
-    const buf = new ArrayBuffer(560), f = new Float32Array(buf), u = new Uint32Array(buf);
+    const buf = new ArrayBuffer(592), f = new Float32Array(buf), u = new Uint32Array(buf);
     f[0] = p.dcScale[0]; f[1] = p.dcScale[1]; f[2] = p.dcOffset[0]; f[3] = p.dcOffset[1];
     u[4] = p.maxIter; u[5] = p.lenA; u[6] = p.baseB; u[7] = p.lenB; u[8] = p.isJulia; u[9] = TW; f[11] = p.ps;
     u[13] = p.invert; f[10] = p.rotC === undefined ? 1 : p.rotC; f[12] = p.rotS || 0;   // Drehung der Ansicht
@@ -7300,7 +7328,7 @@ class GpuRenderer {
     if (p.texP) f.set(p.texP, 44); if (p.texW) f.set(p.texW, 68); if (p.texQ) f.set(p.texQ, 116);   // eigene Regler der Texturarten: je Sammler, je Platz; Zusatzwerte je Sammler (Rosette, Auswertung der Fallen)
     f[84] = p.invM ? p.invM[0] : 0; f[85] = p.invM ? p.invM[1] : 0; f[86] = p.biomorph || 0;   // Inversionsmitte; Biomorph-Nachtest
     u[87] = p.abb || 0; f[88] = p.abbRef ? p.abbRef[0] : 0; f[89] = p.abbRef ? p.abbRef[1] : 0; f[90] = p.richtungY || 0; f[91] = p.abkl === undefined ? 1 : p.abkl; if (p.param2) { f[92] = p.param2[0]; f[93] = p.param2[1]; f[94] = p.param2[2]; f[95] = p.param2[3] || 0; } f[96] = p.faltung || 0; f[97] = p.gedaechtnis || 0; f[98] = p.startC ? 1 : 0; f[99] = p.eigenAgg || 0;   // opt: Faltung, Gedächtnis, Start im Bildpunkt, Zusammenfassungen der eigenen Sammler
-    f[100] = p.fn || 0; f[101] = p.formelB || 0; f[102] = p.paramB || 0; f[103] = p.nzAnzahl || 0; if (p.wurzeln) f.set(p.wurzeln, 104);   // opt2 und Nullstellen   // Ebenenabbildung und ihr Referenzpunkt
+    f[100] = p.fn || 0; f[101] = p.formelB || 0; f[102] = p.paramB || 0; f[103] = p.nzAnzahl || 0; if (p.param2B) f.set(p.param2B, 140); if (p.origin) { f[144] = p.origin[0]; f[145] = p.origin[1]; } if (p.wurzeln) f.set(p.wurzeln, 104);   // opt2 und Nullstellen   // Ebenenabbildung und ihr Referenzpunkt
     this.device.queue.writeBuffer(this.ubF, 0, buf);
     const enc = this.device.createCommandEncoder();
     const pass = enc.beginRenderPass({ colorAttachments: [{
@@ -7332,7 +7360,8 @@ class GpuRenderer {
     this.clearRefine();
   }
   _writeCP(cp) {
-    const f = new Float32Array(520);   // CP samt stapelW, Nachbearbeitung, Masken, Texturmasken, opt und Palettenkurve
+    const f = new Float32Array(524);   // CP samt stapelW, Nachbearbeitung, Masken, Texturmasken, opt, Palettenkurve und der gerechneten Fläche einer Exportkachel
+    if (cp.gueltig) { f[520] = cp.gueltig[0]; f[521] = cp.gueltig[1]; }
     f[500] = cp.texInnen || 0; f[501] = cp.texVerbund || 0; f[502] = cp.texVerbundErster || 0; f[503] = cp.leuchtErster || 0; if (cp.logmap) { f[504] = cp.logmap[0]; f[505] = cp.logmap[1]; } f[506] = cp.logStufen || LOG_STUFEN.def; if (cp.material) f.set(cp.material, 508); if (cp.material2) f.set(cp.material2, 512); f.set(cp.palKurve || [1, 0, 0, 0], 516);   // ohne Angabe die gleichmäßige Kurve, wie im WebGL-Renderer   // Stufen des Logarithmus   // opt: Texturen auch innen; Fallenverbund (Weichheit, erster Fallenplatz); Leuchten-Ebene (1-basiert)
     f.set(cp.a, 0); f.set(cp.b, 4); f.set(cp.c, 8); f.set(cp.d, 12);
     f[16] = cp.density; f[17] = cp.offset; f[18] = cp.layers; f[19] = cp.mapping;
@@ -7806,7 +7835,7 @@ function standardZustand() {
   power: 2, invert: false,                                 // z^power + c, Bildebene invertiert (1/z)
   cycle: 'auto',                                           // Zykluserkennung: auto (ab 1 500 Iterationen), 1, 0
   bla: 'auto',                                             // bilineare Näherung für z^d + c: auto (nach Stichprobe), 1, 0
-  formula: 0, param: -0.5, param2: [3.8, -2.4, 1.2], zweig: 0, flip: false, seq: 'AB', faltung: 0, gedaechtnis: 0, startC: false, fn: 0, nz: nzKreis(3), formelB: -1,          // Formel (siehe FORMULAS), Zusatzparameter (Phoenix p, Nova-Relaxation), Ebene gespiegelt
+  formula: 0, param: -0.5, param2: [3.8, -2.4, 1.2], zweig: 0, flip: false, seq: 'AB', faltung: 0, gedaechtnis: 0, startC: false, fn: 0, nz: nzKreis(3), formelB: -1, powerB: 0, paramB: null, param2B: null,          // Formel (siehe FORMULAS), Zusatzparameter (Phoenix p, Nova-Relaxation), Ebene gespiegelt
   family: 'escape', accKind: 0, exposure: 1, gamma: 2, accTarget: 5e7,
     // Familie escape oder accum (Punktwolken, accKind = Index in CLOUDS)
   cloudPrm: [0, 0, 0, 0],
@@ -7948,7 +7977,16 @@ function kritStart() {   // Startwert der Referenzbahn: bei Tₙ mit ungeradem n
   const nT = Math.max(2, Math.round(S.param));
   return S.formula === 28 && nT % 2 === 1 ? [S.z0[0] + Math.sin(Math.PI / (2 * nT)), S.z0[1]] : S.z0;
 }
-function hybridB(nr) { return nr !== 13 && nr !== 17 && nr !== 26 && nr !== 37; }   // als zweite Formel wählbar: alles mit direktem Zweig ohne zweite Parameterzeile
+function hybridB(nr) { return nr !== 13 && nr !== 37; }   // als zweite Formel wählbar: alles außer Lyapunov (keine Iteration mit Fluchtzeit) und der eigenen Formel (als A mit jeder Formel kombinierbar)
+function hybridKonstante() {   // die Übersetzungskonstante HYBRID: an, eigene Potenz von B, zweite Parameterzeile von B
+  if (!hybridAktiv()) return 0;
+  return 1 | ((S.powerB >= 2 ? S.powerB : 0) << 1) | (FORMULAS[S.formelB].param2 ? 32 : 0);
+}
+function paramBEff() { const q = FORMULAS[S.formelB] && FORMULAS[S.formelB].param; return q ? (S.paramB ?? q[3]) : 0; }   // Parameter der Formel B: eingestellt, sonst ihre Vorgabe
+function param2BEff() {   // zweite Parameterzeile der Formel B (eingestellt, sonst Vorgaben), so im Uniform
+  const q = (FORMULAS[S.formelB] && FORMULAS[S.formelB].param2) || [], w = S.param2B || [];
+  return [0, 1, 2].map(k => q[k] ? (Number.isFinite(w[k]) ? w[k] : q[k][3]) : 0).concat([0]);
+}
 function hybridAktiv() { return S.family === 'escape' && !FORMULAS[S.formula].seq && S.formelB >= 0; }   // Hybrid-Folge: zwei Formeln im Wechsel
 function direktFormel() { const fm = FORMULAS[S.formula]; return S.family === 'escape' && !fm.seq && (!fm.pert || hybridAktiv()); }   // direkt in fp32 gerechnet: dort wirken Faltung und Gedächtnis (mit Hybrid-Folge auch die Polynome)
 function startMoeglich() { return S.family === 'escape' && S.formula !== 13 && S.formula !== 17; }   // Startwert und Start im Bildpunkt: alle außer Lyapunov und zwei Potenzen
@@ -8584,8 +8622,8 @@ function directParams(pr, pi) {   // Referenzen für die direkte fp32-Iteration 
   if (S.flip) ci = ddNeg(ci);
   const a0 = [cr[0], ci[0]]; if (S.abb) [cr, ci] = ddAbbild(cr, ci);   // Ebenenabbildung: die Referenz abgebildet, der Shader bildet die Differenz
   return (S.mode === 'julia' && S.formula !== 13)
-    ? { formula: S.formula, param: S.param, flip: S.flip ? 1 : 0, fn: S.fn, wurzeln: nzWurzeln(), nzAnzahl: S.nz.length, hybrid: hybridAktiv() ? 1 : 0, formelB: hybridAktiv() ? S.formelB + 1 : 0, paramB: hybridAktiv() && FORMULAS[S.formelB].param ? FORMULAS[S.formelB].param[3] : 0, faltung: direktFormel() ? S.faltung : 0, gedaechtnis: direktFormel() ? S.gedaechtnis : 0, startC: startMoeglich() && S.startC ? 1 : 0, eigen: eigenShader(), eigenAgg: eigenAgg(), cRef: [S.jc[0], S.jc[1]], zRef: [cr[0], ci[0]], seqBits: seqBits(), seqLen: Math.max(1, S.seq.length), abb: S.abb, abbRef: a0 }
-    : { formula: S.formula, param: S.param, flip: S.flip ? 1 : 0, fn: S.fn, wurzeln: nzWurzeln(), nzAnzahl: S.nz.length, hybrid: hybridAktiv() ? 1 : 0, formelB: hybridAktiv() ? S.formelB + 1 : 0, paramB: hybridAktiv() && FORMULAS[S.formelB].param ? FORMULAS[S.formelB].param[3] : 0, faltung: direktFormel() ? S.faltung : 0, gedaechtnis: direktFormel() ? S.gedaechtnis : 0, startC: startMoeglich() && S.startC ? 1 : 0, eigen: eigenShader(), eigenAgg: eigenAgg(), cRef: [cr[0], ci[0]], zRef: startMoeglich() ? [S.z0[0], S.z0[1]] : [0, 0], seqBits: seqBits(), seqLen: Math.max(1, S.seq.length), abb: S.abb, abbRef: a0 };
+    ? { formula: S.formula, param: S.param, flip: S.flip ? 1 : 0, fn: S.fn, wurzeln: nzWurzeln(), nzAnzahl: S.nz.length, hybrid: hybridKonstante(), formelB: hybridAktiv() ? S.formelB + 1 : 0, paramB: hybridAktiv() ? paramBEff() : 0, param2B: hybridAktiv() ? param2BEff() : null, faltung: direktFormel() ? S.faltung : 0, gedaechtnis: direktFormel() ? S.gedaechtnis : 0, startC: startMoeglich() && S.startC ? 1 : 0, eigen: eigenShader(), eigenAgg: eigenAgg(), cRef: [S.jc[0], S.jc[1]], zRef: [cr[0], ci[0]], seqBits: seqBits(), seqLen: Math.max(1, S.seq.length), abb: S.abb, abbRef: a0 }
+    : { formula: S.formula, param: S.param, flip: S.flip ? 1 : 0, fn: S.fn, wurzeln: nzWurzeln(), nzAnzahl: S.nz.length, hybrid: hybridKonstante(), formelB: hybridAktiv() ? S.formelB + 1 : 0, paramB: hybridAktiv() ? paramBEff() : 0, param2B: hybridAktiv() ? param2BEff() : null, faltung: direktFormel() ? S.faltung : 0, gedaechtnis: direktFormel() ? S.gedaechtnis : 0, startC: startMoeglich() && S.startC ? 1 : 0, eigen: eigenShader(), eigenAgg: eigenAgg(), cRef: [cr[0], ci[0]], zRef: startMoeglich() ? [S.z0[0], S.z0[1]] : [0, 0], seqBits: seqBits(), seqLen: Math.max(1, S.seq.length), abb: S.abb, abbRef: a0 };
 }
 function pal2Aktiv() {   // Parameter der geltenden zweidimensionalen Palette für die Farbshader; die Tabelle lädt der Renderer bei Bedarf
   const p = pal2Objekt();
@@ -9990,7 +10028,11 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
   if (wurzelFormel(S.formula) && !faerbungMoeglich(S.mapping)) { S.mapping = 2; }   // aus einem Link: was ohne Fliehen nichts bedeutet, fällt auf die Wurzelfärbung (die Formel steht erst hier fest)
   { const fl = FORMULAS[S.formula].fn, fk = parseInt(h.get('fn'), 10); S.fn = fl ? (fl.some(e => e[0] === fk) ? fk : fl[0][0]) : 0; }   // Funktion: nur eine, die die Formel kennt, sonst ihre erste
   { const x = h.get('xf'); S.xf = x && eigenGueltig('formel', x) ? AUSDRUCK.uebersetze(x, 'formel').ascii : EIGEN_VORGABE.xf; }   // eigene Formel
-  { const hb = parseInt(h.get('hb'), 10); S.formelB = Number.isFinite(hb) && hb >= 0 && hb < FORMULAS.length && hybridB(hb) && !FORMULAS[S.formula].seq ? hb : -1; }   // Hybrid-Folge: zweite Formel
+  { const hb = parseInt(h.get('hb'), 10); S.formelB = Number.isFinite(hb) && hb >= 0 && hb < FORMULAS.length && hybridB(hb) && !FORMULAS[S.formula].seq ? hb : -1;
+    const fb = S.formelB >= 0 ? FORMULAS[S.formelB] : null, bd = parseInt(h.get('bd'), 10), bp = parseFloat(h.get('bp')), bq = (h.get('bq') || '').split(':').map(parseFloat);
+    S.powerB = fb && bd >= 2 && bd <= 8 ? bd : 0;   // eigene Regler der Formel B; ohne Wert wie bisher: Potenz wie A, Vorgaben der Formel
+    S.paramB = fb && fb.param && Number.isFinite(bp) ? clamp(bp, fb.param[1], fb.param[2]) : null;
+    S.param2B = fb && fb.param2 && h.get('bq') ? fb.param2.map((q, k) => Number.isFinite(bq[k]) ? clamp(bq[k], q[1], q[2]) : q[3]) : null; }   // Hybrid-Folge: zweite Formel
   const pp = parseFloat(h.get('pp'));
   if (Number.isFinite(pp)) { const pr = FORMULAS[S.formula].param; S.param = pr ? clamp(pp, pr[1], pr[2]) : clamp(pp, -4, 4); }   // im Bereich der Formel
   else if (FORMULAS[S.formula].param) S.param = FORMULAS[S.formula].param[3];
@@ -10151,7 +10193,12 @@ function buildParamsRoh() {   // die Adresswerte der Ebene in S samt Ansicht und
   if (S.bla !== 'auto') p.set('bla', S.bla);
   if (S.flip !== !!FORMULAS[S.formula].flip) p.set('fl', S.flip ? '1' : '0');
   if (S.formula === 13 || hybridAktiv()) p.set('seq', S.seq);
-  if (hybridAktiv()) p.set('hb', String(S.formelB));
+  if (hybridAktiv()) {
+    p.set('hb', String(S.formelB));
+    if (S.powerB) p.set('bd', String(S.powerB));   // eigene Regler der Formel B: nur, was verstellt ist
+    if (S.paramB !== null && FORMULAS[S.formelB].param) p.set('bp', S.paramB.toPrecision(4));
+    if (S.param2B && FORMULAS[S.formelB].param2) p.set('bq', S.param2B.map(v => String(+v.toPrecision(5))).join(':'));
+  }
   if (S.family === 'accum') {
     p.set('fam', CLOUD_KEYS[S.accKind]); p.set('ex', String(+S.exposure.toPrecision(3))); p.set('ga', String(+S.gamma.toPrecision(3)));
     p.set('at', String(S.accTarget));                                   // wie viele Proben gesammelt werden, gehört zum Bild
@@ -11714,8 +11761,36 @@ function syncHybridUI() {   // zweite Formel: Liste aus der Tabelle (Namen in de
   for (const o of sel.options) o.textContent = o.value === '-1' ? t('subject.folding-none') : t(FORMULAS[+o.value].name);
   if (sel.dataset.enhanced) { if (sel._rebuild) sel._rebuild(); } else enhanceSelect(sel);
   sel.value = String(hybridAktiv() ? S.formelB : -1); if (sel._sync) sel._sync();
+  syncHybridRegler();
 }
-$('formelB').addEventListener('change', () => { const v = parseInt($('formelB').value, 10); S.formelB = Number.isFinite(v) && v >= 0 && hybridB(v) ? v : -1; syncFormulaUI(); scheduleHash(); viewChanged(); });   // neu rechnen; Zoomgrenze und Hinweis folgen
+function mitB(text) { return t('subject.formula-b-value', text); }   // Beschriftung eines Reglers der Formel B (Funktion: schon beim Start gebraucht)
+function syncHybridRegler() {   // die eigenen Regler der Formel B: nur mit Hybrid-Folge, nur so viele, wie B hat
+  const an = hybridAktiv(); $('hybridRegler').hidden = !an; if (!an) return;
+  const fb = FORMULAS[S.formelB];
+  $('powerB').value = String(S.powerB || 0); if ($('powerB')._sync) $('powerB')._sync();
+  $('paramBRow').hidden = !fb.param;
+  if (fb.param) { const [label, lo, hi] = fb.param, v = paramBEff(); $('paramBLabel').textContent = mitB(t(label)); $('paramB').value = String(Math.round(1000 * (v - lo) / (hi - lo))); $('paramBVal').value = fmtZahl(v, 3); }
+  const q = fb.param2; $('param2BRow').hidden = !q;
+  if (q) {
+    const w = param2BEff();
+    [0, 1, 2].forEach(k => {
+      const id = 'param2B' + 'abc'[k], da = k < q.length;
+      $(id).hidden = !da; $(id).previousElementSibling.hidden = !da;
+      if (da) { const [label, lo, hi] = q[k]; $(id + 'Label').textContent = mitB(t(label)); $(id).value = String(Math.round(1000 * (w[k] - lo) / (hi - lo))); $(id + 'Val').value = fmtZahl(w[k], 3); }
+    });
+  }
+}
+function setzeParamB(v) { const q = FORMULAS[S.formelB] && FORMULAS[S.formelB].param; if (!q) return; S.paramB = clamp(v, q[1], q[2]); syncHybridRegler(); scheduleHash(); viewChanged(); }
+function setzeParam2B(k, v) {
+  const q = FORMULAS[S.formelB] && FORMULAS[S.formelB].param2; if (!q || !q[k]) return;
+  const w = param2BEff().slice(0, q.length); w[k] = clamp(v, q[k][1], q[k][2]); S.param2B = w;
+  syncHybridRegler(); scheduleHash(); viewChanged();
+}
+$('powerB').addEventListener('change', () => { const v = parseInt($('powerB').value, 10); S.powerB = v >= 2 && v <= 8 ? v : 0; scheduleHash(); viewChanged(); });
+$('paramB').addEventListener('input', () => { const q = FORMULAS[S.formelB] && FORMULAS[S.formelB].param; if (q) setzeParamB(q[1] + (q[2] - q[1]) * (+$('paramB').value) / 1000); });
+[0, 1, 2].forEach(k => $('param2B' + 'abc'[k]).addEventListener('input', () => { const q = FORMULAS[S.formelB] && FORMULAS[S.formelB].param2; if (q && q[k]) setzeParam2B(k, q[k][1] + (q[k][2] - q[k][1]) * (+$('param2B' + 'abc'[k]).value) / 1000); }));
+$('formelB').addEventListener('change', () => { const v = parseInt($('formelB').value, 10); S.formelB = Number.isFinite(v) && v >= 0 && hybridB(v) ? v : -1; S.paramB = null; S.param2B = null;   // eine andere Formel B beginnt mit ihren Vorgaben (die Potenz bleibt)
+ syncFormulaUI(); scheduleHash(); viewChanged(); });   // neu rechnen; Zoomgrenze und Hinweis folgen
 function syncFaltUI() { $('faltung').value = String(S.faltung); if ($('faltung')._sync) $('faltung')._sync(); $('gedaechtnis').value = String(Math.round(S.gedaechtnis * 1000)); $('gedaechtnisVal').value = fmtZahl(S.gedaechtnis, 3); }
 $('faltung').addEventListener('change', () => { S.faltung = clamp(parseInt($('faltung').value, 10) || 0, 0, 5); scheduleHash(); viewChanged(); });   // neu rechnen: die Faltung steckt in der Iteration
 const setzeGedaechtnis = v => { S.gedaechtnis = clamp(v, -1, 1); syncFaltUI(); scheduleHash(); viewChanged(); };
@@ -12072,6 +12147,10 @@ function nachWirkt(e) { return e.an && e.deck > 0; }
 function maskeWirkt(m) { return !!m && m.art > 0 && m.an !== false; }   // eine gesetzte, eingeschaltete Maske
 function leuchtIndex() { return S.nach.findIndex((e, i) => i < NACH_MAX && nachWirkt(e) && e.art === 29); }   // die oberste Leuchten-Ebene (nur sie wirkt)
 function leuchtParams() { const i = leuchtIndex(); if (i < 0) return null; const e = S.nach[i]; return { schwelle: clamp(e.p[0] || 0, 0, 1), radius: clamp(e.p[1] || 16, 2, 64) }; }   // für den Vor-Durchlauf
+function kachelRand() {   // Rand je Exportkachel in Pixeln: Palettenbreite, Weichzeichnen, Relief, Konturen und Licht lesen Nachbarpixel (bis 2 px), Schatten bis zu ihrer Länge, Leuchten bis zu seinem Radius — ohne Rand fehlen sie an der Kachelkante, und dort entsteht eine feine Linie
+  const schatten = ebenen.reduce((m, _, k) => Math.max(m, mitEbene(k, () => S.schatten ? Math.ceil(S.schattenLaenge) + 2 : 0)), 0);
+  return Math.min(256, Math.max(4, leuchtRand(), schatten));
+}
 function leuchtRand() { const l = leuchtParams(); return l ? Math.min(2 * Math.round(l.radius), 192) : 0; }   // Rand je Exportkachel in Pixeln, damit das Leuchten über die Kachelgrenze läuft
 function richtungModus() {   // Beleuchtung „Fluchtzeit, nur Richtung“ analytisch aus dem Fraktalpass: 1 im y-Kanal (einfache Färbung), 2 im z-Kanal (Bahnstatistik oder Paar belegen y), 0 nicht möglich
   if (!S.nach || !S.nach.some((e, i) => i < NACH_MAX && nachWirkt(e) && e.art === 28 && e.p[0] === 7)) return 0;
@@ -13051,6 +13130,9 @@ function wertFeld(w, r, grenzen, zuStellung, genau) {
 // Stellung der Wert selbst, darum die Einsfunktion.
 const WERTFELDER = [
   ['iterVal', 'iterRange', () => [50, 100000], iterToPos, v => { S.manualIter = Math.round(v); syncIterUI(); viewChanged(); }],
+  ['paramBVal', 'paramB', () => ((FORMULAS[S.formelB] && FORMULAS[S.formelB].param) || ['', -1, 1]).slice(1, 3),
+    v => { const [, lo, hi] = (FORMULAS[S.formelB] && FORMULAS[S.formelB].param) || ['', -1, 1]; return Math.round(1000 * (v - lo) / (hi - lo)); }, setzeParamB],   // Formel B der Hybrid-Folge
+  ...[0, 1, 2].map(k => ['param2B' + 'abc'[k] + 'Val', 'param2B' + 'abc'[k], () => (((FORMULAS[S.formelB] && FORMULAS[S.formelB].param2) || [])[k] || ['', -1, 1]).slice(1, 3), v => { const q = ((FORMULAS[S.formelB] && FORMULAS[S.formelB].param2) || [])[k] || ['', -1, 1]; return Math.round(1000 * (v - q[1]) / (q[2] - q[1])); }, v => setzeParam2B(k, v)]),
   ['paramVal', 'param', () => (FORMULAS[S.formula].param || ['', -1, 1]).slice(1),
     v => { const [, lo, hi] = FORMULAS[S.formula].param || ['', -1, 1]; return Math.round(1000 * (v - lo) / (hi - lo)); }],
   ...[0, 1, 2].map(k => ['param2' + 'abc'[k] + 'Val', 'param2' + 'abc'[k], () => ((FORMULAS[S.formula].param2 || [])[k] || ['', -1, 1]).slice(1, 3), v => { const q = (FORMULAS[S.formula].param2 || [])[k] || ['', -1, 1]; return Math.round(1000 * (v - q[1]) / (q[2] - q[1])); }, v => setzeParam2(k, v)]),   // Formel 17: getippte Werte gelten genau
@@ -14070,6 +14152,12 @@ async function exportPoster() {
     tile = clamp(Math.floor(tile / 64) * 64, 128, Math.min(1024, Math.floor(Math.sqrt(24e6 / (aa * aa)) / 64) * 64));   // höchstens rund 400 MB je Kachel
     // Adaptiv rechnet der Export in denselben Puffern wie der Bildschirm; die Kachel muss also hineinpassen
     if (adaptiv) tile = clamp(Math.min(tile, W, H), 64, 1024);
+    if (window.__exportKachel) tile = window.__exportKachel;   // Testhaken: eine feste Kachelgröße (große gegen kleine Kacheln: dasselbe Bild)
+    // Rand für alles, was Nachbarpixel liest, als Vielfaches von 4 (das Leuchten rechnet auf einem Viertel der Größe: so
+    // beginnt jede Kachel auf dessen Raster). Passt er nicht, wird die Kachel größer, soweit die Puffer es erlauben.
+    let rand = Math.ceil(kachelRand() / 4) * 4;
+    tile = Math.max(tile, Math.min(adaptiv ? Math.min(W, H) : 1024, 2 * rand + 64));
+    rand = Math.min(rand, Math.floor((tile - 4) / 8) * 4);
     renderer.beginExport(tile, tile, aa);
     const cp = Object.assign(colorParams(), { layers: adaptiv ? 0 : aa * aa, shift: [0, 0] });
     const mehrere = ebenen.length > 1 && S.family === 'escape' && !!renderer.renderExportEbene;   // Fraktal-Ebenen: je Kachel jede sichtbare Ebene, dann der Verbund
@@ -14092,7 +14180,7 @@ async function exportPoster() {
         const vor = mitEbene(e.k, () => {   // alles, was den Zustand der Ebene braucht, hier — das Rechnen danach kommt ohne ihn aus
           const adaptivK = aaAdaptiv(), aaK = adaptivK ? 1 : clamp(aaSnap(S.aa), 1, 16);   // die Glättung dieser Ebene
           const g = kachelGeometrie(), mi = currentMaxIter(); computeOrbits(mi, g.dcMax);
-          const c = Object.assign(colorParamsEbene(), { layers: adaptivK ? 0 : aaK * aaK, shift: [0, 0], ps: g.psX, nachBild: cp.nachBild });
+          const c = Object.assign(colorParamsEbene(), { layers: adaptivK ? 0 : aaK * aaK, shift: [0, 0], ps: g.psX, nachBild: cp.nachBild, gueltig: cp.gueltig });
           return { params: kachel(g, mi, layerOffsets(aaK)), cp: c, ap: aaParams(), sigma: S.aaSigma, adaptiv: adaptivK, aa: aaK };
         });
         if (renderer._nachBereit) await renderer._nachBereit(vor.cp);
@@ -14103,7 +14191,7 @@ async function exportPoster() {
       return renderer.exportVerbund(Object.assign({}, cp, { verbund: { ebenen: list, liveZeigen: false } }), rw, rh);
     }
     // Beim Streifenschreiben ist die Streifenhöhe so gewählt, dass ein Streifen klein bleibt (rund 4 Mio. Pixel)
-    const stripH = streamPng ? clamp(Math.floor(4e6 / Wp), 1, tile) : tile;
+    const stripH = streamPng ? clamp(Math.max(Math.floor(4e6 / Wp), 2 * rand + 4), 1, tile) : tile;   // ein Streifen trägt mindestens den Rand und vier Zeilen
     let streifen = null, strip = null, sctx = null, schreibt = null;   // schreibt: der noch laufende Schreibvorgang des vorigen Streifens
     if (streamPng) {
       png = new PngWriter(Wp, Hp, await packerGeht());
@@ -14111,7 +14199,7 @@ async function exportPoster() {
       strip = document.createElement('canvas'); strip.width = Wp; strip.height = stripH;
       sctx = strip.getContext('2d');
     }
-    const rand = leuchtRand(), schrittX = Math.max(1, tile - 2 * rand), schrittY = Math.max(1, stripH - 2 * rand);   // Leuchten: die Kachel bekommt ringsum einen Rand, der Schritt wird kleiner
+    const schrittX = Math.max(4, Math.floor((tile - 2 * rand) / 4) * 4), schrittY = Math.max(4, Math.floor((stripH - 2 * rand) / 4) * 4);   // ringsum der Rand; Schritte als Vielfache von 4, damit jede Kachel auf dem Raster des Leuchtens beginnt
     const cols = Math.ceil(Wp / schrittX), rows = Math.ceil(Hp / schrittY), total = cols * rows;
     let done = 0;
     for (let ty = 0; ty < Hp && !exportCancel; ty += schrittY) {
@@ -14126,11 +14214,13 @@ async function exportPoster() {
             power: potenzEff(), invert: S.invert ? 1 : 0, needInt: brauchtInnen() ? 1 : 0, pRef: [g.pr[0], g.pi[0]], rotC: drehCS()[0], rotS: drehCS()[1], invM: S.invM, biomorph: S.biomorph ? 1 : 0, richtungY: richtungModus(), abkl: 1 - S.abklingen, param2: [...S.param2, S.zweig || 0],
           }, directParams(g.pr, g.pi), blaParams());
             const params = offsK.map(([ox, oy]) => Object.assign({}, base, {   // ein Parametersatz je Probenebene
-            dcOffset: drehOffset((tx - mx0 + ox - Wp / 2) * g.psX, yd ? (Hp / 2 - (ty - my0) - oy) * g.psY : (Hp / 2 - (ty - my0) - rh + oy) * g.psY, [g.shift[0] - g.dx, g.shift[1] - g.dy]) }));   // gedreht wie am Bildschirm; der Rahmenversatz dx, dy liegt schon in der Ebene; mit Rand
+            dcOffset: drehOffset((ox - Wp / 2) * g.psX, yd ? (Hp / 2 - oy) * g.psY : (oy - Hp / 2) * g.psY, [g.shift[0] - g.dx, g.shift[1] - g.dy]),   // die Bildecke, für alle Kacheln gleich: gedreht wie am Bildschirm; der Rahmenversatz dx, dy liegt schon in der Ebene
+            origin: [tx - mx0, yd ? ty - my0 : Hp - (ty - my0) - rh] }));   // die Lage der Kachel (mit Rand) im Bild, ganzzahlig: der Shader rechnet aus dem Index im ganzen Bild
           return params;
         };
         const params = kachel(geo, maxIter);
         cp.nachBild = [tx - mx0, yd ? ty - my0 : ty + h + my1 - 1, Wp, Hp];   // Nachbearbeitung: Lage der Kachel (mit Rand) im ganzen Bild (Vignette)
+        cp.gueltig = [rw, rh];   // Nachbarn nur innerhalb der gerechneten Fläche: am Bildrand ist die Kachel kleiner als ihre Textur
         let img = mehrere ? await exportKachelEbenen(kachel, rw, rh) : adaptiv ? await renderAdaptiveTile(params[0], cp, rw, rh) : await renderer.renderExportTile(params, cp, rw, rh);
         if (rw !== w || rh !== h) img = kachelBeschneiden(img, mx0, my0, w, h);   // der Rand fällt weg
         if (streamPng) for (let y = 0; y < h; y++) streifen.set(img.data.subarray(y * w * 4, (y + 1) * w * 4), (y * Wp + tx) * 4);   // Kachel in den Streifen
@@ -14142,7 +14232,7 @@ async function exportPoster() {
         await nachgeben();
       }
       if (streamPng && !exportCancel) {   // fertigen Streifen sofort in die Datei schreiben und ins Vorschaubild ziehen
-        const sh = Math.min(stripH, Hp - ty);
+        const sh = Math.min(schrittY, Hp - ty);   // gefüllt sind die Zeilen des Schritts, nicht die ganze Streifenhöhe (die trägt den Rand)
         if (schreibt) await schreibt;              // höchstens ein Streifen wartet auf den Packer
         schreibt = png.addRows(streifen, sh);      // läuft weiter, während die nächsten Kacheln gerechnet werden
         sctx.putImageData(new ImageData(streifen, Wp, stripH), 0, 0);   // nur für das Vorschaubild

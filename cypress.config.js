@@ -4,7 +4,7 @@
 const { defineConfig } = require('cypress');
 const fs = require('fs');
 const path = require('path');
-const { pngStats, pngDiff } = require('./cypress/support/png.js');
+const { pngStats, pngDiff, pngNaht, pngGleich } = require('./cypress/support/png.js');
 const { pruefeI18n } = require('./tools/i18n-pruefen.js');
 
 module.exports = defineConfig({
@@ -40,6 +40,8 @@ module.exports = defineConfig({
         leistung(argumente) { return new Promise(res => require('child_process').execFile(process.execPath, ['tools/leistung.js', ...argumente], { cwd: __dirname, maxBuffer: 64 << 20, timeout: 580000 }, (err, stdout, stderr) => res({ code: err ? (typeof err.code === 'number' ? err.code : 1) : 0, stdout: String(stdout || ''), stderr: String(stderr || '') }))); },
         // Mittlere Abweichung zweier Screenshots im Bereich
         pngDiff({ a, b, region }) { return pngDiff(fs.readFileSync(a), fs.readFileSync(b), region); },
+        pngNaht({ file }) { return pngNaht(fs.readFileSync(file)); },   // feine Linien an Kachelgrenzen
+        pngGleich({ a, b }) { return pngGleich(fs.readFileSync(a), fs.readFileSync(b)); },   // bitgleich? (Kacheln unsichtbar)
         // Dateien im Download-Ordner, optional nach Muster gefiltert; wartet bis zu `timeoutMs` auf einen Treffer
         async waitForDownload({ pattern, timeoutMs = 30000 }) {
           const dir = config.downloadsFolder, re = new RegExp(pattern), t0 = Date.now();

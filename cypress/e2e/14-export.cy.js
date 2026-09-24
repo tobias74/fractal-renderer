@@ -505,3 +505,56 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
     }
   });
 });
+// Feine Linien an den Kachelgrenzen: der Farbpass liest Nachbarpixel (Palettenbreite, Relief, Weichzeichnen, Licht,
+// Schatten). An einer Kachelkante fehlten sie, adaptiv standen dort sogar alte Werte aus dem Bildschirmpuffer — im Bild
+// eine dünne Linie längs jeder Kachelgrenze. Jetzt hat jede Kachel ringsum einen Rand, der wieder wegfällt.
+describe('Bild speichern: die Kacheln fügen sich ohne Naht zusammen', () => {
+  const L = 'mode=julia&re=1.05513090575635241126866132236458&im=-0.00903018044732939421468352256886&z=4.047223184e%2B0&jre=-0.626&jim=0&it=100000&pal=cobalt&den=0.0400&off=0.921&map=6&tx=14&ca=5.109375&f=37&pp=0.000&pq=0&dr=90&xf=z%5E7+-+z%5E2+%2B+c';
+  for (const [name, glaettung, stufe] of [['adaptiv', '&aa=2&aam=adaptive&aat=0.003&aax=64&aas=0.45', 7], ['Raster', '&aa=2&aam=grid', 9]]) {
+    it('Glättung ' + name + ': keine Linie an den Kachelgrenzen', () => {
+      cy.task('clearDownloads');
+      cy.visitApp(L + glaettung, { aa: '' });
+      cy.get('#save').click();
+      cy.setRange('posterRes', stufe);
+      cy.pickOption('posterFmt', 'png');
+      cy.get('#posterStart').click();
+      cy.get('#posterDl', { timeout: 300000 }).should('be.visible').click();
+      cy.task('waitForDownload', { pattern: '[.]png$', timeoutMs: 60000 }).then(files => cy.task('pngNaht', { file: files[0] }).then(n => {
+        // mit dem Fehler hob sich die Spalte an der Kachelgrenze zehnfach vom Median ab; das Fraktal selbst bleibt unter dem Doppelten
+        expect(n.spalte.faktor, 'Spalte ' + n.spalte.stelle).to.be.below(2.5);
+        expect(n.zeile.faktor, 'Zeile ' + n.zeile.stelle).to.be.below(2.5);
+      }));
+    });
+  }
+});
+// Die Kachelung ist unsichtbar: jedes Pixel entsteht aus seinem Index im ganzen Bild (Koordinate, Zufallsversatz der
+// Proben, Raster des Leuchtens), und der Rand deckt alles, was Nachbarpixel liest. Derselbe Export mit kleinen und mit
+// großen Kacheln ist deshalb bitgleich.
+describe('Bild speichern: kleine und große Kacheln ergeben dasselbe Bild', () => {
+  const EIGEN = 'mode=julia&re=1.05513090575635241126866132236458&im=-0.00903018044732939421468352256886&z=4.047223184e%2B0&jre=-0.626&jim=0&it=20000&pal=cobalt&den=0.0400&off=0.921&map=6&tx=14&ca=5.109375&f=37&pp=0.000&pq=0&dr=90&xf=z%5E7+-+z%5E2+%2B+c';
+  const J = 'mode=julia&jre=-0.390541&jim=0.586788&it=400&re=0&im=0&z=1.2&map=24&ca=off';
+  const exportieren = (link, kachel) => {
+    cy.task('clearDownloads');
+    cy.visitApp(link, { aa: '', onBeforeLoad(w) { w.__exportKachel = kachel; } });
+    cy.get('#save').click();
+    cy.setRange('posterRes', 4);   // 1000 px breit: mit 128er-Kacheln rund vierzig Kacheln
+    cy.pickOption('posterFmt', 'png');
+    cy.get('#posterStart').click();
+    cy.get('#posterDl', { timeout: 300000 }).should('be.visible').click();
+    return cy.task('waitForDownload', { pattern: '[.]png$', timeoutMs: 60000 }).then(files => files[0]);
+  };
+  for (const [name, link] of [
+    ['eigene Formel, feste Glättung (Palettenbreite liest Nachbarn)', EIGEN + '&aa=2&aam=grid'],
+    ['eigene Formel, adaptive Glättung (Zufallsversatz der Proben)', EIGEN + '&aa=2&aam=adaptive&aat=0.003&aax=16&aas=0.45'],
+    ['Leuchten (verkleinertes Bild, Radius 16)', J + '&aa=1&nb=29:1:1:0.5,16,1.2,1,1,1'],
+    ['Relief mit Schatten (Nachbarn bis zur Schattenlänge)', 'mode=mandel&re=-0.7435&im=0.1314&z=120&it=800&ca=off&aa=1&map=6&mt=2&mg=0.8&mr=1.5&mhl=0.25&mhs=0.3&mn=2.5&ms=1&ml=16'],
+  ]) {
+    it(name, () => {
+      exportieren(link, 512).then(gross => cy.readFile(gross, null).then(buf => cy.writeFile('cypress/kachel-gross.png', buf, null)));
+      exportieren(link, 128).then(klein => cy.task('pngGleich', { a: 'cypress/kachel-gross.png', b: klein }).then(g => {
+        expect(g.fehler, 'gleiche Größe').to.equal(undefined);
+        expect(g.anders, 'abweichende Pixel (von ' + g.pixel + ', höchstens um ' + g.max + ')').to.equal(0);
+      }));
+    });
+  }
+});
