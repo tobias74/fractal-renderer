@@ -1253,7 +1253,7 @@
             <span data-i18n="colour.table-basin"></span>
             <div class="seg" id="kurveWurzel" role="group" data-i18n-aria-label="colour.table-basin"></div>
           </div>
-          <div class="btns"><button type="button" id="kurveAusHist" class="ghost" data-i18n="colour.table-from-histogram" data-i18n-title="colour.table-from-histogram-title"></button><button type="button" id="kurveAusAusschnitt" class="ghost" aria-pressed="false" data-i18n="colour.table-from-area" data-i18n-title="colour.table-from-area-title"></button></div>
+          <div class="btns"><button type="button" id="kurveAusHist" class="ghost" data-i18n="colour.table-from-histogram" data-i18n-title="colour.table-from-histogram-title"></button><button type="button" id="kurveTabGerade" class="ghost" data-i18n="colour.curve-straight" data-i18n-title="colour.table-straight-title"></button><button type="button" id="kurveAusAusschnitt" class="ghost" aria-pressed="false" data-i18n="colour.table-from-area" data-i18n-title="colour.table-from-area-title"></button></div>
           <div id="kurveListe" class="kurve-liste" role="list" data-i18n-aria-label="colour.table-rows"></div>
         </div>
       </div>
@@ -2484,6 +2484,7 @@ const TEXTE = {
   'colour.table-softer-title': { de: 'Die Tabelle über benachbarte Zeilen mitteln: weichere Übergänge zwischen den Farbbändern.', en: 'Average the table over neighbouring rows: softer transitions between the colour bands.' },
   'colour.table-harder': { de: 'Härter', en: 'Harder' },
   'colour.table-harder-title': { de: 'Die Tabelle schärfen: Übergänge zwischen den Farbbändern werden kantiger.', en: 'Sharpen the table: transitions between the colour bands get crisper.' },
+  'colour.table-straight-title': { de: 'Die Tabelle neu anfangen: die gerade Linie, eine Runde, ohne Pendeln, Stufen und Welle. Rückgängig holt die vorige zurück.', en: 'Start the table afresh: the straight line, one run, without swing, steps and waves. Undo brings the previous one back.' },
   'colour.table-from-area': { de: 'Aus einem Ausschnitt befüllen', en: 'Fill from an area' },
   'colour.table-from-area-active': { de: 'Rechteck im Bild aufziehen … (Esc bricht ab)', en: 'Drag a rectangle in the picture … (Esc cancels)' },
   'colour.table-from-area-title': { de: 'Ein Rechteck im Bild aufziehen: nur was darin liegt, wird gezählt. Dieses Detail bekommt die volle Farbspanne, der Rest folgt derselben Tabelle.', en: 'Drag a rectangle in the picture: only what lies inside is counted. That detail gets the full colour range, the rest follows the same table.' },
@@ -8842,6 +8843,7 @@ function glaetten(u, r) {   // gleitendes Mittel über 2r + 1 Zeilen, zweimal (f
   }
   return a;
 }
+$('kurveTabGerade').addEventListener('click', () => { if (tabBereit()) tabSchreiben({ u: Float64Array.from({ length: CDF_N }, (_, i) => (i + 0.5) / CDF_N), wdh: 1, pendel: false, stufen: 0, welle: 0, sq: null, sv: 0 }); });   // frisch: die gerade Linie wie aus der Kurve, eine Runde, ohne Pendeln, Stufen und Welle
 $('kurveWeicher').addEventListener('click', () => tabWerkzeug(z => { z.u = glaetten(z.u, 4); z.sq = null; }));
 $('kurveHaerter').addEventListener('click', () => tabWerkzeug(z => { const g = glaetten(z.u, 4); z.u = z.u.map((v, i) => clamp(v + 0.6 * (v - g[i]), 0, 1)); z.sq = null; }));
 function kurveAusgleichen(richtung) {   // eine Rastung: rechts zur Verteilung der Ansicht, links zur geraden Linie; hin und zurück heben sich auf

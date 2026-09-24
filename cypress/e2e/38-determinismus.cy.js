@@ -166,6 +166,10 @@ describe('Determinismus: der Link legt das Bild fest', () => {
         warteAuf('kt', v => { const a = tabelle(v), b = tabelle(k0); expect(Math.max(...a.map((x, i) => Math.abs(x - b[i]))) * 4095, 'Pendeln aus, eine Runde: die Tabelle vom Anfang (nach dem Laden ohne ungerundete Werte: höchstens zwei Bit Rundung)').to.be.at.most(2.001); });
         setzen('kurveWeicher');
         warteAuf('kt', v => { voll(v); expect(v, 'weicher').to.not.equal(k0); });
+        setzen('kurveWdhPlus', 2); setzen('kurvePendel'); setzen('kurveStufenPlus', 3); rad('kurveWellenRad', 'rightarrow', 5);
+        setzen('kurveTabGerade');   // „Gerade“: alles auf einmal zurück auf die frische Tabelle
+        warteAuf('kt', v => expect(v, 'die gerade Linie wie aus der Kurve').to.equal(k0));
+        cy.get('#kurveWdhZahl').should('have.text', '1'); cy.get('#kurveStufenZahl').should('have.text', 'aus'); cy.get('#kurvePendel').should('not.have.class', 'on');
         cy.location('hash').then(h => expect([...new URLSearchParams(h.slice(1)).keys()].filter(k => !/^(mode|re|im|z|it|pv|den|aa|aam|aat|aax|aas|map|kt|ca)$/.test(k)), 'kein Stand der Werkzeuge im Link').to.deep.equal([]));
       });
     });
