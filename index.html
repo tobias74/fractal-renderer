@@ -544,7 +544,8 @@
     border: 1px solid var(--line-strong); border-radius: 6px; padding: 7px 8px; font: 13px var(--font-mono);
   }
   .poster-card .thumb { max-height: 140px; width: auto; max-width: 100%; border-radius: 6px; display: block; margin: 0 auto; }
-  #crop { position: fixed; inset: 0; z-index: 6; pointer-events: auto; cursor: move; touch-action: none; }   /* fängt alles ab: solange der Rahmen steht, bewegt kein Finger die Ansicht darunter */
+  #crop { position: fixed; inset: 0; z-index: 6; pointer-events: auto; cursor: grab; touch-action: none; }   /* neben dem Rahmen: die Hand, sie verschiebt das Bild samt Rahmen */
+  #crop.schiebt { cursor: grabbing; }
   #cropBox {
     position: absolute; box-sizing: border-box;
     border: 1.5px solid rgba(255, 255, 255, .95);
@@ -14350,19 +14351,44 @@ window.addEventListener('keydown', e => {
   if (e.key === 'Escape') { cropEnd(false); e.preventDefault(); }
   else if (e.key === 'Enter') { cropEnd(true); e.preventDefault(); }
 });
-(() => {                            // Ziehen und Skalieren des Rahmens
-  let drag = null;
+(() => {                            // Ziehen und Skalieren des Rahmens; daneben das Bild verschieben und mit zwei Fingern zoomen
+  let drag = null, kneifen = null;
+  const finger = new Map();   // die aufgesetzten Zeiger (Bildschirmkoordinaten), für das Zoomen mit zwei Fingern
+  const leinwand = () => { const cv = document.querySelector('#stage canvas'); return cv ? cv.getBoundingClientRect() : null; };
+  const kneifStand = () => { const [a, b] = [...finger.values()]; return { mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2, d: Math.max(1, Math.hypot(a.x - b.x, a.y - b.y)) }; };
   cropEl.addEventListener('pointerdown', e => {
     if (!crop || (e.target instanceof Element && e.target.closest('.crop-bar'))) return;   // die Leiste unten bedient sich selbst
     e.preventDefault(); e.stopPropagation();
+    finger.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (finger.size >= 2) {   // ein zweiter Finger: zoomen wie auf der Leinwand, statt den Zug des ersten zu übernehmen
+      try { cropEl.setPointerCapture(e.pointerId); } catch (err) { /* synthetische Zeiger */ }
+      if (drag && drag.bild) commitPan();
+      drag = null; cropEl.classList.remove('schiebt');
+      kneifen = finger.size === 2 ? kneifStand() : null; return;
+    }
     const amRahmen = e.target instanceof Element && !!e.target.closest('#cropBox');
-    if (!amRahmen && !matchMedia('(pointer: coarse)').matches) { return; }   // mit der Maus fasst nur der Rahmen an; mit dem Finger auch die Fläche daneben, weil der Griff schwer zu treffen ist
     try { cropEl.setPointerCapture(e.pointerId); } catch (err) { /* synthetische Zeiger */ }
+    if (!amRahmen) {   // neben dem Rahmen: das Bild verschieben, der Rahmen wandert mit (er ist im Fraktal verankert) — nur ein Finger knapp daneben fasst den Rahmen, weil sein Griff schwer zu treffen ist
+      const b = cropBox.getBoundingClientRect(), abstand = Math.hypot(Math.max(b.left - e.clientX, 0, e.clientX - b.right), Math.max(b.top - e.clientY, 0, e.clientY - b.bottom));
+      if (!(matchMedia('(pointer: coarse)').matches && abstand <= 28)) { drag = { id: e.pointerId, bild: true, x: e.clientX, y: e.clientY }; cropEl.classList.add('schiebt'); return; }
+    }
     const hh = e.target.dataset.h || null;
     drag = { id: e.pointerId, hh, x: e.clientX, y: e.clientY, c: { cx: crop.cx, cy: crop.cy, w: crop.w, h: crop.h } };
   });
   cropEl.addEventListener('pointermove', e => {
+    if (finger.has(e.pointerId)) finger.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (kneifen && finger.size === 2) {   // zwei Finger: um ihre Mitte zoomen und mit ihr verschieben; der Rahmen hängt am Fraktal und folgt
+      const r = leinwand(); if (!r) return;
+      const n = kneifStand(), fx = W / r.width, fy = H / r.height;
+      pan((n.mx - kneifen.mx) * fx, (n.my - kneifen.my) * fy);
+      zoomAt((n.mx - r.left) * fx, (n.my - r.top) * fy, n.d / kneifen.d);
+      kneifen = n; return;
+    }
     if (!drag || e.pointerId !== drag.id) return;
+    if (drag.bild) {   // das Bild schieben wie sonst auch: Leinwandpixel
+      const r = leinwand(); if (!r) return;
+      pan((e.clientX - drag.x) * W / r.width, (e.clientY - drag.y) * H / r.height); drag.x = e.clientX; drag.y = e.clientY; return;
+    }
     const k = cssPerPlane(), dxp = (e.clientX - drag.x) / k, dyp = -(e.clientY - drag.y) / k, c = drag.c;
     if (!drag.hh) { const [ex, ey] = ebeneVonPixel(dxp, dyp); crop.cx = dd.addD(c.cx, ex); crop.cy = dd.addD(c.cy, ey); syncCropBox(); return; }
     // Der Rahmen wird über seine vier Kanten gezogen, als Abstand zur Mitte beim Anfassen (Ebenenkoordinaten, y nach oben).
@@ -14390,9 +14416,17 @@ window.addEventListener('keydown', e => {
     crop.cy = dd.addD(c.cy, ey);
     syncCropBox();
   });
-  const up = e => { if (drag && e.pointerId === drag.id) drag = null; };
+  const up = e => {
+    finger.delete(e.pointerId);
+    if (kneifen) { if (finger.size < 2) { kneifen = null; commitPan(); requestFrame(); } return; }   // nach dem Zoomen zieht der übrige Finger nichts, bis er neu aufsetzt
+    if (drag && e.pointerId === drag.id) { if (drag.bild) { commitPan(); requestFrame(); } drag = null; cropEl.classList.remove('schiebt'); }   // das Verschieben abschließen wie auf der Leinwand
+  };
   cropEl.addEventListener('pointerup', up); cropEl.addEventListener('pointercancel', up);
-  cropEl.addEventListener('wheel', e => e.preventDefault(), { passive: false });
+  cropEl.addEventListener('wheel', e => {   // das Mausrad zoomt auch während des Zuschnitts: an die Leinwand weiterreichen (die Ebene darüber fängt nur Finger ab)
+    e.preventDefault();
+    const cv = document.querySelector('#stage canvas'); if (!cv) return;
+    cv.dispatchEvent(new WheelEvent('wheel', { deltaX: e.deltaX, deltaY: e.deltaY, deltaMode: e.deltaMode, clientX: e.clientX, clientY: e.clientY, shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, altKey: e.altKey, bubbles: true, cancelable: true }));
+  }, { passive: false });
 })();
 
 // Eine Exportkachel adaptiv rechnen, mit demselben Kriterium wie am Bildschirm. Die Kachel liegt dabei in der linken

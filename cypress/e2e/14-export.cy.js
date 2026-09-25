@@ -208,6 +208,62 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
     cy.waitRender();   // der Bildschirm wird nach dem adaptiven Export neu gerechnet
   });
 
+  it('während des Zuschnitts zoomt das Mausrad das Bild, der Rahmen bleibt im Fraktal verankert', () => {
+    cy.get('#save').click();
+    cy.get('#cropPick').click();
+    cy.get('#crop').should('be.visible');
+    cy.hashParams().then(h0 => cy.get('#cropBox').then($b => {
+      const z0 = parseFloat(h0.get('z')) || 1, b0 = $b[0].getBoundingClientRect().width;
+      cy.get('#crop').trigger('wheel', { deltaY: -300, clientX: 400, clientY: 300, force: true });   // über der Ebene, die den Zuschnitt trägt
+      cy.wait(800);
+      cy.location('hash').should(h => expect(parseFloat(new URLSearchParams(h.slice(1)).get('z')), 'hineingezoomt').to.be.greaterThan(z0 * 1.2));
+      cy.get('#crop').should('be.visible');   // der Zuschnitt bleibt offen
+      cy.get('#cropBox').should($n => expect($n[0].getBoundingClientRect().width, 'der Rahmen wächst mit dem Bild').to.be.greaterThan(b0 * 1.2));
+    }));
+    cy.get('#cropOk').click();
+  });
+
+  // Der Rahmen hängt am Fraktal: was das Bild auf dem Schirm tut, tut er auch — gleich, wie das Fraktal gedreht ist.
+  // Verschieben: derselbe Weg. Zoomen um einen Punkt P: P steht, die Mitte rückt um den Faktor von P weg, die Größe mit.
+  it('Zuschnitt bei gedrehter Ansicht: Verschieben, Mausrad und zwei Finger bewegen Bild und Rahmen gemeinsam', () => {
+    cy.visitApp('mode=mandel&re=-0.75&im=0.1&z=2&it=300&dr=30'); cy.waitRender();
+    cy.get('#save').click(); cy.get('#cropPick').click(); cy.get('#crop').should('be.visible');
+    const box = () => cy.get('#cropBox').then($b => { const r = $b[0].getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height, r }; });
+    const zeiger = (typ, id, x, y, knopf) => cy.get('#crop').trigger(typ, { pointerId: id, pointerType: 'touch', isPrimary: id === 1, button: 0, buttons: knopf, clientX: x, clientY: y, force: true });
+    box().then(b0 => {
+      // 1. neben dem Rahmen ziehen
+      const px = b0.r.left > 80 ? b0.r.left / 2 : b0.x, py = b0.r.left > 80 ? b0.y : b0.r.top / 2;
+      zeiger('pointerdown', 1, px, py, 1); zeiger('pointermove', 1, px + 70, py - 40, 1); zeiger('pointerup', 1, px + 70, py - 40, 0);
+      cy.get('#cropBox').should($n => { const r = $n[0].getBoundingClientRect();
+        expect(r.left + r.width / 2, 'verschoben: Mitte x').to.be.closeTo(b0.x + 70, 2); expect(r.top + r.height / 2, 'Mitte y').to.be.closeTo(b0.y - 40, 2); expect(r.width, 'gleich groß').to.be.closeTo(b0.w, 1); });
+      // 2. Mausrad um einen Punkt P
+      box().then(b1 => {
+        const P = { x: b1.x - b1.w * 0.3, y: b1.y + b1.h * 0.2 };
+        cy.get('#crop').trigger('wheel', { deltaY: -300, clientX: P.x, clientY: P.y, force: true });
+        cy.get('#cropBox').should($n => { const r = $n[0].getBoundingClientRect(); expect(r.width, 'hineingezoomt').to.be.greaterThan(b1.w * 1.2); });
+        box().then(b2 => {
+          const f = b2.w / b1.w;
+          expect(b2.h / b1.h, 'Höhe um denselben Faktor').to.be.closeTo(f, 0.01);
+          expect(b2.x, 'Mitte x: um den Faktor von P weg').to.be.closeTo(P.x + (b1.x - P.x) * f, 2);
+          expect(b2.y, 'Mitte y').to.be.closeTo(P.y + (b1.y - P.y) * f, 2);
+          // 3. zwei Finger: Abstand 200 → 300 (Faktor 1,5), die Mitte bleibt, also ist sie der feste Punkt
+          const M = { x: b2.x - 40, y: b2.y + 30 };
+          zeiger('pointerdown', 1, M.x - 100, M.y, 1); zeiger('pointerdown', 2, M.x + 100, M.y, 1);
+          zeiger('pointermove', 1, M.x - 150, M.y, 1); zeiger('pointermove', 2, M.x + 150, M.y, 1);
+          zeiger('pointerup', 2, M.x + 150, M.y, 0); zeiger('pointerup', 1, M.x - 150, M.y, 0);
+          box().then(b3 => {
+            const g = b3.w / b2.w;
+            expect(g, 'zwei Finger zoomen um den Faktor ihres Abstands').to.be.closeTo(1.5, 0.02);
+            expect(b3.x, 'Mitte x: die Fingermitte steht').to.be.closeTo(M.x + (b2.x - M.x) * g, 2);
+            expect(b3.y, 'Mitte y').to.be.closeTo(M.y + (b2.y - M.y) * g, 2);
+          });
+        });
+      });
+    });
+    cy.expectHash('dr', '30');   // die Drehung bleibt, wie sie war
+    cy.get('#cropOk').click();
+  });
+
   it('hohes Bild über mehrere Streifen: die Datei ist von oben bis unten gefüllt', () => {
     // PNG wird streifenweise geschrieben, ohne Bild in voller Größe (sonst begrenzt die Zeichenfläche des Geräts
     // die Bildgröße). Ein hochkantiger Rahmen prüft, dass dabei keine Zeile verloren geht.
@@ -458,10 +514,10 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
     cy.pickOption('posterFmt', 'png');
     cy.get('#posterCancel').click();
   });
-  // Am Handy trifft ein Finger den kleinen Griff oft nicht. Solange der Rahmen steht, darf darum nichts an die
-  // Leinwand durchkommen: kein Verschieben, kein Kneifen. Mit dem Zeiger fasst der Rahmen nur an sich selbst an;
-  // erst bei grobem Zeiger (Finger) verschiebt ihn auch ein Zug in der abgedunkelten Fläche.
-  it('der Ausschnittrahmen fängt Berührungen ab: die Ansicht bleibt stehen, der Rahmen wird am Rahmen angefasst', () => {
+  // Solange der Rahmen steht, liegt eine Maske über der Leinwand. Im Rahmen verschiebt ein Zug den Rahmen (Pfeilkreuz),
+  // daneben das Bild samt Rahmen (Hand), der Rahmen ist im Fraktal verankert. Nur ein Finger knapp neben dem Rahmen
+  // fasst den Rahmen, weil sein Griff schwer zu treffen ist.
+  it('neben dem Ausschnittrahmen verschiebt ein Zug das Bild, der Rahmen wandert mit', () => {
     cy.viewport(375, 812);
     cy.visitApp('mode=mandel'); cy.waitRender();
     cy.get('#tabSave').click();
@@ -477,13 +533,15 @@ describe('Bild speichern: Ausschnitt und Auflösung, sonst nichts', () => {
       cy.get('#crop').trigger('pointerdown', { pointerId: 7, pointerType: 'touch', button: 0, buttons: 1, clientX: 40, clientY: 120, force: true });
       cy.get('#crop').trigger('pointermove', { pointerId: 7, pointerType: 'touch', buttons: 1, clientX: 90, clientY: 120, force: true });
       cy.get('#crop').trigger('pointerup', { pointerId: 7, pointerType: 'touch', button: 0, buttons: 0, clientX: 90, clientY: 120, force: true });
-      cy.get('@reVorher').then(vorher => cy.expectHash('re', r => expect(r, 'die Ansicht blieb stehen').to.eq(vorher)));
+      cy.get('@reVorher').then(vorher => cy.location('hash').should(h => expect(new URLSearchParams(h.slice(1)).get('re'), 'das Bild wurde verschoben').to.not.eq(vorher)));
       cy.expectHash('z', z => expect(parseFloat(z), 'kein Zoom').to.eq(1));
       cy.get('#cropBox').should($n => {
         const r = $n[0].getBoundingClientRect();
-        expect(r.left, 'mit dem Zeiger fasst nur der Rahmen an: er bleibt stehen').to.be.closeTo(links, 1);
+        expect(r.left, 'der Rahmen wandert mit dem Bild, um denselben Weg').to.be.closeTo(links + 50, 2);
         expect(r.width, 'und bleibt gleich groß').to.be.closeTo(breit, 1);
       });
+      cy.get('#crop').should($c => expect(getComputedStyle($c[0]).cursor, 'neben dem Rahmen: die Hand').to.eq('grab'));
+      cy.get('#cropBox').should($c => expect(getComputedStyle($c[0]).cursor, 'auf dem Rahmen: das Pfeilkreuz').to.eq('move'));
     });
     cy.get('#cropCancel').click();
   });
