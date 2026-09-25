@@ -8378,7 +8378,10 @@ function aaParams() {
   return { tol: S.aaTol, maxN: deckel, minN: schnell ? AA_MINN_SCHNELL : AA_MINN, schnell: schnell ? 1 : 0, maske: schnell ? AA_MASKE : 0 };
 }
 function colorKey() {   // alles, was die Farbe einer Probe bestimmt: ändert es sich, sind die akkumulierten Farben veraltet
-  return JSON.stringify([S.palette, pal2Objekt(), S.customPal && (S.customPal.stops || [S.customPal.a, S.customPal.b, S.customPal.c, S.customPal.d]), S.density, S.offset, S.mapping, S.glowMode, S.glowWidth, S.interior, S.innenFarbe, S.gestuft, S.material, S.glanz, S.reflexion, S.himmelLage, S.himmelSpanne, S.neigung, S.schatten, S.schattenLaenge, S.colAnchor, S.statAnker, S.abzug, [1, 2, 3, 4].map(texSlot), paarKonfig(), S.comp, S.formula, S.power, S.palFilter, S.palFilterK, cdfVersion]);
+  // Aus dem, was wirklich an den Farbpass geht, nicht aus einer Liste von Hand: so fehlt kein Regler (die Liste vergaß
+  // Log-Start, Log-Stufen, Palettenkurve und Übergang — mit adaptiver Glättung blieb das alte Bild stehen)
+  const c = colorParams(); delete c.shift;   // der Versatz beim Ziehen ist Lage, nicht Farbe
+  return JSON.stringify([c, palWerte(palAktiv()), pal2Objekt() ? pal2Werte(pal2Objekt()) : '', palPfadAn() ? palWerte(palZweiAktiv()) : '', cdfVersion]);
 }
 function aaRestart() {   // Akkumulation verwerfen: nach neuem Bild, Zoom oder Farbänderung
   if (!aaOn) return;
