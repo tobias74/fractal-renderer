@@ -1021,15 +1021,15 @@
             <option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option>
           </select></div>
         <div id="paramBRow" hidden>
-          <div class="lbl wertzeile"><label for="paramB" id="paramBLabel"></label><input class="val mono wert" id="paramBVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+          <div class="lbl wertzeile"><label for="paramB" id="paramBLabel" data-i18n="subject.parameter"></label><input class="val mono wert" id="paramBVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
           <input id="paramB" type="range" min="0" max="1000" value="500">
         </div>
         <div id="param2BRow" hidden>
-          <div class="lbl wertzeile"><label for="param2Ba" id="param2BaLabel"></label><input class="val mono wert" id="param2BaVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+          <div class="lbl wertzeile"><label for="param2Ba" id="param2BaLabel" data-i18n="formula.param-b"></label><input class="val mono wert" id="param2BaVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
           <input id="param2Ba" type="range" min="0" max="1000" value="500">
-          <div class="lbl wertzeile"><label for="param2Bb" id="param2BbLabel"></label><input class="val mono wert" id="param2BbVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+          <div class="lbl wertzeile"><label for="param2Bb" id="param2BbLabel" data-i18n="formula.param-d"></label><input class="val mono wert" id="param2BbVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
           <input id="param2Bb" type="range" min="0" max="1000" value="500">
-          <div class="lbl wertzeile"><label for="param2Bc" id="param2BcLabel"></label><input class="val mono wert" id="param2BcVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
+          <div class="lbl wertzeile"><label for="param2Bc" id="param2BcLabel" data-i18n="formula.param-f"></label><input class="val mono wert" id="param2BcVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
           <input id="param2Bc" type="range" min="0" max="1000" value="500">
         </div>
       </div>
@@ -3158,6 +3158,7 @@ const TEXTE = {
   'post.dark-on-light': { de: 'dunkel auf hell', en: 'dark on light' },
   'file.please-copy-with-ctrl': { de: 'Bitte mit Strg+C kopieren', en: 'Please copy with Ctrl+C' },
   'file.view-loaded-from-file': { de: 'Ansicht aus Datei geladen', en: 'View loaded from file' },
+  'palette.from-link': { de: 'Aus dem Link', en: 'From the link' },
   'file.view-loaded-from-link': { de: 'Ansicht aus Link geladen', en: 'View loaded from link' },
   // formula
   'formula.buffalo': { de: 'Buffalo', en: 'Buffalo' },
@@ -4369,7 +4370,7 @@ const PAL_GRUPPEN = [
 // Farbtabelle) oder eine Quilez-Palette (a, b, c, d, läuft über die Kosinus-Uniforms wie Klassisch)
 function palAktiv() { return S.customPal || PALETTES[S.palette] || PALETTES[0]; }
 function palPfadAn() { return S.palPfadSpanne > 1e-6; }   // Palettenübergang: erst mit einer Spanne gibt es einen
-function palZweiAktiv() { return PALETTES[S.palZwei] || PALETTES[0]; }   // die Palette, in die der Übergang führt (immer eine eingebaute)
+function palZweiAktiv() { return S.palZweiEigen || PALETTES[S.palZwei] || PALETTES[0]; }   // die Palette, in die der Übergang führt: eine eingebaute oder eine aus dem Link, die keiner gleicht
 function palTabelle() { const p = palAktiv(); return p.stops ? p : (palPfadAn() ? p : null); }   // mit Übergang läuft auch eine Kosinus-Palette über die Tabelle, damit beide mischbar sind
 function palKosinus() { const p = palAktiv(); return p.a ? p : PALETTES[0]; }   // bei Stützstellen nur Platzhalter für die Uniforms
 
@@ -7825,7 +7826,7 @@ function standardZustand() {
   palette: 0, density: 0.04, offset: 0, animate: false, customPal: null,   // customPal: eigenes Farbschema { id, name, cyclic, stops }
   pal2: {}, pal2Eigen: null,                               // zweidimensionale Palette je Färbung mit zwei Werten (siehe quelle2), Entwurf bzw. Schema aus dem Link
   palKurve: PAL_KURVE.kurve.def, palKurveMitte: PAL_KURVE.mitte.def,
-  palZwei: 0, palPfadBeginn: PAL_PFAD.beginn.def, palPfadSpanne: PAL_PFAD.spanne.def,
+  palZwei: 0, palZweiEigen: null, palPfadBeginn: PAL_PFAD.beginn.def, palPfadSpanne: PAL_PFAD.spanne.def,
   mapping: 2, logStufen: LOG_STUFEN.def, logDichteMit: false, material: 0, glanz: MATERIAL.glanz.def, reflexion: MATERIAL.reflexion.def, himmelLage: MATERIAL.lage.def, himmelSpanne: MATERIAL.spanne.def, neigung: MATERIAL.neigung.def, schatten: false, schattenLaenge: MATERIAL.laenge.def, glowMode: 0, glowWidth: 1.5, interior: 0, innenFarbe: '#000000', gestuft: false, lyGrenze: 2, fluchtForm: 0, fluchtRadius: 0, dreh: 0, spirale: SPIRALE.def, texInnen: false, texVerbund: 0, invM: [0, 0], biomorph: false, abb: 0, abklingen: 0, logmap: 0, streifen: STREIFEN.def, vorlauf: VORLAUF.def, gewicht: GEWICHT.def, abzug: ABZUG.def, nach: [], textur: 0, texWerte: [0, 0, 0, 0], tex2Werte: [0, 0, 0, 0], tex3Werte: [0, 0, 0, 0], tex4Werte: [0, 0, 0, 0], texStaerke: TEXTUR.staerke.def, texKontrast: TEXTUR.kontrast.def, texMitte: TEXTUR.mitte.def, textur2: 0, tex2Staerke: TEXTUR.staerke.def, tex2Kontrast: TEXTUR.kontrast.def, tex2Mitte: TEXTUR.mitte.def, texHell: '#ffffff', texDunkel: '#000000', tex2Hell: '#ffffff', tex2Dunkel: '#000000', textur3: 0, tex3Staerke: TEXTUR.staerke.def, tex3Kontrast: TEXTUR.kontrast.def, tex3Mitte: TEXTUR.mitte.def, tex3Hell: '#ffffff', tex3Dunkel: '#000000', textur4: 0, tex4Staerke: TEXTUR.staerke.def, tex4Kontrast: TEXTUR.kontrast.def, tex4Mitte: TEXTUR.mitte.def, tex4Hell: '#ffffff', tex4Dunkel: '#000000', texAn: true, tex2An: true, tex3An: true, tex4An: true, paar: PAAR_EIGEN(), kurve: KURVE_STD.map(p => p.slice()), kurveSpann: false, kurveArt: 0, kurveWerte: null,   // Verlaufsart (Standard logarithmisch), Randlinien, Randbreite px, Innen
   colAnchor: null,                                         // Farbanker: Iterationswert, an dem der Dichte-Regler die Farbe hält (null = keiner)
   statAnker: null,                                         // Farbanker des Bahnmittels (Färbungen 19, 20, 22, 23): das Mittel, an dem die Farbe hält (null = keiner)
@@ -9934,8 +9935,13 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
   const palW = h.get('pal'), pal = palW === null ? -1 : palNr(/^\d+$/.test(palW) ? PAL_ALT[+palW] : palW);   // Kennung, bei alten Links die Nummer
   if (pal >= 0) S.palette = pal;
   const cp = decodePal(h.get('cp')); if (cp) S.customPal = cp;
-  { const pv = decodePal(h.get('pv'));   // die Werte der Palette: weichen sie von der Vorgabe ab (geändert oder entfernt), gelten sie als Schema mit deren Namen
-    if (pv && !S.customPal && validPal(pv)) { const vorgabe = PALETTES[S.palette]; if (!vorgabe || palSchluessel(vorgabe) !== palSchluessel(pv)) S.customPal = Object.assign({ id: 'link', name: vorgabe ? (vorgabe.kennung ? t(vorgabe.name) : vorgabe.name) : 'Aus Link' }, palDaten(pv)); } }
+  { const pv = decodePal(h.get('pv'));   // die Werte der Palette bestimmen sie (pal und cp gelten nur noch für alte Links ohne Werte)
+    if (pv && validPal(pv)) {
+      const key = palSchluessel(pv), k = PALETTES.findIndex(v => palSchluessel(v) === key), eigen = eigeneSchemata().find(c => palSchluessel(c) === key);
+      if (k >= 0) { S.palette = k; S.customPal = null; }   // eine Vorgabe
+      else if (eigen) S.customPal = eigen;   // ein eigenes Schema dieses Browsers, unter seinem Namen
+      else S.customPal = Object.assign({ id: 'link', name: t('palette.from-link') }, palDaten(pv));
+    } }
   const den = parseFloat(h.get('den'));
   if (Number.isFinite(den)) S.density = clamp(den, DENS.min, DENS.max);
   const off = parseFloat(h.get('off')); if (Number.isFinite(off)) S.offset = clamp(off, 0, 1);
@@ -10018,7 +10024,9 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
     S.schatten = h.get('ms') === '1'; S.schattenLaenge = zahl('ml', MATERIAL.laenge);
     S.palKurve = zahl('plk', PAL_KURVE.kurve); S.palKurveMitte = zahl('plm', PAL_KURVE.mitte);   // Palettenkurve (ohne Schlüssel: gleichmäßig)
     S.palPfadSpanne = zahl('pps', PAL_PFAD.spanne); S.palPfadBeginn = zahl('ppb', PAL_PFAD.beginn);   // Palettenübergang (ohne Schlüssel: keiner)
-    const p2 = parseInt(h.get('pp2'), 10); S.palZwei = Number.isFinite(p2) ? clamp(p2, 0, PALETTES.length - 1) : 0; }
+    const p2 = parseInt(h.get('pp2'), 10); S.palZwei = Number.isFinite(p2) ? clamp(p2, 0, PALETTES.length - 1) : 0; S.palZweiEigen = null;   // pp2: nur noch alte Links
+    const ppv = decodePal(h.get('ppv'));
+    if (ppv && validPal(ppv)) { const key = palSchluessel(ppv), k = PALETTES.findIndex(v => palSchluessel(v) === key); if (k >= 0) S.palZwei = k; else S.palZweiEigen = Object.assign({ id: 'link', name: t('palette.from-link') }, palDaten(ppv)); } }
   const pw = parseInt(h.get('p'), 10); if (Number.isFinite(pw)) S.power = clamp(pw, 2, 8);
   const fo = parseInt(h.get('f'), 10); if (Number.isFinite(fo)) S.formula = clamp(fo, 0, FORMULAS.length - 1);
   if (wurzelFormel(S.formula) && !nullstellenFormel(S.formula) && S.power === 2) S.power = 3;   // Newton/Nova ist mit d = 2 entartet (auch in älteren Links)
@@ -10074,8 +10082,13 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
   { const aa = parseInt(h.get('aa'), 10), am = h.get('aam'), at = parseFloat(h.get('aat')), ax = parseInt(h.get('aax'), 10), sg = parseFloat(h.get('aas')), g = GLAETTUNG_VORGABE;   // Glättung der Ebene; ohne Angabe die Vorgabe
     S.aa = aa >= 1 ? aaSnap(aa) : g.aa; S.aaMode = AA_MODI.includes(am) ? am : g.aaMode;
     S.aaTol = at >= AA_TOL.min && at <= AA_TOL.max ? at : g.aaTol; S.aaMax = ax >= 8 && ax <= 4096 ? aaPosToMax(aaMaxToPos(ax)) : g.aaMax; S.aaSigma = sg >= AA_SIGMA.min && sg <= AA_SIGMA.max ? sg : g.aaSigma; }
-  { const pv2 = decodePal2(h.get('pv2')), q = quelle2();   // die Werte der zweiten Palette: weichen sie von der Vorgabe ab, gelten sie als Schema mit deren Namen
-    if (pv2 && q && !S.pal2Eigen && validPal2(pv2)) { const r = pal2Ref(); if (typeof r === 'number' && r >= 0 && PAL2[r] && pal2Schluessel(PAL2[r]) !== pal2Schluessel(pv2)) { S.pal2Eigen = Object.assign(pv2, { id: 'link', name: t(PAL2[r].name) }); S.pal2[q] = 'y:tmp'; } } }
+  { const pv2 = decodePal2(h.get('pv2')), q = quelle2();   // die Werte der zweiten Palette bestimmen sie (p2 mit Namen und cp2 gelten nur noch für alte Links)
+    if (pv2 && q && validPal2(pv2) && h.get('p2') !== 'n') {
+      const key = pal2Schluessel(pv2), k = PAL2.findIndex(v => pal2Schluessel(v) === key), eigen = eigene2Schemata().find(e => pal2Schluessel(e) === key);
+      if (k >= 0) S.pal2[q] = k;   // eine Vorgabe
+      else if (eigen) S.pal2[q] = 'y:' + eigen.id;   // ein eigenes Schema dieses Browsers
+      else { S.pal2Eigen = Object.assign(pv2, { id: 'link', name: t('palette.from-link') }); S.pal2[q] = 'y:tmp'; }
+    } }
   v.hasView = h.has('z');                   // ohne Ausschnitt: Standardansicht der gewählten Familie
   if (v.hasView && !h.has('re') && !h.has('im')) v.cx = centeredDefault({ cx: v.cx, cy: v.cy, zoom: v.zoom }).cx;   // Zoom ohne Position: Standardmitte neben dem Bedienfeld
   return v;
@@ -10093,19 +10106,17 @@ function buildParamsRoh() {   // die Adresswerte der Ebene in S samt Ansicht und
   if (S.faltung && direktFormel()) p.set('fa', String(S.faltung));
   if (S.gedaechtnis && direktFormel()) p.set('gd', String(+S.gedaechtnis.toFixed(3)));
   if (!S.autoIter) p.set('it', String(S.manualIter));
-  if (S.palette) p.set('pal', PALETTES[S.palette].kennung);
-  if (S.customPal) p.set('cp', encodePal(S.customPal));
-  else p.set('pv', palWerte(palAktiv()));   // die Werte der Vorgabe: der Link hängt an keiner Vorgabe
+  p.set('pv', palWerte(palAktiv()));   // die Werte der Palette, ohne Namen: welche Vorgabe oder welches eigene Schema es ist, folgt beim Laden aus ihnen
   const q2 = quelle2(), r2 = pal2Ref();   // Palette der Färbung mit zwei Werten, falls nicht die Vorgabe: n = gewöhnliche, e = eigenes Schema (cp2)
-  if (q2 && r2 !== pal2Start(q2)) { if (typeof r2 === 'number') p.set('p2', r2 < 0 ? 'n' : PAL2[r2].kennung); else if (pal2Objekt()) { p.set('p2', 'e'); p.set('cp2', encodePal2(pal2Objekt())); } }
-  if (q2 && typeof r2 === 'number' && r2 >= 0 && PAL2[r2]) p.set('pv2', pal2Werte(PAL2[r2]));   // die Werte der zweiten Palette, auch der Vorgabe der Färbung
+  if (q2 && r2 === -1 && r2 !== pal2Start(q2)) p.set('p2', 'n');   // die gewöhnliche Palette statt einer zweidimensionalen
+  if (q2 && pal2Objekt()) p.set('pv2', pal2Werte(pal2Objekt()));   // die Werte der zweidimensionalen Palette, ohne Namen, auch der Vorgabe der Färbung
   p.set('den', S.density.toPrecision(3));
   if (S.offset) p.set('off', S.offset.toFixed(3));
   if (Math.abs(S.palKurve - PAL_KURVE.kurve.def) > 1e-6) p.set('plk', String(+S.palKurve.toFixed(4)));   // Palettenkurve nur abseits der Gleichverteilung
   if (Math.abs(S.palKurve - PAL_KURVE.kurve.def) > 1e-6 && Math.abs(S.palKurveMitte - PAL_KURVE.mitte.def) > 1e-6) p.set('plm', String(+S.palKurveMitte.toFixed(4)));   // der Schwerpunkt zählt nur mit Kurve
   if (S.palPfadSpanne > 1e-6) {   // Palettenübergang: zweite Palette und Beginn zählen nur mit Spanne
     p.set('pps', String(+S.palPfadSpanne.toFixed(4)));
-    if (S.palZwei) p.set('pp2', String(S.palZwei));
+    p.set('ppv', palWerte(palZweiAktiv()));   // die Werte der Zielpalette, ohne Nummer und Namen
     if (Math.abs(S.palPfadBeginn - PAL_PFAD.beginn.def) > 1e-6) p.set('ppb', String(+S.palPfadBeginn.toFixed(4)));
   }
 
@@ -11048,9 +11059,16 @@ function decodePal(str) {
   }
   return validPal(p) ? p : null;
 }
+function eigeneSchemata() { try { return customPalettes; } catch (e) { return []; } }   // die eigenen Schemata, auch wenn der Link vor ihnen gelesen wird (dann leer)
+function eigene2Schemata() { try { return eigene2; } catch (e) { return []; } }
+function linkSchemataAbgleichen() {   // eine Palette „aus dem Link“, die einem eigenen Schema dieses Browsers gleicht, heißt wie dieses
+  if (S.customPal && S.customPal.id === 'link') { const key = palSchluessel(S.customPal), e = eigeneSchemata().find(c => palSchluessel(c) === key); if (e) S.customPal = e; }
+  const q = quelle2(); if (q && S.pal2[q] === 'y:tmp' && S.pal2Eigen && S.pal2Eigen.id === 'link') { const key = pal2Schluessel(S.pal2Eigen), e = eigene2Schemata().find(c => pal2Schluessel(c) === key); if (e) S.pal2[q] = 'y:' + e.id; }
+}
 function loadEigene2() {   // eigene zweidimensionale Schemata, nur mit Einwilligung
   if (!storeAllowed()) return;
   try { const j = JSON.parse(localStorage.getItem('fractal.palettes2') || '[]'); if (Array.isArray(j)) eigene2 = j.filter(validPal2).map(p => Object.assign({ id: 'q' + Math.random().toString(36).slice(2, 8) }, p)); } catch (e) { eigene2 = []; }
+  linkSchemataAbgleichen();
 }
 function saveEigene2() {   // liefert false, wenn nichts im Browser landet: dann darf der Aufrufer nicht „gespeichert“ melden
   if (!storeAllowed()) { notify('panel.kept-this-session-only'); return false; }
@@ -11059,6 +11077,7 @@ function saveEigene2() {   // liefert false, wenn nichts im Browser landet: dann
 function loadCustomPalettes() {
   if (!storeAllowed()) return;   // ohne Einwilligung auch nichts lesen
   try { const j = JSON.parse(localStorage.getItem('fractal.palettes') || '[]'); if (Array.isArray(j)) customPalettes = j.filter(validPal).map(p => Object.assign({ id: 'p' + Math.random().toString(36).slice(2, 8), cyclic: true }, p)); } catch (e) { customPalettes = []; }
+  linkSchemataAbgleichen();
 }
 function saveCustomPalettes() {   // wie saveEigene2: false, wenn die Einwilligung fehlt oder der Browser nicht mitmacht
   if (!storeAllowed()) { notify('panel.kept-this-session-only'); return false; }
@@ -11667,7 +11686,11 @@ function showPalPfad() {   // zweite Palette und Beginn zählen erst, wenn eine 
   const an = palPfadAn();
   $('palPfadSpanne').value = String(S.palPfadSpanne); $('palPfadSpanneVal').value = fmtZahl(S.palPfadSpanne, 2);
   $('palPfadBeginn').value = String(S.palPfadBeginn); $('palPfadBeginnVal').value = fmtZahl(S.palPfadBeginn, 2);
-  $('palZwei').value = String(S.palZwei); if ($('palZwei')._sync) $('palZwei')._sync();
+  { const sel = $('palZwei'); let o = sel.querySelector('option[value="link"]');   // eine Zielpalette aus dem Link, die keiner Vorgabe gleicht: ein eigener Eintrag
+    if (S.palZweiEigen && !o) { o = document.createElement('option'); o.value = 'link'; sel.append(o); if (sel._rebuild) sel._rebuild(); }
+    if (!S.palZweiEigen && o) { o.remove(); if (sel._rebuild) sel._rebuild(); }
+    if (o && S.palZweiEigen) o.textContent = S.palZweiEigen.name;
+    sel.value = S.palZweiEigen ? 'link' : String(S.palZwei); if (sel._sync) sel._sync(); }
   for (const id of ['palZweiRow', 'palZwei', 'palPfadBeginnRow', 'palPfadBeginn']) $(id).hidden = !an;
 }
 const palPfadAenderung = () => { showPalPfad(); applyPalette(); scheduleHash(); };   // die zweite Tabelle muss mit hoch
@@ -11689,7 +11712,7 @@ $('traegheit').addEventListener('change', () => { S.traegheit = $('traegheit').c
 $('traegheit').checked = S.traegheit;
 $('palPfadSpanne').addEventListener('input', () => setzePalPfadSpanne(+$('palPfadSpanne').value));
 $('palPfadBeginn').addEventListener('input', () => setzePalPfadBeginn(+$('palPfadBeginn').value));
-$('palZwei').addEventListener('change', () => { S.palZwei = clamp(parseInt($('palZwei').value, 10) || 0, 0, PALETTES.length - 1); palPfadAenderung(); });
+$('palZwei').addEventListener('change', () => { if ($('palZwei').value === 'link') return; S.palZweiEigen = null; S.palZwei = clamp(parseInt($('palZwei').value, 10) || 0, 0, PALETTES.length - 1); palPfadAenderung(); });
 const setzeVersatz = v => {   // Punktwolken: die Farben stecken in den Zählern, die müssen dann neu gesammelt werden
   S.offset = v; $('offset').value = Math.round(v * 1000); $('offsetVal').value = fmtZahl(v, 3);
   colorDirty = true; if (S.family === 'accum') accDirty = true; scheduleHash(); requestFrame(); peHistPlan();

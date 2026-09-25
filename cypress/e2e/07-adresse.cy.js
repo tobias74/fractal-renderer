@@ -20,7 +20,7 @@ describe('Zustand in der Adresse', () => {
 
   it('schreibt Änderungen zurück in die Adresse', () => {
     cy.visitApp();
-    cy.pickOption('palette', 3); cy.expectHash('pal', 'cobalt');
+    cy.pickOption('palette', 3); cy.expectHash('pal', null); cy.expectHash('pv', v => expect(v, 'die Palette steht mit ihren Werten im Link').to.be.a('string'));
     cy.pickOption('mapping', 1); cy.expectHash('map', '1');
     cy.pickOption('glowMode', 2); cy.expectHash('glow', '2');
     cy.expectHash('gw', v => expect(parseFloat(v)).to.be.greaterThan(0));
@@ -40,7 +40,7 @@ describe('Zustand in der Adresse', () => {
     cy.pickOption('power', 5);
     cy.setRange('density', 600);
     cy.expectHash('p', '5');
-    cy.expectHash('pal', 'atoll');
+    cy.expectHash('pal', null);   // nur die Werte (pv): beim Laden folgt aus ihnen die Vorgabe
     cy.location('hash').then(h => {
       cy.visitApp(h);
       cy.get('#palette').should('have.value', '4');
@@ -54,7 +54,7 @@ describe('Zustand in der Adresse', () => {
     cy.get('#undo').should('be.disabled');                       // frisch geladen gibt es nichts zurückzunehmen
     cy.get('#redo').should('be.disabled');
     cy.rerender(() => cy.pickOption('palette', '4'));
-    cy.expectHash('pal', p => expect(p, 'die Palette steht im Link').to.be.a('string'));   // der Link nennt sie beim Namen
+    cy.expectHash('pv', p => expect(p, 'die Palette steht mit ihren Werten im Link').to.be.a('string'));   // Werte, kein Name
     cy.get('#undo').should('not.be.disabled');
     cy.rerender(() => cy.get('#undo').click());
     cy.get('#palette').should('have.value', '0');
@@ -112,18 +112,18 @@ describe('Zustand in der Adresse', () => {
     cy.get('#state').invoke('text').should('match', /Fertig/);
   });
 
-  it('Vorgaben heißen im Link beim Namen; alte Nummern gelten weiter, eine entfernte fällt auf die Vorgabe zurück', () => {
+  it('der Link trägt die Werte der Paletten, keine Namen; alte Links mit Namen oder Nummern gelten weiter, eine entfernte fällt auf die Vorgabe zurück', () => {
     cy.visitApp('mode=mandel&pal=6&map=15&p2=4');                    // alte Nummern: Holzschnitt, Feldlinien
     cy.get('#palette').should('have.value', 'z:3');
     cy.get('#palette option:selected').should('have.text', 'Feldlinien');
-    cy.expectHash('pal', 'woodcut');                                   // der Link nennt jetzt die Namen
-    cy.expectHash('p2', 'field-lines');
+    cy.expectHash('pal', null); cy.expectHash('p2', null);            // nur die Werte (pv, pv2)
+    cy.location('hash').then(h => { cy.visitApp(h); cy.get('#palette option:selected').should('have.text', 'Feldlinien'); cy.location('hash').should('eq', h); });   // aus den Werten: dieselben Vorgaben
     cy.visitApp('mode=mandel&map=16&p2=3');                           // 3 war eine inzwischen entfernte Vorgabe
     cy.get('#palette option:selected').should('have.text', 'Feldlinien');   // die Vorgabe dieser Färbung
     cy.expectHash('p2', null);
     cy.visitApp('mode=mandel&map=15&p2=tiles&pal=deep-sea');
     cy.get('#palette option:selected').should('have.text', 'Kacheln');
-    cy.expectHash('pal', 'deep-sea');
+    cy.expectHash('pal', null);
   });
 
   it('Julia-Parameter und Startwert wandern mit', () => {

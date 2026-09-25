@@ -82,7 +82,7 @@ describe('Bedienfeld am Handy', () => {
     cy.get('#palStrip button').should('have.length', 21);   // 21 Vorgaben, darunter Salbei und Salbei, gedeckt
     cy.get('#palStrip button[data-value="7"]').click();
     cy.get('#palette').should('have.value', '7');
-    cy.expectHash('pal', 'deep-sea');
+    cy.expectHash('pal', null);   // Werte statt Namen
   });
 
   it('Speichern öffnet den Dialog, Mehr führt die Aktionen der Werkzeugleiste aus', () => {

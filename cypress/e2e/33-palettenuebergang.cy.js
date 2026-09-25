@@ -11,7 +11,7 @@ describe('Palettenübergang', () => {
     cy.pane('palette');
     cy.get('#palPfadSpanne').should('have.value', '0');
     cy.rowShown('palZweiRow', false); cy.rowShown('palPfadBeginnRow', false);
-    cy.expectHash('pps', null); cy.expectHash('pp2', null); cy.expectHash('ppb', null);
+    cy.expectHash('pps', null); cy.expectHash('ppv', null); cy.expectHash('ppb', null);
     cy.rerender(() => cy.get('#palPfadSpanne').invoke('val', '6').trigger('input'));
     cy.expectHash('pps', '6');
     cy.rowShown('palZweiRow', true); cy.rowShown('palPfadBeginnRow', true);
@@ -26,8 +26,10 @@ describe('Palettenübergang', () => {
     cy.get('#palPfadSpanneVal').should('have.value', '6,00');
     cy.get('#palPfadBeginnVal').should('have.value', '-2,00');
     cy.get('#palZwei').should('have.value', '4');
+    cy.expectHash('pp2', null); cy.expectHash('ppv', v => expect(v, 'die Zielpalette mit ihren Werten, ohne Nummer').to.match(/^~[1q]~/));
+    cy.location('hash').then(h => { cy.visitApp(h); cy.pane('palette'); cy.get('#palZwei').should('have.value', '4'); cy.location('hash').should('eq', h); });   // aus den Werten: dieselbe Vorgabe
     cy.revealInDetails('reset'); cy.get('#reset').click();
-    cy.expectHash('pps', null); cy.expectHash('pp2', null); cy.expectHash('ppb', null);
+    cy.expectHash('pps', null); cy.expectHash('ppv', null); cy.expectHash('ppb', null);
   });
 
   it('der Übergang färbt anders, die zweite Palette zählt,', () => {
@@ -47,6 +49,17 @@ describe('Palettenübergang', () => {
     cy.shotStats('pp-gpu').then(gpu => {
       cy.waitRender();
     });
+  });
+
+  it('eine Zielpalette aus dem Link, die keiner Vorgabe gleicht, gilt als eigene und bleibt im Link', () => {
+    const PPV = encodeURIComponent('~1~0.000:ff2020,0.500:20ff20');
+    cy.visitApp(B + '&pps=6&ppv=' + PPV); cy.pane('palette');
+    cy.get('#palZwei').should('have.value', 'link');
+    cy.get('#palZwei option:selected').should('have.text', 'Aus dem Link');
+    cy.expectHash('ppv', v => expect(v).to.contain('ff2020'));
+    cy.pickOption('palZwei', 4);   // eine Vorgabe gewählt: der Eintrag aus dem Link verschwindet
+    cy.get('#palZwei option[value="link"]').should('not.exist');
+    cy.expectHash('ppv', v => expect(v).to.not.contain('ff2020'));
   });
 
   it('der Übergang wirkt auch mit vorgefilterter Palette (gemitteltes Nachschlagen)', () => {

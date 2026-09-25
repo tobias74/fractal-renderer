@@ -45,42 +45,42 @@ describe('Dateien: Parameter und Bilder speichern und wieder öffnen', () => {
     cy.visitApp('mode=mandel&pal=woodcut&map=15&p2=field-lines');                 // Holzschnitt, Fluchtwinkel mit Feldlinien
     cy.appState().then(s => {
       expect(s).not.to.have.property('colors');   // die Werte stehen im Link: pv (gewöhnliche Palette), pv2 (zweite Palette), ohne Namen
-      expect(s.params.pal).to.eq('woodcut');
+      expect(s.params, 'kein Name im Link').not.to.have.property('pal');
       expect(s.params.pv, 'Stützstellen der Vorgabe: zyklisch, erste bei 0,21').to.match(/^~1~0\.210:1a1714,/);
       expect(s.params.pv.split('~')[2].split(',')).to.have.length(4);
-      expect(s.params.p2).to.eq('field-lines');
+      expect(s.params, 'auch die zweite Palette ohne Namen').not.to.have.property('p2');
       expect(s.params.pv2, 'die zweite Palette mit allen Werten').to.match(/^~v~linien,6,/);
     });
     cy.visitApp();                                                  // Klassisch: die Formel mit ihren Werten, ohne Kennung (Vorgabe 0)
     cy.appState().then(s => { expect(s.params.pv).to.eq('~q~0.5,0.5,0.5,0.5,0.5,0.5,1,1,1,0.5,0.6,0.7'); expect(s.params).not.to.have.any.keys('pal', 'cp'); });
   });
 
-  // Der Link beschreibt die Ansicht vollständig (19.09.2026): Paletten mit ihren Werten (pv, pv2 für Vorgaben, cp, cp2 für eigene),
+  // Der Link beschreibt die Ansicht vollständig (19.09.2026): Paletten mit ihren Werten (pv, pv2, ppv; seit 24.09.2026 ohne Namen:
+  // welche Vorgabe oder welches eigene Schema es ist, folgt beim Laden aus den Werten, sonst heißt sie „Aus dem Link“),
   // die Glättung jeder Ebene in ihrem Parametersatz. Die Datei ist derselbe Inhalt als lesbares Objekt, ohne extra und colors.
-  // Vorgaben dürfen sich ändern: weichen die Werte im Link von der Vorgabe ab, gelten die Werte, als Schema mit dem Namen der Vorgabe.
-  const LINKSCHEMA = 'cp=' + encodeURIComponent('Linkschema~1~0:ff0000,0.5:00ff00,1:0000ff');   // eine eigene Palette im Link: drei Stützstellen, zyklisch
+  const LINKSCHEMA = 'pv=' + encodeURIComponent('~1~0:ff0000,0.5:00ff00,1:0000ff');   // eine eigene Palette im Link: drei Stützstellen, zyklisch, ohne Namen
   const KLASSISCH = '~q~0.5,0.5,0.5,0.5,0.5,0.5,1,1,1,0.5,0.6,0.7';   // die Werte der Vorgabe „Klassisch“, wie sie im Link stehen
   const setze = m => { cy.window().then(win => win.fractalState.set(JSON.parse(JSON.stringify(m)))); cy.waitRender(); };
 
-  it('der Link trägt alles: Werte der Palette, Glättung, Nachbearbeitung; eine eigene Palette nur einmal (cp), Vorgaben als pv', () => {
+  it('der Link trägt alles: Werte der Palette (pv, ohne Namen), Glättung, Nachbearbeitung', () => {
     cy.visitApp('mode=mandel&' + LINKSCHEMA + '&nb=11:1:1:1');
     cy.appState().then(s => {
-      expect(s.params.cp, 'die eigene Palette mit Namen und Werten').to.match(/^Linkschema~1~0\.000:ff0000,/);
-      expect(s.params).not.to.have.property('pv');   // nicht doppelt
+      expect(s.params.pv, 'die eigene Palette mit ihren Werten, ohne Namen').to.match(/^~1~0\.000:ff0000,/);
+      expect(s.params).not.to.have.property('cp');   // kein zweiter Weg mit Namen
       expect(s.params).to.include.keys('aa', 'aam', 'aat', 'aax', 'aas', 'nb');
       expect(s).not.to.have.any.keys('extra', 'colors');
       expect(JSON.stringify(s)).not.to.match(/"preset"|%3[AD]|%2C/);   // lesbar: keine kodierten Zeichen
     });
     cy.visitApp('mode=mandel&pal=atoll');
-    cy.appState().then(s => { expect(s.params.pal).to.eq('atoll'); expect(s.params.pv, 'die Werte der Vorgabe').to.match(/^~[1q]~/); expect(s.params).not.to.have.property('cp'); });
+    cy.appState().then(s => { expect(s.params, 'kein Name im Link').not.to.have.property('pal'); expect(s.params.pv, 'die Werte der Vorgabe').to.match(/^~[1q]~/); expect(s.params).not.to.have.property('cp'); });
   });
 
-  it('die Werte im Link gelten vor der Vorgabe: andere Werte werden ein Schema mit dem Namen der Vorgabe, gleiche Werte stellen die Vorgabe her', () => {
+  it('die Werte im Link gelten vor der Vorgabe: andere Werte werden ein Schema „Aus dem Link“, gleiche Werte stellen die Vorgabe her', () => {
     cy.appState().then(s => {
       const m = JSON.parse(JSON.stringify(s)); m.params.pv = '~q~0.5,0.5,0.5,0.5,0.5,0.5,1,1,1,0.1,0.2,0.3';   // so, als hätte eine spätere Fassung „Klassisch“ geändert
       setze(m);
-      cy.expectHash('cp', v => expect(v, 'die Werte des Links als eigenes Schema').to.match(/^Klassisch~q~.*0\.1,0\.2,0\.3$/));
-      cy.get('#palette option:selected').should('have.text', 'Klassisch (nicht gespeichert)');
+      cy.expectHash('pv', v => expect(v, 'die Werte des Links, ohne Namen').to.match(/^~q~.*0\.1,0\.2,0\.3$/));
+      cy.get('#palette option:selected').should('have.text', 'Aus dem Link (nicht gespeichert)');
       const k = JSON.parse(JSON.stringify(s)); k.params.pv = KLASSISCH;   // dieselben Werte wie die Vorgabe: die Vorgabe
       setze(k);
       cy.expectHash('cp', null); cy.get('#palette').should('have.value', '0');
@@ -112,24 +112,24 @@ describe('Dateien: Parameter und Bilder speichern und wieder öffnen', () => {
     cy.expectHash('cp', null); cy.get('#palette').should('have.value', '0');   // dieselben Werte wie die Vorgabe: die Vorgabe
     const fremd = JSON.parse(JSON.stringify(alt)); fremd.colors.palette.d = [0.1, 0.2, 0.3];   // Kennung sagt Vorgabe, die Werte sagen etwas anderes
     setze(fremd);
-    cy.expectHash('cp', v => expect(v, 'die Werte gelten, nicht die Kennung').to.match(/~q~/));
+    cy.expectHash('pv', v => expect(v, 'die Werte gelten, nicht die Kennung').to.match(/~q~/));
     cy.get('#palette option:selected').should('have.text', 'Klassisch (nicht gespeichert)');   // der Name aus der alten Datei als Beschriftung
     const ohne = JSON.parse(JSON.stringify(alt)); delete ohne.colors; delete ohne.extra;   // ganz ohne die Blöcke: Vorgabe und Browser-Einstellung
     setze(ohne);
     cy.expectHash('cp', null); cy.get('#palette').should('have.value', '0'); cy.get('#aaSel').should('have.value', '1');
   });
 
-  it('Ende zu Ende mit eigener Palette: das PNG trägt sie einmal, lesbar, und öffnet sich mit denselben Farben und ihrem Namen', () => {
+  it('Ende zu Ende mit eigener Palette: das PNG trägt sie einmal, lesbar, und öffnet sich mit denselben Farben', () => {
     cy.visitApp('mode=mandel&' + LINKSCHEMA);
     cy.gezeichnet(); cy.shotStats('pal-datei-vorher').then(vorher => {
       cy.get('#save').click(); cy.get('#posterStart').click();
       cy.get('#modal', { timeout: 60000 }).should('be.visible'); cy.get('#dl').click(); cy.get('#closeModal').click();
       cy.task('waitForDownload', { pattern: '^fraktal-mandel-.*\\.png$' }).then(files => {
-        cy.task('pngParams', { file: files[0] }).then(text => { const j = JSON.parse(text); expect(j).to.have.all.keys('params'); expect(j.params.cp, 'die Palette einmal, mit Namen').to.match(/^Linkschema~1~/); expect(text, 'lesbar').not.to.match(/%3[AD]|%2C/); });
+        cy.task('pngParams', { file: files[0] }).then(text => { const j = JSON.parse(text); expect(j).to.have.all.keys('params'); expect(j.params.pv, 'die Palette einmal, mit ihren Werten').to.contain(':ff0000'); expect(text, 'lesbar').not.to.match(/%3[AD]|%2C/); });
         cy.visitApp();   // Klassisch
         cy.get('#fileInput').selectFile(files[0], { force: true }); cy.waitRender();
-        cy.get('#palette option:selected').invoke('text').should('contain', 'Linkschema');
-        cy.expectHash('cp', v => expect(v).to.contain(':ff0000'));
+        cy.get('#palette option:selected').invoke('text').should('contain', 'Aus dem Link');
+        cy.expectHash('pv', v => expect(v).to.contain(':ff0000'));
         cy.gezeichnet(); cy.shotStats('pal-datei-nachher').then(nachher => cy.task('pngDiff', { a: vorher.file, b: nachher.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, 'dieselben Farben').to.be.lessThan(2)));
       });
     });
@@ -139,16 +139,16 @@ describe('Dateien: Parameter und Bilder speichern und wieder öffnen', () => {
     cy.visitApp('mode=mandel&pal=woodcut&map=15&p2=field-lines');
     cy.appState().then(s => {
       setze(s);   // unverändert: Vorgaben bleiben
-      cy.expectHash('pal', 'woodcut'); cy.expectHash('p2', 'field-lines'); cy.expectHash('cp', null); cy.expectHash('cp2', null);
+      cy.expectHash('pal', null); cy.expectHash('p2', null); cy.expectHash('cp', null); cy.expectHash('cp2', null);   // die Vorgaben stehen mit ihren Werten im Link (pv, pv2), nicht beim Namen
       const m = JSON.parse(JSON.stringify(s));                      // so, als hätte eine spätere Fassung die Vorgaben geändert
       m.params.pv = m.params.pv.replace(':1a1714', ':ff0000'); m.params.pv2 = m.params.pv2.replace('~v~linien,6,', '~v~linien,9,');
       setze(m);
       cy.get('#palette').should('have.value', 'y:tmp');
-      cy.get('#palette option:selected').should('have.text', 'Feldlinien (nicht gespeichert)');   // die Werte des Links, benannt nach der Vorgabe
-      cy.expectHash('cp2', v => expect(v).to.contain('~v~linien,9,'));
+      cy.get('#palette option:selected').should('have.text', 'Aus dem Link (nicht gespeichert)');   // die Werte des Links: keiner Vorgabe gleich
+      cy.expectHash('pv2', v => expect(v).to.contain('~v~linien,9,'));
       cy.get('#palArt [data-art="1"]').click({ force: true });      // die gewöhnliche Palette ebenso
-      cy.get('#palette option:selected').should('have.text', 'Holzschnitt (nicht gespeichert)');
-      cy.expectHash('cp', v => expect(v).to.contain(':ff0000'));
+      cy.get('#palette option:selected').should('have.text', 'Aus dem Link (nicht gespeichert)');
+      cy.expectHash('pv', v => expect(v).to.contain(':ff0000'));
     });
   });
 

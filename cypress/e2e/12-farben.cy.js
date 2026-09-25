@@ -12,10 +12,10 @@ describe('Farbe und Farbschema-Editor', () => {
     cy.get('#palette option[value="0"]').should('have.text', 'Klassisch');   // Nummer 0 und Standard
     cy.get('#palette').should('have.value', '0');
     cy.rerender(() => cy.pickOption('palette', 18));
-    cy.expectHash('pal', 'silver');
+    cy.get('#palette').should('have.value', '18'); cy.expectHash('pal', null);   // die Palette steht mit ihren Werten im Link, nicht beim Namen
     cy.get('#palette optgroup[label="Hell"] option[value="19"]').should('have.text', 'Salbei');   // neu, hell, am Ende der Gruppe
     cy.rerender(() => cy.pickOption('palette', 19));
-    cy.expectHash('pal', 'sage');
+    cy.get('#palette').should('have.value', '19');
   });
 
   it('Paletten aus Stützstellen laufen über die Farbtabelle', () => {
@@ -25,7 +25,7 @@ describe('Farbe und Farbschema-Editor', () => {
         cy.task('pngDiff', { a: a.file, b: b.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, 'Farbtabelle statt Kosinus').to.be.greaterThan(5));
       });
     });
-    cy.expectHash('pal', 'woodcut');
+    cy.expectHash('pal', null);
   });
 
   it('Rückgängig lässt den offenen Paletteneditor offen und zeigt den Schritt davor', () => {   // 20.09.2026
@@ -35,14 +35,14 @@ describe('Farbe und Farbschema-Editor', () => {
     cy.get('#peArt [data-art="quilez"]').click();
     cy.get('#palEd').should('not.have.attr', 'hidden');
     cy.get('#peQuilez input[type=range][data-k="d"][data-i="0"]').invoke('val', 0.2).trigger('input');
-    cy.expectHash('cp', v => expect(v).to.contain(',0.2,0.6,0.7'));
+    cy.expectHash('pv', v => expect(v).to.contain(',0.2,0.6,0.7'));
     cy.get('#peQuilez input[type=range][data-k="d"][data-i="1"]').invoke('val', 0.1).trigger('input');
-    cy.expectHash('cp', v => expect(v).to.contain(',0.2,0.1,0.7'));
+    cy.expectHash('pv', v => expect(v).to.contain(',0.2,0.1,0.7'));
     cy.get('#undo').click();
     cy.get('#palEd').should('not.have.attr', 'hidden');   // der Editor bleibt stehen, statt sich zu schließen
     cy.get('#peQuilez input[type=range][data-k="d"][data-i="1"]').should('have.value', '0.6');   // und zeigt den Stand davor
     cy.get('#peQuilez input.pe-wert[data-k="d"][data-i="1"]').should('have.value', '0,60');
-    cy.expectHash('cp', v => expect(v).to.contain(',0.2,0.6,0.7'));
+    cy.expectHash('pv', v => expect(v).to.contain(',0.2,0.6,0.7'));
     cy.get('#redo').click();
     cy.get('#palEd').should('not.have.attr', 'hidden');
     cy.get('#peQuilez input[type=range][data-k="d"][data-i="1"]').should('have.value', '0.1');
@@ -60,9 +60,9 @@ describe('Farbe und Farbschema-Editor', () => {
         cy.task('pngDiff', { a: a.file, b: b.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, 'Formel von Klassisch, pixelgleich').to.be.lessThan(0.5));
       });
     });
-    cy.expectHash('cp', v => expect(v).to.contain('~q~0.5,0.5,0.5,0.5,0.5,0.5,1,1,1,0.5,0.6,0.7'));
+    cy.expectHash('pv', v => expect(v).to.contain('~q~0.5,0.5,0.5,0.5,0.5,0.5,1,1,1,0.5,0.6,0.7'));
     cy.get('#peQuilez input[type=range][data-k="d"][data-i="0"]').invoke('val', 0.2).trigger('input');
-    cy.expectHash('cp', v => expect(v).to.contain(',0.2,0.6,0.7'));
+    cy.expectHash('pv', v => expect(v).to.contain(',0.2,0.6,0.7'));
     cy.get('#peQuilez input.pe-wert[data-k="d"][data-i="0"]').should('have.value', '0,20');   // das Feld folgt dem Regler
     cy.get('#peArt [data-art="stops"]').click();   // als Stützstellen weiterführen, zurück kommt die Formel unverändert
     cy.get('#peStops .pe-stop').should('have.length', 8);
@@ -72,7 +72,7 @@ describe('Farbe und Farbschema-Editor', () => {
     cy.get('#peQuilez input.pe-wert[data-k="c"][data-i="1"]').clear().type('0,2{enter}');   // c, Grün: eine langsame Welle
     cy.get('#peQuilez input.pe-wert[data-k="c"][data-i="1"]').should('have.value', '0,20');
     cy.get('#peQuilez input[type=range][data-k="c"][data-i="1"]').should('have.value', '0.2');
-    cy.expectHash('cp', v => expect(v, 'die Formel im Link').to.contain('~q~0.5,0.5,0.5,0.5,0.5,0.5,1,0.2,1,0.2,0.6,0.7'));
+    cy.expectHash('pv', v => expect(v, 'die Formel im Link').to.contain('~q~0.5,0.5,0.5,0.5,0.5,0.5,1,0.2,1,0.2,0.6,0.7'));
     cy.get('#peQuilez input.pe-wert[data-k="c"][data-i="1"]').clear().type('9{esc}');   // Escape: der alte Wert bleibt
     cy.get('#peQuilez input.pe-wert[data-k="c"][data-i="1"]').should('have.value', '0,20');
     cy.get('#peQuilez input.pe-wert[data-k="c"][data-i="1"]').clear().type('abc{enter}');   // unlesbar: zurück
@@ -80,13 +80,13 @@ describe('Farbe und Farbschema-Editor', () => {
     cy.get('#peQuilez input.pe-wert[data-k="c"][data-i="1"]').clear().type('9{enter}');   // über dem Reglerbereich: geklemmt auf 3
     cy.get('#peQuilez input.pe-wert[data-k="c"][data-i="1"]').should('have.value', '3,00');
     cy.get('#peQuilez input[type=range][data-k="c"][data-i="1"]').should('have.value', '3');
-    cy.expectHash('cp', v => expect(v).to.contain(',1,3,1,'));
+    cy.expectHash('pv', v => expect(v).to.contain(',1,3,1,'));
   });
 
   it('Palette, Verlauf, Randlinien und Innen wirken auf Adresse und Bild', () => {
     cy.shotStats('farbe-klassisch').then(a => {
       cy.rerender(() => cy.pickOption('palette', 1));
-      cy.expectHash('pal', 'mother-of-pearl');
+      cy.get('#palette').should('have.value', '1');
       cy.shotStats('farbe-perlmutt').then(b => {
         cy.task('pngDiff', { a: a.file, b: b.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, 'andere Palette, anderes Bild').to.be.greaterThan(5));
       });
@@ -378,7 +378,7 @@ describe('Farbe und Farbschema-Editor', () => {
     cy.get('#peDelete').should('be.visible');
     cy.get('#palette optgroup[label="Eigene"] option').should('contain.text', 'Testschema');
     cy.get('#palette option:selected').should('have.text', 'Testschema');
-    cy.expectHash('cp', v => expect(v).to.contain('Testschema'));
+    cy.get('#palette option:selected').should('contain.text', 'Testschema'); cy.expectHash('cp', null);   // der Name steht nicht im Link, nur die Werte (pv)
     cy.window().then(win => expect(win.localStorage.getItem('fractal.palettes')).to.contain('Testschema'));
     cy.get('#peClose').click();
     cy.get('#palEd').should('not.be.visible');
@@ -443,7 +443,7 @@ describe('Farbe und Farbschema-Editor', () => {
     cy.get('#peSave').should('not.be.visible');
     cy.get('#peNoStore').scrollIntoView().should('be.visible').and('contain.text', 'Kein Speichern');   // der Editor ist lang: erst ins Bild rollen
     cy.get('#palEd p.hint[data-i18n="editor.changes-apply-image-immediately"]').should('not.have.attr', 'hidden');   // der Hinweis auf die Cookie-Einstellungen bleibt ohne Einwilligung
-    cy.expectHash('cp', v => expect(v).to.contain('Fluechtig'));
+    cy.get('#palette option:selected').should('contain.text', 'Fluechtig'); cy.expectHash('cp', null);   // der Name steht nicht im Link, nur die Werte (pv)
     cy.get('#palette option:selected').invoke('text').should('contain', 'Fluechtig');
     cy.window().then(win => expect(win.localStorage.getItem('fractal.palettes')).to.be.null);
     cy.get('#peClose').click();
@@ -452,7 +452,7 @@ describe('Farbe und Farbschema-Editor', () => {
   it('ein Schema im Link wird beim Laden angeboten und angewandt', () => {
     cy.visitApp('mode=mandel&re=-0.75&im=0&z=1&cp=' + encodeURIComponent('Linkschema~1~0:ff0000,0.5:00ff00,1:0000ff'));
     cy.get('#palette option:selected').invoke('text').should('contain', 'Linkschema');
-    cy.expectHash('cp', v => expect(v).to.contain('Linkschema'));
+    cy.get('#palette option:selected').should('contain.text', 'Linkschema'); cy.expectHash('cp', null);   // der Name steht nicht im Link, nur die Werte (pv)
   });
 });
 
@@ -490,7 +490,7 @@ describe('Zweidimensionale Paletten', () => {
     cy.expectHash('p2', null);                                       // Vorgabe: nichts im Link
     cy.shotStats('zwei-reim').then(a => {
       cy.rerender(() => cy.pickOption('palette', 'z:4'));            // Kacheln
-      cy.expectHash('p2', 'tiles');
+      cy.expectHash('p2', null); cy.expectHash('pv2', v => expect(v, 'tiles: mit ihren Werten im Link').to.be.a('string'));
       cy.shotStats('zwei-reim-kacheln').then(b => anders(a, b, 'andere Farben'));
       cy.rerender(() => art(1));                                     // auch die gewöhnlichen Paletten
       cy.rerender(() => cy.pickOption('palette', 0));
@@ -509,17 +509,17 @@ describe('Zweidimensionale Paletten', () => {
     cy.rowShown('offset', false);
     cy.shotStats('zwei-markus').then(a => {
       cy.rerender(() => cy.pickOption('palette', 'z:2'));            // Eis und Glut
-      cy.expectHash('p2', 'ice-and-embers');
+      cy.expectHash('p2', null); cy.expectHash('pv2', v => expect(v, 'ice-and-embers: mit ihren Werten im Link').to.be.a('string'));
       cy.rowShown('offset', false);
       cy.shotStats('zwei-markus-eis').then(b => {
         anders(a, b, 'andere Farben');
         cy.rerender(() => cy.pickOption('palette', 'z:6'));          // Bänder: Formel mit Umlauf, der Farbversatz schiebt die Bänder
-        cy.expectHash('p2', 'bands');
+        cy.expectHash('p2', null); cy.expectHash('pv2', v => expect(v, 'bands: mit ihren Werten im Link').to.be.a('string'));
         cy.rowShown('offset', true);
         cy.shotStats('zwei-markus-baender').then(c => {
           anders(b, c, 'Bänder statt Eis und Glut');
           cy.rerender(() => cy.pickOption('palette', 'z:7'));        // Magenta und Mint: dieselben Bänder in anderen Tönen
-          cy.expectHash('p2', 'magenta-and-mint');
+          cy.expectHash('p2', null); cy.expectHash('pv2', v => expect(v, 'magenta-and-mint: mit ihren Werten im Link').to.be.a('string'));
           cy.shotStats('zwei-markus-magenta').then(d => anders(c, d, 'Magenta und Mint statt Bänder'));
         });
       });
@@ -544,7 +544,7 @@ describe('Zweidimensionale Paletten', () => {
         cy.rerender(() => art(2));
         cy.get('#palette').should('have.value', 'z:3');              // erste zweidimensionale hier: Feldlinien
         cy.rerender(() => cy.pickOption('palette', 'z:5'));          // Binärzerlegung
-        cy.expectHash('p2', 'binary-decomposition');
+        cy.expectHash('p2', null); cy.expectHash('pv2', v => expect(v, 'binary-decomposition: mit ihren Werten im Link').to.be.a('string'));
         cy.shotStats('winkel-binaer').then(c => anders(b, c, 'Binärzerlegung'));
       });
     });
@@ -564,7 +564,7 @@ describe('Zweidimensionale Paletten', () => {
     cy.shotStats('zwei-newton').then(a => {
       cy.rerender(() => art(2));
       cy.get('#palette').should('have.value', 'z:4');                // Kacheln: je Wurzel eine Farbfamilie
-      cy.expectHash('p2', 'tiles');
+      cy.expectHash('p2', null); cy.expectHash('pv2', v => expect(v, 'tiles: mit ihren Werten im Link').to.be.a('string'));
       cy.shotStats('zwei-newton-kacheln').then(b => anders(a, b, 'andere Farben'));
       cy.rerender(() => art(1));
       cy.expectHash('p2', null);
@@ -587,7 +587,7 @@ describe('Zweidimensionale Paletten', () => {
       cy.get('#p2eNuRow').should('not.have.attr', 'hidden');
       cy.get('#p2eBreiteRow').should('have.attr', 'hidden');
       cy.get('.pe2-v[data-v="a"] .pe2-aus').select('8', { force: true });   // Blattgold
-      cy.expectHash('cp2', v => expect(v).to.contain('~v~kacheln'));
+      cy.expectHash('pv2', v => expect(v).to.contain('~v~kacheln'));
       cy.waitRender();
       cy.shotStats('ed2-kacheln').then(c => anders(a, c, 'Kacheln in Blattgold'));
     });
@@ -596,7 +596,7 @@ describe('Zweidimensionale Paletten', () => {
     cy.get('#p2eState').should('have.text', 'gespeichert');
     cy.get('#palette optgroup[label="Eigene"] option').should('contain.text', 'Testmuster');
     cy.window().then(win => expect(JSON.parse(win.localStorage.getItem('fractal.palettes2')), 'im Browser').to.have.length(1));
-    cy.expectHash('cp2', v => expect(v).to.contain('Testmuster'));
+    cy.get('#palette option:selected').should('contain.text', 'Testmuster'); cy.expectHash('cp2', null);   // der Name steht nicht im Link, nur die Werte (pv2)
     cy.location('hash').then(h => {                                   // der Link trägt das Schema selbst
       cy.visitApp(h, { keep: true });
       cy.get('#palette option:selected').should('contain.text', 'Testmuster');
@@ -625,7 +625,7 @@ describe('Zweidimensionale Paletten', () => {
     });
     cy.get('.pe2-st[data-v="a"] .pe-stop').eq(1).find('input[type=range]').invoke('val').then(v => expect(+v, 'Regler folgt der Marke').to.be.within(690, 710));
     cy.get('.pe2-st[data-v="a"] .pe-stop').eq(1).find('input.pos').invoke('val').should('match', /^(69|70|71)[.,]\d$/);
-    cy.expectHash('cp2', v => expect(v, 'gezogene Stelle im Link').to.match(/0\.(69|70|71)\d:2020ff/));
+    cy.expectHash('pv2', v => expect(v, 'gezogene Stelle im Link').to.match(/0\.(69|70|71)\d:2020ff/));
     cy.get('.pe2-st[data-v="a"] .pe-marke').eq(0).trigger('pointerdown', { pointerId: 2, button: 0, isPrimary: true, force: true }).trigger('pointerup', { pointerId: 2, force: true });   // Klick: Zeile gewählt
     cy.get('.pe2-st[data-v="a"] .pe-stop').eq(0).should('have.class', 'on');
     cy.get('.pe2-st[data-v="a"] .pe-stop').eq(0).find('input[type=range]').invoke('val', 250).trigger('input');   // der Regler rückt die Marke mit
@@ -649,7 +649,7 @@ describe('Zweidimensionale Paletten', () => {
       cy.get('#p2eQuad [data-q="0"]').click().should('have.class', 'on');
       cy.get('#p2eGleich').check({ force: true });                   // alle vier Quadranten wie der gewählte
       cy.get('#p2eRegler input[type=range][data-k="0"][data-i="0"]').invoke('val', 0).trigger('input', { force: true });   // a, Rot: kein Rot mehr
-      cy.expectHash('cp2', v => expect(v).to.contain('~f~0,'));
+      cy.expectHash('pv2', v => expect(v).to.contain('~f~0,'));
       cy.get('#p2eRegler input.pe-wert[data-k="0"][data-i="0"]').should('have.value', '0,00');   // das Feld folgt dem Regler
       cy.get('#p2eRegler input.pe-wert[data-k="2"][data-i="0"]').clear().type('-0,65{enter}');   // cu, Rot getippt: Regler und alle vier Quadranten folgen
       cy.get('#p2eRegler input.pe-wert[data-k="2"][data-i="0"]').should('have.value', '-0,65');
@@ -1313,23 +1313,23 @@ describe('Farbe: Editor-Ergänzungen, Dichte anpassen, Innenfarbe, Gestuft', () 
         .trigger('pointerup', { clientX: r.left + 0.7 * r.width, clientY: r.top + 6, pointerId: 1, force: true });
     });
     cy.get('#peStops .pe-stop').eq(1).find('input[type=range]').invoke('val').then(v => expect(+v, 'Regler folgt der Marke').to.be.within(690, 710));
-    cy.expectHash('cp', v => expect(v, 'gezogene Stelle im Link').to.match(/0\.(69|70|71)\d:/));
+    cy.expectHash('pv', v => expect(v, 'gezogene Stelle im Link').to.match(/0\.(69|70|71)\d:/));
     cy.get('#peMarken .pe-marke').eq(0).trigger('pointerdown', { pointerId: 2, button: 0, isPrimary: true, force: true }).trigger('pointerup', { pointerId: 2, force: true });   // Klick: Zeile gewählt
     cy.get('#peStops .pe-stop').eq(0).should('have.class', 'on');
     cy.get('#peStops .pe-stop').eq(1).find('input.pos').clear().type('30{enter}');
     cy.get('#peStops .pe-stop').eq(1).find('input[type=range]').should('have.value', '300');
-    cy.expectHash('cp', v => expect(v, 'getippte Stelle im Link').to.contain('0.300:'));
+    cy.expectHash('pv', v => expect(v, 'getippte Stelle im Link').to.contain('0.300:'));
     cy.get('#peSpread').click();                                             // zyklisch: zwei gleiche Abstände über den Umlauf, also 0 und 50 %
     cy.get('#peStops .pe-stop').eq(1).find('input[type=range]').should('have.value', '500');
     cy.get('#peStops .pe-stop').eq(1).find('input.pos').invoke('val').should('match', /^50[.,]0$/);
     cy.waitRender();
     cy.shotStats('editor-rgb').then(rgb => {
       cy.get('#peRaum').check();                                             // Übergänge in OKLab: im Link „~o“, anderes Bild
-      cy.expectHash('cp', v => expect(v.endsWith('~o'), 'OKLab im Link').to.eq(true));
+      cy.expectHash('pv', v => expect(v.endsWith('~o'), 'OKLab im Link').to.eq(true));
       cy.wait(400);
       cy.shotStats('editor-oklab').then(ok => anders(rgb, ok, 'OKLab mischt anders als RGB'));
       cy.get('#peRaum').uncheck();
-      cy.expectHash('cp', v => expect(v.endsWith('~o'), 'wieder RGB').to.eq(false));
+      cy.expectHash('pv', v => expect(v.endsWith('~o'), 'wieder RGB').to.eq(false));
       cy.wait(400);
       cy.shotStats('editor-rgb-2').then(zurueck => gleich(rgb, zurueck, 'RGB wie vorher'));
     });
