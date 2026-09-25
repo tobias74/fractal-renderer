@@ -3,17 +3,41 @@ import { IMAGE_REGION, CONSENT_NONE } from '../support/commands';
 describe('Farbe und Farbschema-Editor', () => {
   beforeEach(() => cy.visitApp());
 
-  it('21 Paletten in den Gruppen Hell und Dunkel, jede Nummer genau einmal', () => {
-    cy.get('#palette optgroup').then($g => expect([...$g].map(g => g.label)).to.deep.eq(['Hell', 'Dunkel']));
+  it('vor und zurück durch die Paletten, in der Reihenfolge des Menüs, am Ende wieder von vorn', () => {
+    cy.pane('palette');
+    cy.get('#palette').should('have.value', '0');
+    cy.rerender(() => cy.get('#palVor').click()); cy.get('#palette').should('have.value', '1');   // nach Klassisch im Menü: Perlmutt
+    cy.expectHash('pv', v => expect(v).to.contain('9fd8d2'));
+    cy.rerender(() => cy.get('#palZurueck').click()); cy.get('#palette').should('have.value', '0');
+    cy.rerender(() => cy.get('#palZurueck').click());   // vor der ersten: die letzte des Menüs (Bunt, Stickerei)
+    cy.get('#palette').should('have.value', '110');
+    cy.rerender(() => cy.get('#palVor').click()); cy.get('#palette').should('have.value', '0');
+    cy.pickOption('palette', 27); cy.rerender(() => cy.get('#palVor').click()); cy.get('#palette').should('have.value', '41');   // die Gruppe Hell geht bei den neueren weiter
+  });
+
+  it('171 Paletten in den Gruppen Hell, Dunkel, Zwei- und Dreiklang und Bunt, jede Nummer genau einmal', () => {
+    cy.get('#palette optgroup').then($g => expect([...$g].map(g => g.label)).to.deep.eq(['Hell', 'Dunkel', 'Zwei- und Dreiklang', 'Bunt']));
     cy.get('#palette option').then($o => {
       const werte = [...$o].map(o => +o.value).sort((a, b) => a - b);
-      expect(werte, 'Nummern 0 bis 20, keine doppelt').to.deep.eq([...Array(21).keys()]);
+      expect(werte, 'Nummern 0 bis 170, keine doppelt').to.deep.eq([...Array(171).keys()]);
+      expect([...$o].map(o => o.textContent.trim()).filter((n, i, a) => a.indexOf(n) !== i), 'kein Name doppelt').to.deep.eq([]);
     });
     cy.get('#palette option[value="0"]').should('have.text', 'Klassisch');   // Nummer 0 und Standard
     cy.get('#palette').should('have.value', '0');
     cy.rerender(() => cy.pickOption('palette', 18));
     cy.get('#palette').should('have.value', '18'); cy.expectHash('pal', null);   // die Palette steht mit ihren Werten im Link, nicht beim Namen
-    cy.get('#palette optgroup[label="Hell"] option[value="19"]').should('have.text', 'Salbei');   // neu, hell, am Ende der Gruppe
+    cy.get('#palette optgroup[label="Hell"] option[value="19"]').should('have.text', 'Salbei');   // hell
+    cy.get('#palette optgroup[label="Hell"] option[value="21"]').should('have.text', 'Rosenquarz');   // die zwanzig vom 25.09.2026: sieben hell, dreizehn dunkel
+    cy.get('#palette optgroup[label="Dunkel"] option[value="28"]').should('have.text', 'Neonorchidee');
+    cy.get('#palette optgroup[label="Dunkel"] option[value="40"]').should('have.text', 'Jade');
+    cy.get('#palette optgroup[label="Hell"] option[value="41"]').should('have.text', 'Porzellan');   // die vierzig vom 25.09.2026: vierzehn hell, sechsundzwanzig dunkel
+    cy.get('#palette optgroup[label="Dunkel"] option[value="80"]').should('have.text', 'Tiefer Wald');
+    cy.get('#palette optgroup[label="Bunt"] option[value="81"]').should('have.text', 'Regenbogen');   // die dreißig bunten vom 25.09.2026 in eigener Gruppe
+    cy.get('#palette optgroup[label="Bunt"] option[value="110"]').should('have.text', 'Stickerei');
+    cy.get('#palette optgroup[label="Zwei- und Dreiklang"] option[value="111"]').should('have.text', 'Moos und Flieder');   // die dreißig Zwei- und Dreiklänge vom 25.09.2026
+    cy.get('#palette optgroup[label="Zwei- und Dreiklang"] option[value="140"]').should('have.text', 'Umbra, Gold und Schiefer');
+    cy.get('#palette optgroup[label="Zwei- und Dreiklang"] option[value="141"]').should('have.text', 'Venezianische Lagune');   // nach Regionen und Epochen
+    cy.get('#palette optgroup[label="Zwei- und Dreiklang"] option[value="170"]').should('have.text', 'Böhmisches Glas');
     cy.rerender(() => cy.pickOption('palette', 19));
     cy.get('#palette').should('have.value', '19');
   });
@@ -467,20 +491,20 @@ describe('Zweidimensionale Paletten', () => {
   it('der Umschalter steht nur, wo die Färbung zwei Werte liefert, und wechselt die Liste', () => {
     cy.visitApp();
     cy.get('#palArt').should('have.attr', 'hidden');
-    gruppen().should('deep.eq', ['Hell', 'Dunkel']);
+    gruppen().should('deep.eq', ['Hell', 'Dunkel', 'Zwei- und Dreiklang', 'Bunt']);
     cy.visitApp('mode=mandel&map=14&p2=field-lines');
     cy.get('#palArt').should('not.have.attr', 'hidden');
     cy.get('#palArt [data-art="2"]').should('have.class', 'on');
     gruppen().should('deep.eq', ['Vorgaben']);
     cy.get('#palette').should('have.value', 'z:3');
     cy.rerender(() => art(1));
-    gruppen().should('deep.eq', ['Hell', 'Dunkel']);
+    gruppen().should('deep.eq', ['Hell', 'Dunkel', 'Zwei- und Dreiklang', 'Bunt']);
     cy.expectHash('p2', 'n');
     cy.rerender(() => art(2));
     cy.get('#palette').should('have.value', 'z:3');                  // die zuletzt gewählte zweidimensionale kommt zurück
     cy.rerender(() => cy.pickOption('mapping', 2));
     cy.get('#palArt').should('have.attr', 'hidden');
-    gruppen().should('deep.eq', ['Hell', 'Dunkel']);
+    gruppen().should('deep.eq', ['Hell', 'Dunkel', 'Zwei- und Dreiklang', 'Bunt']);
     cy.expectHash('p2', null);
   });
 
