@@ -11994,7 +11994,7 @@ $('juliaHere').addEventListener('click', () => {
   setMode('julia', { view: centeredDefault(DEFAULT_VIEW.julia) });
 });
 const powSel = $('power'); powSel.value = String(S.power);
-powSel.addEventListener('change', () => { S.power = clamp(parseInt(powSel.value, 10) || 2, 2, 8); resetView(); });
+powSel.addEventListener('change', () => { S.power = clamp(parseInt(powSel.value, 10) || 2, 2, 8); setZoom(S.zoom); scheduleHash(); viewChanged(); });   // die Ansicht bleibt stehen: zurück auf die alte Potenz ist wieder derselbe Ausschnitt
 const formSel = $('formula');
 FORMULAS.forEach((fm, i) => { const o = document.createElement('option'); o.value = i; o.textContent = t(fm.name); formSel.append(o); });
 const paramEl = $('param');

@@ -417,9 +417,11 @@ describe('Formelfamilie', () => {
     cy.expectHash('z0r', null);
   });
 
-  it('Potenz d ≠ 2 setzt die Ansicht auf den Ursprung; „Zurücksetzen“ stellt alles außer der Familie zurück', () => {
-    cy.rerender(() => cy.pickOption('power', 4));
-    cy.get('#coords').should('contain.text', 'Re 0,742');   // Ursprung plus Versatz für das Bedienfeld
+  it('Potenz d ≠ 2 lässt die Ansicht stehen; „Zurücksetzen“ stellt alles außer der Familie zurück', () => {
+    cy.get('#coords').invoke('text').then(vorher => {
+      cy.rerender(() => cy.pickOption('power', 4)); cy.expectHash('p', '4');
+      cy.get('#coords').should('have.text', vorher);   // Mitte und Zoom bleiben: zurück auf die alte Potenz ist derselbe Ausschnitt
+    });
     cy.pickOption('palette', 2);
     cy.get('#reset').click();
     cy.get('#power').should('have.value', '2');
