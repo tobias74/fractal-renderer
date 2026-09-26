@@ -99,6 +99,20 @@ describe('Färbungen, Texturen, Innen, Zuordnungen, Mischmodi', () => {
       bild(B + ',0,0,0,1', 'swz-null').then(m => { cy.location('hash').should('not.include', '00111%2C3%2C'); gleich(ohne, m, 'Zusätze auf der Vorgabe: dasselbe Bild', 0.01); });
     });
   });
+  it('Sinuswellen, Palette: der Schalter nimmt die Palette (Bit 4 im Link), sperrt die Kanalwerte; ohne ihn ein Hinweis im Palette-Tab; Regler unter jedem Zahlenfeld', () => {
+    const B = 'mode=mandel&re=-0.7453&im=0.1127&z=300&it=2000&map=40&wv=96,5,1,1,0.3,1.2,2.4,0,0.5,-0.5,0.8,0,1,1.1,0.9,11100,01110,00111,';
+    bild(B + '3', 'swp-aus').then(aus => {
+      cy.get('#palSinusHinweis').should('not.have.attr', 'hidden'); cy.get('#sinus_oRRegler').should('not.be.disabled');
+      bild(B + '7', 'swp-an').then(an => {
+        cy.expectHash('wv', v => expect(v.endsWith(',7'), 'Schalter im Link').to.be.true); anders(aus, an, 'Farben aus der Palette');
+        cy.get('#sinus_palette').should('be.checked'); cy.get('#sinus_oRRegler').should('be.disabled'); cy.get('#sinus_versatzRegler').should('not.be.disabled');
+        cy.get('#palSinusHinweis').should('have.attr', 'hidden');
+        bild(B + '7&pal=weinrot', 'swp-weinrot').then(w => anders(an, w, 'eine andere Palette wirkt'));
+      });
+    });
+    cy.visitApp(B + '3'); cy.get('#sinus_oBRegler').invoke('val', '2').trigger('input', { force: true }); cy.get('#sinus_oB').should('have.value', '2');
+    cy.expectHash('wv', v => expect(v.split(',')[6]).to.eq('2'));
+  });
   it('Innenfärbungen 6 bis 8 und die Zuordnungen 37 bis 39', () => {
     const B = 'mode=mandel&re=-0.5&im=0&z=1&it=300';
     bild(B + '&in=3', 'in-3').then(w => { for (const i of [6, 7, 8]) bild(B + '&in=' + i, 'in-' + i).then(m => { cy.expectHash('in', String(i)); anders(w, m, 'Innen ' + i, 1); }); });

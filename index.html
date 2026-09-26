@@ -478,9 +478,11 @@
   .abb-mitte { display: flex; gap: 6px; }   /* Mitte der Verzerrung: zwei Zahlenfelder wie die übrigen Werte, mit Abstand */
   #abbMHier { display: block; width: 100%; margin-top: 6px; }
   #lichtRow > .sec-title + .lbl { margin-top: 8px; }   /* Abstand unter der Überschrift der Lichter wie bei den anderen Bereichen */
-  #sinusRow .wertzeile { margin-top: 8px; }   /* Sinuswellen: viele Werte, dichter als die Reglergruppen */
   #sinusRow input.wert { width: 132px; }   /* lange Zahlen (Versatz, Perioden) bleiben lesbar */
   #sinusRow .chk { margin-top: 10px; }
+  #sinusRow .chk.sinus-palette { margin: 2px 0 6px; }
+  #sinusRow input[type=range] { margin-top: 4px; }
+  #sinusRow .wertzeile:has(input.wert:disabled) label { opacity: .45; }   /* gesperrte Kanalwerte (mit Palette) */
   #wendeRow .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }   /* Wendepunkte: Setzen über die volle Breite, darunter die beiden Entfernen gleich breit */
   #wendeRow .btns #wendeSetzen { grid-column: 1 / -1; }
   .pal-ed .btns { display: flex; gap: 6px; align-items: stretch; }   /* Knöpfe einer Reihe gleich hoch, auch wenn nur einer zweizeilig umbricht */
@@ -1936,6 +1938,7 @@
       <h2 class="pane-title" data-i18n="pane.palette"></h2>
     <section class="row" id="palRow">     <!-- Palette: welche Farben; Art (wo die Färbung zwei Werte liefert), Liste, Editor, Dichte, Versatz -->
       <h2 class="sec-title"><label for="palette" data-i18n="colour.colour-palette"></label></h2>
+      <p class="hint" id="palSinusHinweis" data-i18n="colour.palette-unused-sine" hidden></p>
       <div class="seg" id="palArt" role="group" data-i18n-aria-label="colour.kind-colour-palette" hidden>
         <button type="button" data-art="1" class="on" data-i18n="colour.standard"></button>
         <button type="button" data-art="2" data-i18n="colour.two-dimensional"></button>
@@ -2604,6 +2607,9 @@ const TEXTE = {
   'colour.sine-gpolar': { de: 'Gewicht XOR polar', en: 'Weight of the polar XOR' },
   'colour.sine-tiefe': { de: 'Stufen der Rekursion (1 bis 16)', en: 'Recursion levels (1 to 16)' },
   'colour.sine-vorher': { de: 'Sprung nach der Schrittzahl', en: 'Jump by the step count' },
+  'colour.sine-palette': { de: 'Farben aus der Palette (Zähler als Palettenstelle)', en: 'Colours from the palette (counter as palette position)' },
+  'colour.sine-palette-title': { de: 'Der Zähler aus Schritten und Endrichtung wählt die Stelle in der Palette; Farbdichte und Farbversatz wirken, die Werte je Kanal nicht.', en: 'The counter of steps and end direction picks the position in the palette; colour density and offset apply, the per-channel values do not.' },
+  'colour.palette-unused-sine': { de: 'Die Sinuswellen rechnen ihre Farben selbst; die Palette wirkt hier nicht. Im Bereich Farbe lässt sie sich einschalten („Farben aus der Palette“).', en: 'The sine waves compute their own colours; the palette has no effect here. It can be switched on in the Colour section (“Colours from the palette”).' },
   'colour.sine-nachher': { de: 'Sprung nach dem fertigen Zähler', en: 'Jump by the finished counter' },
   'colour.stripes-title': { de: 'Wie viele Streifen der Winkel jeder Bahn beisteuert: sin(n · arg z). Mehr Streifen, feinere Strähnen; mit Farbanker behält das Feld dabei seine Farbe.', en: 'How many stripes the angle of each orbit contributes: sin(n · arg z). More stripes, finer strands; with the colour anchor the field keeps its colour.' },
   'colour.escape-deduction': { de: 'Fluchtzeit-Abzug', en: 'Escape-time deduction' },
@@ -4402,13 +4408,19 @@ const SINUS_MASKEN = [['mR', '1', 'colour.sine-mr'], ['mG', '1', 'colour.sine-mg
 const SINUS_ZUSATZ = [['gVersch', 0, 'colour.sine-gversch'], ['gXor', 0, 'colour.sine-gxor'], ['gPolar', 0, 'colour.sine-gpolar'], ['tiefe', 1, 'colour.sine-tiefe']];   // später ergänzt: im Link hinter den Schaltern, nur abseits der Vorgabe
 function sinusVoll() { return S.mapping === 40 && !texturAktiv() && SINUS_ZUSATZ.some(([k, v]) => S.sinus[k] !== v); }   // der volle Weg (Sammler 28) nur, wenn ein Zusatz wirkt; mit Textur bleibt der gepackte
 const SINUS_SCHALTER = [['vorher', 'colour.sine-vorher'], ['nachher', 'colour.sine-nachher']];
-function sinusNeu() { const o = { vorher: false, nachher: false }; for (const [k, v] of [...SINUS_FELDER, ...SINUS_MASKEN, ...SINUS_ZUSATZ]) o[k] = v; return o; }   // eigene Vorgabe: ein gleichmäßiger Regenbogen ohne Sprünge
-function sinusText(o) { const z = SINUS_ZUSATZ.some(([k, v]) => o[k] !== v); return [...SINUS_FELDER.map(([k]) => String(o[k])), ...SINUS_MASKEN.map(([k]) => o[k]), (o.vorher ? 1 : 0) + (o.nachher ? 2 : 0), ...(z ? SINUS_ZUSATZ.map(([k]) => String(o[k])) : [])].join(','); }
-function sinusLesen(t) { const o = sinusNeu(), a = String(t || '').split(','); SINUS_FELDER.forEach(([k], i) => { const v = parseFloat(a[i]); if (Number.isFinite(v)) o[k] = v; }); SINUS_MASKEN.forEach(([k], j) => { const m = a[SINUS_FELDER.length + j]; if (/^[01]{1,24}$/.test(m || '')) o[k] = m; }); const f = parseInt(a[SINUS_FELDER.length + 3], 10); if (Number.isFinite(f)) { o.vorher = !!(f & 1); o.nachher = !!(f & 2); }
+// Regler je Zahl: [min, max, Schritt] (getippte Werte bleiben exakt, auch außerhalb); mit Palette gesperrt: die Kanalwerte
+const SINUS_REGLER = { P: [1, 512, 1], versatz: [0, 256, 0.01], gSchritte: [0, 4, 0.01], gRichtung: [0, 4, 0.01],
+  oR: [-6.283, 6.283, 0.001], oG: [-6.283, 6.283, 0.001], oB: [-6.283, 6.283, 0.001], oM: [-6.283, 6.283, 0.001],
+  sR: [-3.142, 3.142, 0.001], sG: [-3.142, 3.142, 0.001], sB: [-3.142, 3.142, 0.001], sM: [-3.142, 3.142, 0.001],
+  pR: [-4, 4, 0.001], pG: [-4, 4, 0.001], pB: [-4, 4, 0.001], gVersch: [0, 4, 0.001], gXor: [0, 0.1, 0.0005], gPolar: [0, 0.1, 0.0005], tiefe: [1, 16, 1] };
+const SINUS_KANAL = new Set(['P', 'oR', 'oG', 'oB', 'oM', 'sR', 'sG', 'sB', 'sM', 'pR', 'pG', 'pB', 'mR', 'mG', 'mB', 'vorher', 'nachher']);
+function sinusNeu() { const o = { vorher: false, nachher: false, palette: false }; for (const [k, v] of [...SINUS_FELDER, ...SINUS_MASKEN, ...SINUS_ZUSATZ]) o[k] = v; return o; }   // eigene Vorgabe: ein gleichmäßiger Regenbogen ohne Sprünge
+function sinusText(o) { const z = SINUS_ZUSATZ.some(([k, v]) => o[k] !== v); return [...SINUS_FELDER.map(([k]) => String(o[k])), ...SINUS_MASKEN.map(([k]) => o[k]), (o.vorher ? 1 : 0) + (o.nachher ? 2 : 0) + (o.palette ? 4 : 0), ...(z ? SINUS_ZUSATZ.map(([k]) => String(o[k])) : [])].join(','); }
+function sinusLesen(t) { const o = sinusNeu(), a = String(t || '').split(','); SINUS_FELDER.forEach(([k], i) => { const v = parseFloat(a[i]); if (Number.isFinite(v)) o[k] = v; }); SINUS_MASKEN.forEach(([k], j) => { const m = a[SINUS_FELDER.length + j]; if (/^[01]{1,24}$/.test(m || '')) o[k] = m; }); const f = parseInt(a[SINUS_FELDER.length + 3], 10); if (Number.isFinite(f)) { o.vorher = !!(f & 1); o.nachher = !!(f & 2); o.palette = !!(f & 4); }
   SINUS_ZUSATZ.forEach(([k], j) => { const v = parseFloat(a[SINUS_FELDER.length + 4 + j]); if (Number.isFinite(v)) o[k] = k === 'tiefe' ? clamp(Math.round(v), 1, 16) : v; }); return o; }
 function sinusUniform() {   // 8 vec4, siehe sinusFarbe und sinusFarbeVoll im Farbpass
   const o = S.sinus, m = k => parseInt(o[k], 2) || 0, l = k => o[k].length;
-  return new Float32Array([o.P, o.versatz, o.gSchritte, o.gRichtung, o.oR, o.oG, o.oB, o.oM, o.sR, o.sG, o.sB, o.sM, o.pR, o.pG, o.pB, currentMaxIter(), m('mR'), m('mG'), m('mB'), (o.vorher ? 1 : 0) + (o.nachher ? 2 : 0), l('mR'), l('mG'), l('mB'), 0, o.gVersch, o.gXor, o.gPolar, o.tiefe, sinusVoll() ? 1 : 0, 0, 0, 0]);
+  return new Float32Array([o.P, o.versatz, o.gSchritte, o.gRichtung, o.oR, o.oG, o.oB, o.oM, o.sR, o.sG, o.sB, o.sM, o.pR, o.pG, o.pB, currentMaxIter(), m('mR'), m('mG'), m('mB'), (o.vorher ? 1 : 0) + (o.nachher ? 2 : 0), l('mR'), l('mG'), l('mB'), 0, o.gVersch, o.gXor, o.gPolar, o.tiefe, sinusVoll() ? 1 : 0, o.palette ? 1 : 0, 0, 0]);
 }
 const DOM_SCHRITT = { min: 0, max: 500, def: 0 };   // Domain Coloring: z nach so vielen Schritten (0 = der letzte Bahnpunkt)
 const MAPPING_TEXT = { 40: 'mapping.text.40', 36: 'mapping.text.36', 37: 'mapping.text.37', 38: 'mapping.text.38', 39: 'mapping.text.39', 0: 'mapping.text.0', 1: 'mapping.text.1', 2: 'mapping.text.2', 4: 'mapping.text.4', 6: 'mapping.text.6', 11: 'mapping.text.11', 12: 'mapping.text.12', 13: 'mapping.text.13', 14: 'mapping.text.14', 15: 'mapping.text.15', 16: 'mapping.text.16', 17: 'mapping.text.17', 18: 'mapping.text.18', 19: 'mapping.text.19', 20: 'mapping.text.20', 21: 'mapping.text.21', 24: 'mapping.text.24', 26: 'mapping.text.26', 28: 'mapping.text.28', 29: 'mapping.text.29', 31: 'mapping.text.31', 32: 'mapping.text.32', 33: 'mapping.text.33', 34: 'mapping.text.34', 35: 'mapping.text.35' };   // ein Satz je Färbung, unter der Auswahl
@@ -7129,6 +7141,18 @@ fn sinusFarbeVoll(px: vec4u) -> vec3f {
   let s3 = vec3f(0.5) + 0.5 * sin(w * Pk.xyz + O.xyz + O.w + (G.xyz + G.w) * b);
   return select(floor(s3 * 255.0 + 0.5) / 255.0, vec3f(0.0), X.w > 1.5 && nn >= acc * X.w);   // mit Rekursion: innen erst ab maxIter · Stufen, schwarz
 }
+// Färbung 40 mit Palette (sinus[7].y = 1): der Zähler als Palettenstelle; gepackt wie sinusFarbe, voll wie sinusFarbeVoll (ohne die Kanäle)
+fn sinusZaehler(px: vec4u, voll: bool) -> vec2f {   // (Zähler, 1 = schwarz: innen nach der Rekursion)
+  let A = C.sinus[0]; let Pk = C.sinus[3]; let X = C.sinus[6]; let acc = max(Pk.w, 1.0);
+  let nnG = f32(px.y >> 15u); let uG = f32(px.y & 32767u) / 32767.0 * 2.0 - 1.0;
+  let dv = vec2f(bitcast<f32>(px.z), bitcast<f32>(px.w)); let rr = length(dv);
+  let nn = select(nnG, f32(px.y), voll); let u = select(uG, select(0.0, dv.x / rr, rr > 0.0), voll);
+  var zaehler = A.y + nn * A.z + select(0.0, (Pk.w / (nn + 1.0)) * (0.5 + 0.5 * u) * A.w, nn > 1.0);
+  let rad0 = max(rr, 1.0e-30); let th0 = sin(sinusWinkel(dv) * 2.0 + 1.5707963) * 3.1415927 + sin(rad0 * 4.0) * 2.0 / rad0;
+  let zusatz = select(0.0, rr * X.x, nn > 1.0) + sinusXor(dv.y, dv.x, X.y, acc) + select(sinusXor(th0, rad0, X.z, acc), sinusXor(sinusWinkel(dv), rr, X.z, acc), nn > 1.0);
+  zaehler += select(0.0, zusatz, voll);
+  return vec2f(zaehler, select(0.0, 1.0, voll && X.w > 1.5 && nn >= acc * X.w));
+}
 fn texStapelWert(i: u32, v: f32, kw: f32) -> f32 { return select(select(v, kanteHell(kw, C.stapelW[i].x), u32(C.stapel[3u * i].x) == 11u), gEnt, u32(C.stapel[3u * i].x) == 27u); }   // Kanten und Entropie entstehen erst im Farbpass   // Kanten entstehen erst im Farbpass (kw, einmal je Probe), alle anderen Werte kommen gepackt aus dem Fraktal-Shader
 fn texWerte(a: u32, b: u32, kw: f32) -> vec4f {   // die Werte der vier Plätze aus den gepackten 16-Bit-Hälften (a: Platz 1 und 2, b: Platz 3 und 4)
   let v = unpack2x16unorm(a); let w = select(vec2f(0.0), unpack2x16unorm(b), C.tex2.z > 2.5);
@@ -7334,7 +7358,8 @@ fn sampleColor(px: vec4u, xy: vec2i, k: i32) -> vec3f {
     if (zwei) { col = farbe2(vec2f(1.0), p, false); } else { col = pal(p.x + p.y); }
     if (za == 2u || zb == 2u) { col = col * paarWeich(md.x); }                     // Helligkeit: am Anker unverändert, sonst dunkler oder heller
     if (za == 3u || zb == 3u) { col = saettigungAn(col, md.y); }   // Sättigung: am Anker unverändert, darunter grauer, darüber bunter
-  } else if (u32(C.misc.w) == 40u) { col = select(sinusFarbe(px.y), sinusFarbeVoll(px), C.sinus[7].x > 0.5);   // Sinuswellen aus Schrittzahl und Endrichtung, nur außen
+  } else if (u32(C.misc.w) == 40u) { let sz = sinusZaehler(px, C.sinus[7].x > 0.5); let sp = select(pal(sz.x * C.misc.x + C.misc.y + vz), vec3f(0.0), sz.y > 0.5);   // mit Palette: der Zähler als Stelle, wie die Fluchtzeit
+    col = select(select(sinusFarbe(px.y), sinusFarbeVoll(px), C.sinus[7].x > 0.5), sp, C.sinus[7].y > 0.5);   // Sinuswellen aus Schrittzahl und Endrichtung, nur außen
   } else if (u32(C.misc.w) == 19u || u32(C.misc.w) == 20u || u32(C.misc.w) == 26u || u32(C.misc.w) == 35u) {   // 35: der eigene Sammler wie das Streifenmittel   // Streifen-, Dreiecksmittel, Gesamtdrehung: nur außen; Standarddichte 1,2 bzw. 1,5 Umläufe
     col = pal((bitcast<f32>(px.y) - ankerS()) * select(37.5, 30.0, u32(C.misc.w) != 20u) * C.misc.x + C.misc.y + vz);   // Plätze mit Ziel Palettenposition verschieben die Stelle
   } else {
@@ -11581,7 +11606,8 @@ function syncFarbUI() {   // Bereich Farbe: was je nach Familie, Formel und Fär
   $('abklingRow').hidden = $('gewichtRow').hidden;   // Abklingen ebenso
   $('spiraleRow').hidden = S.mapping !== 32 || statModus() !== 19;   // Windung nur für die Färbung Spiralfalle (die Textur hat ihre eigenen Regler)
   $('domSchrittRow').hidden = S.mapping !== 36 || statModus() !== 23;
-  $('sinusRow').hidden = S.mapping !== 40; if (S.mapping === 40) sinusZeilen();   // Schritt nur fürs Domain Coloring
+  $('sinusRow').hidden = S.mapping !== 40; if (S.mapping === 40) sinusZeilen();
+  $('palSinusHinweis').hidden = !(S.mapping === 40 && !S.sinus.palette);   // Palette-Tab: die Sinuswellen rechnen ihre Farben selbst   // Schritt nur fürs Domain Coloring
   $('statTitel').hidden = $('streifenRow').hidden && $('vorlaufRow').hidden && $('gewichtRow').hidden && $('spiraleRow').hidden && $('domSchrittRow').hidden;   // Überschrift nur, wenn darunter etwas steht
   const belegtBis = texturBelegt();   // Stapel: Platz 1 überall, wo eine Textur möglich ist; dahinter die belegten Plätze (auch ausgeschaltete) und ein freier
   $('texTitel').hidden = !texturMoeglich() || belegtBis === 0;
@@ -13033,6 +13059,8 @@ function sinusZeilen() {   // gebaut beim ersten Zeigen und bei anderer Sprache,
   if (box.dataset.lang !== LANG) {
     box.replaceChildren(); box.dataset.lang = LANG;
     const h = document.createElement('h2'); h.className = 'sec-title'; h.textContent = t('colour.sine-title'); box.append(h);
+    { const lab = document.createElement('label'); lab.className = 'chk sinus-palette'; lab.title = t('colour.sine-palette-title'); const cb = document.createElement('input'); cb.type = 'checkbox'; cb.id = 'sinus_palette';
+      cb.addEventListener('change', () => { S.sinus.palette = cb.checked; colorDirty = true; scheduleHash(); requestFrame(); syncFarbUI(); sinusZeilen(); }); lab.append(cb, ' ' + t('colour.sine-palette')); box.append(lab); }   // oben: der Schalter bestimmt, welche Werte darunter wirken
     for (const [k, , text] of [...SINUS_FELDER, ...SINUS_MASKEN, ...SINUS_ZUSATZ]) {
       const z = document.createElement('div'); z.className = 'lbl wertzeile'; const lab = document.createElement('label'); lab.htmlFor = 'sinus_' + k; lab.textContent = t(text);
       const f = document.createElement('input'); f.id = 'sinus_' + k; f.className = 'val mono wert'; f.type = 'text'; f.inputMode = 'decimal'; f.spellcheck = false; f.autocomplete = 'off';
@@ -13040,12 +13068,21 @@ function sinusZeilen() {   // gebaut beim ersten Zeigen und bei anderer Sprache,
         const zs = SINUS_ZUSATZ.some(([x]) => x === k);   // die Zusätze rechnen im Fraktal-Shader: neu rendern
         if (mk ? /^[01]{1,24}$/.test(v) : Number.isFinite(v)) { S.sinus[k] = k === 'tiefe' ? clamp(Math.round(v), 1, 16) : v; if (zs) viewChanged(); else { colorDirty = true; requestFrame(); } scheduleHash(); } sinusZeilen(); });
       z.append(lab, f); box.append(z);
+      const rg = SINUS_REGLER[k];
+      if (rg) {   // Regler wie überall: auf seinem Raster, das Feld zeigt den Wert; getippte Werte außerhalb lassen den Regler am Rand stehen
+        const sl = document.createElement('input'); sl.type = 'range'; sl.id = 'sinus_' + k + 'Regler'; sl.min = String(rg[0]); sl.max = String(rg[1]); sl.step = String(rg[2]); sl.setAttribute('aria-label', t(text));
+        sl.addEventListener('input', () => { const v = parseFloat(sl.value); if (!Number.isFinite(v)) return; S.sinus[k] = v; f.value = String(v);
+          if (SINUS_ZUSATZ.some(([x]) => x === k)) viewChanged(); else { colorDirty = true; requestFrame(); } scheduleHash(); });
+        box.append(sl);
+      }
     }
     for (const [k, text] of SINUS_SCHALTER) { const lab = document.createElement('label'); lab.className = 'chk'; const cb = document.createElement('input'); cb.type = 'checkbox'; cb.id = 'sinus_' + k;
       cb.addEventListener('change', () => { S.sinus[k] = cb.checked; colorDirty = true; scheduleHash(); requestFrame(); }); lab.append(cb, ' ' + t(text)); box.append(lab); }
   }
-  for (const [k] of [...SINUS_FELDER, ...SINUS_MASKEN, ...SINUS_ZUSATZ]) { const f = $('sinus_' + k); if (f && document.activeElement !== f) f.value = String(S.sinus[k]); }
+  for (const [k] of [...SINUS_FELDER, ...SINUS_MASKEN, ...SINUS_ZUSATZ]) { const f = $('sinus_' + k); if (f && document.activeElement !== f) f.value = String(S.sinus[k]); const sl = $('sinus_' + k + 'Regler'); if (sl && document.activeElement !== sl) sl.value = String(S.sinus[k]); }
   for (const k of ['vorher', 'nachher']) $('sinus_' + k).checked = S.sinus[k];
+  $('sinus_palette').checked = S.sinus.palette;
+  for (const k of SINUS_KANAL) for (const e of [$('sinus_' + k), $('sinus_' + k + 'Regler')]) if (e) e.disabled = S.sinus.palette;   // mit Palette rechnen die Kanäle nicht
 }
 function syncDomSchritt() { $('domSchritt').value = String(S.domSchritt); $('domSchrittVal').value = String(S.domSchritt); }
 const setzeDomSchritt = v => { S.domSchritt = clamp(Math.round(v), DOM_SCHRITT.min, DOM_SCHRITT.max); syncDomSchritt(); scheduleHash(); viewChanged(); };   // entsteht beim Iterieren
