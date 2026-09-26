@@ -92,8 +92,8 @@ describe('Ebenenmischer', () => {
 
   it('Mischmodus: jeder Modus rendert ohne Fehler, Normal, Multiplizieren und Differenz unterscheiden sicht WebGPU', () => {
     cy.visitApp(ZWEI, { onBeforeLoad: win => { cy.spy(win.console, 'error').as('konsole'); } }); fertig(); cy.pane('ebenen');
-    cy.get('#ebeneModus2 option').should('have.length', 18);
-    for (let i = 0; i < 18; i++) {
+    cy.get('#ebeneModus2 option').should('have.length', 22);
+    for (let i = 0; i < 22; i++) {
       cy.pickOption('ebeneModus2', i); cy.wait(250);
       cy.expectHash('lm2', i + ':0.7:1:0:1:'); cy.get('#state').invoke('text').should('match', /Fertig/);
     }

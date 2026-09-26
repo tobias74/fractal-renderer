@@ -9,17 +9,17 @@ describe('Farbe und Farbschema-Editor', () => {
     cy.rerender(() => cy.get('#palVor').click()); cy.get('#palette').should('have.value', '1');   // nach Klassisch im Menü: Perlmutt
     cy.expectHash('pv', v => expect(v).to.contain('9fd8d2'));
     cy.rerender(() => cy.get('#palZurueck').click()); cy.get('#palette').should('have.value', '0');
-    cy.rerender(() => cy.get('#palZurueck').click());   // vor der ersten: die letzte des Menüs (Bunt, Stickerei)
-    cy.get('#palette').should('have.value', '110');
+    cy.rerender(() => cy.get('#palZurueck').click());   // vor der ersten: die letzte des Menüs (Bunt, zuletzt „Wald bis Meer“)
+    cy.get('#palette').should('have.value', '186');
     cy.rerender(() => cy.get('#palVor').click()); cy.get('#palette').should('have.value', '0');
     cy.pickOption('palette', 27); cy.rerender(() => cy.get('#palVor').click()); cy.get('#palette').should('have.value', '41');   // die Gruppe Hell geht bei den neueren weiter
   });
 
-  it('171 Paletten in den Gruppen Hell, Dunkel, Zwei- und Dreiklang und Bunt, jede Nummer genau einmal', () => {
+  it('187 Paletten in den Gruppen Hell, Dunkel, Zwei- und Dreiklang und Bunt, jede Nummer genau einmal', () => {
     cy.get('#palette optgroup').then($g => expect([...$g].map(g => g.label)).to.deep.eq(['Hell', 'Dunkel', 'Zwei- und Dreiklang', 'Bunt']));
     cy.get('#palette option').then($o => {
       const werte = [...$o].map(o => +o.value).sort((a, b) => a - b);
-      expect(werte, 'Nummern 0 bis 170, keine doppelt').to.deep.eq([...Array(171).keys()]);
+      expect(werte, 'Nummern 0 bis 186, keine doppelt').to.deep.eq([...Array(187).keys()]);
       expect([...$o].map(o => o.textContent.trim()).filter((n, i, a) => a.indexOf(n) !== i), 'kein Name doppelt').to.deep.eq([]);
     });
     cy.get('#palette option[value="0"]').should('have.text', 'Klassisch');   // Nummer 0 und Standard
@@ -38,6 +38,8 @@ describe('Farbe und Farbschema-Editor', () => {
     cy.get('#palette optgroup[label="Zwei- und Dreiklang"] option[value="140"]').should('have.text', 'Umbra, Gold und Schiefer');
     cy.get('#palette optgroup[label="Zwei- und Dreiklang"] option[value="141"]').should('have.text', 'Venezianische Lagune');   // nach Regionen und Epochen
     cy.get('#palette optgroup[label="Zwei- und Dreiklang"] option[value="170"]').should('have.text', 'Böhmisches Glas');
+    cy.get('#palette optgroup[label="Bunt"] option[value="171"]').should('have.text', 'Seidenregenbogen');   // die sechzehn weichen: acht Töne, Übergänge in OKLab
+    cy.rerender(() => cy.pickOption('palette', 171)); cy.expectHash('pv', v => expect(v.endsWith('~o'), 'OKLab steht im Link').to.eq(true));
     cy.rerender(() => cy.pickOption('palette', 19));
     cy.get('#palette').should('have.value', '19');
   });

@@ -79,7 +79,7 @@ describe('Bedienfeld am Handy', () => {
     cy.get('#family').should('have.value', 'julia');
     cy.get('#famChips button.on').should('have.attr', 'data-value', 'julia');
     cy.get('#tabPalette').click();   // die Farbfelder wohnen im Bereich „Palette“
-    cy.get('#palStrip button').should('have.length', 171);   // 171 Vorgaben, darunter Salbei und Salbei, gedeckt, und die hundertfünfzig vom 25.09.2026
+    cy.get('#palStrip button').should('have.length', 187);   // 187 Vorgaben, darunter Salbei und Salbei, gedeckt, und die hundertsechsundsechzig vom 25.09.2026
     cy.get('#palStrip button[data-value="7"]').click();
     cy.get('#palette').should('have.value', '7');
     cy.expectHash('pal', null);   // Werte statt Namen

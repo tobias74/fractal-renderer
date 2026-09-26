@@ -12,7 +12,7 @@ describe('Rosettenfalle und Auswertung der Fallen', () => {
   it('Bedienzeilen: die Rosette hat sechs Regler, Wert und Auswertung; Stichproben zeigen die Schrittweite; andere Fallen nur die Auswertung; keine Falle nichts', () => {
     cy.visitApp(B + '&tx=23&ts=0.8');
     cy.pane('texturen');
-    cy.get('#textur option').should('have.length', 24);
+    cy.get('#textur option').should('have.length', 29);
     cy.get('#textur option[value="23"]').should('have.text', 'Rosettenfalle');
     cy.get('#textur').should('have.value', '23');
     cy.get('#texWerte input[type=range]').should('have.length', 6);
