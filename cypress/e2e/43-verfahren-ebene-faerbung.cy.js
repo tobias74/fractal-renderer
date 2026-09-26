@@ -113,6 +113,23 @@ describe('Färbungen, Texturen, Innen, Zuordnungen, Mischmodi', () => {
     cy.visitApp(B + '3'); cy.get('#sinus_oBRegler').invoke('val', '2').trigger('input', { force: true }); cy.get('#sinus_oB').should('have.value', '2');
     cy.expectHash('wv', v => expect(v.split(',')[6]).to.eq('2'));
   });
+  it('Palettenart „Je Kanal“: im Link genau, RGB und LCh, eigene Quellen färben anders; zurück auf Standard ist das alte Bild', () => {
+    const B = 'mode=mandel&re=-0.7453&im=0.1127&z=300&it=800';
+    const K = '0~1,0.05,0,1,1,0,0,1,0,0~1,0.05,0,1,1,2.0944,0,1,0,0~1,0.05,0,1,1,4.1888,0,1,0,0';
+    bild(B, 'kn-ohne').then(ohne => bild(B + '&kn=' + K, 'kn-rgb').then(rgb => {
+      cy.expectHash('kn', K); anders(ohne, rgb, 'je Kanal statt Palette');
+      cy.get('#palArt button[data-art="3"]').should('have.class', 'on'); cy.get('#kanalRow').should('not.have.attr', 'hidden'); cy.get('#density').should('not.be.visible');
+      bild(B + '&kn=1' + K.slice(1), 'kn-lch').then(l => anders(rgb, l, 'LCh statt RGB'));
+      for (const q of [3, 4, 5, 6]) bild(B + '&kn=' + K.replace('~1,0.05,0,1,1,4.1888', '~' + q + ',0.05,0,1,1,4.1888'), 'kn-q' + q).then(m => anders(rgb, m, 'Quelle ' + q, 0.5));
+      cy.visitApp(B + '&kn=' + K); cy.get('#palArt button[data-art="1"]').click({ force: true }); cy.waitRender(); cy.expectHash('kn', null);
+      cy.shotStats('kn-zurueck').then(z => gleich(ohne, z, 'Standard: das alte Bild'));
+    }));
+  });
+  it('Palettenart „Je Kanal“ baut die Sinuswellen nach: Zähler als Wert, Schrittzahl als zweiter Wert, Masken lesen beide', () => {
+    const B = 'mode=mandel&re=-0.7453&im=0.1127&z=300&it=2000&map=40&wv=128,5,1,1,0.3,1.2,2.4,0.1,0.5,-0.5,0.8,0.2,1,1.1,0.9,11100,01110,00111,';
+    const K = '0~1,0.0078125,0,1,1,0.4,0.7,11100,2,1~1,0.0078125,0,1,1.1,1.3,-0.3,01110,2,1~1,0.0078125,0,1,0.9,2.5,1,00111,2,1';
+    bild(B + '3', 'kn-sinus').then(sw => bild(B + '7&kn=' + K, 'kn-nachbau').then(nb => { cy.expectHash('kn', K); gleich(sw, nb, 'derselbe Farbverlauf', 0.5); }));
+  });
   it('Innenfärbungen 6 bis 8 und die Zuordnungen 37 bis 39', () => {
     const B = 'mode=mandel&re=-0.5&im=0&z=1&it=300';
     bild(B + '&in=3', 'in-3').then(w => { for (const i of [6, 7, 8]) bild(B + '&in=' + i, 'in-' + i).then(m => { cy.expectHash('in', String(i)); anders(w, m, 'Innen ' + i, 1); }); });

@@ -492,10 +492,10 @@ describe('Zweidimensionale Paletten', () => {
 
   it('der Umschalter steht nur, wo die Färbung zwei Werte liefert, und wechselt die Liste', () => {
     cy.visitApp();
-    cy.get('#palArt').should('have.attr', 'hidden');
+    cy.get('#palArt [data-art="2"]').should('have.attr', 'hidden');
     gruppen().should('deep.eq', ['Hell', 'Dunkel', 'Zwei- und Dreiklang', 'Bunt']);
     cy.visitApp('mode=mandel&map=14&p2=field-lines');
-    cy.get('#palArt').should('not.have.attr', 'hidden');
+    cy.get('#palArt [data-art="2"]').should('not.have.attr', 'hidden');
     cy.get('#palArt [data-art="2"]').should('have.class', 'on');
     gruppen().should('deep.eq', ['Vorgaben']);
     cy.get('#palette').should('have.value', 'z:3');
@@ -505,7 +505,7 @@ describe('Zweidimensionale Paletten', () => {
     cy.rerender(() => art(2));
     cy.get('#palette').should('have.value', 'z:3');                  // die zuletzt gewählte zweidimensionale kommt zurück
     cy.rerender(() => cy.pickOption('mapping', 2));
-    cy.get('#palArt').should('have.attr', 'hidden');
+    cy.get('#palArt [data-art="2"]').should('have.attr', 'hidden');
     gruppen().should('deep.eq', ['Hell', 'Dunkel', 'Zwei- und Dreiklang', 'Bunt']);
     cy.expectHash('p2', null);
   });
@@ -563,7 +563,7 @@ describe('Zweidimensionale Paletten', () => {
       cy.expectHash('map', '15');
       cy.get('#glowMode').parent().should('have.attr', 'hidden');
       cy.get('#interior').parent().should('not.have.attr', 'hidden');
-      cy.get('#palArt').should('not.have.attr', 'hidden');
+      cy.get('#palArt [data-art="2"]').should('not.have.attr', 'hidden');
       cy.get('#palette').should('have.value', '0');                  // Vorgabe: die gewöhnliche Palette
       cy.shotStats('winkel-klassisch').then(b => {
         anders(a, b, 'der Winkel färbt mit');
@@ -717,7 +717,7 @@ describe('Färbungen nach Bahnstatistik', () => {
         cy.expectHash('map', String(m));
         cy.get('#glowMode').parent().should('have.attr', 'hidden');
         cy.get('#interior').parent().should(innen ? 'not.have.attr' : 'have.attr', 'hidden');
-        cy.get('#palArt').should(zwei === null ? 'have.attr' : 'not.have.attr', 'hidden');
+        cy.get('#palArt [data-art="2"]').should(zwei === null ? 'have.attr' : 'not.have.attr', 'hidden');
         if (zwei !== null) cy.get('#palette').should('have.value', 'z:' + zwei);   // Vorgabe: Feldlinien
         cy.shotStats('stat-' + m).then(b => anders(a, b, 'Färbung ' + m));
       }
@@ -794,7 +794,7 @@ describe('Färbungen nach Bahnstatistik', () => {
     cy.shotStats('ursprung-log').then(log => {
       cy.rerender(() => cy.pickOption('mapping', 24));
       cy.expectHash('map', '24');
-      cy.get('#palArt').should('have.attr', 'hidden');                 // ein Wert: keine zweidimensionale Palette
+      cy.get('#palArt [data-art="2"]').should('have.attr', 'hidden');                 // ein Wert: keine zweidimensionale Palette
       cy.get('#streifenRow').should('have.attr', 'hidden');
       cy.get('#gewichtRow').should('have.attr', 'hidden');
       cy.get('#vorlaufRow').should('not.have.attr', 'hidden');          // der Vorlauf gilt für jede Bahnstatistik
@@ -805,7 +805,7 @@ describe('Färbungen nach Bahnstatistik', () => {
         cy.expectHash('map', '31');
         cy.rerender(() => cy.pickOption('paarA', 5));
         cy.rerender(() => cy.pickOption('paarAbzugA', 1));
-        cy.get('#palArt').should('not.have.attr', 'hidden');            // zwei Werte: Umschalter da, Vorgabe zweidimensional „Feldlinien“
+        cy.get('#palArt [data-art="2"]').should('not.have.attr', 'hidden');            // zwei Werte: Umschalter da, Vorgabe zweidimensional „Feldlinien“
         cy.get('#palArt [data-art="2"]').should('have.class', 'on');
         cy.get('#palette').find('option:selected').should('have.text', 'Feldlinien');
         cy.get('#streifenRow').should('not.have.attr', 'hidden');
@@ -827,7 +827,7 @@ describe('Färbungen nach Bahnstatistik', () => {
         cy.expectHash('sn', null);
         cy.rerender(() => cy.pickOption('mapping', 26));                // Gesamtdrehung allein: wie das Streifenmittel, aber ohne Streifen
         cy.expectHash('map', '26');
-        cy.get('#palArt').should('have.attr', 'hidden');
+        cy.get('#palArt [data-art="2"]').should('have.attr', 'hidden');
         cy.get('#streifenRow').should('have.attr', 'hidden');
         cy.get('#gewichtRow').should('not.have.attr', 'hidden');
         cy.shotStats('drehung-26').then(d => {
@@ -1302,19 +1302,19 @@ describe('Färbungen nach Bahnstatistik', () => {
   it('Bahnmittel mit Fluchtzeit: zwei Werte statt einem, das einwertige Verfahren bleibt daneben bestehen', () => {
     cy.visitApp('mode=mandel&re=-0.7462586155&im=0.1111580353&z=5.6e4&it=600');
     cy.rerender(() => cy.pickOption('mapping', 19));                 // Streifenmittel wie bisher: ein Wert, kein Umschalter
-    cy.get('#palArt').should('have.attr', 'hidden');
+    cy.get('#palArt [data-art="2"]').should('have.attr', 'hidden');
     cy.expectHash('map', '19');
     cy.shotStats('bahn-einwertig').then(ein => {
       cy.rerender(() => cy.pickOption('mapping', 31));               // dieselbe Statistik, aber kombiniert mit der Fluchtzeit
       cy.expectHash('map', '31');
-      cy.get('#palArt').should('not.have.attr', 'hidden');
+      cy.get('#palArt [data-art="2"]').should('not.have.attr', 'hidden');
       cy.get('#palArt [data-art="2"]').should('have.class', 'on');   // Vorgabe ist hier die zweidimensionale Palette
       gruppen().should('deep.eq', ['Vorgaben']);
       cy.shotStats('bahn-zweiwertig').then(zwei => anders(ein, zwei, 'Paar mit der Fluchtzeit sieht anders aus als das Mittel allein'));
       cy.rerender(() => art(1));                                     // auf die gewöhnliche Palette und zurück
       cy.expectHash('p2', 'n');
       cy.rerender(() => cy.pickOption('mapping', 19));
-      cy.get('#palArt').should('have.attr', 'hidden');
+      cy.get('#palArt [data-art="2"]').should('have.attr', 'hidden');
       cy.shotStats('bahn-einwertig-2').then(zurueck => gleich(ein, zurueck, 'das einwertige Verfahren ist unverändert'));
     });
   });

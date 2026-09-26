@@ -481,6 +481,16 @@
   #sinusRow input.wert { width: 132px; }   /* lange Zahlen (Versatz, Perioden) bleiben lesbar */
   #sinusRow .chk { margin-top: 10px; }
   #sinusRow .chk.sinus-palette { margin: 2px 0 6px; }
+  #palRow.kanal-an > :not(.sec-title):not(#palArt):not(#kanalRow):not(#palSinusHinweis) { display: none !important; }   /* „Je Kanal“: Liste, Dichte, Versatz, Kurve und Übergang wirken nicht */
+  #palArt { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 1fr; }   /* zwei oder drei Arten nebeneinander */
+  #kanalRow { display: flex; flex-direction: column; }
+  #kanalRow[hidden] { display: none; }
+  #kanalRow .kanal-kopf { margin: 18px 0 2px; font-size: 13px; font-weight: 600; }
+  #kanalRow .hint { margin: 8px 0 0; }
+  #kanalRow input[type=range] { margin-top: 4px; }
+  #kanalRow .chk { margin-top: 10px; }
+  #kanalRow > .lbl:not(.wertzeile) { margin-top: 13px; }   /* Auswahllisten stehen ab wie die Wertzeilen */
+  #kanalRow .wertzeile:has(input.wert:disabled) label { opacity: .45; }
   #sinusRow input[type=range] { margin-top: 4px; }
   #sinusRow .wertzeile:has(input.wert:disabled) label { opacity: .45; }   /* gesperrte Kanalwerte (mit Palette) */
   #wendeRow .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }   /* Wendepunkte: Setzen über die volle Breite, darunter die beiden Entfernen gleich breit */
@@ -1942,7 +1952,9 @@
       <div class="seg" id="palArt" role="group" data-i18n-aria-label="colour.kind-colour-palette" hidden>
         <button type="button" data-art="1" class="on" data-i18n="colour.standard"></button>
         <button type="button" data-art="2" data-i18n="colour.two-dimensional"></button>
+        <button type="button" data-art="3" data-i18n="colour.per-channel"></button>
       </div>
+      <div id="kanalRow" class="kanal-bereich" hidden></div>   <!-- Palettenart „Je Kanal“: aus KANAL_QUELLEN und KANAL_REGLER gebaut -->
       <div class="pal-cell"><div class="pal-wahl"><button type="button" id="palZurueck" class="ghost pal-schritt" data-i18n-aria-label="colour.palette-previous" data-i18n-title="colour.palette-previous">‹</button><select id="palette"></select><button type="button" id="palVor" class="ghost pal-schritt" data-i18n-aria-label="colour.palette-next" data-i18n-title="colour.palette-next">›</button></div><div class="pal-strip" id="palStrip" role="listbox" data-i18n-aria-label="colour.colour-palette"></div><button type="button" id="palEdit" class="ghost" aria-expanded="false" aria-controls="palEd" data-i18n="colour.edit-colour-scheme"></button></div>
       <label class="chk" data-i18n-title="colour.keeps-colour-typical-iteration"><input id="colAnchor" type="checkbox"> <span data-i18n="colour.keep-colour-while-changing"></span></label>
       <div class="lbl wertzeile"><label for="density" data-i18n="colour.colour-density"></label><button type="button" id="densAuto" class="ghost klein" data-i18n-title="colour.density-fit-title" data-i18n="colour.density-fit"></button><input class="val mono wert" id="densVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
@@ -2607,6 +2619,35 @@ const TEXTE = {
   'colour.sine-gpolar': { de: 'Gewicht XOR polar', en: 'Weight of the polar XOR' },
   'colour.sine-tiefe': { de: 'Stufen der Rekursion (1 bis 16)', en: 'Recursion levels (1 to 16)' },
   'colour.sine-vorher': { de: 'Sprung nach der Schrittzahl', en: 'Jump by the step count' },
+  'colour.per-channel': { de: 'Je Kanal', en: 'Per channel' },
+  'colour.channel-space': { de: 'Farbraum der Kanäle', en: 'Colour space of the channels' },
+  'colour.channel-rgb': { de: 'RGB', en: 'RGB' },
+  'colour.channel-lch': { de: 'LCh', en: 'LCh' },
+  'colour.channel-hint': { de: 'Jeder Kanal rechnet seine Farbe selbst aus einer Quelle: Wert · Faktor + Versatz, wahlweise als Welle. In LCh bleibt die Helligkeit gleichmäßig, während der Farbton wandert.', en: 'Each channel computes its colour itself from a source: value · factor + offset, optionally as a wave. In LCh the lightness stays even while the hue moves.' },
+  'colour.channel-red': { de: 'Rot', en: 'Red' },
+  'colour.channel-green': { de: 'Grün', en: 'Green' },
+  'colour.channel-blue': { de: 'Blau', en: 'Blue' },
+  'colour.channel-lightness': { de: 'Helligkeit', en: 'Lightness' },
+  'colour.channel-chroma': { de: 'Buntheit', en: 'Chroma' },
+  'colour.channel-hue': { de: 'Farbton', en: 'Hue' },
+  'colour.channel-source': { de: 'Quelle', en: 'Source' },
+  'colour.channel-factor': { de: 'Faktor', en: 'Factor' },
+  'colour.channel-offset': { de: 'Versatz', en: 'Offset' },
+  'colour.channel-wave': { de: 'Als Welle', en: 'As a wave' },
+  'colour.channel-period': { de: 'Periode', en: 'Period' },
+  'colour.channel-phase': { de: 'Phase', en: 'Phase' },
+  'colour.channel-mask': { de: 'Maske', en: 'Mask' },
+  'colour.channel-mask-a': { de: 'Maske liest', en: 'Mask reads' },
+  'colour.channel-mask-b': { de: 'und liest', en: 'and reads' },
+  'colour.channel-jump': { de: 'Sprung', en: 'Jump' },
+  'colour.channel-src-fixed': { de: 'fest (nur Versatz)', en: 'fixed (offset only)' },
+  'colour.channel-src-none': { de: 'nichts', en: 'nothing' },
+  'colour.channel-src-value': { de: 'Wert der Färbung', en: 'Value of the colouring' },
+  'colour.channel-src-value2': { de: 'Zweiter Wert der Färbung', en: 'Second value of the colouring' },
+  'colour.channel-src-time': { de: 'Fluchtzeit', en: 'Escape time' },
+  'colour.channel-src-angle': { de: 'Fluchtwinkel (Umläufe)', en: 'Escape angle (turns)' },
+  'colour.channel-src-direction': { de: 'Richtung (Anstieg der Fluchtzeit, Umläufe)', en: 'Direction (rise of the escape time, turns)' },
+  'colour.channel-src-distance': { de: 'Randabstand (log₂)', en: 'Distance to the edge (log₂)' },
   'colour.sine-palette': { de: 'Farben aus der Palette (Zähler als Palettenstelle)', en: 'Colours from the palette (counter as palette position)' },
   'colour.sine-palette-title': { de: 'Der Zähler aus Schritten und Endrichtung wählt die Stelle in der Palette; Farbdichte und Farbversatz wirken, die Werte je Kanal nicht.', en: 'The counter of steps and end direction picks the position in the palette; colour density and offset apply, the per-channel values do not.' },
   'colour.palette-unused-sine': { de: 'Die Sinuswellen rechnen ihre Farben selbst; die Palette wirkt hier nicht. Im Bereich Farbe lässt sie sich einschalten („Farben aus der Palette“).', en: 'The sine waves compute their own colours; the palette has no effect here. It can be switched on in the Colour section (“Colours from the palette”).' },
@@ -4421,6 +4462,36 @@ function sinusLesen(t) { const o = sinusNeu(), a = String(t || '').split(','); S
 function sinusUniform() {   // 8 vec4, siehe sinusFarbe und sinusFarbeVoll im Farbpass
   const o = S.sinus, m = k => parseInt(o[k], 2) || 0, l = k => o[k].length;
   return new Float32Array([o.P, o.versatz, o.gSchritte, o.gRichtung, o.oR, o.oG, o.oB, o.oM, o.sR, o.sG, o.sB, o.sM, o.pR, o.pG, o.pB, currentMaxIter(), m('mR'), m('mG'), m('mB'), (o.vorher ? 1 : 0) + (o.nachher ? 2 : 0), l('mR'), l('mG'), l('mB'), 0, o.gVersch, o.gXor, o.gPolar, o.tiefe, sinusVoll() ? 1 : 0, o.palette ? 1 : 0, 0, 0]);
+}
+// Palettenart „Je Kanal“ (Link kn): an, OKLCh statt RGB, drei Zeilen (Quelle, Faktor, Versatz, Welle, Periode, Phase, Sprung, Maske,
+// Maske liest A und B; 0 = keine). Quellen 4 … 6 rechnet der Fraktal-Shader (Kanäle z und w), nur wenn sie frei sind
+const KANAL_QUELLEN = [[0, 'colour.channel-src-fixed'], [1, 'colour.channel-src-value'], [2, 'colour.channel-src-value2'], [3, 'colour.channel-src-time'], [4, 'colour.channel-src-angle'], [5, 'colour.channel-src-direction'], [6, 'colour.channel-src-distance']];
+const KANAL_REGLER = { f: [-2, 2, 0.001], v: [-4, 4, 0.001], per: [-4, 4, 0.001], ph: [-6.283, 6.283, 0.001], sp: [-3.142, 3.142, 0.001] };
+const KANAL_NAMEN = [['colour.channel-red', 'colour.channel-green', 'colour.channel-blue'], ['colour.channel-lightness', 'colour.channel-chroma', 'colour.channel-hue']];
+function kanalZeileNeu(ph) { return { q: 1, f: 0.05, v: 0, w: true, per: 1, ph, sp: 0, m: '1', mA: 0, mB: 0 }; }
+function kanalNeu() { return { an: false, lch: false, z: [kanalZeileNeu(0), kanalZeileNeu(2.0944), kanalZeileNeu(4.1888)] }; }   // ein Regenbogen über dem Wert der Färbung
+function kanalText(o) { return [o.lch ? 1 : 0, ...o.z.map(z => [z.q, z.f, z.v, z.w ? 1 : 0, z.per, z.ph, z.sp, z.m, z.mA, z.mB].join(','))].join('~'); }
+function kanalLesen(t) {   // ohne Schlüssel: aus (Standard)
+  const o = kanalNeu(); if (t === null || t === undefined) return o;
+  const a = String(t).split('~'); o.an = true; o.lch = a[0] === '1';
+  const zahl = (x, alt) => { const v = parseFloat(x); return Number.isFinite(v) ? v : alt; }, quelle = (x, alt) => { const v = parseInt(x, 10); return Number.isFinite(v) ? clamp(v, 0, 6) : alt; };
+  for (let r = 0; r < 3; r++) { const b = String(a[r + 1] || '').split(','), z = o.z[r]; if (!a[r + 1]) continue;
+    z.q = quelle(b[0], z.q); z.f = zahl(b[1], z.f); z.v = zahl(b[2], z.v); z.w = b[3] === undefined ? z.w : b[3] === '1'; z.per = zahl(b[4], z.per); z.ph = zahl(b[5], z.ph); z.sp = zahl(b[6], z.sp);
+    if (/^[01]{1,24}$/.test(b[7] || '')) z.m = b[7]; z.mA = quelle(b[8], z.mA); z.mB = quelle(b[9], z.mB); }
+  return o;
+}
+function kanalMoeglich() { return S.family === 'escape'; }   // die Palettenart gibt es, wo eine Färbung über die Palette läuft
+function kanalAn() { return S.kanal.an && kanalMoeglich(); }
+function kanalQMoeglich() { return kanalMoeglich() && !FORMULAS[S.formula].seq && !texturAktiv() && richtungModus() !== 2 && !sinusVoll(); }   // Kanäle z und w frei
+function kanalQuellen() { return kanalAn() ? S.kanal.z.flatMap(z => [z.q, z.mA, z.mB]) : []; }
+function kanalQAktiv() { return kanalQMoeglich() && kanalQuellen().some(q => q >= 4); }
+function kanalAbstand() { return kanalQAktiv() && kanalQuellen().some(q => q === 5 || q === 6); }   // Richtung und Randabstand brauchen die Ableitung
+function kanalQuelleDa(q) { return q <= 1 || q === 3 || (q === 2 && (!!quelle2() || S.mapping === 40)) || (q >= 4 && kanalQMoeglich()); }
+function kanalUniform() {   // 12 vec4, siehe kanalFarbe im Farbpass
+  const o = S.kanal, f = new Float32Array(48);
+  f.set([kanalAn() ? 1 : 0, kanalAn() && quelle2() ? 1 : 0, o.lch ? 1 : 0, kanalQAktiv() ? 1 : 0], 0);
+  o.z.forEach((z, r) => f.set([z.q, z.f, z.v, z.w ? 1 : 0, z.per, z.ph, z.sp, parseInt(z.m, 2) || 0, z.m.length, z.mA, z.mB, 0], 4 + 12 * r));
+  return f;
 }
 const DOM_SCHRITT = { min: 0, max: 500, def: 0 };   // Domain Coloring: z nach so vielen Schritten (0 = der letzte Bahnpunkt)
 const MAPPING_TEXT = { 40: 'mapping.text.40', 36: 'mapping.text.36', 37: 'mapping.text.37', 38: 'mapping.text.38', 39: 'mapping.text.39', 0: 'mapping.text.0', 1: 'mapping.text.1', 2: 'mapping.text.2', 4: 'mapping.text.4', 6: 'mapping.text.6', 11: 'mapping.text.11', 12: 'mapping.text.12', 13: 'mapping.text.13', 14: 'mapping.text.14', 15: 'mapping.text.15', 16: 'mapping.text.16', 17: 'mapping.text.17', 18: 'mapping.text.18', 19: 'mapping.text.19', 20: 'mapping.text.20', 21: 'mapping.text.21', 24: 'mapping.text.24', 26: 'mapping.text.26', 28: 'mapping.text.28', 29: 'mapping.text.29', 31: 'mapping.text.31', 32: 'mapping.text.32', 33: 'mapping.text.33', 34: 'mapping.text.34', 35: 'mapping.text.35' };   // ein Satz je Färbung, unter der Auswahl
@@ -6303,7 +6374,13 @@ fn fsFast(pos: vec4f) -> vec4u {
 }
 
 // Ausgabe: x = Iterationen (24.8) | Wurzel<<26 bzw. innen-Flag + |z|, y = Abstand zum Rand bzw. innen: log-Konvergenzrate
-@fragment fn fs(@builtin(position) pos0: vec4f) -> @location(0) vec4u {
+var<private> gQ: vec2u = vec2u(0u);   // Palettenart „Je Kanal“: Fluchtwinkel (z) sowie Richtung und Randabstand (w, zwei Hälften), am Ende der Bahn gemerkt
+@fragment fn fs(@builtin(position) pos0: vec4f) -> @location(0) vec4u {   // P.sinusP.y = 1: die Quellen der Kanäle stehen in z und w
+  let o = fsKern(pos0);
+  if (P.sinusP.y < 0.5) { return o; }
+  return vec4u(o.x, o.y, gQ.x, gQ.y);
+}
+fn fsKern(pos0: vec4f) -> vec4u {
   if (P.adapt != 0u && textureLoad(need, vec2i(pos0.xy), 0).x == 0u) { discard; return vec4u(0u, 0u, 0u, 1u); }   // Pixel ist fertig
   var pos = vec4f(pos0.xy + P.origin, pos0.zw);   // Pixelmitte im ganzen Bild (Export: Lage der Kachel + Pixel, beides ganzzahlig, also exakt)
   if (P.jit != 0u) { pos = vec4f(pos.xy + jitter(vec2u(pos.xy), P.jit), pos0.zw); }
@@ -6710,6 +6787,7 @@ fn fsFast(pos: vec4f) -> vec4u {
       zpp = zp; zp = z; z = zn;
     }
   }
+  if (P.sinusP.y > 0.5) { gQ = vec2u(bitcast<u32>(atan2(z.y, z.x) * 0.15915494), pack2x16float(vec2f(steigRichtung(z, der) * 0.15915494, log2(1.0 + max(dist, 0.0))))); }   // Quellen der Kanäle (in Umläufen bzw. log₂)
   if (escaped && P.biomorph > 0.5 && min(abs(z.x), abs(z.y)) < sqrt(bail)) { escaped = false; }   // Biomorph (Pickover): nur eine Komponente entkam → zählt als innen
   if (LYAP != 0u) {   // zweiter Kanal trägt den Lyapunov-Wert statt Abstand bzw. Konvergenzrate, innen wie außen
     let xl = select(0x80000000u | u32(min(length(z), 2.0) * 16777216.0), u32(max(nu, 0.0) * 256.0) | (root << 26u), escaped);
@@ -6788,7 +6866,7 @@ const WGSL_FILL = /* wgsl */`
 @fragment fn fs() -> @location(0) vec4u { return vec4u(0xFFFFFFFFu, 0u, 0u, 1u); }`;
 
 const WGSL_COLOR_LIB = /* wgsl */`
-struct CP { a: vec4f, b: vec4f, c: vec4f, d: vec4f, misc: vec4f, misc2: vec4f, misc3: vec4f, shift: vec4f, extra: vec4f, z2: vec4f, leer: vec4f, tex: vec4f, innen: vec4f, tex2: vec4f, tex3: vec4f, q: array<vec4f, 20>, stapel: array<vec4f, 12>, paar: vec4f, paar2: vec4f, stapelW: array<vec4f, 4>, nach: array<vec4f, 32>, nachInfo: vec4f, nachBild: vec4f, maske: array<vec4f, 25>, texMaske: array<vec4f, 13>, opt: vec4f, opt2: vec4f, mat: vec4f, mat2: vec4f, palk: vec4f, gueltig: vec4f, licht: array<vec4f, 10>, sinus: array<vec4f, 8> } fn gueltig(d: vec2i) -> vec2i { return select(d, min(d, vec2i(C.gueltig.xy)), C.gueltig.x > 0.5); }   // gueltig: im Export die gerechnete Fläche der Kachel (die Textur ist so groß wie die größte), am Bildschirm 0 = die ganze Textur; die Hilfe steht in derselben Zeile, weil WGSL_POST nur diese Zeile übernimmt   // mat = (Material: 0 einfach, 1 Dielektrikum, 2 Metall; Glanz; Reflexion; Neigung), mat2 = (Schatten an, Schattenlänge px, Himmel-Lage, Himmel-Spanne)   // texMaske: je Texturplatz drei vec4 wie maske, [12] = (Kantenmaske vorhanden, eine Maske aktiv)   // maske: je Ebene drei vec4 (Art, umkehren, zeigen, weicher Rand; acht Zahlen), [24] = (Abstand vorhanden, eine Maske aktiv);   // paar = (Wert A, Wert B, Faktor A, Faktor B), paar2 = (Abzug A, Abzug B, Flags A, Flags B: Bit 0 Anker, 1 Klemme, 2 voll im Kanal)   // stapel: je Platz (Art, Stärke, Kontrast, Mitte), helle und dunkle Farbe (Vorgabe Weiß und Schwarz); tex2.y = 1: Texturwerte im z-/w-Kanal (über einer Statistik-Färbung), tex2.z = belegte Plätze   // tex = Textur: x Art (0 keine), y Stärke, z Kontrast, w Mitte; innen = eigene Innenfarbe (xyz), w = gestuft; tex2.x = Streifen für die Winkel-Texturen und Periodengebiete; tex3 = zweite Textur (Art, Stärke, Kontrast, Mitte)   // shift.xy = Versatz während des Ziehens, extra.x = Stauchung p, extra.y = Palette vorfiltern (0 = aus, sonst Faktor auf die Breite), extra.z = Farbanker des Bahnmittels (negativ = keiner), extra.w = Fluchtzeit-Abzug β (Färbung 25)
+struct CP { a: vec4f, b: vec4f, c: vec4f, d: vec4f, misc: vec4f, misc2: vec4f, misc3: vec4f, shift: vec4f, extra: vec4f, z2: vec4f, leer: vec4f, tex: vec4f, innen: vec4f, tex2: vec4f, tex3: vec4f, q: array<vec4f, 20>, stapel: array<vec4f, 12>, paar: vec4f, paar2: vec4f, stapelW: array<vec4f, 4>, nach: array<vec4f, 32>, nachInfo: vec4f, nachBild: vec4f, maske: array<vec4f, 25>, texMaske: array<vec4f, 13>, opt: vec4f, opt2: vec4f, mat: vec4f, mat2: vec4f, palk: vec4f, gueltig: vec4f, licht: array<vec4f, 10>, sinus: array<vec4f, 8>, kanal: array<vec4f, 12> } fn gueltig(d: vec2i) -> vec2i { return select(d, min(d, vec2i(C.gueltig.xy)), C.gueltig.x > 0.5); }   // gueltig: im Export die gerechnete Fläche der Kachel (die Textur ist so groß wie die größte), am Bildschirm 0 = die ganze Textur; die Hilfe steht in derselben Zeile, weil WGSL_POST nur diese Zeile übernimmt   // mat = (Material: 0 einfach, 1 Dielektrikum, 2 Metall; Glanz; Reflexion; Neigung), mat2 = (Schatten an, Schattenlänge px, Himmel-Lage, Himmel-Spanne)   // texMaske: je Texturplatz drei vec4 wie maske, [12] = (Kantenmaske vorhanden, eine Maske aktiv)   // maske: je Ebene drei vec4 (Art, umkehren, zeigen, weicher Rand; acht Zahlen), [24] = (Abstand vorhanden, eine Maske aktiv);   // paar = (Wert A, Wert B, Faktor A, Faktor B), paar2 = (Abzug A, Abzug B, Flags A, Flags B: Bit 0 Anker, 1 Klemme, 2 voll im Kanal)   // stapel: je Platz (Art, Stärke, Kontrast, Mitte), helle und dunkle Farbe (Vorgabe Weiß und Schwarz); tex2.y = 1: Texturwerte im z-/w-Kanal (über einer Statistik-Färbung), tex2.z = belegte Plätze   // tex = Textur: x Art (0 keine), y Stärke, z Kontrast, w Mitte; innen = eigene Innenfarbe (xyz), w = gestuft; tex2.x = Streifen für die Winkel-Texturen und Periodengebiete; tex3 = zweite Textur (Art, Stärke, Kontrast, Mitte)   // shift.xy = Versatz während des Ziehens, extra.x = Stauchung p, extra.y = Palette vorfiltern (0 = aus, sonst Faktor auf die Breite), extra.z = Farbanker des Bahnmittels (negativ = keiner), extra.w = Fluchtzeit-Abzug β (Färbung 25)
 // zweidimensionale Palette (PAL2): z2 = (Art: 0 keine, 1 Formel, 2 Tabelle; Achse u; Achse v; –), leer.xyz = Farbe ohne Wert, q = je Quadrant a, b, cu, cv, d
 @group(0) @binding(0) var iter: texture_2d_array<u32>;   // eine Ebene je Probe der Glättung
 @group(0) @binding(1) var<uniform> C: CP;
@@ -6815,7 +6893,8 @@ fn palZeile(t: f32, zeile: i32) -> vec3f {   // eine Zeile der Palettentextur an
   let x = fract(t) * 256.0; let i = i32(x); let fr = x - f32(i);
   return mix(textureLoad(palTex, vec2i(i & 255, zeile), 0).xyz, textureLoad(palTex, vec2i((i + 1) & 255, zeile), 0).xyz, fr);
 }
-fn pal(tRoh: f32) -> vec3f {
+fn pal(tRoh: f32) -> vec3f { return select(palAlt(tRoh), kanalFarbe(vec2f(tRoh, gK2)), C.kanal[0].x > 0.5); }   // Palettenart „Je Kanal“: jeder Kanal rechnet selbst
+fn palAlt(tRoh: f32) -> vec3f {
   let t = palStelle(tRoh);
   if (C.misc3.z > 0.5) {
     return mix(palZeile(t, 0), palZeile(t, 1), palPfadAnteil(t));   // ohne Übergang ist der Anteil 0 und die zweite Zeile zählt nicht
@@ -6978,6 +7057,8 @@ struct TexMaskeWerte { nu: f32, kw: f32, v: vec4f, m: vec4f }
 var<private> gT: TexMaskeWerte;   // je Probe: glatte Fluchtzeit, Steilheit (Kanten), die Werte der vier Plätze, ihre Masken
 var<private> gTd: f32 = 0.0;   // Ziel Deckkraft der Ebene: die Summe der Plätze, einmal je Probe; das dritte Ziel trägt sie zum Ebenenpass
 var<private> gKw: f32 = 0.0;   // Kantensteilheit des eigenen Punktes, einmal je Probe; das Höhenfeld nimmt sie auch für die Nachbarn
+var<private> gKq: vec4f = vec4f(0.0);   // „Je Kanal“: Fluchtzeit, Fluchtwinkel, Richtung, Randabstand der Probe
+var<private> gK2: f32 = 0.0;   // „Je Kanal“: der zweite Wert der Färbung, wo er nicht über farbe2 kommt (Sinuswellen: die Schrittzahl)
 var<private> gTw: vec4f = vec4f(0.0);   // die Werte der vier Plätze am eigenen Punkt, einmal je Probe entpackt
 fn gTWert(sl: u32) -> f32 { return select(select(gT.v.x, gT.v.y, sl == 1u), select(gT.v.z, gT.v.w, sl == 3u), sl >= 2u); }   // ohne dynamischen Index (der Übersetzer würde sonst langsam)
 // TEXMASKE-ANFANG – bis TEXMASKE-ENDE nur in den Fassungen mit Texturmasken (wgslOhneTexMaske setzt Attrappen ein: kürzeres Übersetzen beim Start)
@@ -7142,7 +7223,7 @@ fn sinusFarbeVoll(px: vec4u) -> vec3f {
   return select(floor(s3 * 255.0 + 0.5) / 255.0, vec3f(0.0), X.w > 1.5 && nn >= acc * X.w);   // mit Rekursion: innen erst ab maxIter · Stufen, schwarz
 }
 // Färbung 40 mit Palette (sinus[7].y = 1): der Zähler als Palettenstelle; gepackt wie sinusFarbe, voll wie sinusFarbeVoll (ohne die Kanäle)
-fn sinusZaehler(px: vec4u, voll: bool) -> vec2f {   // (Zähler, 1 = schwarz: innen nach der Rekursion)
+fn sinusZaehler(px: vec4u, voll: bool) -> vec3f {   // (Zähler, 1 = schwarz: innen nach der Rekursion, Schrittzahl)
   let A = C.sinus[0]; let Pk = C.sinus[3]; let X = C.sinus[6]; let acc = max(Pk.w, 1.0);
   let nnG = f32(px.y >> 15u); let uG = f32(px.y & 32767u) / 32767.0 * 2.0 - 1.0;
   let dv = vec2f(bitcast<f32>(px.z), bitcast<f32>(px.w)); let rr = length(dv);
@@ -7151,7 +7232,33 @@ fn sinusZaehler(px: vec4u, voll: bool) -> vec2f {   // (Zähler, 1 = schwarz: in
   let rad0 = max(rr, 1.0e-30); let th0 = sin(sinusWinkel(dv) * 2.0 + 1.5707963) * 3.1415927 + sin(rad0 * 4.0) * 2.0 / rad0;
   let zusatz = select(0.0, rr * X.x, nn > 1.0) + sinusXor(dv.y, dv.x, X.y, acc) + select(sinusXor(th0, rad0, X.z, acc), sinusXor(sinusWinkel(dv), rr, X.z, acc), nn > 1.0);
   zaehler += select(0.0, zusatz, voll);
-  return vec2f(zaehler, select(0.0, 1.0, voll && X.w > 1.5 && nn >= acc * X.w));
+  return vec3f(zaehler, select(0.0, 1.0, voll && X.w > 1.5 && nn >= acc * X.w), nn);
+}
+// Palettenart „Je Kanal“: kanal[0] = (an, zwei Werte über farbe2, OKLCh, Quellen in z und w); je Zeile r drei vec4:
+// [1+3r] = (Quelle, Faktor, Versatz, Welle), [2+3r] = (Periode, Phase, Sprung, Maske), [3+3r] = (Maskenlänge, Maske liest A, B, –)
+fn kanalQuelle(q: u32, p: vec2f) -> f32 {   // 0 fest, 1 Wert, 2 zweiter Wert, 3 Fluchtzeit, 4 Fluchtwinkel, 5 Richtung, 6 Randabstand
+  var v = 0.0;
+  v = select(v, p.x, q == 1u); v = select(v, p.y, q == 2u); v = select(v, gKq.x, q == 3u);
+  v = select(v, gKq.y, q == 4u); v = select(v, gKq.z, q == 5u); v = select(v, gKq.w, q == 6u);
+  return v;
+}
+fn kanalWert(r: u32, p: vec2f) -> f32 {
+  let A = C.kanal[1u + 3u * r]; let B = C.kanal[2u + 3u * r]; let D = C.kanal[3u + 3u * r];
+  let v = kanalQuelle(u32(A.x), p) * A.y + A.z;
+  let b = select(0.0, sinusBit(kanalQuelle(u32(D.y), p), B.w, D.x), D.y > 0.5) + select(0.0, sinusBit(kanalQuelle(u32(D.z), p), B.w, D.x), D.z > 0.5);
+  return select(v + B.z * b, 0.5 + 0.5 * sin(6.2831853 * v * B.x + B.y + B.z * b), A.w > 0.5);
+}
+fn kanalSrgb(c: vec3f) -> vec3f { let k = clamp(c, vec3f(0.0), vec3f(1.0)); return select(1.055 * pow(k, vec3f(1.0 / 2.4)) - 0.055, k * 12.92, k <= vec3f(0.0031308)); }
+fn kanalOkRgb(p: vec3f) -> vec3f {   // OKLCh (L, C, h in Radiant) → sRGB, begrenzt
+  let A = p.y * cos(p.z); let B = p.y * sin(p.z);
+  let l = vec3f(p.x + 0.3963377774 * A + 0.2158037573 * B, p.x - 0.1055613458 * A - 0.0638541728 * B, p.x - 0.0894841775 * A - 1.2914855480 * B);
+  let q = l * l * l;
+  return kanalSrgb(vec3f(dot(q, vec3f(4.0767416621, -3.3077115913, 0.2309699292)), dot(q, vec3f(-1.2684380046, 2.6097574011, -0.3413193965)), dot(q, vec3f(-0.0041960863, -0.7034186147, 1.7076147010))));
+}
+fn kanalFarbe(p: vec2f) -> vec3f {   // RGB: je Kanal 0 … 1; OKLCh: Helligkeit 0 … 1, Buntheit 0 … 0,37, Farbton in Umläufen
+  let c = vec3f(kanalWert(0u, p), kanalWert(1u, p), kanalWert(2u, p));
+  let lch = kanalOkRgb(vec3f(clamp(c.x, 0.0, 1.0), clamp(c.y, 0.0, 1.0) * 0.37, c.z * 6.2831853));
+  return floor(select(clamp(c, vec3f(0.0), vec3f(1.0)), lch, C.kanal[0].z > 0.5) * 255.0 + 0.5) / 255.0;
 }
 fn texStapelWert(i: u32, v: f32, kw: f32) -> f32 { return select(select(v, kanteHell(kw, C.stapelW[i].x), u32(C.stapel[3u * i].x) == 11u), gEnt, u32(C.stapel[3u * i].x) == 27u); }   // Kanten und Entropie entstehen erst im Farbpass   // Kanten entstehen erst im Farbpass (kw, einmal je Probe), alle anderen Werte kommen gepackt aus dem Fraktal-Shader
 fn texWerte(a: u32, b: u32, kw: f32) -> vec4f {   // die Werte der vier Plätze aus den gepackten 16-Bit-Hälften (a: Platz 1 und 2, b: Platz 3 und 4)
@@ -7228,7 +7335,8 @@ fn palInt(x: f32, zeile: i32) -> vec3f {
   return cyc * textureLoad(palPre, vec2i(256, zeile), 0).xyz + textureLoad(palPre, vec2i(min(i, 256), zeile), 0).xyz + l0 * fr + (l1 - l0) * (0.5 * fr * fr);
 }
 // Mittel der Palette über [t − w/2, t + w/2]: Cosinus-Paletten exakt über den sinc-Faktor, eigene Schemata über die Stammfunktion
-fn palAvg(tRoh: f32, w: f32) -> vec3f {
+fn palAvg(tRoh: f32, w: f32) -> vec3f { return select(palAvgAlt(tRoh, w), kanalFarbe(vec2f(tRoh, gK2)), C.kanal[0].x > 0.5); }
+fn palAvgAlt(tRoh: f32, w: f32) -> vec3f {
   let t = palStelle(tRoh);   // die Kurve gilt für die Mitte des Fensters; die Breite bleibt, wie die Färbung sie vorgibt
   if (w < 1.0e-4) { return pal(t); }
   if (C.misc3.z > 0.5) {
@@ -7248,7 +7356,8 @@ fn stelle2(t: f32, k: f32) -> vec3f {   // Tabellenplatz einer Achse: (Eintrag, 
   if (k > 0.0) { let x = clamp(t, 0.0, 1.0) * 255.0; let i = min(floor(x), 254.0); return vec3f(i, i + 1.0, x - i); }
   let x = fract(t) * 256.0; let i = min(floor(x), 255.0); return vec3f(i, select(i + 1.0, 0.0, i >= 255.0), x - i);
 }
-fn farbe2(w: vec2f, p: vec2f, leer: bool) -> vec3f {
+fn farbe2(w: vec2f, p: vec2f, leer: bool) -> vec3f { return select(farbe2Alt(w, p, leer), select(kanalFarbe(p), C.leer.xyz, leer), C.kanal[0].x > 0.5); }   // zwei Werte: beide als Quellen
+fn farbe2Alt(w: vec2f, p: vec2f, leer: bool) -> vec3f {
   if (leer) { return C.leer.xyz; }
   let qu = w.x > 0.0;
   let qv = w.y > 0.0 || (w.y == 0.0 && qu);                 // bei v = 0 zählt v zur Seite von u
@@ -7273,6 +7382,7 @@ fn sampleColor(px: vec4u, xy: vec2i, k: i32) -> vec3f {
   gKw = kw;
   var ent = 0.0; if (C.opt2.w > 0.5 && (u & 0x80000000u) == 0u) { ent = entropieWert(xy, k); }   // Entropie (Art 27): einmal je Probe, nur außen
   gEnt = ent;
+  gK2 = 0.0; gKq = vec4f(f32(u & 0x03FFFFFFu) * (1.0 / 256.0), select(vec3f(0.0), vec3f(bitcast<f32>(px.z), unpack2x16float(px.w)), C.kanal[0].w > 0.5));   // Quellen der Kanäle
   texMaskeMerken(f32(u & 0x03FFFFFFu) * (1.0 / 256.0), kw);   // für die Texturmasken
   let innen0 = (u & 0x80000000u) != 0u;
   // Die Werte der bis zu vier Texturplätze, einmal je Probe: über einer Statistik-Färbung und innen stehen sie im z- und
@@ -7283,7 +7393,7 @@ fn sampleColor(px: vec4u, xy: vec2i, k: i32) -> vec3f {
   gTw = tw;   // das Relief liest sie als Höhenfeld (Ziel Relief-Höhe), bevor die Farbe sie anwendet
   let vz = texSumme(tw, innen0, 3u);   // Ziel Palettenposition: die Summe der Plätze, die die Palettenstelle verschieben (0 ohne solchen Platz)
   var col = vec3f(0.0);
-  let zwei = C.z2.x > 0.5;                                  // zweidimensionale Palette statt der gewöhnlichen
+  let zwei = C.z2.x > 0.5 || C.kanal[0].y > 0.5;                                  // zweidimensionale Palette statt der gewöhnlichen
   if (u32(C.misc3.x) == 13u) {                              // Lyapunov (Markus): λ je Punkt (a, b); über 1000: nicht definiert
     let l = bitcast<f32>(px.y); let p = l * C.misc.x * 25.0;   // Standarddichte: ein Umlauf je Einheit λ
     if (zwei) { col = farbe2(vec2f(l, 0.0), vec2f(p, 0.0), l > 1000.0); }
@@ -7358,7 +7468,7 @@ fn sampleColor(px: vec4u, xy: vec2i, k: i32) -> vec3f {
     if (zwei) { col = farbe2(vec2f(1.0), p, false); } else { col = pal(p.x + p.y); }
     if (za == 2u || zb == 2u) { col = col * paarWeich(md.x); }                     // Helligkeit: am Anker unverändert, sonst dunkler oder heller
     if (za == 3u || zb == 3u) { col = saettigungAn(col, md.y); }   // Sättigung: am Anker unverändert, darunter grauer, darüber bunter
-  } else if (u32(C.misc.w) == 40u) { let sz = sinusZaehler(px, C.sinus[7].x > 0.5); let sp = select(pal(sz.x * C.misc.x + C.misc.y + vz), vec3f(0.0), sz.y > 0.5);   // mit Palette: der Zähler als Stelle, wie die Fluchtzeit
+  } else if (u32(C.misc.w) == 40u) { let sz = sinusZaehler(px, C.sinus[7].x > 0.5); gK2 = sz.z; let sp = select(pal(sz.x * C.misc.x + C.misc.y + vz), vec3f(0.0), sz.y > 0.5);   // mit Palette: der Zähler als Stelle, wie die Fluchtzeit
     col = select(select(sinusFarbe(px.y), sinusFarbeVoll(px), C.sinus[7].x > 0.5), sp, C.sinus[7].y > 0.5);   // Sinuswellen aus Schrittzahl und Endrichtung, nur außen
   } else if (u32(C.misc.w) == 19u || u32(C.misc.w) == 20u || u32(C.misc.w) == 26u || u32(C.misc.w) == 35u) {   // 35: der eigene Sammler wie das Streifenmittel   // Streifen-, Dreiecksmittel, Gesamtdrehung: nur außen; Standarddichte 1,2 bzw. 1,5 Umläufe
     col = pal((bitcast<f32>(px.y) - ankerS()) * select(37.5, 30.0, u32(C.misc.w) != 20u) * C.misc.x + C.misc.y + vz);   // Plätze mit Ziel Palettenposition verschieben die Stelle
@@ -7950,7 +8060,7 @@ function palPrefix(lut) {   // Stammfunktion der stückweise linearen 256er-Tabe
   for (let i = 0; i < 256; i++) { const j = (i + 1) & 255; for (let c = 0; c < 3; c++) out[(i + 1) * 4 + c] = out[i * 4 + c] + (lut[i * 4 + c] + lut[j * 4 + c]) / 510; }
   return out;
 }
-function fastPath(p) { return !p.wendeN && p.formula === 0 && p.power === 2 && !p.startC && !p.hybrid && !p.lyap && !p.winkel && !p.stat && !p.stat2 && !p.paar && !p.fluchtForm && !p.fluchtRadius && !p.biomorph && !p.abb && p.needDE !== 1 && p.needInt !== 1 && p.cycle !== 1 && p.bla !== 1 && p.invert !== 1 && p.flip !== 1 && S.z0[0] === 0 && S.z0[1] === 0; }
+function fastPath(p) { return !p.wendeN && !(p.sinusP && p.sinusP[1] > 0.5) && p.formula === 0 && p.power === 2 && !p.startC && !p.hybrid && !p.lyap && !p.winkel && !p.stat && !p.stat2 && !p.paar && !p.fluchtForm && !p.fluchtRadius && !p.biomorph && !p.abb && p.needDE !== 1 && p.needInt !== 1 && p.cycle !== 1 && p.bla !== 1 && p.invert !== 1 && p.flip !== 1 && S.z0[0] === 0 && S.z0[1] === 0; }
 
 function variantenSchluessel(formula, de, ni, cyc, bla, pw, fast, lyap, winkel, stat, stat2, tex1, tex2, form, texz, stat3, stat4, stat5, tex3, tex4, stat6, paar, paarA, paarB, paarVoll, hybrid, eigen, breit) {   // Schlüssel einer Shader-Variante, für beide Renderer derselbe (breit: Iterationstextur rgba32uint, nur WebGPU unterscheidet die Pipeline danach)
   return formula + '|' + (de ? 1 : 0) + '|' + (ni ? 1 : 0) + '|' + (cyc ? 1 : 0) + '|' + (bla ? 1 : 0) + '|' + pw + '|' + (fast ? 1 : 0) + '|' + lyap + '|' + winkel + '|' + stat + (tex1 || tex2 ? '|' + stat2 + '|' + tex1 + '|' + tex2 : '') + (form ? '|F' + form : '') + (texz ? '|Z' + stat3 : '') + (breit ? '|A' : '') + (stat4 || stat5 || tex3 || tex4 || stat6 ? '|S' + stat4 + '|' + stat5 + '|' + tex3 + '|' + tex4 + '|' + stat6 : '') + (stat2 && !tex1 && !tex2 ? '|s2' + stat2 : '') + (paar ? '|P' + paarA + '|' + paarB + '|' + paarVoll : '') + (hybrid ? '|H' + hybrid : '') + (eigen ? '|X' + eigen.key : '');
@@ -8053,7 +8163,7 @@ class GpuRenderer {
     const U = GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST;
     this.ubF = d.createBuffer({ size: 688, usage: U });   // FP samt texP (6 vec4), texW (4 vec4), Inversionsmitte, Ebenenabbildung, texQ (6 vec4), die zweite Zeile der Formel B und die Lage der Exportkachel
     this.ubU = d.createBuffer({ size: 16, usage: U });
-    this.ubC = d.createBuffer({ size: 2384, usage: U });
+    this.ubC = d.createBuffer({ size: 2576, usage: U });
     this.bglK = d.createBindGroupLayout({ entries: [{ binding: 0, visibility: F, buffer: { type: 'uniform' } }].concat([1, 2, 3, 4, 5, 6].map(b => ({ binding: b, visibility: F, texture: { sampleType: 'unfilterable-float', viewDimension: '2d' } }))) });   // Verbund: bis zu sechs Ebenen
     this.pipeK = await d.createRenderPipelineAsync({ layout: d.createPipelineLayout({ bindGroupLayouts: [this.bglK] }), vertex: { module: mK, entryPoint: 'vs' }, fragment: { module: mK, entryPoint: 'fs', targets: [{ format: this.format }] }, primitive: { topology: 'triangle-list' } });
     this.ubK = d.createBuffer({ size: 208, usage: U });
@@ -8365,9 +8475,9 @@ class GpuRenderer {
     this.clearRefine();
   }
   _writeCP(cp) {
-    const f = new Float32Array(596);   // CP samt stapelW, Nachbearbeitung, Masken, Texturmasken, opt, Palettenkurve und der gerechneten Fläche einer Exportkachel
+    const f = new Float32Array(644);   // CP samt stapelW, Nachbearbeitung, Masken, Texturmasken, opt, Palettenkurve und der gerechneten Fläche einer Exportkachel
     if (cp.gueltig) { f[520] = cp.gueltig[0]; f[521] = cp.gueltig[1]; }
-    if (cp.licht) f.set(cp.licht, 524); if (cp.sinus) f.set(cp.sinus, 564);   // Sinuswellen (8 vec4)   // Lichter, feste Neigung, Lichtmodell (10 vec4)
+    if (cp.licht) f.set(cp.licht, 524); if (cp.sinus) f.set(cp.sinus, 564); if (cp.kanal) f.set(cp.kanal, 596);   // Sinuswellen (8 vec4), „Je Kanal“ (12 vec4)   // Lichter, feste Neigung, Lichtmodell (10 vec4)
     f[500] = cp.texInnen || 0; f[501] = cp.texVerbund || 0; f[502] = cp.texVerbundErster || 0; f[503] = cp.leuchtErster || 0; if (cp.logmap) { f[504] = cp.logmap[0]; f[505] = cp.logmap[1]; } f[506] = cp.logStufen || LOG_STUFEN.def; f[507] = cp.entropie || 0; if (cp.material) f.set(cp.material, 508); if (cp.material2) f.set(cp.material2, 512); f.set(cp.palKurve || [1, 0, 0, 0], 516);   // ohne Angabe die gleichmäßige Kurve   // Stufen des Logarithmus   // opt: Texturen auch innen; Fallenverbund (Weichheit, erster Fallenplatz); Leuchten-Ebene (1-basiert)
     f.set(cp.a, 0); f.set(cp.b, 4); f.set(cp.c, 8); f.set(cp.d, 12);
     f[16] = cp.density; f[17] = cp.offset; f[18] = cp.layers; f[19] = cp.mapping;
@@ -8832,7 +8942,7 @@ function standardZustand() {
   pal2: {}, pal2Eigen: null,                               // zweidimensionale Palette je Färbung mit zwei Werten (siehe quelle2), Entwurf bzw. Schema aus dem Link
   palKurve: PAL_KURVE.kurve.def, palKurveMitte: PAL_KURVE.mitte.def,
   palZwei: 0, palZweiEigen: null, palPfadBeginn: PAL_PFAD.beginn.def, palPfadSpanne: PAL_PFAD.spanne.def,
-  mapping: 2, logStufen: LOG_STUFEN.def, logDichteMit: false, material: 0, glanz: MATERIAL.glanz.def, reflexion: MATERIAL.reflexion.def, himmelLage: MATERIAL.lage.def, himmelSpanne: MATERIAL.spanne.def, neigung: MATERIAL.neigung.def, schatten: false, schattenLaenge: MATERIAL.laenge.def, festeNeigung: false, neigungWinkel: LICHT.winkel.def, lichter: [lichtNeu()], umgebung: LICHT.umgebung.def, lichtModell: 0, glowMode: 0, glowWidth: 1.5, interior: 0, innenFarbe: '#000000', gestuft: false, lyGrenze: 2, fluchtForm: 0, fluchtRadius: 0, dreh: 0, spirale: SPIRALE.def, texInnen: false, texVerbund: 0, invM: [0, 0], biomorph: false, abb: 0, abklingen: 0, logmap: 0, domSchritt: 0, sinus: sinusNeu(), streifen: STREIFEN.def, streifenForm: 0, vorlauf: VORLAUF.def, gewicht: GEWICHT.def, abzug: ABZUG.def, nach: [], textur: 0, texWerte: [0, 0, 0, 0], tex2Werte: [0, 0, 0, 0], tex3Werte: [0, 0, 0, 0], tex4Werte: [0, 0, 0, 0], texStaerke: TEXTUR.staerke.def, texKontrast: TEXTUR.kontrast.def, texMitte: TEXTUR.mitte.def, textur2: 0, tex2Staerke: TEXTUR.staerke.def, tex2Kontrast: TEXTUR.kontrast.def, tex2Mitte: TEXTUR.mitte.def, texHell: '#ffffff', texDunkel: '#000000', tex2Hell: '#ffffff', tex2Dunkel: '#000000', textur3: 0, tex3Staerke: TEXTUR.staerke.def, tex3Kontrast: TEXTUR.kontrast.def, tex3Mitte: TEXTUR.mitte.def, tex3Hell: '#ffffff', tex3Dunkel: '#000000', textur4: 0, tex4Staerke: TEXTUR.staerke.def, tex4Kontrast: TEXTUR.kontrast.def, tex4Mitte: TEXTUR.mitte.def, tex4Hell: '#ffffff', tex4Dunkel: '#000000', texAn: true, tex2An: true, tex3An: true, tex4An: true, paar: PAAR_EIGEN(), kurve: KURVE_STD.map(p => p.slice()), kurveSpann: false, kurveArt: 0, kurveWerte: null,   // Verlaufsart (Standard logarithmisch), Randlinien, Randbreite px, Innen
+  mapping: 2, logStufen: LOG_STUFEN.def, logDichteMit: false, material: 0, glanz: MATERIAL.glanz.def, reflexion: MATERIAL.reflexion.def, himmelLage: MATERIAL.lage.def, himmelSpanne: MATERIAL.spanne.def, neigung: MATERIAL.neigung.def, schatten: false, schattenLaenge: MATERIAL.laenge.def, festeNeigung: false, neigungWinkel: LICHT.winkel.def, lichter: [lichtNeu()], umgebung: LICHT.umgebung.def, lichtModell: 0, glowMode: 0, glowWidth: 1.5, interior: 0, innenFarbe: '#000000', gestuft: false, lyGrenze: 2, fluchtForm: 0, fluchtRadius: 0, dreh: 0, spirale: SPIRALE.def, texInnen: false, texVerbund: 0, invM: [0, 0], biomorph: false, abb: 0, abklingen: 0, logmap: 0, domSchritt: 0, sinus: sinusNeu(), kanal: kanalNeu(), streifen: STREIFEN.def, streifenForm: 0, vorlauf: VORLAUF.def, gewicht: GEWICHT.def, abzug: ABZUG.def, nach: [], textur: 0, texWerte: [0, 0, 0, 0], tex2Werte: [0, 0, 0, 0], tex3Werte: [0, 0, 0, 0], tex4Werte: [0, 0, 0, 0], texStaerke: TEXTUR.staerke.def, texKontrast: TEXTUR.kontrast.def, texMitte: TEXTUR.mitte.def, textur2: 0, tex2Staerke: TEXTUR.staerke.def, tex2Kontrast: TEXTUR.kontrast.def, tex2Mitte: TEXTUR.mitte.def, texHell: '#ffffff', texDunkel: '#000000', tex2Hell: '#ffffff', tex2Dunkel: '#000000', textur3: 0, tex3Staerke: TEXTUR.staerke.def, tex3Kontrast: TEXTUR.kontrast.def, tex3Mitte: TEXTUR.mitte.def, tex3Hell: '#ffffff', tex3Dunkel: '#000000', textur4: 0, tex4Staerke: TEXTUR.staerke.def, tex4Kontrast: TEXTUR.kontrast.def, tex4Mitte: TEXTUR.mitte.def, tex4Hell: '#ffffff', tex4Dunkel: '#000000', texAn: true, tex2An: true, tex3An: true, tex4An: true, paar: PAAR_EIGEN(), kurve: KURVE_STD.map(p => p.slice()), kurveSpann: false, kurveArt: 0, kurveWerte: null,   // Verlaufsart (Standard logarithmisch), Randlinien, Randbreite px, Innen
   colAnchor: null,                                         // Farbanker: Iterationswert, an dem der Dichte-Regler die Farbe hält (null = keiner)
   statAnker: null,                                         // Farbanker des Bahnmittels (Färbungen 19, 20, 22, 23): das Mittel, an dem die Farbe hält (null = keiner)
   eigenF: eigenNeu(), xm: EIGEN_VORGABE.xm, xf: EIGEN_VORGABE.xf,   // eigene Ausdrücke (AUSDRUCK): der Sammler der Färbung, Ebenenabbildung, Formel — Vorgaben wie EIGEN_VORGABE; Paar-Achsen und Texturplätze tragen ihre eigenen
@@ -9513,7 +9623,7 @@ function texturWinkel() { return texArten().some(a => a === 6 || a === 7); }   /
 function texturZahl() { if (!texturMoeglich()) return 0; let z = 0; for (let n = 1; n <= TEX_SLOTS; n++) if (texArtAn(n) !== 0) z = n; return z; }   // Platz der letzten wirksamen Textur (0 = keine)
 function texArten() { const a = []; for (let n = 1; n <= texturZahl(); n++) a.push(texArtAn(n)); return a; }   // wirksame Arten der Plätze bis zum letzten (0 = Lücke oder ausgeschaltet)
 function texStat(n) { return n <= texturZahl() ? (TEXTUR.arten[texArtAn(n)] || 0) : 0; }   // die Bahnstatistik des Platzes n
-function brauchtAbstand() { return abstandSonst() || richtungImKanal(); }   // die Richtung der Beleuchtung braucht die Ableitung ebenso
+function brauchtAbstand() { return abstandSonst() || richtungImKanal() || kanalAbstand(); }   // die Richtung der Beleuchtung braucht die Ableitung ebenso
 function abstandSonst() { return (S.glowMode !== 0 && !lyapModus() && !(winkelModus() & 1) && !statIrgend()) || S.mapping === 4 || S.mapping === 6 || S.mapping === 12 || texArten().includes(10) || texArten().includes(21) || maskeBrauchtAbstand(); }   // auch die Textur „Randnähe“ braucht den Abstand
 function brauchtInnen() { return (S.interior === 2 || S.interior === 5) && !lyapModus() && !statUeberall(); }   // Höhenlinien und Kuppeln: der Multiplikator
 // Farbanker nur, wo die Färbung ihn nutzt: bei Lyapunov (Markus) und den Färbungen nach Lyapunov-Exponent verschöbe er nur den Farbversatz
@@ -9576,7 +9686,7 @@ function statPipeline6() { return paarKonfig() ? texStat(4) : 0; }
 function abstandFaerbung() { return S.mapping === 4 || S.mapping === 6 || S.mapping === 12; }   // Färbungen, die die Abstandsschätzung im y-Kanal brauchen (Abstand, zwei Reliefs)
 function texturZ() { if (!texturAktiv()) return 0; if (statFaerbung()) return 1; return abstandFaerbung() ? 2 : 0; }   // Textur über einer Färbung, die den y-Kanal selbst braucht: die Texturwerte kommen in den z- und w-Kanal
 function texInnenIrgend() { for (let n = 1; n <= TEX_SLOTS; n++) { const t = texSlot(n); if (t.art !== 0 && t.an && (t.wo || TEX_WO_VOR) >= 1) return true; } return false; }   // wirkt irgendein Platz innen?
-function texturBreit() { return !!(texturZ() || texturZahl() >= 3 || (texInnenIrgend() && texturZahl() >= 1) || richtungModus() === 2 || sinusVoll()); }   // braucht die Kanäle z und w: Iterationstextur rgba32uint (auch für Texturen innen und die Sinuswellen mit Zusätzen)
+function texturBreit() { return !!(texturZ() || texturZahl() >= 3 || (texInnenIrgend() && texturZahl() >= 1) || richtungModus() === 2 || sinusVoll() || kanalQAktiv()); }   // braucht die Kanäle z und w: Iterationstextur rgba32uint (auch für Texturen innen und die Sinuswellen mit Zusätzen)
 const FALLEN_ARTEN = [4, 5, 14, 15, 19, 20, 23];   // Texturarten, die Fallen sind: Kreuz, Ursprung, Gitter, Ring, Punkt, Spirale, Rosette
 function verbundK() { return S.texVerbund > 0 && texArten().some(a => FALLEN_ARTEN.includes(a)) ? S.texVerbund : 0; }   // Fallenverbund: Weichheit, 0 = aus (auch ohne Fallen)
 function verbundErster() { if (!verbundK()) return 0; for (let m = 1; m <= texturZahl(); m++) if (FALLEN_ARTEN.includes(texArtAn(m))) return m; return 0; }   // erster Fallenplatz (1-basiert)
@@ -9609,7 +9719,7 @@ function fractalParams(s, maxIter, layer = 0) {
     isJulia: S.mode === 'julia' ? 1 : 0,
     needDE: brauchtAbstand() ? 1 : 0, ps, cycle: cycleOn(maxIter) && !hybridAktiv(), lyap: lyapModus(), winkel: winkelModus(), texP: texWerteSammler(), texW: texWertePlaetze(), texQ: texZusatzSammler(), texInnen: texInnenIrgend() && texturZahl() > 0 ? 1 : 0, verbund: verbundK(), verbundMaske: verbundMaske(), verbundErster: verbundErster(), stat: statPipeline(), stat2: statPipeline2(), stat3: statPipeline3(), stat4: statPipeline4(), stat5: statPipeline5(), stat6: statPipeline6(), ...paarPipeline(), texz: texturZ(), ...texArtenParam(), lyGrenze: S.lyGrenze, streifen: S.streifen, streifenForm: streifenmittelRechnet() ? S.streifenForm : 0, vorlauf: S.vorlauf, gewicht: S.gewicht, fluchtForm: S.fluchtForm, fluchtRadius: S.fluchtRadius || (FORMULAS[S.formula].bail || 0),
     power: potenzEff(), invert: S.invert ? 1 : 0, needInt: brauchtInnen() ? 1 : 0, pRef: [pr[0], pi[0]],
-    ...wendeParams(), abbP: [S.abbM[0], S.abbM[1], S.abbA, S.abbB], sinusP: [sinusVoll() ? S.sinus.tiefe : 1, 0, 0, 0],   // Wendepunkte, Verzerrung, Rekursion der Sinuswellen
+    ...wendeParams(), abbP: [S.abbM[0], S.abbM[1], S.abbA, S.abbB], sinusP: [sinusVoll() ? S.sinus.tiefe : 1, kanalQAktiv() ? 1 : 0, 0, 0],   // Wendepunkte, Verzerrung, Rekursion der Sinuswellen
   });
 }
 function seqBits() { let b = 0; for (let i = 0; i < Math.min(32, S.seq.length); i++) if (S.seq[i] === 'B') b |= (1 << i); return b >>> 0; }
@@ -9680,7 +9790,7 @@ function pal2Aktiv() {   // Parameter der geltenden zweidimensionalen Palette f�
 }
 function colorParams() {
   const p = palKosinus();
-  return { palKurve: [S.palKurve, S.palKurveMitte, S.palPfadBeginn, palPfadAn() ? S.palPfadSpanne : 0], a: p.a, b: p.b, c: p.c, d: p.d, palMode: palTabelle() ? 1 : 0, density: S.density, offset: S.offset, layers: aaOn ? 0 : aaEff * aaEff,   // 0 = adaptiv: Ebene 0 plus Farbsummen
+  return { palKurve: [S.palKurve, S.palKurveMitte, S.palPfadBeginn, palPfadAn() ? S.palPfadSpanne : 0], a: p.a, b: p.b, c: p.c, d: p.d, palMode: palTabelle() ? 1 : 0, density: kanalAn() ? 1 : S.density, offset: kanalAn() ? 0 : S.offset, layers: aaOn ? 0 : aaEff * aaEff,   // 0 = adaptiv: Ebene 0 plus Farbsummen
     shift: [pendingSX, renderer && renderer.yDown ? pendingSY : -pendingSY],   // noch nicht übernommener Versatz aus dem Ziehen
     lightY: renderer && renderer.yDown ? -1 : 1,                                // Licht von oben, egal wie die Texturzeilen laufen
     ps: S.ps,                                                                   // Pixelgröße in der Ebene für den Abstands-Verlauf
@@ -9698,7 +9808,7 @@ function colorParams() {
     innen: [...hexRGB(S.innenFarbe).map(v => v / 255), S.gestuft ? 1 : 0],                                              // eigene Innenfarbe, „gestuft“
     material: reliefFaerbung() ? [S.material, S.glanz, S.reflexion, S.neigung] : [0, 0, 0, 0],                            // Materialmodell des Reliefs (0 = einfach, der bisherige Weg): Glanz, Reflexion, Neigung
     material2: [S.schatten ? 1 : 0, S.schattenLaenge, S.himmelLage, S.himmelSpanne],
-    entropie: texArten().includes(27) ? 1 : 0, sinus: S.mapping === 40 ? sinusUniform() : null,   // Sinuswellen   // ein Platz mit Entropie: der Farbpass liest das Umfeld
+    entropie: texArten().includes(27) ? 1 : 0, sinus: S.mapping === 40 ? sinusUniform() : null, kanal: kanalUniform(),   // Sinuswellen   // ein Platz mit Entropie: der Farbpass liest das Umfeld
     licht: lichtUniform(),   // Lichter (ein Licht in der Vorgabe: das feste wie bisher) und feste Neigung des Reliefs                                       // lokale Schatten an, Schattenlänge px; Himmel aus der Palette: Lage, Spanne
     streifen: S.streifen,                                                                                          // Streifen der Winkel-Texturen und Periodengebiete
     formula: S.formula, roots: nullstellenFormel(S.formula) ? S.nz.length : S.power,
@@ -11018,7 +11128,7 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
   const lg = parseFloat(h.get('lg')); S.lyGrenze = Number.isFinite(lg) ? clamp(lg, 0, 1e9) : 2;   // wie LY_GRENZE (die steht erst weiter unten)
   const sp = parseInt(h.get('sp'), 10); S.streifen = Number.isFinite(sp) ? clamp(sp, STREIFEN.min, STREIFEN.max) : STREIFEN.def;
   S.streifenForm = h.get('sf') === '1' ? 1 : 0;   // Form des Streifenmittels: Welle (Vorgabe) oder Abschnitte
-  S.sinus = sinusLesen(h.get('wv'));   // Sinuswellen (Färbung 40); ohne Schlüssel die Vorgaben
+  S.sinus = sinusLesen(h.get('wv')); S.kanal = kanalLesen(h.get('kn'));   // „Je Kanal“: ohne Schlüssel aus   // Sinuswellen (Färbung 40); ohne Schlüssel die Vorgaben
   { const dn = parseInt(h.get('dn'), 10); S.domSchritt = Number.isFinite(dn) ? clamp(dn, DOM_SCHRITT.min, DOM_SCHRITT.max) : DOM_SCHRITT.def; }   // Domain Coloring: Schritt
   const sd = parseFloat(h.get('sd')); S.spirale = Number.isFinite(sd) ? clamp(sd, SPIRALE.min, SPIRALE.max) : SPIRALE.def;   // Windung der Spiralfalle (Färbung 32)
   const tvAlt = h.get('ti') === '1';   // alter Link: ein Schalter für alle Plätze — er wird zu „überall“ auf jedem belegten Platz
@@ -11195,7 +11305,8 @@ function buildParamsRoh() {   // die Adresswerte der Ebene in S samt Ansicht und
   if (streifenmittelRechnet() && S.streifenForm === 1) p.set('sf', '1');   // in Abschnitten
   if (S.mapping === 32 && S.spirale !== SPIRALE.def) p.set('sd', String(+gzF(S.spirale, 3)));
   if (S.mapping === 36 && S.domSchritt !== DOM_SCHRITT.def) p.set('dn', String(S.domSchritt));
-  if (S.mapping === 40) p.set('wv', sinusText(S.sinus));   // Sinuswellen: alle Werte in fester Reihenfolge
+  if (S.mapping === 40) p.set('wv', sinusText(S.sinus));
+  if (kanalAn()) p.set('kn', kanalText(S.kanal));   // Palettenart „Je Kanal“   // Sinuswellen: alle Werte in fester Reihenfolge
   if (S.texVerbund > 0) p.set('tv', String(+gzF(S.texVerbund, 2)));   // Fallenverbund
   if (statIrgend() && S.vorlauf !== VORLAUF.def) p.set('sk', String(S.vorlauf));   // Vorlauf bei jeder Bahnstatistik
   if (S.mapping === 31) { const q = (x, ach) => { const t = [x.wert, +gzF(x.faktor, 3), x.abzug, x.klemme ? 1 : 0]; if ((x.ziel || 0) !== PAAR_ZIEL_VOR[ach]) t.push(x.ziel); return t.join(':'); }; p.set('pa', q(S.paar.a, 'a')); p.set('pb', q(S.paar.b, 'b')); if (S.paar.a.wert === 10) eigenSchreiben(p, 'pae', eigenVon(S.paar.a)); if (S.paar.b.wert === 10) eigenSchreiben(p, 'pbe', eigenVon(S.paar.b)); }   // je Wert Wert:Faktor:Abzug:Klemme, das Ziel nur abweichend vom Platz
@@ -11363,7 +11474,7 @@ function sprachGewechselt() {   // nach den festen Texten einmal alles, was der 
   aaSel.dataset.levels = '';                                    // Stufen der Glättung neu beschriften
   for (const sel of document.querySelectorAll('select')) if (sel._rebuild) sel._rebuild();   // Aufklappmenüs aus den Optionen
   for (const b of $('famChips').querySelectorAll('button')) b.textContent = $('family').querySelector('option[value="' + b.dataset.value + '"]').textContent;
-  zeigePaneName(); beschrifteWertfelder(); syncAllUI(); syncCloudUI(); updateResInfo();   // syncAllUI: jeder Wert im Bedienfeld neu, auch die Zahlen
+  zeigePaneName(); syncAllUI(); beschrifteWertfelder(); syncCloudUI(); updateResInfo();   // syncAllUI: jeder Wert im Bedienfeld neu, auch die Zahlen; danach die Namen der Wertfelder aus den (nun übersetzten) Beschriftungen
   if (!palEd.hidden) peRender();
   if (!$('pal2Ed').hidden) p2eRender();
   if (!posterEl.hidden) { posterZustand(...posterZustandJetzt); posterUpdateInfo(); }
@@ -11579,8 +11690,9 @@ function syncFarbUI() {   // Bereich Farbe: was je nach Familie, Formel und Fär
   $('logStufenRow').hidden = verlauf || S.mapping !== 2;   // die Stufen gehören zur logarithmischen Färbung
   $('logStufen').value = String(S.logStufen); $('logStufenVal').value = fmtZahl(S.logStufen, 2); $('logDichteMit').checked = S.logDichteMit;
   $('palette').parentElement.hidden = false; $('palEdit').hidden = false;
-  $('palArt').hidden = !quelle2();   // Umschalter nur, wo die Färbung zwei Werte liefert
-  for (const b of $('palArt').querySelectorAll('button')) { const on = (b.dataset.art === '2') === zwei; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); }
+  $('palArt').hidden = !kanalMoeglich();   // Standard, zweidimensional (nur wo die Färbung zwei Werte liefert), je Kanal
+  for (const b of $('palArt').querySelectorAll('button')) { const art = b.dataset.art, on = art === '3' ? kanalAn() : !kanalAn() && ((art === '2') === zwei); b.hidden = art === '2' && !quelle2(); b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); }
+  $('palRow').classList.toggle('kanal-an', kanalAn()); $('kanalRow').hidden = !kanalAn(); if (kanalAn()) kanalZeilen();
   if (zwei && !$('palEd').hidden) peShow(false);          // der Editor der anderen Art klappt zu
   if (!zwei && !$('pal2Ed').hidden) p2eShow(false);
   $('offset').hidden = ohneVersatz; $('offset').previousElementSibling.hidden = ohneVersatz;
@@ -12516,8 +12628,9 @@ window.addEventListener('keydown', e => {   // Escape schließt den Editor, sola
 // ---- Umschalter gewöhnliche / zweidimensionale Palette (nur wo die Färbung zwei Werte liefert); je Färbung bleibt die letzte Wahl
 const pal2Zuletzt = {};
 for (const b of $('palArt').querySelectorAll('button')) b.addEventListener('click', () => {
-  const q = quelle2(), zwei = b.dataset.art === '2';
-  if (!q || zwei === zweiAktiv()) return;
+  const q = quelle2(), zwei = b.dataset.art === '2', kanal = b.dataset.art === '3';
+  if (kanal !== S.kanal.an) { S.kanal = Object.assign(structuredClone(S.kanal), { an: kanal }); if (kanal) { if (!$('palEd').hidden) peShow(false); if (!$('pal2Ed').hidden) p2eShow(false); } scheduleHash(); viewChanged(); }   // „Je Kanal“ ein oder aus; die Quellen können den Fraktalpass ändern
+  if (kanal || !q || zwei === zweiAktiv()) { applyPalette(); syncFarbUI(); return; }
   if (zwei) S.pal2[q] = pal2Zuletzt[q] !== undefined ? pal2Zuletzt[q] : pal2Zwei(q);
   else { pal2Zuletzt[q] = pal2Ref(); S.pal2[q] = -1; }
   applyPalette(); syncFarbUI();
@@ -13083,6 +13196,54 @@ function sinusZeilen() {   // gebaut beim ersten Zeigen und bei anderer Sprache,
   for (const k of ['vorher', 'nachher']) $('sinus_' + k).checked = S.sinus[k];
   $('sinus_palette').checked = S.sinus.palette;
   for (const k of SINUS_KANAL) for (const e of [$('sinus_' + k), $('sinus_' + k + 'Regler')]) if (e) e.disabled = S.sinus.palette;   // mit Palette rechnen die Kanäle nicht
+}
+function kanalSetze(r, k, v) {   // eine Zeile ändern (Kopie: die Ebenen teilen nichts); Quellen können den Fraktalpass ändern
+  const o = structuredClone(S.kanal); if (r < 0) o[k] = v; else o.z[r][k] = v; S.kanal = o; scheduleHash();
+  if (k === 'q' || k === 'mA' || k === 'mB') viewChanged(); else { colorDirty = true; requestFrame(); }
+}
+function kanalZeilen() {   // gebaut beim ersten Zeigen und bei anderer Sprache, danach nur Werte, Namen und Sperren
+  const box = $('kanalRow');
+  if (box.dataset.lang !== LANG) {
+    box.replaceChildren(); box.dataset.lang = LANG;
+    const raum = document.createElement('div'); raum.className = 'seg'; raum.id = 'kanalRaum'; raum.setAttribute('role', 'group'); raum.setAttribute('aria-label', t('colour.channel-space'));
+    for (const [wert, text] of [[false, 'colour.channel-rgb'], [true, 'colour.channel-lch']]) { const b = document.createElement('button'); b.type = 'button'; b.dataset.lch = wert ? '1' : '0'; b.textContent = t(text);
+      b.addEventListener('click', () => { if (S.kanal.lch !== wert) { kanalSetze(-1, 'lch', wert); kanalZeilen(); } }); raum.append(b); }
+    const hinweis = document.createElement('p'); hinweis.className = 'hint'; hinweis.textContent = t('colour.channel-hint');
+    box.append(raum, hinweis);
+    for (let r = 0; r < 3; r++) {
+      const kopf = document.createElement('h3'); kopf.className = 'kanal-kopf'; kopf.id = 'kanalKopf' + r; box.append(kopf);
+      const auswahl = (k, text) => { const z = document.createElement('div'); z.className = 'lbl'; const lab = document.createElement('label'); lab.htmlFor = 'kanal' + r + '_' + k; lab.textContent = t(text);
+        const sel = document.createElement('select'); sel.id = 'kanal' + r + '_' + k;
+        for (const [q, qt] of KANAL_QUELLEN) { const op = document.createElement('option'); op.value = String(q); op.textContent = t(q === 0 && k !== 'q' ? 'colour.channel-src-none' : qt); sel.append(op); }
+        sel.addEventListener('change', () => kanalSetze(r, k, +sel.value)); z.append(lab); box.append(z, sel); enhanceSelect(sel); };
+      const zahl = (k, text) => { const z = document.createElement('div'); z.className = 'lbl wertzeile'; const lab = document.createElement('label'); lab.htmlFor = 'kanal' + r + '_' + k; lab.textContent = t(text);
+        const f = document.createElement('input'); f.id = 'kanal' + r + '_' + k; f.className = 'val mono wert'; f.type = 'text'; f.inputMode = 'decimal'; f.spellcheck = false; f.autocomplete = 'off';
+        f.addEventListener('change', () => { const v = leseZahl(f.value); if (Number.isFinite(v)) kanalSetze(r, k, v); kanalZeilen(); });
+        z.append(lab, f); box.append(z);
+        const rg = KANAL_REGLER[k], sl = document.createElement('input'); sl.type = 'range'; sl.id = 'kanal' + r + '_' + k + 'Regler'; sl.min = String(rg[0]); sl.max = String(rg[1]); sl.step = String(rg[2]); sl.setAttribute('aria-label', t(text));
+        sl.addEventListener('input', () => { const v = parseFloat(sl.value); if (!Number.isFinite(v)) return; f.value = String(v); kanalSetze(r, k, v); }); box.append(sl); };
+      auswahl('q', 'colour.channel-source'); zahl('f', 'colour.channel-factor'); zahl('v', 'colour.channel-offset');
+      { const lab = document.createElement('label'); lab.className = 'chk'; const cb = document.createElement('input'); cb.type = 'checkbox'; cb.id = 'kanal' + r + '_w';
+        cb.addEventListener('change', () => { kanalSetze(r, 'w', cb.checked); kanalZeilen(); }); lab.append(cb, ' ' + t('colour.channel-wave')); box.append(lab); }
+      zahl('per', 'colour.channel-period'); zahl('ph', 'colour.channel-phase');
+      { const z = document.createElement('div'); z.className = 'lbl wertzeile'; const lab = document.createElement('label'); lab.htmlFor = 'kanal' + r + '_m'; lab.textContent = t('colour.channel-mask');
+        const f = document.createElement('input'); f.id = 'kanal' + r + '_m'; f.className = 'val mono wert'; f.type = 'text'; f.spellcheck = false; f.autocomplete = 'off';
+        f.addEventListener('change', () => { const v = f.value.trim(); if (/^[01]{1,24}$/.test(v)) kanalSetze(r, 'm', v); kanalZeilen(); }); z.append(lab, f); box.append(z); }
+      auswahl('mA', 'colour.channel-mask-a'); auswahl('mB', 'colour.channel-mask-b'); zahl('sp', 'colour.channel-jump');
+    }
+  }
+  for (const b of $('kanalRaum').querySelectorAll('button')) { const on = (b.dataset.lch === '1') === S.kanal.lch; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); }
+  S.kanal.z.forEach((z, r) => {
+    $('kanalKopf' + r).textContent = t(KANAL_NAMEN[S.kanal.lch ? 1 : 0][r]);
+    for (const k of ['f', 'v', 'per', 'ph', 'sp']) { const f = $('kanal' + r + '_' + k), sl = $('kanal' + r + '_' + k + 'Regler');
+      if (document.activeElement !== f) f.value = String(z[k]); if (document.activeElement !== sl) sl.value = String(z[k]); }
+    for (const k of ['per', 'ph']) for (const e of [$('kanal' + r + '_' + k), $('kanal' + r + '_' + k + 'Regler')]) e.disabled = !z.w;   // ohne Welle: Periode und Phase wirken nicht
+    const m = $('kanal' + r + '_m'); if (document.activeElement !== m) m.value = z.m;
+    $('kanal' + r + '_w').checked = z.w;
+    for (const k of ['q', 'mA', 'mB']) { const sel = $('kanal' + r + '_' + k); sel.value = String(z[k]);
+      for (const op of sel.options) op.disabled = !kanalQuelleDa(+op.value) && op.value !== sel.value;   // was die Färbung nicht liefert, bleibt wählbar nur, wenn es schon gewählt ist
+      if (sel._rebuild) sel._rebuild(); }
+  });
 }
 function syncDomSchritt() { $('domSchritt').value = String(S.domSchritt); $('domSchrittVal').value = String(S.domSchritt); }
 const setzeDomSchritt = v => { S.domSchritt = clamp(Math.round(v), DOM_SCHRITT.min, DOM_SCHRITT.max); syncDomSchritt(); scheduleHash(); viewChanged(); };   // entsteht beim Iterieren
@@ -15501,7 +15662,7 @@ async function exportPoster() {
             dcScale: [g.psX, yd ? -g.psY : g.psY],
             maxIter: mi, lenA: orbitLenA, baseB: orbitBaseB, lenB: orbitLenB,
             isJulia: S.mode === 'julia' ? 1 : 0, needDE: brauchtAbstand() ? 1 : 0, ps: g.psX, cycle: cycleOn(mi) && !hybridAktiv(), lyap: lyapModus(), winkel: winkelModus(), texP: texWerteSammler(), texW: texWertePlaetze(), texQ: texZusatzSammler(), texInnen: texInnenIrgend() && texturZahl() > 0 ? 1 : 0, verbund: verbundK(), verbundMaske: verbundMaske(), verbundErster: verbundErster(), stat: statPipeline(), stat2: statPipeline2(), stat3: statPipeline3(), stat4: statPipeline4(), stat5: statPipeline5(), stat6: statPipeline6(), ...paarPipeline(), texz: texturZ(), ...texArtenParam(), lyGrenze: S.lyGrenze, streifen: S.streifen, streifenForm: streifenmittelRechnet() ? S.streifenForm : 0, vorlauf: S.vorlauf, gewicht: S.gewicht, fluchtForm: S.fluchtForm, fluchtRadius: S.fluchtRadius || (FORMULAS[S.formula].bail || 0),
-            power: potenzEff(), invert: S.invert ? 1 : 0, needInt: brauchtInnen() ? 1 : 0, pRef: [g.pr[0], g.pi[0]], ...wendeParams(), abbP: [S.abbM[0], S.abbM[1], S.abbA, S.abbB], sinusP: [sinusVoll() ? S.sinus.tiefe : 1, 0, 0, 0], rotC: drehCS()[0], rotS: drehCS()[1], invM: S.invM, biomorph: S.biomorph ? 1 : 0, richtungY: richtungModus(), abkl: 1 - S.abklingen, param2: [...S.param2, S.zweig || 0],
+            power: potenzEff(), invert: S.invert ? 1 : 0, needInt: brauchtInnen() ? 1 : 0, pRef: [g.pr[0], g.pi[0]], ...wendeParams(), abbP: [S.abbM[0], S.abbM[1], S.abbA, S.abbB], sinusP: [sinusVoll() ? S.sinus.tiefe : 1, kanalQAktiv() ? 1 : 0, 0, 0], rotC: drehCS()[0], rotS: drehCS()[1], invM: S.invM, biomorph: S.biomorph ? 1 : 0, richtungY: richtungModus(), abkl: 1 - S.abklingen, param2: [...S.param2, S.zweig || 0],
           }, directParams(g.pr, g.pi), blaParams());
             const params = offsK.map(([ox, oy]) => Object.assign({}, base, {   // ein Parametersatz je Probenebene
             dcOffset: drehOffset((ox - Wp / 2) * g.psX, yd ? (Hp / 2 - oy) * g.psY : (oy - Hp / 2) * g.psY, [g.shift[0] - g.dx, g.shift[1] - g.dy]),   // die Bildecke, für alle Kacheln gleich: gedreht wie am Bildschirm; der Rahmenversatz dx, dy liegt schon in der Ebene
