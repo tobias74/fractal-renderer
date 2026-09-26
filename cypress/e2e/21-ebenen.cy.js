@@ -33,7 +33,7 @@ describe('Fraktal-Ebenen', () => {
     cy.get('#formula').should('have.value', '1'); cy.expectHash('l2', null); cy.expectHash('f', '1');
   });
 
-  it('Der Verbund im Bild: zwei Ebenen ergeben ein anderes Bild als jede allein, Solo und Sichtbarkeit greifen, WebGL 2 rechnet dasselbe', () => {
+  it('Der Verbund im Bild: zwei Ebenen ergeben ein anderes Bild als jede allein, Solo und Sichtbarkeit greifen', () => {
     cy.visitApp(ZWEI); cy.alleEbenenFertig();   // die zweite Ebene rechnet nach der ersten nach
     cy.get('#state').invoke('text').should('match', /Fertig/);
     cy.gezeichnet(); cy.shotStats('eb-zwei').then(zwei => {

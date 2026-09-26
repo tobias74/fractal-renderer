@@ -334,7 +334,7 @@ describe('Formelfamilie', () => {
     cy.expectHash('bm', null);
   });
 
-  it('Fluchtgrenze: Produkt, Differenz der Quadrate und Differenz der Beträge – jede Form ein anderes Bild als der Kreis und als die anderen, im Link, WebGPU wie WebGL 2', () => {
+  it('Fluchtgrenze: Produkt, Differenz der Quadrate und Differenz der Beträge – jede Form ein anderes Bild als der Kreis und als die anderen, im Link', () => {
     const B = 'mode=mandel&re=-0.75&im=0&z=1.3&it=100&fr=2', R = { x0: 0.05, y0: 0.1, x1: 0.6, y1: 0.9 };   // kleiner Radius: die Grenze zeichnet sich in die Bänder (seit 19.09.2026 drei Formen mehr)
     const diff = (a, b) => cy.task('pngDiff', { a: a.file, b: b.file, region: R });
     cy.visitApp(B);

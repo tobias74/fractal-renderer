@@ -30,7 +30,7 @@ describe('Fraktalfamilien', () => {
     cy.waitRender(/Fertig|Done/, 60000);
     cy.expectHash('fam', v);
     cy.expectHash('ex', e => expect(parseFloat(e)).to.be.greaterThan(0));
-    // Anzeige-Shader und Worker liefern ein Bild: nicht schwarz, mehrere Farben (hier unter WebGL 2)
+    // Anzeige-Shader und Worker liefern ein Bild: nicht schwarz, mehrere Farben
     cy.shotStats('wolke-' + v).then(s => {
       expect(s.mean, v + ' ist nicht schwarz').to.be.greaterThan(1);
       expect(s.colors, v + ' hat mehrere Farben').to.be.greaterThan(20);
@@ -63,14 +63,14 @@ describe('Fraktalfamilien', () => {
 
   // Früher sprang die Helligkeitsskala bei jedem Neustart des Sammelns auf 1: das erste Bild blitzte übersteuert auf,
   // bis die neue Skala von der Grafikkarte zurück war. Beim Ziehen eines Reglers flackerte es deshalb stark.
-  // Die Zwischenstände werden immer gezeigt; unter WebGL wachsen sie über die CPU-Worker sichtbar heran.
-  for (const rend of ['auto']) it(`kein Aufblitzen beim Verstellen, Zwischenstände sichtbar (Renderer ${rend})`, () => {
+  // Die Zwischenstände werden immer gezeigt.
+  it('kein Aufblitzen beim Verstellen, Zwischenstände sichtbar', () => {
     cy.visitApp('fam=dejong&at=10000000');
     cy.get('#accSteps').should('not.exist');               // kein Häkchen mehr: Zwischenstände gibt es immer
     cy.waitRender(/Fertig|Done/, 60000);
     cy.wait(400);
-    // Jede Anzeige schreibt ihre Skala zusammen mit Belichtung 1 und Gamma 2 an die Grafikkarte: unter WebGPU als
-    // acht Zahlen per writeBuffer, unter WebGL als zwei uniform4f. Der Test schneidet diese Werte an der Schnittstelle mit.
+    // Jede Anzeige schreibt ihre Skala zusammen mit Belichtung 1 und Gamma 2 an die Grafikkarte, als acht Zahlen per
+    // writeBuffer. Der Test schneidet diese Werte an der Schnittstelle mit.
     cy.window().then(win => {
       win.__skalen = [];
       const merk = (skala, ex, ga) => { if (Math.abs(ex - 1) < 1e-6 && Math.abs(ga - 2) < 1e-6) win.__skalen.push(skala); };
@@ -81,13 +81,6 @@ describe('Fraktalfamilien', () => {
           return orig.call(this, buf, off, data, ...rest);
         };
       }
-      const gl2 = win.WebGL2RenderingContext.prototype, orig4 = gl2.uniform4f;
-      let vorige = null;
-      gl2.uniform4f = function (loc, a, b, c, d) {
-        if (vorige && c === 0 && d === 0) merk(vorige[3], a, b);
-        vorige = [a, b, c, d];
-        return orig4.call(this, loc, a, b, c, d);
-      };
     });
     // wie beim Ziehen: kleine Schritte ab der Vorgabe a = 2 (Reglerstellung 833), je Schritt Δa ≈ 0,04
     for (const v of [840, 847, 854]) { cy.get('#cloudPrm input[type=range]').first().invoke('val', v).trigger('input'); cy.wait(60); }
@@ -98,7 +91,7 @@ describe('Fraktalfamilien', () => {
       const w = win.__skalen;
       expect(w.length, 'Bilder nach dem Verstellen').to.be.greaterThan(0);
       // Die Skala ist die Trefferzahl am 99,9-Perzentil und wächst mit der Punktzahl: am Ende einige Hundert, im ersten
-      // Zwischenbild nach dem Verstellen mit erst wenigen Punkten entsprechend weniger (unter WebGL gemessen ab etwa 20).
+      // Zwischenbild nach dem Verstellen mit erst wenigen Punkten entsprechend weniger.
       // Das alte Aufblitzen war eine Skala von genau 1 (zurückgesetzt); eine Skala nahe null hieße, dass alte Zähler mit
       // der Punktzahl eines neuen, noch leeren Durchlaufs gezeigt würden. Die Grenze 2 trennt beides mit Spielraum.
       expect(Math.min(...w), 'Skala nie zurückgesetzt, also kein übersteuertes Aufblitzen').to.be.greaterThan(2);

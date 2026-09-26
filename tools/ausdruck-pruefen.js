@@ -46,8 +46,8 @@ function pruefeAusdruck(datei) {
     if (!r.ok) continue;
     ok(r.ascii === ascii, 'ASCII von ' + text + ': ' + r.ascii + ' statt ' + ascii);
     ok(r.schoen === schoen, 'Anzeige von ' + text + ': ' + r.schoen + ' statt ' + schoen);
-    ok(/return v\d+;$/.test(r.wgsl) && /return v\d+;$/.test(r.glsl), 'Rumpf endet mit return: ' + text);
-    ok(!/NaN|Infinity|undefined/.test(r.wgsl + r.glsl), 'kein NaN/undefined im Code: ' + text);
+    ok(/return v\d+;$/.test(r.wgsl), 'Rumpf endet mit return: ' + text);
+    ok(!/NaN|Infinity|undefined/.test(r.wgsl), 'kein NaN/undefined im Code: ' + text);
   }
 
   // 2. Fehler: Eingabe, Art, Schlüssel, Stelle
@@ -84,15 +84,14 @@ function pruefeAusdruck(datei) {
   // 4. Übersetzung: Bausteine, die der Shader braucht
   const f = A.uebersetze('z^2 + c', 'formel');
   ok(f.ok && f.wgsl.includes('*Jz = ') && f.wgsl.includes('*Jc = ') && f.wgsl.includes('if (NEED_DE == 1u || LYAP != 0u)'), 'Formel: Jacobi-Matrizen im WGSL');
-  ok(f.ok && f.glsl.includes('Jz = ') && f.glsl.includes('if (NEED_DE == 1 || LYAP != 0)'), 'Formel: Jacobi-Matrizen im GLSL');
   const m = A.uebersetze('c^2', 'abbild');
-  ok(m.ok && /return w\d+;$/.test(m.jacWgsl) && /return w\d+;$/.test(m.jacGlsl) && m.jacWgsl.includes('mat2x2f('), 'Abbildung: Jacobi-Funktion');
+  ok(m.ok && /return w\d+;$/.test(m.jacWgsl) && m.jacWgsl.includes('mat2x2f('), 'Abbildung: Jacobi-Funktion');
   const w = A.uebersetze('|z| < 1 ? 0 : 1', 'wert');
-  ok(w.ok && w.wgsl.includes('select(') && w.glsl.includes(' ? ') && !w.glsl.includes('select('), 'Fallunterscheidung: select im WGSL, ?: im GLSL');
+  ok(w.ok && w.wgsl.includes('select('), 'Fallunterscheidung: select im WGSL');
   const g = A.uebersetze('arg z', 'wert');
-  ok(g.ok && g.wgsl.includes('atan2(') && /\batan\(/.test(g.glsl) && !g.glsl.includes('atan2'), 'arg: atan2 im WGSL, atan im GLSL');
+  ok(g.ok && g.wgsl.includes('atan2('), 'arg: atan2 im WGSL');
   ok(!A.uebersetze('2 z', 'formel').wgsl.includes('cmul'), 'Zahl mal komplex ohne cmul');
-  ok(A.uebersetze('1e-7 + n', 'wert').glsl.includes('1.0e-7'), 'Gleitkommazahl mit Exponent bekommt den Punkt');
+  ok(A.uebersetze('1e-7 + n', 'wert').wgsl.includes('1.0e-7'), 'Gleitkommazahl mit Exponent bekommt den Punkt');
   return { fehler };
 }
 

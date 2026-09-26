@@ -118,4 +118,4 @@ Every error names the position in your input: unknown name, unexpected character
 
 ## Checking the language offline
 
-`node tools/ausdruck-pruefen.js` runs the parser, printer, evaluator and code generator against a table of cases; the Cypress spec `cypress/e2e/20-ausdruck.cy.js` covers the fields, the link and the rendered images on WebGPU and WebGL 2.
+`node tools/ausdruck-pruefen.js` runs the parser, printer, evaluator and code generator against a table of cases; the Cypress spec `cypress/e2e/20-ausdruck.cy.js` covers the fields, the link and the rendered images.

@@ -197,7 +197,7 @@ describe('Farbe und Farbschema-Editor', () => {
   });
 
   it('Verläufe Relief, Doppelt logarithmisch und Logarithmisch + Relief: Adresse, Neurender, andere Bilder', () => {
-    cy.get('#mapping option').should('have.length', 29);   // mit Domain Coloring, Kubikwurzel, Arkustangens, doppelt logarithmisch;   // 24 einwertige (mit dem eigenen Sammler; „Histogramm“ ist jetzt die Tabelle der Kurve) plus „Werte kombinieren“ (mit Kurve, Ursprungsnähe, Gesamtdrehung, Periodengebiete, Spiralfalle, logmap, äußerer Winkel) plus „Werte kombinieren“
+    cy.get('#mapping option').should('have.length', 30);   // mit Domain Coloring, Kubikwurzel, Arkustangens, doppelt logarithmisch, Sinuswellen;   // 24 einwertige (mit dem eigenen Sammler; „Histogramm“ ist jetzt die Tabelle der Kurve) plus „Werte kombinieren“ (mit Kurve, Ursprungsnähe, Gesamtdrehung, Periodengebiete, Spiralfalle, logmap, äußerer Winkel) plus „Werte kombinieren“
     cy.rerender(() => cy.pickOption('mapping', 2));
     cy.get('#logStufenRow').should('not.have.attr', 'hidden');       // die Stufen gehören zur logarithmischen Färbung
     for (const st of [2, 3, 4, 5, 6, 10]) {                          // früher fünf eigene Färbungen, heute ein Regler (bis 10)
@@ -1038,7 +1038,7 @@ describe('Färbungen nach Bahnstatistik', () => {
     cy.get('#texStaerkeRow').should('not.have.attr', 'hidden');
     cy.get('#texturRow .tex-kurz').should('have.attr', 'hidden');           // ausgeklappt: die Stärke steht in ihrer Zeile, der Kopf trägt nur die Art
   });
-  it('Texturarten 9 bis 19: Bänder, Randnähe, Kanten, Glätten, Krümmung, Gitter-, Ring- und Punktfalle, Weglänge, Schwerpunkt, Vorzeichenwechsel färben, auch gestapelt und mit WebGL 2; eigene Regler je Art im Link (tq)', () => {
+  it('Texturarten 9 bis 19: Bänder, Randnähe, Kanten, Glätten, Krümmung, Gitter-, Ring- und Punktfalle, Weglänge, Schwerpunkt, Vorzeichenwechsel färben, auch gestapelt; eigene Regler je Art im Link (tq)', () => {
     const B = 'mode=mandel&re=-0.9&im=0.6&z=1&it=400';
     const deutlich = (a, b, text) => cy.task('pngDiff', { a: a.file, b: b.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, text).to.be.greaterThan(1.5));   // leiser als „anders“: manche Arten zeichnen fein
     cy.visitApp(B);

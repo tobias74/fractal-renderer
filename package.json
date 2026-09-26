@@ -1,7 +1,7 @@
 {
   "name": "fractal-renderer",
   "version": "1.0.0",
-  "description": "Fractal explorer in the browser (WebGPU, WebGL 2), a single-file app with Cypress end-to-end tests",
+  "description": "Fractal explorer in the browser (WebGPU), a single-file app with Cypress end-to-end tests",
   "scripts": {
     "serve": "node tools/server.js",
     "cy:open": "cypress open --e2e --browser chrome",

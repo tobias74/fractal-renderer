@@ -61,7 +61,7 @@ describe('Ziele der Texturplätze: Palettenposition und Sättigung', () => {
     cy.expectHash('tz', null); cy.expectHash('t2z', null);
   });
 
-  it('Bild: Palettenposition und Sättigung färben anders als die Helligkeit; Stärke 0 lässt jedes Ziel wirkungslos; WebGL 2 rechnet dasselbe', () => {
+  it('Bild: Palettenposition und Sättigung färben anders als die Helligkeit; Stärke 0 lässt jedes Ziel wirkungslos', () => {
     cy.visitApp(B);
     cy.shotStats('tz-ohne').then(ohne => {
       cy.visitApp(B + '&tx=1&ts=0&tz=3');   // ohne Stärke verschiebt der Platz nichts

@@ -1,6 +1,6 @@
 // Headless-Chrome-Screenshot über das DevTools-Protokoll (mit GPU / WebGPU-Flags).
 // Aufruf: node cdp-shot.js <url> <out.png> [waitMs=7000] [width=1280] [height=800] [mobile=0] [initScript]
-// initScript: JavaScript, das vor dem Seitenskript läuft, z. B. "localStorage.setItem('fractal.renderer','webgl')"
+// initScript: JavaScript, das vor dem Seitenskript läuft, z. B. "localStorage.setItem('fractal.aa','2')"
 const { spawn } = require('child_process');
 const fs = require('fs');
 const http = require('http');

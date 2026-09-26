@@ -50,7 +50,7 @@ describe('Rosettenfalle und Auswertung der Fallen', () => {
     cy.expectHash('tq', '0.7:5:0.5:30:0.3:3');
   });
 
-  it('Bild: Maske, Kontaktiteration und Kontaktwinkel sehen verschieden aus, ebenso Stichproben und am Ende; Drall macht die Spiralrosette; WebGL 2 rechnet dasselbe', () => {
+  it('Bild: Maske, Kontaktiteration und Kontaktwinkel sehen verschieden aus, ebenso Stichproben und am Ende; Drall macht die Spiralrosette', () => {
     cy.visitApp(B + '&tx=23&ts=0.8');
     cy.shotStats('ros-maske').then(maske => {
       cy.visitApp(B + '&tx=23&ts=0.8&tr=1');

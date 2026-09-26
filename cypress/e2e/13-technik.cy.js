@@ -76,11 +76,9 @@ describe('Glättung und Technik', () => {
     cy.pickOption('aaModeSel', 'adaptive');
     cy.get('#aaPresets button[data-preset="4"]').click();   // Maximal
     cy.waitRender(/Fertig · [\d,]+ (ms|s) \+ [\d,]+ (ms|s) Glättung/, 120000);
-    // Arbeit der Grafikkarte mitzählen: unter WebGL Zeichenaufrufe, unter WebGPU abgeschickte Befehlspuffer
+    // Arbeit der Grafikkarte mitzählen: abgeschickte Befehlspuffer
     cy.window().then(win => {
       win.__arbeit = 0;
-      const gl2 = win.WebGL2RenderingContext.prototype, draw = gl2.drawArrays;
-      gl2.drawArrays = function (...a) { win.__arbeit++; return draw.apply(this, a); };
       if (win.GPUQueue) { const q = win.GPUQueue.prototype, sub = q.submit; q.submit = function (...a) { win.__arbeit++; return sub.apply(this, a); }; }
     });
     const nachKlick = (preset, pruef) => {

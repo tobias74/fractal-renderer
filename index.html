@@ -424,7 +424,7 @@
   .tex-farben-titel { color: var(--muted); font-size: 12px; letter-spacing: .02em; margin-right: auto; }
   .tex-farben label { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12.5px; cursor: pointer; }
   .tex-farben input[type=color] { width: 34px; height: 22px; padding: 0; border: 1px solid var(--line); border-radius: 5px; background: none; cursor: pointer; }
-  .grid2 > .tex-titel, .grid2 > .stat-titel, .grid2 > .tex-karte, .grid2 > .tex-optionen, .grid2 > #paarRow, .grid2 > #texLive { grid-column: 1 / -1; }   /* im zweispaltigen Raster über die volle Breite */
+  .grid2 > .tex-titel, .grid2 > .stat-titel, .grid2 > .tex-karte, .grid2 > .tex-optionen, .grid2 > #paarRow, .grid2 > #texLive, .grid2 > #sinusRow { grid-column: 1 / -1; }   /* im zweispaltigen Raster über die volle Breite */
   .tex-titel { margin-top: 6px; }
   .tex-optionen { display: flex; flex-direction: column; gap: 6px; padding: 2px 2px 6px; }   /* unter dem Stapel: Texturen auch innen, Fallenverbund */   /* Abschnitt „Texturen“: etwas Luft über dem Stapel */
   .stat-titel { margin-top: 12px; }   /* Abschnitt „Bahnstatistik“ (Streifen, Vorlauf, Gewichtung): Luft nach dem Stapel */
@@ -475,6 +475,14 @@
   /* Übertragungskurve: Häufigkeiten als Balken, darüber die Kurve mit ziehbaren Punkten */
   canvas.kurve { width: 100%; height: auto; aspect-ratio: 24 / 11; border-radius: 6px; border: 1px solid var(--line); display: block; background: rgba(var(--tint), .03); cursor: crosshair; touch-action: none; }
   canvas.kurve:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .abb-mitte { display: flex; gap: 6px; }   /* Mitte der Verzerrung: zwei Zahlenfelder wie die übrigen Werte, mit Abstand */
+  #abbMHier { display: block; width: 100%; margin-top: 6px; }
+  #lichtRow > .sec-title + .lbl { margin-top: 8px; }   /* Abstand unter der Überschrift der Lichter wie bei den anderen Bereichen */
+  #sinusRow .wertzeile { margin-top: 8px; }   /* Sinuswellen: viele Werte, dichter als die Reglergruppen */
+  #sinusRow input.wert { width: 132px; }   /* lange Zahlen (Versatz, Perioden) bleiben lesbar */
+  #sinusRow .chk { margin-top: 10px; }
+  #wendeRow .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }   /* Wendepunkte: Setzen über die volle Breite, darunter die beiden Entfernen gleich breit */
+  #wendeRow .btns #wendeSetzen { grid-column: 1 / -1; }
   .pal-ed .btns { display: flex; gap: 6px; align-items: stretch; }   /* Knöpfe einer Reihe gleich hoch, auch wenn nur einer zweizeilig umbricht */
   .pal-ed .btns .chk { flex: 1; }
   .pal-ed input[type=text] { width: 58%; font: 13px var(--font-ui); padding: 6px 8px; }
@@ -999,7 +1007,7 @@
         <p class="hint mono ausdruck-text" id="abbEigenText"></p>
       </div>
       <div id="abbParamRow" hidden>   <!-- Verzerrungen 8 … 11: Mitte und zwei Regler, deren Bedeutung an der Art hängt -->
-        <div class="lbl"><label for="abbMRe" data-i18n-title="subject.distort-centre-title" data-i18n="subject.distort-centre"></label><span class="abb-mitte"><input id="abbMRe" class="mono" type="text" inputmode="decimal" spellcheck="false" autocomplete="off" data-i18n-aria-label="subject.distort-centre-re" style="width:6.5em"><input id="abbMIm" class="mono" type="text" inputmode="decimal" spellcheck="false" autocomplete="off" data-i18n-aria-label="subject.distort-centre-im" style="width:6.5em"></span></div>
+        <div class="lbl"><label for="abbMRe" data-i18n-title="subject.distort-centre-title" data-i18n="subject.distort-centre"></label><span class="abb-mitte"><input id="abbMRe" class="val mono wert" type="text" inputmode="decimal" spellcheck="false" autocomplete="off" data-i18n-aria-label="subject.distort-centre-re"><input id="abbMIm" class="val mono wert" type="text" inputmode="decimal" spellcheck="false" autocomplete="off" data-i18n-aria-label="subject.distort-centre-im"></span></div>
         <button type="button" class="ghost" id="abbMHier" data-i18n="subject.distort-here"></button>
         <div class="lbl wertzeile"><label for="abbA" id="abbALabel"></label><input class="val mono wert" id="abbAVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="abbA" type="range" min="0" max="1" step="0.01" value="1">
@@ -1181,6 +1189,7 @@
           <option value="21" data-i18n="colour.sign-changes"></option>
           <option value="35" data-i18n="colour.custom"></option>
           <option value="36" data-i18n="colour.domain-colouring"></option>
+          <option value="40" data-i18n="colour.sine-waves"></option>
         </optgroup>
         <optgroup data-i18n-label="colour.orbit-traps">
           <option value="17" data-i18n="colour.cross-trap-pickover"></option>
@@ -1428,6 +1437,7 @@
         <div class="lbl wertzeile"><label for="abklingen" data-i18n-title="colour.decay-title" data-i18n="colour.decay"></label><input class="val mono wert" id="abklingenVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="abklingen" type="range" min="0" max="0.5" step="0.005" value="0">
       </div>
+      <div id="sinusRow" class="sinus-bereich" hidden></div>   <!-- Färbung 40: die Werte der Sinuswellen (aus SINUS_FELDER gebaut) -->
       <div id="domSchrittRow" hidden>   <!-- Domain Coloring: nach wie vielen Schritten -->
         <div class="lbl wertzeile"><label for="domSchritt" data-i18n-title="colour.domain-step-title" data-i18n="colour.domain-step"></label><input class="val mono wert" id="domSchrittVal" type="text" inputmode="decimal" spellcheck="false" autocomplete="off"></div>
         <input id="domSchritt" type="range" min="0" max="60" step="1" value="0">
@@ -2568,6 +2578,33 @@ const TEXTE = {
   'colour.texture-r-rotation-title': { de: 'Wohin die Spitze zeigt.', en: 'Where the tip points.' },
   'colour.texture-r-norm': { de: 'Norm p', en: 'Norm p' },
   'colour.texture-r-norm-title': { de: 'Wie der Abstand gemessen wird: 1 Raute, 2 Kreis (Vorgabe), ab 16 Quadrat; dazwischen fließend.', en: 'How the distance is measured: 1 diamond, 2 circle (default), from 16 square; smooth in between.' },
+  'colour.sine-waves': { de: 'Sinuswellen (Schritte und Endrichtung)', en: 'Sine waves (steps and end direction)' },
+  'mapping.text.40': { de: 'Jeder Farbkanal folgt einer eigenen Sinuswelle über einem Zähler aus der ganzen Schrittzahl und der Richtung vom Bildpunkt zum letzten Bahnpunkt; Masken lassen einzelne Kanäle je nach Zählerstand springen. Innen schwarz.', en: 'Each colour channel follows its own sine wave over a counter made of the whole step count and the direction from the pixel to the last orbit point; masks make single channels jump depending on the counter. Black inside.' },
+  'colour.sine-title': { de: 'Sinuswellen', en: 'Sine waves' },
+  'colour.sine-p': { de: 'Wellenperiode', en: 'Wave period' },
+  'colour.sine-versatz': { de: 'Zähler-Versatz', en: 'Counter offset' },
+  'colour.sine-gschritte': { de: 'Gewicht der Schritte', en: 'Weight of the steps' },
+  'colour.sine-grichtung': { de: 'Gewicht der Endrichtung', en: 'Weight of the end direction' },
+  'colour.sine-or': { de: 'Versatz Rot', en: 'Offset red' },
+  'colour.sine-og': { de: 'Versatz Grün', en: 'Offset green' },
+  'colour.sine-ob': { de: 'Versatz Blau', en: 'Offset blue' },
+  'colour.sine-om': { de: 'Versatz gesamt', en: 'Offset overall' },
+  'colour.sine-sr': { de: 'Sprung Rot', en: 'Jump red' },
+  'colour.sine-sg': { de: 'Sprung Grün', en: 'Jump green' },
+  'colour.sine-sb': { de: 'Sprung Blau', en: 'Jump blue' },
+  'colour.sine-sm': { de: 'Sprung gesamt', en: 'Jump overall' },
+  'colour.sine-pr': { de: 'Periode Rot', en: 'Period red' },
+  'colour.sine-pg': { de: 'Periode Grün', en: 'Period green' },
+  'colour.sine-pb': { de: 'Periode Blau', en: 'Period blue' },
+  'colour.sine-mr': { de: 'Maske Rot', en: 'Mask red' },
+  'colour.sine-mg': { de: 'Maske Grün', en: 'Mask green' },
+  'colour.sine-mb': { de: 'Maske Blau', en: 'Mask blue' },
+  'colour.sine-gversch': { de: 'Gewicht der Verschiebung', en: 'Weight of the displacement' },
+  'colour.sine-gxor': { de: 'Gewicht XOR der Verschiebung', en: 'Weight of the displacement XOR' },
+  'colour.sine-gpolar': { de: 'Gewicht XOR polar', en: 'Weight of the polar XOR' },
+  'colour.sine-tiefe': { de: 'Stufen der Rekursion (1 bis 16)', en: 'Recursion levels (1 to 16)' },
+  'colour.sine-vorher': { de: 'Sprung nach der Schrittzahl', en: 'Jump by the step count' },
+  'colour.sine-nachher': { de: 'Sprung nach dem fertigen Zähler', en: 'Jump by the finished counter' },
   'colour.stripes-title': { de: 'Wie viele Streifen der Winkel jeder Bahn beisteuert: sin(n · arg z). Mehr Streifen, feinere Strähnen; mit Farbanker behält das Feld dabei seine Farbe.', en: 'How many stripes the angle of each orbit contributes: sin(n · arg z). More stripes, finer strands; with the colour anchor the field keeps its colour.' },
   'colour.escape-deduction': { de: 'Fluchtzeit-Abzug', en: 'Escape-time deduction' },
   'colour.escape-deduction-title': { de: 'Zieht von der ersten Achse ein Vielfaches der logarithmischen Fluchtzeit ab (Ursprungsnähe: β·log₂(N+1); Gesamtdrehung: β·(log₂(N+1) − 10)/10). Wo die Bahnen lange laufen (dichte Bänder), rückt die erste Achse nach unten; die Höfe um die Spiralzentren bleiben.', en: 'Subtracts a multiple of the logarithmic escape time from the first axis (closest approach: β · log₂(N+1); total turning: β · (log₂(N+1) − 10)/10). Where orbits run long (dense bands) the first axis moves down; the halos around spiral centres remain.' },
@@ -3935,7 +3972,7 @@ const MAX_ZOOM_DIRECT = 1e5;        // Formeln ohne Störungsrechnung: nur fp32
 // Eingabe in ASCII, an AsciiMath angelehnt: z_1 und z_2 (ein und zwei Schritte zurück), ^ Potenz, * oder Nebeneinander,
 // |z| oder abs(z), pi e i, sin cos tan sinh cosh tanh exp ln log sqrt abs re im arg conj floor round frac sign min max atan,
 // eine Fallunterscheidung B ? A : C mit < <= > >= == != (nur reelle Vergleiche). Unicode-Schreibweisen (·, −, π, √, ², z₁,
-// ≤ …) werden beim Lesen in ASCII übersetzt; im Link und im Zustand steht immer ASCII. Der Übersetzer liefert WGSL und GLSL
+// ≤ …) werden beim Lesen in ASCII übersetzt; im Link und im Zustand steht immer ASCII. Der Übersetzer liefert WGSL
 // (Zeile für Zeile, reell oder komplex getypt), dazu auf Wunsch die Jacobi-Matrizen nach z und c (Abstandsschätzung,
 // Lyapunov) und einen Rechner in JavaScript (Referenzpunkt der Ebenenabbildung in Double, Tests).
 const AUSDRUCK = (() => {
@@ -4030,8 +4067,6 @@ const AUSDRUCK = (() => {
   const ZIELE = {
     wgsl: { vec: 'vec2f', mat: 'mat2x2f', decl: (typ, n, e) => `let ${n} = ${e};`, atan2: (y, x) => `atan2(${y}, ${x})`, sel: (c, a, b) => `select(${b}, ${a}, ${c})`,
       selm: (c, a, b) => `mat2x2f(select(${b}[0], ${a}[0], ${c}), select(${b}[1], ${a}[1], ${c}))`, eins: 'mat2x2f(vec2f(1.0, 0.0), vec2f(0.0, 1.0))', nullm: 'mat2x2f(vec2f(0.0), vec2f(0.0))', nullv: 'vec2f(0.0)' },
-    glsl: { vec: 'vec2', mat: 'mat2', decl: (typ, n, e) => `${{ r: 'float', c: 'vec2', m: 'mat2', g: 'vec2', b: 'bool' }[typ]} ${n} = ${e};`, atan2: (y, x) => `atan(${y}, ${x})`, sel: (c, a, b) => `((${c}) ? ${a} : ${b})`,
-      selm: (c, a, b) => `((${c}) ? ${a} : ${b})`, eins: 'mat2(1.0)', nullm: 'mat2(0.0)', nullv: 'vec2(0.0)' },
   };
   const lit = v => { if (!Number.isFinite(v)) v = v > 0 ? 3.0e38 : v < 0 ? -3.0e38 : 0; let s = String(v); if (/^-?\d+$/.test(s)) s += '.0'; if (/e/.test(s) && !/\./.test(s)) s = s.replace('e', '.0e'); return s.startsWith('-') ? '(' + s + ')' : s; };
   class Gen {
@@ -4175,21 +4210,20 @@ const AUSDRUCK = (() => {
     zeilen.push(`  return ${e.v};`);
     return zeilen.join('\n');
   }
-  function uebersetze(text, art) {   // → { ok, ascii, ast, schoen, wgsl, glsl } oder { ok: false, key, pos, arg }
+  function uebersetze(text, art) {   // → { ok, ascii, ast, schoen, wgsl } oder { ok: false, key, pos, arg }
     try {
       const { ast, ascii: a } = parsen(text, art);
       const wert = z => rumpf(ast, art, z, [], null);
-      let wgsl = wert('wgsl'), glsl = wert('glsl');
+      let wgsl = wert('wgsl');
       if (art === 'formel') {   // dazu die Jacobi-Matrizen nach z und c, nur wenn die Abstandsschätzung oder Lyapunov sie braucht
         wgsl = `  if (NEED_DE == 1u || LYAP != 0u) {\n${rumpf(ast, art, 'wgsl', ['z', 'c'], (n, j) => `*J${n} = ${j};`).replace(/\n  return [^\n]*$/, '')}\n  }\n${wgsl}`;
-        glsl = `  if (NEED_DE == 1 || LYAP != 0) {\n${rumpf(ast, art, 'glsl', ['z', 'c'], (n, j) => `J${n} = ${j};`).replace(/\n  return [^\n]*$/, '')}\n  }\n${glsl}`;
       }
-      let jacWgsl = null, jacGlsl = null;
+      let jacWgsl = null;
       if (art === 'abbild') {   // Jacobi-Matrix der Abbildung als eigene Funktion: die letzte Matrix ist das Ergebnis
         const mk = z => { const g = new Gen(z, ['c'], 'w'); let r = g.knoten(ast, VARIABLEN[art]); if (r.typ === 'r') r = g.zuC(r); return g.zeilen.map(x => '  ' + x).concat([`  return ${r.J[0] === null ? g.Z.nullm : r.J[0]};`]).join('\n'); };
-        jacWgsl = mk('wgsl'); jacGlsl = mk('glsl');
+        jacWgsl = mk('wgsl');
       }
-      return { ok: true, ascii: a, ast, schoen: schoen(ast), wgsl, glsl, jacWgsl, jacGlsl };
+      return { ok: true, ascii: a, ast, schoen: schoen(ast), wgsl, jacWgsl };
     } catch (e) {
       if (e instanceof Fehler) return { ok: false, key: e.key, pos: e.pos, arg: e.arg === undefined ? '' : e.arg };
       throw e;
@@ -4361,9 +4395,23 @@ const LICHT_FELDER = [['neigungWinkel', LICHT.winkel, 0], ['umgebung', LICHT.umg
 function lichtNeu() { return { an: true, az: LICHT.az.def, hoehe: LICHT.hoehe.def, diffus: LICHT.diffus.def, glanz: LICHT.glanz.def, haerte: LICHT.haerte.def, farbe: '#ffffff', zu: false }; }   // das erste Licht: wie das feste
 function lichtZusatz() { return { an: true, az: 315, hoehe: 30, diffus: 0.5, glanz: 0, haerte: LICHT.haerte.def, farbe: '#9ec8ff', zu: false }; }   // ein weiteres: von gegenüber, kühl, ohne Glanz
 const LOG_ALT = { 5: 2, 7: 3, 8: 4, 9: 5, 10: 6 };   // alte Nummern und ihre Stufenzahl
-const MAP_MAX = 39;   // höchste Nummer einer Färbung (siehe Liste „Färbung nach“); 35: eigener Sammler, 36 Domain Coloring, 37–39 Kubikwurzel, Arkustangens, doppelt logarithmisch
+const MAP_MAX = 40;   // höchste Nummer einer Färbung (siehe Liste „Färbung nach“); 35: eigener Sammler, 36 Domain Coloring, 37–39 Kubikwurzel, Arkustangens, doppelt logarithmisch
+// Färbung 40: Parameter der Sinuswellen (Reihenfolge = Link wv); Masken als Folgen aus 0 und 1 (Bit ganz rechts = Zählerstand 0)
+const SINUS_FELDER = [['P', 64, 'colour.sine-p'], ['versatz', 0, 'colour.sine-versatz'], ['gSchritte', 1, 'colour.sine-gschritte'], ['gRichtung', 0, 'colour.sine-grichtung'], ['oR', 0, 'colour.sine-or'], ['oG', 2.0944, 'colour.sine-og'], ['oB', 4.1888, 'colour.sine-ob'], ['oM', 0, 'colour.sine-om'], ['sR', 0, 'colour.sine-sr'], ['sG', 0, 'colour.sine-sg'], ['sB', 0, 'colour.sine-sb'], ['sM', 0, 'colour.sine-sm'], ['pR', 1, 'colour.sine-pr'], ['pG', 1, 'colour.sine-pg'], ['pB', 1, 'colour.sine-pb']];
+const SINUS_MASKEN = [['mR', '1', 'colour.sine-mr'], ['mG', '1', 'colour.sine-mg'], ['mB', '1', 'colour.sine-mb']];
+const SINUS_ZUSATZ = [['gVersch', 0, 'colour.sine-gversch'], ['gXor', 0, 'colour.sine-gxor'], ['gPolar', 0, 'colour.sine-gpolar'], ['tiefe', 1, 'colour.sine-tiefe']];   // später ergänzt: im Link hinter den Schaltern, nur abseits der Vorgabe
+function sinusVoll() { return S.mapping === 40 && !texturAktiv() && SINUS_ZUSATZ.some(([k, v]) => S.sinus[k] !== v); }   // der volle Weg (Sammler 28) nur, wenn ein Zusatz wirkt; mit Textur bleibt der gepackte
+const SINUS_SCHALTER = [['vorher', 'colour.sine-vorher'], ['nachher', 'colour.sine-nachher']];
+function sinusNeu() { const o = { vorher: false, nachher: false }; for (const [k, v] of [...SINUS_FELDER, ...SINUS_MASKEN, ...SINUS_ZUSATZ]) o[k] = v; return o; }   // eigene Vorgabe: ein gleichmäßiger Regenbogen ohne Sprünge
+function sinusText(o) { const z = SINUS_ZUSATZ.some(([k, v]) => o[k] !== v); return [...SINUS_FELDER.map(([k]) => String(o[k])), ...SINUS_MASKEN.map(([k]) => o[k]), (o.vorher ? 1 : 0) + (o.nachher ? 2 : 0), ...(z ? SINUS_ZUSATZ.map(([k]) => String(o[k])) : [])].join(','); }
+function sinusLesen(t) { const o = sinusNeu(), a = String(t || '').split(','); SINUS_FELDER.forEach(([k], i) => { const v = parseFloat(a[i]); if (Number.isFinite(v)) o[k] = v; }); SINUS_MASKEN.forEach(([k], j) => { const m = a[SINUS_FELDER.length + j]; if (/^[01]{1,24}$/.test(m || '')) o[k] = m; }); const f = parseInt(a[SINUS_FELDER.length + 3], 10); if (Number.isFinite(f)) { o.vorher = !!(f & 1); o.nachher = !!(f & 2); }
+  SINUS_ZUSATZ.forEach(([k], j) => { const v = parseFloat(a[SINUS_FELDER.length + 4 + j]); if (Number.isFinite(v)) o[k] = k === 'tiefe' ? clamp(Math.round(v), 1, 16) : v; }); return o; }
+function sinusUniform() {   // 8 vec4, siehe sinusFarbe und sinusFarbeVoll im Farbpass
+  const o = S.sinus, m = k => parseInt(o[k], 2) || 0, l = k => o[k].length;
+  return new Float32Array([o.P, o.versatz, o.gSchritte, o.gRichtung, o.oR, o.oG, o.oB, o.oM, o.sR, o.sG, o.sB, o.sM, o.pR, o.pG, o.pB, currentMaxIter(), m('mR'), m('mG'), m('mB'), (o.vorher ? 1 : 0) + (o.nachher ? 2 : 0), l('mR'), l('mG'), l('mB'), 0, o.gVersch, o.gXor, o.gPolar, o.tiefe, sinusVoll() ? 1 : 0, 0, 0, 0]);
+}
 const DOM_SCHRITT = { min: 0, max: 500, def: 0 };   // Domain Coloring: z nach so vielen Schritten (0 = der letzte Bahnpunkt)
-const MAPPING_TEXT = { 36: 'mapping.text.36', 37: 'mapping.text.37', 38: 'mapping.text.38', 39: 'mapping.text.39', 0: 'mapping.text.0', 1: 'mapping.text.1', 2: 'mapping.text.2', 4: 'mapping.text.4', 6: 'mapping.text.6', 11: 'mapping.text.11', 12: 'mapping.text.12', 13: 'mapping.text.13', 14: 'mapping.text.14', 15: 'mapping.text.15', 16: 'mapping.text.16', 17: 'mapping.text.17', 18: 'mapping.text.18', 19: 'mapping.text.19', 20: 'mapping.text.20', 21: 'mapping.text.21', 24: 'mapping.text.24', 26: 'mapping.text.26', 28: 'mapping.text.28', 29: 'mapping.text.29', 31: 'mapping.text.31', 32: 'mapping.text.32', 33: 'mapping.text.33', 34: 'mapping.text.34', 35: 'mapping.text.35' };   // ein Satz je Färbung, unter der Auswahl
+const MAPPING_TEXT = { 40: 'mapping.text.40', 36: 'mapping.text.36', 37: 'mapping.text.37', 38: 'mapping.text.38', 39: 'mapping.text.39', 0: 'mapping.text.0', 1: 'mapping.text.1', 2: 'mapping.text.2', 4: 'mapping.text.4', 6: 'mapping.text.6', 11: 'mapping.text.11', 12: 'mapping.text.12', 13: 'mapping.text.13', 14: 'mapping.text.14', 15: 'mapping.text.15', 16: 'mapping.text.16', 17: 'mapping.text.17', 18: 'mapping.text.18', 19: 'mapping.text.19', 20: 'mapping.text.20', 21: 'mapping.text.21', 24: 'mapping.text.24', 26: 'mapping.text.26', 28: 'mapping.text.28', 29: 'mapping.text.29', 31: 'mapping.text.31', 32: 'mapping.text.32', 33: 'mapping.text.33', 34: 'mapping.text.34', 35: 'mapping.text.35' };   // ein Satz je Färbung, unter der Auswahl
 // „Werte kombinieren“ (31): eine Färbung aus zwei Bahnwerten, frei gewählt. Je Achse ein Wert (PAAR_WERTE), ein Faktor,
 // wahlweise ein Fluchtzeit-Abzug (0 keiner, 1 β·log₂(N+1), 2 β·0,1·(log₂(N+1) − 10)), bei 0 geklemmt, mit Farbanker
 // (Fluchtzeit: Farbanker der Fluchtzeit; Mittel: der des Bahnmittels). Die Einstellung steht in S.paar.
@@ -5120,7 +5168,7 @@ struct FP {
   texQ: array<vec4f, 6>,                             // je Sammler: x, y = fünfter und sechster Regler der Art (Rosette: Weite, Härte der Maske), z = Wertwahl (Rosette: 0 Maske, 1 Kontaktiteration, 2 Kontaktwinkel), w = Auswertung der Falle (0 jede Iteration, n > 0 jede n-te, −1 nur der letzte Bahnpunkt)
   param2B: vec4f,                                    // Hybrid-Folge: x, y, z = zweite Parameterzeile der Formel B (wie param2 für A), w frei
   origin: vec2f, streifenForm: f32, wendeN: f32,    // Export: ganzzahlige Lage der Kachel im Bild (Pixel), am Bildschirm 0 — Koordinate und Zufallsversatz aus dem Index im ganzen Bild; streifenForm: Streifenmittel als Welle (0) oder in Abschnitten (1, Sägezahn); wendeN: Zahl der Wendepunkte
-  wende: array<vec4f, 4>, abbP: vec4f,               // Wendepunkte: je einer a = Referenz − p (vec2) in der Reihenfolge der Anwendung; abbP = (Mitte, a, b) der Verzerrungen 8 … 11
+  wende: array<vec4f, 4>, abbP: vec4f, sinusP: vec4f,   // sinusP.x: Stufen der Rekursion der Sinuswellen (1 = keine)               // Wendepunkte: je einer a = Referenz − p (vec2) in der Reihenfolge der Anwendung; abbP = (Mitte, a, b) der Verzerrungen 8 … 11
 };
 @group(0) @binding(0) var<uniform> P: FP;
 @group(0) @binding(1) var orbit: texture_2d<f32>;
@@ -5334,6 +5382,20 @@ fn aequiSchritt(z: vec2f, e: vec2f) -> vec2f {
   for (var k = 0u; k < dd; k++) { su = su + cmul(a, cpow(z, dd - 1u - k)); a = cmul(a, w); }
   return cmul(e, su);
 }
+// Sinuswellen, Rekursion (Sammler 28): nach der Flucht neu mit c′ = z − c der vorigen Stufe, bis zu P.sinusP.x Stufen, je Stufe
+// höchstens maxIter + 1 Schritte z^d + c′ (c′ liegt bei 1: fp32 genügt). Gerechnet nur mit den Differenzen z − c′, deren Summe
+// Σz − Σc ist. Rückgabe: diese Summe (bei höchstens einem Schritt z selbst) und die Summe der Schritte.
+fn sinusWeiter(e0: vec2f, n0: f32, bail: f32) -> vec3f {
+  let stufen = u32(clamp(P.sinusP.x, 1.0, 16.0)); let mi = P.maxIter;
+  var d = e0; var e = e0; var nt = n0;
+  for (var st = 1u; st < stufen; st++) {
+    if (all(e == vec2f(0.0))) { break; }
+    let c2 = e; var z = vec2f(0.0); var k = 0u;
+    loop { if (k > mi || flucht(z) >= bail) { break; } z = cpow(z, max(POWER, 2u)) + c2; k++; }
+    e = z - c2; d = d + e; nt = nt + f32(k);
+  }
+  return vec3f(d, nt);
+}
 fn fallNorm(v: vec2f, p: f32) -> f32 {   // Abstand in der p-Norm (1 Raute, 2 Kreis wie bisher, ab 16 Quadrat); 0 oder 2 = euklidisch, bitgleich wie bisher
   let a = abs(v); let pn = pow(pow(a.x, p) + pow(a.y, p), 1.0 / max(p, 0.1));
   return select(select(pn, max(a.x, a.y), p >= 16.0), length(v), p <= 0.0 || p == 2.0);
@@ -5457,6 +5519,7 @@ fn stNimm2(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f,
   if (STAT2 == 14u) { *mn = min(*mn, ringAbstand(z, tp)); *n += 1u; return; }   // Ringfalle: kleinster Abstand zum Einheitskreis
   if (STAT2 == 15u) { s.x += w * (1.0 - exp(-length(z - zv) / tp.x)); s.z += w; *st = s; *n += 1u; return; }   // Weglänge: gewichtetes Mittel der gedämpften Schrittlängen
   if (STAT2 == 23u) { if (tp.x < 0.5 || f32(i) <= tp.x) { s.x = z.x; s.y = z.y; } *st = s; *n += 1u; return; }
+  if (STAT2 == 27u) { s.x = z.x - cc.x; s.y = z.y - cc.y; *st = s; *n += 1u; return; }   // Sinuswellen: z − c des letzten Schritts, n zählt die Schritte
   if (STAT2 == 26u) {   // Äquikontinuität: die Abweichung der Nachbarbahn (c + δ bzw. z₀ + δ bei Julia) mitführen, log₂(1 + |e|/δ) mitteln
     if (FORMULA == 0u && HYBRID == 0u) {
       let dl = max(tp.x, 0.01) * P.ps; let ju = P.isJulia == 1u;
@@ -5514,6 +5577,7 @@ fn stAus2(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT2 == 24u) { return bitcast<u32>(clamp(0.5 + 0.08 * log(max(select(st.x / st.z, 0.0, st.z == 0.0), 1.0e-30)), 0.0, 1.0)); }   // Lagrange-Deskriptor logarithmisch auf 0 … 1
   if (STAT2 == 25u) { return bitcast<u32>(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Tropfenfalle logarithmisch wie die Ringfalle
   if (STAT2 == 26u) { return bitcast<u32>(select(0.5, 1.0 - exp(-select(st.z / st.w, 0.0, st.w == 0.0) / max(tp.y, 0.1)), FORMULA == 0u && HYBRID == 0u)); }   // Äquikontinuität: 0 ruhig … 1 empfindlich; ohne z^d + c neutral
+  if (STAT2 == 27u) { let l = length(st.xy); let u = select(0.0, st.x / l, l > 0.0); return (min(n, 131071u) << 15u) | u32(round((clamp(u, -1.0, 1.0) + 1.0) * 0.5 * 32767.0)); }   // Sinuswellen: Schrittzahl (17 Bit) und Re(z−c)/|z−c| (15 Bit)
   var m = select(st.x / st.z, 0.0, st.z == 0.0);   // ein Schritt: sein Wert; keiner: 0
   if (n >= 2u) {   // Streifen- und Dreiecksmittel: zwischen den letzten beiden gewichteten Mitteln geglättet (Summen durch Gewichte)
     let f = select(clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), gGlatt, gGlatt >= 0.0);   // bei Konvergenz trägt nu den Bruchteil, ein Fluchtradius steht dort nicht zur Verfügung
@@ -5539,6 +5603,7 @@ fn stNimm3(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f,
   if (STAT3 == 14u) { *mn = min(*mn, ringAbstand(z, tp)); *n += 1u; return; }   // Ringfalle: kleinster Abstand zum Einheitskreis
   if (STAT3 == 15u) { s.x += w * (1.0 - exp(-length(z - zv) / tp.x)); s.z += w; *st = s; *n += 1u; return; }   // Weglänge: gewichtetes Mittel der gedämpften Schrittlängen
   if (STAT3 == 23u) { if (tp.x < 0.5 || f32(i) <= tp.x) { s.x = z.x; s.y = z.y; } *st = s; *n += 1u; return; }
+  if (STAT3 == 27u) { s.x = z.x - cc.x; s.y = z.y - cc.y; *st = s; *n += 1u; return; }   // Sinuswellen: z − c des letzten Schritts, n zählt die Schritte
   if (STAT3 == 26u) {   // Äquikontinuität: die Abweichung der Nachbarbahn (c + δ bzw. z₀ + δ bei Julia) mitführen, log₂(1 + |e|/δ) mitteln
     if (FORMULA == 0u && HYBRID == 0u) {
       let dl = max(tp.x, 0.01) * P.ps; let ju = P.isJulia == 1u;
@@ -5596,6 +5661,7 @@ fn stAus3(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT3 == 24u) { return bitcast<u32>(clamp(0.5 + 0.08 * log(max(select(st.x / st.z, 0.0, st.z == 0.0), 1.0e-30)), 0.0, 1.0)); }   // Lagrange-Deskriptor logarithmisch auf 0 … 1
   if (STAT3 == 25u) { return bitcast<u32>(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Tropfenfalle logarithmisch wie die Ringfalle
   if (STAT3 == 26u) { return bitcast<u32>(select(0.5, 1.0 - exp(-select(st.z / st.w, 0.0, st.w == 0.0) / max(tp.y, 0.1)), FORMULA == 0u && HYBRID == 0u)); }   // Äquikontinuität: 0 ruhig … 1 empfindlich; ohne z^d + c neutral
+  if (STAT3 == 27u) { let l = length(st.xy); let u = select(0.0, st.x / l, l > 0.0); return (min(n, 131071u) << 15u) | u32(round((clamp(u, -1.0, 1.0) + 1.0) * 0.5 * 32767.0)); }   // Sinuswellen: Schrittzahl (17 Bit) und Re(z−c)/|z−c| (15 Bit)
   var m = select(st.x / st.z, 0.0, st.z == 0.0);   // ein Schritt: sein Wert; keiner: 0
   if (n >= 2u) {   // Streifen- und Dreiecksmittel: zwischen den letzten beiden gewichteten Mitteln geglättet (Summen durch Gewichte)
     let f = select(clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), gGlatt, gGlatt >= 0.0);   // bei Konvergenz trägt nu den Bruchteil, ein Fluchtradius steht dort nicht zur Verfügung
@@ -5621,6 +5687,7 @@ fn stNimm4(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f,
   if (STAT4 == 14u) { *mn = min(*mn, ringAbstand(z, tp)); *n += 1u; return; }   // Ringfalle: kleinster Abstand zum Einheitskreis
   if (STAT4 == 15u) { s.x += w * (1.0 - exp(-length(z - zv) / tp.x)); s.z += w; *st = s; *n += 1u; return; }   // Weglänge: gewichtetes Mittel der gedämpften Schrittlängen
   if (STAT4 == 23u) { if (tp.x < 0.5 || f32(i) <= tp.x) { s.x = z.x; s.y = z.y; } *st = s; *n += 1u; return; }
+  if (STAT4 == 27u) { s.x = z.x - cc.x; s.y = z.y - cc.y; *st = s; *n += 1u; return; }   // Sinuswellen: z − c des letzten Schritts, n zählt die Schritte
   if (STAT4 == 26u) {   // Äquikontinuität: die Abweichung der Nachbarbahn (c + δ bzw. z₀ + δ bei Julia) mitführen, log₂(1 + |e|/δ) mitteln
     if (FORMULA == 0u && HYBRID == 0u) {
       let dl = max(tp.x, 0.01) * P.ps; let ju = P.isJulia == 1u;
@@ -5678,6 +5745,7 @@ fn stAus4(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT4 == 24u) { return bitcast<u32>(clamp(0.5 + 0.08 * log(max(select(st.x / st.z, 0.0, st.z == 0.0), 1.0e-30)), 0.0, 1.0)); }   // Lagrange-Deskriptor logarithmisch auf 0 … 1
   if (STAT4 == 25u) { return bitcast<u32>(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Tropfenfalle logarithmisch wie die Ringfalle
   if (STAT4 == 26u) { return bitcast<u32>(select(0.5, 1.0 - exp(-select(st.z / st.w, 0.0, st.w == 0.0) / max(tp.y, 0.1)), FORMULA == 0u && HYBRID == 0u)); }   // Äquikontinuität: 0 ruhig … 1 empfindlich; ohne z^d + c neutral
+  if (STAT4 == 27u) { let l = length(st.xy); let u = select(0.0, st.x / l, l > 0.0); return (min(n, 131071u) << 15u) | u32(round((clamp(u, -1.0, 1.0) + 1.0) * 0.5 * 32767.0)); }   // Sinuswellen: Schrittzahl (17 Bit) und Re(z−c)/|z−c| (15 Bit)
   var m = select(st.x / st.z, 0.0, st.z == 0.0);   // ein Schritt: sein Wert; keiner: 0
   if (n >= 2u) {   // Streifen- und Dreiecksmittel: zwischen den letzten beiden gewichteten Mitteln geglättet (Summen durch Gewichte)
     let f = select(clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), gGlatt, gGlatt >= 0.0);   // bei Konvergenz trägt nu den Bruchteil, ein Fluchtradius steht dort nicht zur Verfügung
@@ -5703,6 +5771,7 @@ fn stNimm5(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f,
   if (STAT5 == 14u) { *mn = min(*mn, ringAbstand(z, tp)); *n += 1u; return; }   // Ringfalle: kleinster Abstand zum Einheitskreis
   if (STAT5 == 15u) { s.x += w * (1.0 - exp(-length(z - zv) / tp.x)); s.z += w; *st = s; *n += 1u; return; }   // Weglänge: gewichtetes Mittel der gedämpften Schrittlängen
   if (STAT5 == 23u) { if (tp.x < 0.5 || f32(i) <= tp.x) { s.x = z.x; s.y = z.y; } *st = s; *n += 1u; return; }
+  if (STAT5 == 27u) { s.x = z.x - cc.x; s.y = z.y - cc.y; *st = s; *n += 1u; return; }   // Sinuswellen: z − c des letzten Schritts, n zählt die Schritte
   if (STAT5 == 26u) {   // Äquikontinuität: die Abweichung der Nachbarbahn (c + δ bzw. z₀ + δ bei Julia) mitführen, log₂(1 + |e|/δ) mitteln
     if (FORMULA == 0u && HYBRID == 0u) {
       let dl = max(tp.x, 0.01) * P.ps; let ju = P.isJulia == 1u;
@@ -5760,6 +5829,7 @@ fn stAus5(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT5 == 24u) { return bitcast<u32>(clamp(0.5 + 0.08 * log(max(select(st.x / st.z, 0.0, st.z == 0.0), 1.0e-30)), 0.0, 1.0)); }   // Lagrange-Deskriptor logarithmisch auf 0 … 1
   if (STAT5 == 25u) { return bitcast<u32>(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Tropfenfalle logarithmisch wie die Ringfalle
   if (STAT5 == 26u) { return bitcast<u32>(select(0.5, 1.0 - exp(-select(st.z / st.w, 0.0, st.w == 0.0) / max(tp.y, 0.1)), FORMULA == 0u && HYBRID == 0u)); }   // Äquikontinuität: 0 ruhig … 1 empfindlich; ohne z^d + c neutral
+  if (STAT5 == 27u) { let l = length(st.xy); let u = select(0.0, st.x / l, l > 0.0); return (min(n, 131071u) << 15u) | u32(round((clamp(u, -1.0, 1.0) + 1.0) * 0.5 * 32767.0)); }   // Sinuswellen: Schrittzahl (17 Bit) und Re(z−c)/|z−c| (15 Bit)
   var m = select(st.x / st.z, 0.0, st.z == 0.0);   // ein Schritt: sein Wert; keiner: 0
   if (n >= 2u) {   // Streifen- und Dreiecksmittel: zwischen den letzten beiden gewichteten Mitteln geglättet (Summen durch Gewichte)
     let f = select(clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), gGlatt, gGlatt >= 0.0);   // bei Konvergenz trägt nu den Bruchteil, ein Fluchtradius steht dort nicht zur Verfügung
@@ -5785,6 +5855,7 @@ fn stNimm6(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f,
   if (STAT6 == 14u) { *mn = min(*mn, ringAbstand(z, tp)); *n += 1u; return; }   // Ringfalle: kleinster Abstand zum Einheitskreis
   if (STAT6 == 15u) { s.x += w * (1.0 - exp(-length(z - zv) / tp.x)); s.z += w; *st = s; *n += 1u; return; }   // Weglänge: gewichtetes Mittel der gedämpften Schrittlängen
   if (STAT6 == 23u) { if (tp.x < 0.5 || f32(i) <= tp.x) { s.x = z.x; s.y = z.y; } *st = s; *n += 1u; return; }
+  if (STAT6 == 27u) { s.x = z.x - cc.x; s.y = z.y - cc.y; *st = s; *n += 1u; return; }   // Sinuswellen: z − c des letzten Schritts, n zählt die Schritte
   if (STAT6 == 26u) {   // Äquikontinuität: die Abweichung der Nachbarbahn (c + δ bzw. z₀ + δ bei Julia) mitführen, log₂(1 + |e|/δ) mitteln
     if (FORMULA == 0u && HYBRID == 0u) {
       let dl = max(tp.x, 0.01) * P.ps; let ju = P.isJulia == 1u;
@@ -5842,6 +5913,7 @@ fn stAus6(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   
   if (STAT6 == 24u) { return bitcast<u32>(clamp(0.5 + 0.08 * log(max(select(st.x / st.z, 0.0, st.z == 0.0), 1.0e-30)), 0.0, 1.0)); }   // Lagrange-Deskriptor logarithmisch auf 0 … 1
   if (STAT6 == 25u) { return bitcast<u32>(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Tropfenfalle logarithmisch wie die Ringfalle
   if (STAT6 == 26u) { return bitcast<u32>(select(0.5, 1.0 - exp(-select(st.z / st.w, 0.0, st.w == 0.0) / max(tp.y, 0.1)), FORMULA == 0u && HYBRID == 0u)); }   // Äquikontinuität: 0 ruhig … 1 empfindlich; ohne z^d + c neutral
+  if (STAT6 == 27u) { let l = length(st.xy); let u = select(0.0, st.x / l, l > 0.0); return (min(n, 131071u) << 15u) | u32(round((clamp(u, -1.0, 1.0) + 1.0) * 0.5 * 32767.0)); }   // Sinuswellen: Schrittzahl (17 Bit) und Re(z−c)/|z−c| (15 Bit)
   var m = select(st.x / st.z, 0.0, st.z == 0.0);   // ein Schritt: sein Wert; keiner: 0
   if (n >= 2u) {   // Streifen- und Dreiecksmittel: zwischen den letzten beiden gewichteten Mitteln geglättet (Summen durch Gewichte)
     let f = select(clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), gGlatt, gGlatt >= 0.0);   // bei Konvergenz trägt nu den Bruchteil, ein Fluchtradius steht dort nicht zur Verfügung
@@ -5924,6 +5996,8 @@ fn stNimm(st: ptr<function, vec4f>, n: ptr<function, u32>, z: vec2f, zv: vec2f, 
   if (STAT == 14u) { *mn = min(*mn, ringAbstand(z, tp)); *n += 1u; return; }   // Ringfalle: kleinster Abstand zum Einheitskreis
   if (STAT == 15u) { s.x += w * (1.0 - exp(-length(z - zv) / tp.x)); s.z += w; *st = s; *n += 1u; return; }   // Weglänge: gewichtetes Mittel der gedämpften Schrittlängen
   if (STAT == 23u) { if (tp.x < 0.5 || f32(i) <= tp.x) { s.x = z.x; s.y = z.y; } *st = s; *n += 1u; return; }
+  if (STAT == 27u) { s.x = z.x - cc.x; s.y = z.y - cc.y; *st = s; *n += 1u; return; }   // Sinuswellen: z − c des letzten Schritts, n zählt die Schritte
+  if (STAT == 28u) { let e = select(z - cc, z, *n == 0u); s.x = e.x; s.y = e.y; *st = s; *n += 1u; return; }   // Sinuswellen mit Zusätzen: wie 27, beim ersten Schritt z selbst
   if (STAT == 26u) {   // Äquikontinuität: die Abweichung der Nachbarbahn (c + δ bzw. z₀ + δ bei Julia) mitführen, log₂(1 + |e|/δ) mitteln
     if (FORMULA == 0u && HYBRID == 0u) {
       let dl = max(tp.x, 0.01) * P.ps; let ju = P.isJulia == 1u;
@@ -5981,6 +6055,7 @@ fn stAus(st: vec4f, n: u32, r2: f32, bail: f32, mn: f32, tp: vec4f) -> u32 {   /
   if (STAT == 24u) { return bitcast<u32>(clamp(0.5 + 0.08 * log(max(select(st.x / st.z, 0.0, st.z == 0.0), 1.0e-30)), 0.0, 1.0)); }   // Lagrange-Deskriptor logarithmisch auf 0 … 1
   if (STAT == 25u) { return bitcast<u32>(clamp(1.0 + 0.15 * log(max(mn, 1.0e-30)), 0.0, 1.0)); }   // Tropfenfalle logarithmisch wie die Ringfalle
   if (STAT == 26u) { return bitcast<u32>(select(0.5, 1.0 - exp(-select(st.z / st.w, 0.0, st.w == 0.0) / max(tp.y, 0.1)), FORMULA == 0u && HYBRID == 0u)); }   // Äquikontinuität: 0 ruhig … 1 empfindlich; ohne z^d + c neutral
+  if (STAT == 27u || STAT == 28u) { let l = length(st.xy); let u = select(0.0, st.x / l, l > 0.0); return (min(n, 131071u) << 15u) | u32(round((clamp(u, -1.0, 1.0) + 1.0) * 0.5 * 32767.0)); }   // Sinuswellen: Schrittzahl (17 Bit) und Re(z−c)/|z−c| (15 Bit)
   var m = select(st.x / st.z, 0.0, st.z == 0.0);   // ein Schritt: sein Wert; keiner: 0
   if (n >= 2u) {   // Streifen- und Dreiecksmittel: zwischen den letzten beiden gewichteten Mitteln geglättet (Summen durch Gewichte)
     let f = select(clamp(1.0 - log2(log(r2) / log(bail)), 0.0, 1.0), gGlatt, gGlatt >= 0.0);   // bei Konvergenz trägt nu den Bruchteil, ein Fluchtradius steht dort nicht zur Verfügung
@@ -6658,6 +6733,9 @@ fn fsFast(pos: vec4f) -> vec4u {
     if (escaped) { return vec4u(u32(max(nu, 0.0) * 256.0) | (root << 26u), paarY(paarWert(PAARA, stAus(st, stN, dot(z, z), bail, stMin, P.texP[0]), z), paarWert(PAARB, stAus2(st2, stN2, dot(z, z), bail, stMin2, P.texP[1]), z)), select(0u, bitcast<u32>(steigRichtung(z, der)), P.richtungY > 1.5), 1u); }
   } else if ((TEX1 | TEX2 | TEX3 | TEX4) != 0u) {   // gestapelte Texturen (irgendein Platz wirksam, Platz 1 darf ausgeschaltet sein): außen beide Werte als 16-Bit-Hälften; innen läuft der gewöhnliche Weg weiter
     if (escaped) { return vec4u(u32(max(nu, 0.0) * 256.0) | (root << 26u), pack2x16unorm(vec2f(texWertV(0u, TEX1, stAus(st, stN, dot(z, z), bail, stMin, P.texP[0]), z, nu, dist, P.texR[0]), texWertV(1u, TEX2, stAus2(st2, stN2, dot(z, z), bail, stMin2, P.texP[1]), z, nu, dist, P.texR[1]))), pack2x16unorm(vec2f(texWertV(2u, TEX3, stAus3(st3, stN3, dot(z, z), bail, stMin3, P.texP[2]), z, nu, dist, P.texR[2]), texWertV(3u, TEX4, stAus4(st4, stN4, dot(z, z), bail, stMin4, P.texP[3]), z, nu, dist, P.texR[3]))), 1u); }   // Plätze 3 und 4 im z-Kanal
+  } else if (STAT == 28u && escaped) {   // Sinuswellen mit Zusätzen (außen): ganze Schrittzahl samt Rekursion in y, Re und Im der Verschiebung in z und w
+    let rk = sinusWeiter(st.xy, f32(stN), bail);
+    return vec4u(u32(max(nu, 0.0) * 256.0) | (root << 26u), u32(min(rk.z, 4294967040.0)), bitcast<u32>(rk.x), bitcast<u32>(rk.y));
   } else if (STAT != 0u && (escaped || STAT == 1u || STAT == 2u || STAT == 5u || STAT == 7u || STAT == 10u || STAT == 19u || STAT == 20u || STAT == 23u)) {   // Bahnstatistik im zweiten Kanal; Streifen- und Dreiecksmittel nur außen
     let xl = select(0x80000000u | u32(min(length(z), 2.0) * 16777216.0), u32(max(nu, 0.0) * 256.0) | (root << 26u), escaped);
     return vec4u(xl, stAus(st, stN, dot(z, z), bail, stMin, P.texP[0]), select(0u, bitcast<u32>(steigRichtung(z, der)), P.richtungY > 1.5 && escaped), 1u);   // z: Richtung für die Beleuchtung
@@ -6698,7 +6776,7 @@ const WGSL_FILL = /* wgsl */`
 @fragment fn fs() -> @location(0) vec4u { return vec4u(0xFFFFFFFFu, 0u, 0u, 1u); }`;
 
 const WGSL_COLOR_LIB = /* wgsl */`
-struct CP { a: vec4f, b: vec4f, c: vec4f, d: vec4f, misc: vec4f, misc2: vec4f, misc3: vec4f, shift: vec4f, extra: vec4f, z2: vec4f, leer: vec4f, tex: vec4f, innen: vec4f, tex2: vec4f, tex3: vec4f, q: array<vec4f, 20>, stapel: array<vec4f, 12>, paar: vec4f, paar2: vec4f, stapelW: array<vec4f, 4>, nach: array<vec4f, 32>, nachInfo: vec4f, nachBild: vec4f, maske: array<vec4f, 25>, texMaske: array<vec4f, 13>, opt: vec4f, opt2: vec4f, mat: vec4f, mat2: vec4f, palk: vec4f, gueltig: vec4f, licht: array<vec4f, 10> } fn gueltig(d: vec2i) -> vec2i { return select(d, min(d, vec2i(C.gueltig.xy)), C.gueltig.x > 0.5); }   // gueltig: im Export die gerechnete Fläche der Kachel (die Textur ist so groß wie die größte), am Bildschirm 0 = die ganze Textur; die Hilfe steht in derselben Zeile, weil WGSL_POST nur diese Zeile übernimmt   // mat = (Material: 0 einfach, 1 Dielektrikum, 2 Metall; Glanz; Reflexion; Neigung), mat2 = (Schatten an, Schattenlänge px, Himmel-Lage, Himmel-Spanne)   // texMaske: je Texturplatz drei vec4 wie maske, [12] = (Kantenmaske vorhanden, eine Maske aktiv)   // maske: je Ebene drei vec4 (Art, umkehren, zeigen, weicher Rand; acht Zahlen), [24] = (Abstand vorhanden, eine Maske aktiv);   // paar = (Wert A, Wert B, Faktor A, Faktor B), paar2 = (Abzug A, Abzug B, Flags A, Flags B: Bit 0 Anker, 1 Klemme, 2 voll im Kanal)   // stapel: je Platz (Art, Stärke, Kontrast, Mitte), helle und dunkle Farbe (Vorgabe Weiß und Schwarz); tex2.y = 1: Texturwerte im z-/w-Kanal (über einer Statistik-Färbung), tex2.z = belegte Plätze   // tex = Textur: x Art (0 keine), y Stärke, z Kontrast, w Mitte; innen = eigene Innenfarbe (xyz), w = gestuft; tex2.x = Streifen für die Winkel-Texturen und Periodengebiete; tex3 = zweite Textur (Art, Stärke, Kontrast, Mitte)   // shift.xy = Versatz während des Ziehens, extra.x = Stauchung p, extra.y = Palette vorfiltern (0 = aus, sonst Faktor auf die Breite), extra.z = Farbanker des Bahnmittels (negativ = keiner), extra.w = Fluchtzeit-Abzug β (Färbung 25)
+struct CP { a: vec4f, b: vec4f, c: vec4f, d: vec4f, misc: vec4f, misc2: vec4f, misc3: vec4f, shift: vec4f, extra: vec4f, z2: vec4f, leer: vec4f, tex: vec4f, innen: vec4f, tex2: vec4f, tex3: vec4f, q: array<vec4f, 20>, stapel: array<vec4f, 12>, paar: vec4f, paar2: vec4f, stapelW: array<vec4f, 4>, nach: array<vec4f, 32>, nachInfo: vec4f, nachBild: vec4f, maske: array<vec4f, 25>, texMaske: array<vec4f, 13>, opt: vec4f, opt2: vec4f, mat: vec4f, mat2: vec4f, palk: vec4f, gueltig: vec4f, licht: array<vec4f, 10>, sinus: array<vec4f, 8> } fn gueltig(d: vec2i) -> vec2i { return select(d, min(d, vec2i(C.gueltig.xy)), C.gueltig.x > 0.5); }   // gueltig: im Export die gerechnete Fläche der Kachel (die Textur ist so groß wie die größte), am Bildschirm 0 = die ganze Textur; die Hilfe steht in derselben Zeile, weil WGSL_POST nur diese Zeile übernimmt   // mat = (Material: 0 einfach, 1 Dielektrikum, 2 Metall; Glanz; Reflexion; Neigung), mat2 = (Schatten an, Schattenlänge px, Himmel-Lage, Himmel-Spanne)   // texMaske: je Texturplatz drei vec4 wie maske, [12] = (Kantenmaske vorhanden, eine Maske aktiv)   // maske: je Ebene drei vec4 (Art, umkehren, zeigen, weicher Rand; acht Zahlen), [24] = (Abstand vorhanden, eine Maske aktiv);   // paar = (Wert A, Wert B, Faktor A, Faktor B), paar2 = (Abzug A, Abzug B, Flags A, Flags B: Bit 0 Anker, 1 Klemme, 2 voll im Kanal)   // stapel: je Platz (Art, Stärke, Kontrast, Mitte), helle und dunkle Farbe (Vorgabe Weiß und Schwarz); tex2.y = 1: Texturwerte im z-/w-Kanal (über einer Statistik-Färbung), tex2.z = belegte Plätze   // tex = Textur: x Art (0 keine), y Stärke, z Kontrast, w Mitte; innen = eigene Innenfarbe (xyz), w = gestuft; tex2.x = Streifen für die Winkel-Texturen und Periodengebiete; tex3 = zweite Textur (Art, Stärke, Kontrast, Mitte)   // shift.xy = Versatz während des Ziehens, extra.x = Stauchung p, extra.y = Palette vorfiltern (0 = aus, sonst Faktor auf die Breite), extra.z = Farbanker des Bahnmittels (negativ = keiner), extra.w = Fluchtzeit-Abzug β (Färbung 25)
 // zweidimensionale Palette (PAL2): z2 = (Art: 0 keine, 1 Formel, 2 Tabelle; Achse u; Achse v; –), leer.xyz = Farbe ohne Wert, q = je Quadrant a, b, cu, cv, d
 @group(0) @binding(0) var iter: texture_2d_array<u32>;   // eine Ebene je Probe der Glättung
 @group(0) @binding(1) var<uniform> C: CP;
@@ -7017,6 +7095,40 @@ fn entropieWert(xy: vec2i, k: i32) -> f32 {   // Entropie (Art 27): Shannon-Entr
   return 0.5 + 0.5 * select(0.0, clamp((log(max(nn, 1.0)) - h / max(nn, 1.0)) / log(25.0), 0.0, 1.0), nn > 1.5);   // H = log N − (1/N)·Σ log cᵢ; ruhig = ½ (die Farbe bleibt), Unordnung hellt auf
 }
 fn kanteHell(g: f32, empf: f32) -> f32 { return 0.5 * exp(-0.5 * g * empf); }   // ½ in der Fläche, gegen 0 an scharfen Kanten
+// Färbung 40 (Sinuswellen): sinus[0] = (Periode P, Zähler-Versatz, Gewicht Schritte, Gewicht Endrichtung), [1] Versatz R, G, B, gesamt,
+// [2] Sprung R, G, B, gesamt, [3] Periode R, G, B und maxIter, [4] Masken R, G, B und (1 Sprung vorher, 2 nachher), [5] Maskenlängen
+fn sinusBit(v: f32, maske: f32, laenge: f32) -> f32 { let k = u32(floor(abs(v) % max(laenge, 1.0))); return select(0.0, 1.0, ((u32(maske) >> k) & 1u) != 0u); }   // Bit k von rechts wie bei einer Binärzahl
+fn sinusFarbe(y: u32) -> vec3f {
+  let nn = f32(y >> 15u); let u = f32(y & 32767u) / 32767.0 * 2.0 - 1.0;
+  let A = C.sinus[0]; let O = C.sinus[1]; let G = C.sinus[2]; let Pk = C.sinus[3]; let Mk = C.sinus[4]; let L = C.sinus[5];
+  let zaehler = A.y + nn * A.z + select(0.0, (Pk.w / (nn + 1.0)) * (0.5 + 0.5 * u) * A.w, nn > 1.0);
+  let vorher = (u32(Mk.w) & 1u) != 0u; let nachher = (u32(Mk.w) & 2u) != 0u;
+  var b = vec3f(0.0);
+  for (var k = 0; k < 3; k++) { b[k] = select(0.0, sinusBit(nn, Mk[k], L[k]), vorher) + select(0.0, sinusBit(zaehler, Mk[k], L[k]), nachher); }
+  let w = zaehler * 6.2831853 / max(A.x, 1.0e-6);
+  let s3 = vec3f(0.5) + 0.5 * sin(w * Pk.xyz + O.xyz + O.w + (G.xyz + G.w) * b);
+  return floor(s3 * 255.0 + 0.5) / 255.0;
+}
+// Färbung 40 mit Zusätzen (Sammler 28): sinus[6] = (Gewicht Verschiebung, Gewicht XOR, Gewicht XOR polar, Stufen), sinus[7].x = 1 für diesen Weg
+fn sinusWinkel(d: vec2f) -> f32 { let a = atan2(d.x, -d.y); return select(a, a + 6.2831853, a < 0.0); }   // im Uhrzeigersinn ab unten: unten 0, rechts ½π, oben π
+fn sinusXor(a: f32, b: f32, g: f32, acc: f32) -> f32 { return g * f32(i32(acc * a) ^ i32(acc * b)) / acc; }   // ganzzahliges XOR der skalierten Werte (abgeschnitten)
+fn sinusFarbeVoll(px: vec4u) -> vec3f {
+  let nn = f32(px.y); let dv = vec2f(bitcast<f32>(px.z), bitcast<f32>(px.w)); let rr = length(dv);
+  let u = select(0.0, dv.x / rr, rr > 0.0);
+  let A = C.sinus[0]; let O = C.sinus[1]; let G = C.sinus[2]; let Pk = C.sinus[3]; let Mk = C.sinus[4]; let L = C.sinus[5]; let X = C.sinus[6];
+  let acc = max(Pk.w, 1.0);
+  var zaehler = A.y + nn * A.z + select(0.0, (Pk.w / (nn + 1.0)) * (0.5 + 0.5 * u) * A.w, nn > 1.0);
+  zaehler += select(0.0, rr * X.x, nn > 1.0);   // Verschiebung |z − c|
+  let vorher = (u32(Mk.w) & 1u) != 0u; let nachher = (u32(Mk.w) & 2u) != 0u;
+  var b = vec3f(0.0);
+  for (var k = 0; k < 3; k++) { b[k] = select(0.0, sinusBit(nn, Mk[k], L[k]), vorher) + select(0.0, sinusBit(zaehler, Mk[k], L[k]), nachher); }   // der Sprung nachher liest den Zähler vor den XOR-Anteilen
+  zaehler += sinusXor(dv.y, dv.x, X.y, acc);   // XOR der Verschiebung (bei höchstens einem Schritt von z selbst)
+  let rad0 = max(rr, 1.0e-30); let th0 = sin(sinusWinkel(dv) * 2.0 + 1.5707963) * 3.1415927 + sin(rad0 * 4.0) * 2.0 / rad0;   // bei höchstens einem Schritt: geschwungener Winkel
+  zaehler += select(sinusXor(th0, rad0, X.z, acc), sinusXor(sinusWinkel(dv), rr, X.z, acc), nn > 1.0);   // XOR in Polarkoordinaten
+  let w = zaehler * 6.2831853 / max(A.x, 1.0e-6);
+  let s3 = vec3f(0.5) + 0.5 * sin(w * Pk.xyz + O.xyz + O.w + (G.xyz + G.w) * b);
+  return select(floor(s3 * 255.0 + 0.5) / 255.0, vec3f(0.0), X.w > 1.5 && nn >= acc * X.w);   // mit Rekursion: innen erst ab maxIter · Stufen, schwarz
+}
 fn texStapelWert(i: u32, v: f32, kw: f32) -> f32 { return select(select(v, kanteHell(kw, C.stapelW[i].x), u32(C.stapel[3u * i].x) == 11u), gEnt, u32(C.stapel[3u * i].x) == 27u); }   // Kanten und Entropie entstehen erst im Farbpass   // Kanten entstehen erst im Farbpass (kw, einmal je Probe), alle anderen Werte kommen gepackt aus dem Fraktal-Shader
 fn texWerte(a: u32, b: u32, kw: f32) -> vec4f {   // die Werte der vier Plätze aus den gepackten 16-Bit-Hälften (a: Platz 1 und 2, b: Platz 3 und 4)
   let v = unpack2x16unorm(a); let w = select(vec2f(0.0), unpack2x16unorm(b), C.tex2.z > 2.5);
@@ -7222,6 +7334,7 @@ fn sampleColor(px: vec4u, xy: vec2i, k: i32) -> vec3f {
     if (zwei) { col = farbe2(vec2f(1.0), p, false); } else { col = pal(p.x + p.y); }
     if (za == 2u || zb == 2u) { col = col * paarWeich(md.x); }                     // Helligkeit: am Anker unverändert, sonst dunkler oder heller
     if (za == 3u || zb == 3u) { col = saettigungAn(col, md.y); }   // Sättigung: am Anker unverändert, darunter grauer, darüber bunter
+  } else if (u32(C.misc.w) == 40u) { col = select(sinusFarbe(px.y), sinusFarbeVoll(px), C.sinus[7].x > 0.5);   // Sinuswellen aus Schrittzahl und Endrichtung, nur außen
   } else if (u32(C.misc.w) == 19u || u32(C.misc.w) == 20u || u32(C.misc.w) == 26u || u32(C.misc.w) == 35u) {   // 35: der eigene Sammler wie das Streifenmittel   // Streifen-, Dreiecksmittel, Gesamtdrehung: nur außen; Standarddichte 1,2 bzw. 1,5 Umläufe
     col = pal((bitcast<f32>(px.y) - ankerS()) * select(37.5, 30.0, u32(C.misc.w) != 20u) * C.misc.x + C.misc.y + vz);   // Plätze mit Ziel Palettenposition verschieben die Stelle
   } else {
@@ -7913,9 +8026,9 @@ class GpuRenderer {
     this.pipeCache = new Map([['0|0|0|0|0|2|1|0|0|0', this.pipeF]]);   // Schlüssel wie in _pipeVariant: die Standardvariante ist schon gebaut
     this._prewarm();
     const U = GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST;
-    this.ubF = d.createBuffer({ size: 672, usage: U });   // FP samt texP (6 vec4), texW (4 vec4), Inversionsmitte, Ebenenabbildung, texQ (6 vec4), die zweite Zeile der Formel B und die Lage der Exportkachel
+    this.ubF = d.createBuffer({ size: 688, usage: U });   // FP samt texP (6 vec4), texW (4 vec4), Inversionsmitte, Ebenenabbildung, texQ (6 vec4), die zweite Zeile der Formel B und die Lage der Exportkachel
     this.ubU = d.createBuffer({ size: 16, usage: U });
-    this.ubC = d.createBuffer({ size: 2256, usage: U });
+    this.ubC = d.createBuffer({ size: 2384, usage: U });
     this.bglK = d.createBindGroupLayout({ entries: [{ binding: 0, visibility: F, buffer: { type: 'uniform' } }].concat([1, 2, 3, 4, 5, 6].map(b => ({ binding: b, visibility: F, texture: { sampleType: 'unfilterable-float', viewDimension: '2d' } }))) });   // Verbund: bis zu sechs Ebenen
     this.pipeK = await d.createRenderPipelineAsync({ layout: d.createPipelineLayout({ bindGroupLayouts: [this.bglK] }), vertex: { module: mK, entryPoint: 'vs' }, fragment: { module: mK, entryPoint: 'fs', targets: [{ format: this.format }] }, primitive: { topology: 'triangle-list' } });
     this.ubK = d.createBuffer({ size: 208, usage: U });
@@ -8184,7 +8297,7 @@ class GpuRenderer {
     return mod;
   }
   renderFractal(target, rects, p, layer = 0) {
-    const buf = new ArrayBuffer(672), f = new Float32Array(buf), u = new Uint32Array(buf);
+    const buf = new ArrayBuffer(688), f = new Float32Array(buf), u = new Uint32Array(buf);
     f[0] = p.dcScale[0]; f[1] = p.dcScale[1]; f[2] = p.dcOffset[0]; f[3] = p.dcOffset[1];
     u[4] = p.maxIter; u[5] = p.lenA; u[6] = p.baseB; u[7] = p.lenB; u[8] = p.isJulia; u[9] = TW; f[11] = p.ps;
     u[13] = p.invert; f[10] = p.rotC === undefined ? 1 : p.rotC; f[12] = p.rotS || 0;   // Drehung der Ansicht
@@ -8195,7 +8308,7 @@ class GpuRenderer {
     if (p.texP) f.set(p.texP, 44); if (p.texW) f.set(p.texW, 68); if (p.texQ) f.set(p.texQ, 116);   // eigene Regler der Texturarten: je Sammler, je Platz; Zusatzwerte je Sammler (Rosette, Auswertung der Fallen)
     f[84] = p.invM ? p.invM[0] : 0; f[85] = p.invM ? p.invM[1] : 0; f[86] = p.biomorph || 0;   // Inversionsmitte; Biomorph-Nachtest
     u[87] = p.abb || 0; f[88] = p.abbRef ? p.abbRef[0] : 0; f[89] = p.abbRef ? p.abbRef[1] : 0; f[90] = p.richtungY || 0; f[91] = p.abkl === undefined ? 1 : p.abkl; if (p.param2) { f[92] = p.param2[0]; f[93] = p.param2[1]; f[94] = p.param2[2]; f[95] = p.param2[3] || 0; } f[96] = p.faltung || 0; f[97] = p.gedaechtnis || 0; f[98] = p.startC ? 1 : 0; f[99] = p.eigenAgg || 0;   // opt: Faltung, Gedächtnis, Start im Bildpunkt, Zusammenfassungen der eigenen Sammler
-    f[100] = p.fn || 0; f[101] = p.formelB || 0; f[102] = p.paramB || 0; f[103] = p.nzAnzahl || 0; if (p.param2B) f.set(p.param2B, 140); if (p.origin) { f[144] = p.origin[0]; f[145] = p.origin[1]; } f[146] = p.streifenForm || 0; f[147] = p.wendeN || 0; if (p.wende) f.set(p.wende, 148); if (p.abbP) f.set(p.abbP, 164); if (p.wurzeln) f.set(p.wurzeln, 104);   // opt2 und Nullstellen   // Ebenenabbildung und ihr Referenzpunkt
+    f[100] = p.fn || 0; f[101] = p.formelB || 0; f[102] = p.paramB || 0; f[103] = p.nzAnzahl || 0; if (p.param2B) f.set(p.param2B, 140); if (p.origin) { f[144] = p.origin[0]; f[145] = p.origin[1]; } f[146] = p.streifenForm || 0; f[147] = p.wendeN || 0; if (p.wende) f.set(p.wende, 148); if (p.abbP) f.set(p.abbP, 164); if (p.sinusP) f.set(p.sinusP, 168); if (p.wurzeln) f.set(p.wurzeln, 104);   // opt2 und Nullstellen   // Ebenenabbildung und ihr Referenzpunkt
     this.device.queue.writeBuffer(this.ubF, 0, buf);
     const enc = this.device.createCommandEncoder();
     const pass = enc.beginRenderPass({ colorAttachments: [{
@@ -8227,10 +8340,10 @@ class GpuRenderer {
     this.clearRefine();
   }
   _writeCP(cp) {
-    const f = new Float32Array(564);   // CP samt stapelW, Nachbearbeitung, Masken, Texturmasken, opt, Palettenkurve und der gerechneten Fläche einer Exportkachel
+    const f = new Float32Array(596);   // CP samt stapelW, Nachbearbeitung, Masken, Texturmasken, opt, Palettenkurve und der gerechneten Fläche einer Exportkachel
     if (cp.gueltig) { f[520] = cp.gueltig[0]; f[521] = cp.gueltig[1]; }
-    if (cp.licht) f.set(cp.licht, 524);   // Lichter, feste Neigung, Lichtmodell (10 vec4)
-    f[500] = cp.texInnen || 0; f[501] = cp.texVerbund || 0; f[502] = cp.texVerbundErster || 0; f[503] = cp.leuchtErster || 0; if (cp.logmap) { f[504] = cp.logmap[0]; f[505] = cp.logmap[1]; } f[506] = cp.logStufen || LOG_STUFEN.def; f[507] = cp.entropie || 0; if (cp.material) f.set(cp.material, 508); if (cp.material2) f.set(cp.material2, 512); f.set(cp.palKurve || [1, 0, 0, 0], 516);   // ohne Angabe die gleichmäßige Kurve, wie im WebGL-Renderer   // Stufen des Logarithmus   // opt: Texturen auch innen; Fallenverbund (Weichheit, erster Fallenplatz); Leuchten-Ebene (1-basiert)
+    if (cp.licht) f.set(cp.licht, 524); if (cp.sinus) f.set(cp.sinus, 564);   // Sinuswellen (8 vec4)   // Lichter, feste Neigung, Lichtmodell (10 vec4)
+    f[500] = cp.texInnen || 0; f[501] = cp.texVerbund || 0; f[502] = cp.texVerbundErster || 0; f[503] = cp.leuchtErster || 0; if (cp.logmap) { f[504] = cp.logmap[0]; f[505] = cp.logmap[1]; } f[506] = cp.logStufen || LOG_STUFEN.def; f[507] = cp.entropie || 0; if (cp.material) f.set(cp.material, 508); if (cp.material2) f.set(cp.material2, 512); f.set(cp.palKurve || [1, 0, 0, 0], 516);   // ohne Angabe die gleichmäßige Kurve   // Stufen des Logarithmus   // opt: Texturen auch innen; Fallenverbund (Weichheit, erster Fallenplatz); Leuchten-Ebene (1-basiert)
     f.set(cp.a, 0); f.set(cp.b, 4); f.set(cp.c, 8); f.set(cp.d, 12);
     f[16] = cp.density; f[17] = cp.offset; f[18] = cp.layers; f[19] = cp.mapping;
     f[20] = cp.glowMode; f[21] = cp.glowWidth; f[22] = cp.interior; f[23] = cp.histL;
@@ -8350,7 +8463,7 @@ class GpuRenderer {
     return this._exportLesen(w, h);
   }
   _pipeVoll(tm) {   // die Fassung „voll“ des Farbpasses (tm: mit Texturmasken) und die Nachbearbeitung: beim ersten Gebrauch nebenher übersetzt; bis dahin false
-    // (wie beim WebGL-Renderer: solange erscheint die Farbe ohne Ebenen und Masken, die Statuszeile sagt es; onBereit stößt danach das Umfärben an)
+    // (solange erscheint die Farbe ohne Ebenen und Masken, die Statuszeile sagt es; onBereit stößt danach das Umfärben an)
     if ((tm ? this.pipeV1 : this.pipeV0) && this.pipeP && this.pipeL) return true;
     const key = tm ? 'vollVersprechen1' : 'vollVersprechen0';
     if (!this[key]) {
@@ -8694,7 +8807,7 @@ function standardZustand() {
   pal2: {}, pal2Eigen: null,                               // zweidimensionale Palette je Färbung mit zwei Werten (siehe quelle2), Entwurf bzw. Schema aus dem Link
   palKurve: PAL_KURVE.kurve.def, palKurveMitte: PAL_KURVE.mitte.def,
   palZwei: 0, palZweiEigen: null, palPfadBeginn: PAL_PFAD.beginn.def, palPfadSpanne: PAL_PFAD.spanne.def,
-  mapping: 2, logStufen: LOG_STUFEN.def, logDichteMit: false, material: 0, glanz: MATERIAL.glanz.def, reflexion: MATERIAL.reflexion.def, himmelLage: MATERIAL.lage.def, himmelSpanne: MATERIAL.spanne.def, neigung: MATERIAL.neigung.def, schatten: false, schattenLaenge: MATERIAL.laenge.def, festeNeigung: false, neigungWinkel: LICHT.winkel.def, lichter: [lichtNeu()], umgebung: LICHT.umgebung.def, lichtModell: 0, glowMode: 0, glowWidth: 1.5, interior: 0, innenFarbe: '#000000', gestuft: false, lyGrenze: 2, fluchtForm: 0, fluchtRadius: 0, dreh: 0, spirale: SPIRALE.def, texInnen: false, texVerbund: 0, invM: [0, 0], biomorph: false, abb: 0, abklingen: 0, logmap: 0, domSchritt: 0, streifen: STREIFEN.def, streifenForm: 0, vorlauf: VORLAUF.def, gewicht: GEWICHT.def, abzug: ABZUG.def, nach: [], textur: 0, texWerte: [0, 0, 0, 0], tex2Werte: [0, 0, 0, 0], tex3Werte: [0, 0, 0, 0], tex4Werte: [0, 0, 0, 0], texStaerke: TEXTUR.staerke.def, texKontrast: TEXTUR.kontrast.def, texMitte: TEXTUR.mitte.def, textur2: 0, tex2Staerke: TEXTUR.staerke.def, tex2Kontrast: TEXTUR.kontrast.def, tex2Mitte: TEXTUR.mitte.def, texHell: '#ffffff', texDunkel: '#000000', tex2Hell: '#ffffff', tex2Dunkel: '#000000', textur3: 0, tex3Staerke: TEXTUR.staerke.def, tex3Kontrast: TEXTUR.kontrast.def, tex3Mitte: TEXTUR.mitte.def, tex3Hell: '#ffffff', tex3Dunkel: '#000000', textur4: 0, tex4Staerke: TEXTUR.staerke.def, tex4Kontrast: TEXTUR.kontrast.def, tex4Mitte: TEXTUR.mitte.def, tex4Hell: '#ffffff', tex4Dunkel: '#000000', texAn: true, tex2An: true, tex3An: true, tex4An: true, paar: PAAR_EIGEN(), kurve: KURVE_STD.map(p => p.slice()), kurveSpann: false, kurveArt: 0, kurveWerte: null,   // Verlaufsart (Standard logarithmisch), Randlinien, Randbreite px, Innen
+  mapping: 2, logStufen: LOG_STUFEN.def, logDichteMit: false, material: 0, glanz: MATERIAL.glanz.def, reflexion: MATERIAL.reflexion.def, himmelLage: MATERIAL.lage.def, himmelSpanne: MATERIAL.spanne.def, neigung: MATERIAL.neigung.def, schatten: false, schattenLaenge: MATERIAL.laenge.def, festeNeigung: false, neigungWinkel: LICHT.winkel.def, lichter: [lichtNeu()], umgebung: LICHT.umgebung.def, lichtModell: 0, glowMode: 0, glowWidth: 1.5, interior: 0, innenFarbe: '#000000', gestuft: false, lyGrenze: 2, fluchtForm: 0, fluchtRadius: 0, dreh: 0, spirale: SPIRALE.def, texInnen: false, texVerbund: 0, invM: [0, 0], biomorph: false, abb: 0, abklingen: 0, logmap: 0, domSchritt: 0, sinus: sinusNeu(), streifen: STREIFEN.def, streifenForm: 0, vorlauf: VORLAUF.def, gewicht: GEWICHT.def, abzug: ABZUG.def, nach: [], textur: 0, texWerte: [0, 0, 0, 0], tex2Werte: [0, 0, 0, 0], tex3Werte: [0, 0, 0, 0], tex4Werte: [0, 0, 0, 0], texStaerke: TEXTUR.staerke.def, texKontrast: TEXTUR.kontrast.def, texMitte: TEXTUR.mitte.def, textur2: 0, tex2Staerke: TEXTUR.staerke.def, tex2Kontrast: TEXTUR.kontrast.def, tex2Mitte: TEXTUR.mitte.def, texHell: '#ffffff', texDunkel: '#000000', tex2Hell: '#ffffff', tex2Dunkel: '#000000', textur3: 0, tex3Staerke: TEXTUR.staerke.def, tex3Kontrast: TEXTUR.kontrast.def, tex3Mitte: TEXTUR.mitte.def, tex3Hell: '#ffffff', tex3Dunkel: '#000000', textur4: 0, tex4Staerke: TEXTUR.staerke.def, tex4Kontrast: TEXTUR.kontrast.def, tex4Mitte: TEXTUR.mitte.def, tex4Hell: '#ffffff', tex4Dunkel: '#000000', texAn: true, tex2An: true, tex3An: true, tex4An: true, paar: PAAR_EIGEN(), kurve: KURVE_STD.map(p => p.slice()), kurveSpann: false, kurveArt: 0, kurveWerte: null,   // Verlaufsart (Standard logarithmisch), Randlinien, Randbreite px, Innen
   colAnchor: null,                                         // Farbanker: Iterationswert, an dem der Dichte-Regler die Farbe hält (null = keiner)
   statAnker: null,                                         // Farbanker des Bahnmittels (Färbungen 19, 20, 22, 23): das Mittel, an dem die Farbe hält (null = keiner)
   eigenF: eigenNeu(), xm: EIGEN_VORGABE.xm, xf: EIGEN_VORGABE.xf,   // eigene Ausdrücke (AUSDRUCK): der Sammler der Färbung, Ebenenabbildung, Formel — Vorgaben wie EIGEN_VORGABE; Paar-Achsen und Texturplätze tragen ihre eigenen
@@ -9357,7 +9470,7 @@ function lyapModus() { return S.family === 'escape' && !wurzelFormel(S.formula) 
 function statModus() {   // Sammler der Färbung: bei Paaren der der ersten Achse (statModus2: der zweiten), sonst der des einwertigen Verfahrens
   if (!(S.family === 'escape' && !FORMULAS[S.formula].seq)) return 0;   // auch über den Wurzelformeln: die Sammler lesen die Bahn aus
   const k = paarKonfig(); if (k) return PAAR_STAT[k.a.wert] || 0;
-  return { 17: 1, 18: 2, 19: 3, 20: 4, 21: 5, 24: 7, 26: 8, 29: 10, 32: 19, 35: 20, 36: 23 }[S.mapping] || 0;
+  return { 17: 1, 18: 2, 19: 3, 20: 4, 21: 5, 24: 7, 26: 8, 29: 10, 32: 19, 35: 20, 36: 23, 40: sinusVoll() ? 28 : 27 }[S.mapping] || 0;
 }
 function statModus2() { const k = paarKonfig(); return k ? PAAR_STAT[k.b.wert] || 0 : 0; }
 function streifenmittelRechnet() { return [statModus(), statModus2()].includes(3) || texArten().includes(1); }   // das Streifenmittel rechnet: als Färbung, Achse eines Paars oder Textur
@@ -9407,15 +9520,15 @@ function eigenOrte() {   // je Sammler-Platz des Shaders (1 … 6, dieselbe Zuor
   return [tex(1), tex(2), tex(3), tex(4), null, null];
 }
 let eigenSchluessel = null, eigenStand = null;
-function eigenShader() {   // die eigenen Ausdrücke als Ersetzungen für die Shader-Quellen (Marke → WGSL, GLSL) oder null; je Stand einmal übersetzt
+function eigenShader() {   // die eigenen Ausdrücke als Ersetzungen für die Shader-Quelle (Marke → WGSL) oder null; je Stand einmal übersetzt
   const orte = eigenOrte(), m = S.abb === 7, f = S.formula === 37;
   if (!orte.some(Boolean) && !m && !f) return null;
   const key = orte.map(o => o ? o.x + '\u0001' + o.s : '').concat([m ? S.xm : '', f ? S.xf : '']).join('\u0002');
   if (key === eigenSchluessel) return eigenStand;
   const ers = [];
-  const stueck = (text, art, marke) => { const r = AUSDRUCK.uebersetze(text, art); if (!r.ok) { console.warn('AUSDRUCK: ' + art + ' ungültig: ' + text); return null; } ers.push([new RegExp('^.*/\\*' + marke + '\\*/.*$', 'm'), r.wgsl, r.glsl]); return r; };
+  const stueck = (text, art, marke) => { const r = AUSDRUCK.uebersetze(text, art); if (!r.ok) { console.warn('AUSDRUCK: ' + art + ' ungültig: ' + text); return null; } ers.push([new RegExp('^.*/\\*' + marke + '\\*/.*$', 'm'), r.wgsl]); return r; };
   orte.forEach((o, k) => { if (!o) return; stueck(o.x, 'wert', 'EIGEN_W' + (k + 1)); if (o.s) stueck(o.s, 'zustand', 'EIGEN_S' + (k + 1)); });
-  if (m) { const r = stueck(S.xm, 'abbild', 'EIGEN_M'); if (r) ers.push([/^.*\/\*EIGEN_MJ\*\/.*$/m, r.jacWgsl, r.jacGlsl]); }
+  if (m) { const r = stueck(S.xm, 'abbild', 'EIGEN_M'); if (r) ers.push([/^.*\/\*EIGEN_MJ\*\/.*$/m, r.jacWgsl]); }
   if (f) stueck(S.xf, 'formel', 'EIGEN_F');
   eigenSchluessel = key; eigenStand = ers.length ? { key, ers } : null;
   return eigenStand;
@@ -9438,7 +9551,7 @@ function statPipeline6() { return paarKonfig() ? texStat(4) : 0; }
 function abstandFaerbung() { return S.mapping === 4 || S.mapping === 6 || S.mapping === 12; }   // Färbungen, die die Abstandsschätzung im y-Kanal brauchen (Abstand, zwei Reliefs)
 function texturZ() { if (!texturAktiv()) return 0; if (statFaerbung()) return 1; return abstandFaerbung() ? 2 : 0; }   // Textur über einer Färbung, die den y-Kanal selbst braucht: die Texturwerte kommen in den z- und w-Kanal
 function texInnenIrgend() { for (let n = 1; n <= TEX_SLOTS; n++) { const t = texSlot(n); if (t.art !== 0 && t.an && (t.wo || TEX_WO_VOR) >= 1) return true; } return false; }   // wirkt irgendein Platz innen?
-function texturBreit() { return !!(texturZ() || texturZahl() >= 3 || (texInnenIrgend() && texturZahl() >= 1) || richtungModus() === 2); }   // braucht die Kanäle z und w: Iterationstextur rgba32uint (auch für Texturen innen)
+function texturBreit() { return !!(texturZ() || texturZahl() >= 3 || (texInnenIrgend() && texturZahl() >= 1) || richtungModus() === 2 || sinusVoll()); }   // braucht die Kanäle z und w: Iterationstextur rgba32uint (auch für Texturen innen und die Sinuswellen mit Zusätzen)
 const FALLEN_ARTEN = [4, 5, 14, 15, 19, 20, 23];   // Texturarten, die Fallen sind: Kreuz, Ursprung, Gitter, Ring, Punkt, Spirale, Rosette
 function verbundK() { return S.texVerbund > 0 && texArten().some(a => FALLEN_ARTEN.includes(a)) ? S.texVerbund : 0; }   // Fallenverbund: Weichheit, 0 = aus (auch ohne Fallen)
 function verbundErster() { if (!verbundK()) return 0; for (let m = 1; m <= texturZahl(); m++) if (FALLEN_ARTEN.includes(texArtAn(m))) return m; return 0; }   // erster Fallenplatz (1-basiert)
@@ -9471,7 +9584,7 @@ function fractalParams(s, maxIter, layer = 0) {
     isJulia: S.mode === 'julia' ? 1 : 0,
     needDE: brauchtAbstand() ? 1 : 0, ps, cycle: cycleOn(maxIter) && !hybridAktiv(), lyap: lyapModus(), winkel: winkelModus(), texP: texWerteSammler(), texW: texWertePlaetze(), texQ: texZusatzSammler(), texInnen: texInnenIrgend() && texturZahl() > 0 ? 1 : 0, verbund: verbundK(), verbundMaske: verbundMaske(), verbundErster: verbundErster(), stat: statPipeline(), stat2: statPipeline2(), stat3: statPipeline3(), stat4: statPipeline4(), stat5: statPipeline5(), stat6: statPipeline6(), ...paarPipeline(), texz: texturZ(), ...texArtenParam(), lyGrenze: S.lyGrenze, streifen: S.streifen, streifenForm: streifenmittelRechnet() ? S.streifenForm : 0, vorlauf: S.vorlauf, gewicht: S.gewicht, fluchtForm: S.fluchtForm, fluchtRadius: S.fluchtRadius || (FORMULAS[S.formula].bail || 0),
     power: potenzEff(), invert: S.invert ? 1 : 0, needInt: brauchtInnen() ? 1 : 0, pRef: [pr[0], pi[0]],
-    ...wendeParams(), abbP: [S.abbM[0], S.abbM[1], S.abbA, S.abbB],   // Wendepunkte, Verzerrung
+    ...wendeParams(), abbP: [S.abbM[0], S.abbM[1], S.abbA, S.abbB], sinusP: [sinusVoll() ? S.sinus.tiefe : 1, 0, 0, 0],   // Wendepunkte, Verzerrung, Rekursion der Sinuswellen
   });
 }
 function seqBits() { let b = 0; for (let i = 0; i < Math.min(32, S.seq.length); i++) if (S.seq[i] === 'B') b |= (1 << i); return b >>> 0; }
@@ -9560,7 +9673,7 @@ function colorParams() {
     innen: [...hexRGB(S.innenFarbe).map(v => v / 255), S.gestuft ? 1 : 0],                                              // eigene Innenfarbe, „gestuft“
     material: reliefFaerbung() ? [S.material, S.glanz, S.reflexion, S.neigung] : [0, 0, 0, 0],                            // Materialmodell des Reliefs (0 = einfach, der bisherige Weg): Glanz, Reflexion, Neigung
     material2: [S.schatten ? 1 : 0, S.schattenLaenge, S.himmelLage, S.himmelSpanne],
-    entropie: texArten().includes(27) ? 1 : 0,   // ein Platz mit Entropie: der Farbpass liest das Umfeld
+    entropie: texArten().includes(27) ? 1 : 0, sinus: S.mapping === 40 ? sinusUniform() : null,   // Sinuswellen   // ein Platz mit Entropie: der Farbpass liest das Umfeld
     licht: lichtUniform(),   // Lichter (ein Licht in der Vorgabe: das feste wie bisher) und feste Neigung des Reliefs                                       // lokale Schatten an, Schattenlänge px; Himmel aus der Palette: Lage, Spanne
     streifen: S.streifen,                                                                                          // Streifen der Winkel-Texturen und Periodengebiete
     formula: S.formula, roots: nullstellenFormel(S.formula) ? S.nz.length : S.power,
@@ -10880,6 +10993,7 @@ function readHash(str) {   // ohne Argument: aus der Adresszeile; sonst aus eine
   const lg = parseFloat(h.get('lg')); S.lyGrenze = Number.isFinite(lg) ? clamp(lg, 0, 1e9) : 2;   // wie LY_GRENZE (die steht erst weiter unten)
   const sp = parseInt(h.get('sp'), 10); S.streifen = Number.isFinite(sp) ? clamp(sp, STREIFEN.min, STREIFEN.max) : STREIFEN.def;
   S.streifenForm = h.get('sf') === '1' ? 1 : 0;   // Form des Streifenmittels: Welle (Vorgabe) oder Abschnitte
+  S.sinus = sinusLesen(h.get('wv'));   // Sinuswellen (Färbung 40); ohne Schlüssel die Vorgaben
   { const dn = parseInt(h.get('dn'), 10); S.domSchritt = Number.isFinite(dn) ? clamp(dn, DOM_SCHRITT.min, DOM_SCHRITT.max) : DOM_SCHRITT.def; }   // Domain Coloring: Schritt
   const sd = parseFloat(h.get('sd')); S.spirale = Number.isFinite(sd) ? clamp(sd, SPIRALE.min, SPIRALE.max) : SPIRALE.def;   // Windung der Spiralfalle (Färbung 32)
   const tvAlt = h.get('ti') === '1';   // alter Link: ein Schalter für alle Plätze — er wird zu „überall“ auf jedem belegten Platz
@@ -11056,6 +11170,7 @@ function buildParamsRoh() {   // die Adresswerte der Ebene in S samt Ansicht und
   if (streifenmittelRechnet() && S.streifenForm === 1) p.set('sf', '1');   // in Abschnitten
   if (S.mapping === 32 && S.spirale !== SPIRALE.def) p.set('sd', String(+gzF(S.spirale, 3)));
   if (S.mapping === 36 && S.domSchritt !== DOM_SCHRITT.def) p.set('dn', String(S.domSchritt));
+  if (S.mapping === 40) p.set('wv', sinusText(S.sinus));   // Sinuswellen: alle Werte in fester Reihenfolge
   if (S.texVerbund > 0) p.set('tv', String(+gzF(S.texVerbund, 2)));   // Fallenverbund
   if (statIrgend() && S.vorlauf !== VORLAUF.def) p.set('sk', String(S.vorlauf));   // Vorlauf bei jeder Bahnstatistik
   if (S.mapping === 31) { const q = (x, ach) => { const t = [x.wert, +gzF(x.faktor, 3), x.abzug, x.klemme ? 1 : 0]; if ((x.ziel || 0) !== PAAR_ZIEL_VOR[ach]) t.push(x.ziel); return t.join(':'); }; p.set('pa', q(S.paar.a, 'a')); p.set('pb', q(S.paar.b, 'b')); if (S.paar.a.wert === 10) eigenSchreiben(p, 'pae', eigenVon(S.paar.a)); if (S.paar.b.wert === 10) eigenSchreiben(p, 'pbe', eigenVon(S.paar.b)); }   // je Wert Wert:Faktor:Abzug:Klemme, das Ziel nur abweichend vom Platz
@@ -11465,7 +11580,8 @@ function syncFarbUI() {   // Bereich Farbe: was je nach Familie, Formel und Fär
   $('gewichtRow').hidden = !(statMittel() || arten.some(a => a >= 1 && a <= 3));   // Gewichtung nur bei den Mitteln
   $('abklingRow').hidden = $('gewichtRow').hidden;   // Abklingen ebenso
   $('spiraleRow').hidden = S.mapping !== 32 || statModus() !== 19;   // Windung nur für die Färbung Spiralfalle (die Textur hat ihre eigenen Regler)
-  $('domSchrittRow').hidden = S.mapping !== 36 || statModus() !== 23;   // Schritt nur fürs Domain Coloring
+  $('domSchrittRow').hidden = S.mapping !== 36 || statModus() !== 23;
+  $('sinusRow').hidden = S.mapping !== 40; if (S.mapping === 40) sinusZeilen();   // Schritt nur fürs Domain Coloring
   $('statTitel').hidden = $('streifenRow').hidden && $('vorlaufRow').hidden && $('gewichtRow').hidden && $('spiraleRow').hidden && $('domSchrittRow').hidden;   // Überschrift nur, wenn darunter etwas steht
   const belegtBis = texturBelegt();   // Stapel: Platz 1 überall, wo eine Textur möglich ist; dahinter die belegten Plätze (auch ausgeschaltete) und ein freier
   $('texTitel').hidden = !texturMoeglich() || belegtBis === 0;
@@ -12912,6 +13028,25 @@ const posZuGrenze = p => {
 function syncLyGrenze() { $('lyGrenze').value = grenzeZuPos(S.lyGrenze); $('lyGrenzeVal').value = S.lyGrenze % 1 ? fmtZahl(S.lyGrenze, S.lyGrenze < 1 ? 2 : 1) : fmtGanz(S.lyGrenze); }
 const setzeGrenze = v => { S.lyGrenze = v; syncLyGrenze(); scheduleHash(); viewChanged(); };   // neu rechnen: die Werte entstehen beim Iterieren
 $('lyGrenze').addEventListener('input', () => setzeGrenze(posZuGrenze(+$('lyGrenze').value)));
+function sinusZeilen() {   // gebaut beim ersten Zeigen und bei anderer Sprache, danach nur die Werte
+  const box = $('sinusRow');
+  if (box.dataset.lang !== LANG) {
+    box.replaceChildren(); box.dataset.lang = LANG;
+    const h = document.createElement('h2'); h.className = 'sec-title'; h.textContent = t('colour.sine-title'); box.append(h);
+    for (const [k, , text] of [...SINUS_FELDER, ...SINUS_MASKEN, ...SINUS_ZUSATZ]) {
+      const z = document.createElement('div'); z.className = 'lbl wertzeile'; const lab = document.createElement('label'); lab.htmlFor = 'sinus_' + k; lab.textContent = t(text);
+      const f = document.createElement('input'); f.id = 'sinus_' + k; f.className = 'val mono wert'; f.type = 'text'; f.inputMode = 'decimal'; f.spellcheck = false; f.autocomplete = 'off';
+      f.addEventListener('change', () => { const mk = SINUS_MASKEN.some(([x]) => x === k); const v = mk ? f.value.trim() : leseZahl(f.value);
+        const zs = SINUS_ZUSATZ.some(([x]) => x === k);   // die Zusätze rechnen im Fraktal-Shader: neu rendern
+        if (mk ? /^[01]{1,24}$/.test(v) : Number.isFinite(v)) { S.sinus[k] = k === 'tiefe' ? clamp(Math.round(v), 1, 16) : v; if (zs) viewChanged(); else { colorDirty = true; requestFrame(); } scheduleHash(); } sinusZeilen(); });
+      z.append(lab, f); box.append(z);
+    }
+    for (const [k, text] of SINUS_SCHALTER) { const lab = document.createElement('label'); lab.className = 'chk'; const cb = document.createElement('input'); cb.type = 'checkbox'; cb.id = 'sinus_' + k;
+      cb.addEventListener('change', () => { S.sinus[k] = cb.checked; colorDirty = true; scheduleHash(); requestFrame(); }); lab.append(cb, ' ' + t(text)); box.append(lab); }
+  }
+  for (const [k] of [...SINUS_FELDER, ...SINUS_MASKEN, ...SINUS_ZUSATZ]) { const f = $('sinus_' + k); if (f && document.activeElement !== f) f.value = String(S.sinus[k]); }
+  for (const k of ['vorher', 'nachher']) $('sinus_' + k).checked = S.sinus[k];
+}
 function syncDomSchritt() { $('domSchritt').value = String(S.domSchritt); $('domSchrittVal').value = String(S.domSchritt); }
 const setzeDomSchritt = v => { S.domSchritt = clamp(Math.round(v), DOM_SCHRITT.min, DOM_SCHRITT.max); syncDomSchritt(); scheduleHash(); viewChanged(); };   // entsteht beim Iterieren
 $('domSchritt').addEventListener('input', () => setzeDomSchritt(+$('domSchritt').value));
@@ -15329,7 +15464,7 @@ async function exportPoster() {
             dcScale: [g.psX, yd ? -g.psY : g.psY],
             maxIter: mi, lenA: orbitLenA, baseB: orbitBaseB, lenB: orbitLenB,
             isJulia: S.mode === 'julia' ? 1 : 0, needDE: brauchtAbstand() ? 1 : 0, ps: g.psX, cycle: cycleOn(mi) && !hybridAktiv(), lyap: lyapModus(), winkel: winkelModus(), texP: texWerteSammler(), texW: texWertePlaetze(), texQ: texZusatzSammler(), texInnen: texInnenIrgend() && texturZahl() > 0 ? 1 : 0, verbund: verbundK(), verbundMaske: verbundMaske(), verbundErster: verbundErster(), stat: statPipeline(), stat2: statPipeline2(), stat3: statPipeline3(), stat4: statPipeline4(), stat5: statPipeline5(), stat6: statPipeline6(), ...paarPipeline(), texz: texturZ(), ...texArtenParam(), lyGrenze: S.lyGrenze, streifen: S.streifen, streifenForm: streifenmittelRechnet() ? S.streifenForm : 0, vorlauf: S.vorlauf, gewicht: S.gewicht, fluchtForm: S.fluchtForm, fluchtRadius: S.fluchtRadius || (FORMULAS[S.formula].bail || 0),
-            power: potenzEff(), invert: S.invert ? 1 : 0, needInt: brauchtInnen() ? 1 : 0, pRef: [g.pr[0], g.pi[0]], ...wendeParams(), abbP: [S.abbM[0], S.abbM[1], S.abbA, S.abbB], rotC: drehCS()[0], rotS: drehCS()[1], invM: S.invM, biomorph: S.biomorph ? 1 : 0, richtungY: richtungModus(), abkl: 1 - S.abklingen, param2: [...S.param2, S.zweig || 0],
+            power: potenzEff(), invert: S.invert ? 1 : 0, needInt: brauchtInnen() ? 1 : 0, pRef: [g.pr[0], g.pi[0]], ...wendeParams(), abbP: [S.abbM[0], S.abbM[1], S.abbA, S.abbB], sinusP: [sinusVoll() ? S.sinus.tiefe : 1, 0, 0, 0], rotC: drehCS()[0], rotS: drehCS()[1], invM: S.invM, biomorph: S.biomorph ? 1 : 0, richtungY: richtungModus(), abkl: 1 - S.abklingen, param2: [...S.param2, S.zweig || 0],
           }, directParams(g.pr, g.pi), blaParams());
             const params = offsK.map(([ox, oy]) => Object.assign({}, base, {   // ein Parametersatz je Probenebene
             dcOffset: drehOffset((ox - Wp / 2) * g.psX, yd ? (Hp / 2 - oy) * g.psY : (oy - Hp / 2) * g.psY, [g.shift[0] - g.dx, g.shift[1] - g.dy]),   // die Bildecke, für alle Kacheln gleich: gedreht wie am Bildschirm; der Rahmenversatz dx, dy liegt schon in der Ebene

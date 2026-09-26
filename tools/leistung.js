@@ -1,4 +1,4 @@
-// Leistungsmessung: feste Szenen in Headless-Chrome rendern (WebGPU, auf Wunsch WebGL 2) und die Zeiten nehmen, die
+// Leistungsmessung: feste Szenen in Headless-Chrome rendern (WebGPU) und die Zeiten nehmen, die
 // die App selbst stoppt – renderMs (Ebene 0 fertig) und refineMs (Glättung fertig). Mehrere Stände aus der
 // Git-Historie laufen gegen dieselben Szenen; jeder Stand liegt in einem eigenen Verzeichnis hinter einem eigenen Port,
 // alle Stände laufen im selben Chrome, Szene für Szene im Wechsel, damit Aufwärmen und Drift alle gleich treffen.
@@ -48,8 +48,6 @@ const SZENEN = [
   { name: 'dreieck',  was: 'Dreiecksmittel (Bahnstatistik), Zoom 10⁶',        hash: `mode=mandel&${ORT}&z=1e6&it=1000&map=20` },
   { name: 'zweid',    was: 'Bahnfalle Kreuz, zwei Werte (2D-Palette), Zoom 10⁶', hash: `mode=mandel&${ORT}&z=1e6&it=1000&map=18` },
   { name: 'glaettung', was: 'Startbild mit Raster-Glättung 2 × 2',            hash: '', ls: { 'fractal.aa': '2', 'fractal.aamode': 'grid' } },
-  { name: 'webgl',    was: 'Startbild mit WebGL 2',                           hash: '', ls: { 'fractal.renderer': 'webgl' } },
-  { name: 'webgl-zoom', was: 'Zoom 10⁶ mit WebGL 2',                          hash: `mode=mandel&${ORT}&z=1e6&it=2000`, ls: { 'fractal.renderer': 'webgl' } },
   { name: 'textur',   was: 'drei gestapelte Texturen über Streifenmittel',    hash: `mode=mandel&${ORT}&z=1e6&it=1000&map=19&tx=1&ts=0.4&tk=1.5&t2=2&t3=3`, nurNeu: ['map=19', 'tx=1', 't2=2', 't3=3'] },
   { name: 'paar',     was: 'Paar Drehung + Fluchtzeit (Färbung 30)',          hash: `mode=mandel&${ORT}&z=1e6&it=1000&map=30`, nurNeu: ['map=30'] },
 ];
@@ -183,7 +181,7 @@ async function main() {
   }
 
   // Aufwärmen: einmal das Startbild jedes Stands, damit GPU, Chrome und der erste Gerätezugriff je Herkunft hinter uns liegen
-  for (const st of staende) { await laden(st, SZENEN[0]); const w = SZENEN.find(x => x.name === 'webgl'); if (w) { try { await laden(st, w); } catch (e) { /* ohne WebGL: egal */ } } }   // auch WebGL je Stand: die erste Nutzung im Prozess kostet Sekunden und träfe sonst nur den ersten Stand
+  for (const st of staende) await laden(st, SZENEN[0]);
   const ergebnis = { datum: new Date().toISOString(), rechner: os.hostname(), cpu: os.cpus()[0]?.model, fenster: BREITE + '×' + HOEHE, runden: RUNDEN, warm: WARM, staende: staende.map(s => s.name), szenen: [] };
   for (const szene of gewaehlt) {
     const zeile = { name: szene.name, was: szene.was, hash: szene.hash, staende: {} };

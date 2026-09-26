@@ -1,6 +1,6 @@
 # Fractal Renderer
 
-A fractal explorer that runs entirely in the browser, on the GPU via WebGPU with a fallback to WebGL 2.
+A fractal explorer that runs entirely in the browser, on the GPU via WebGPU.
 
 Live: <https://fractalrenderer.com>
 
@@ -9,7 +9,7 @@ coding agent. It can probably only be extended the same way, agentically.
 
 ## Why one big file works
 
-Everything that runs in the browser lives in `index.html`: markup, styles, script, the WGSL and GLSL
+Everything that runs in the browser lives in `index.html`: markup, styles, script, the WGSL
 shaders and the texts of the subpages, about 8,000 lines. A human developer would not organise code
 this way and would split it into many files and modules. An AI agent, however, works well with this
 structure, for three reasons:

@@ -1,5 +1,5 @@
 // Eigene Ausdrücke: die Formelsprache (AUSDRUCK), die eigene Formel (37), der eigene Sammler je Stelle (Färbung 35, Paarwert 10
-// je Achse, Texturart 22 je Platz) und die eigene Ebenenabbildung (7) — Eingabefelder, Anzeige, Fehler, Link, Bild, WebGL 2.
+// je Achse, Texturart 22 je Platz) und die eigene Ebenenabbildung (7) — Eingabefelder, Anzeige, Fehler, Link, Bild.
 import { IMAGE_REGION } from '../support/commands';
 
 describe('Eigene Ausdrücke', () => {
