@@ -47,7 +47,7 @@ describe('Ebene: Verzerrungen, Parameterebenen, Wendepunkte', () => {
     const S = 'mode=mandel&re=-0.7453&im=0.1127&z=300&it=800';
     cy.visitApp(S); cy.shotStats('wp-ohne').then(ohne => {
       cy.get('#wendeSetzen').click({ force: true }); cy.waitRender();
-      cy.expectHash('wp', '-0.7453,0.1127');   // exakt und kurz: die Koordinaten wandern nicht
+      cy.expectHash('wp', '-0.7453,0.1127,3.0000e+2');   // exakt und kurz; dazu der Zoom davor, damit das Entfernen genau zurückfindet
       cy.shotStats('wp-mit').then(mit => {
         anders(ohne, mit, 'gefaltet');
         cy.location('hash').then(h => { cy.visitApp(h.slice(1)); cy.shotStats('wp-link').then(l => gleich(mit, l, 'derselbe Link, dasselbe Bild')); });

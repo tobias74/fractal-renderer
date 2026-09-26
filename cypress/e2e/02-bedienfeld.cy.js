@@ -66,7 +66,7 @@ describe('Bedienfeld: Schublade und Bereichsleiste am PC', () => {
   it('kein Bereich läuft weit über das Bedienfeld hinaus', () => {
     for (const p of ['motiv', 'farbe', 'texturen', 'palette', 'qualitaet', 'ebenen', 'nach', 'technik']) {
       cy.get('#rail button[data-pane="' + p + '"]').click();
-      const spiel = p === 'motiv' ? 440 : 180;   // Motiv: „Weitere Einstellungen“ steht immer offen (gewollt), dafür rollt der Bereich
+      const spiel = p === 'motiv' ? 520 : 180;   // seit 26.09.2026 mit der Zeile „Wendepunkte“   // Motiv: „Weitere Einstellungen“ steht immer offen (gewollt), dafür rollt der Bereich
       cy.get('#panelBody').should($b => expect($b[0].scrollHeight, p + ' passt').to.be.at.most($b[0].clientHeight + spiel));
     }
   });

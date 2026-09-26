@@ -17,7 +17,7 @@ describe('Ziele der Texturplätze: Farbton, Glühen und Deckkraft', () => {
   it('die Auswahl ist hierarchisch: Farbton immer, Glühen nur mit Kantenlinien, Deckkraft nur ab der zweiten Ebene', () => {
     cy.visitApp(KANTE);                                     // eine Ebene, keine Kantenlinien
     cy.pane('texturen');
-    cy.get('#texZiel1 option').should('have.length', 9);
+    cy.get('#texZiel1 option').should('have.length', 10);
     cy.get('#texZiel1 option[value="5"]').should('have.text', 'Farbton');
     cy.get('#texZiel1 option[value="6"]').should('have.text', 'Glühen');
     cy.get('#texZiel1 option[value="7"]').should('have.text', 'Deckkraft der Ebene');

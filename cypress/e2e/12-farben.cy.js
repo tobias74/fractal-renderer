@@ -1078,7 +1078,7 @@ describe('Färbungen nach Bahnstatistik', () => {
       cy.get('#texWerteRow').should('have.attr', 'hidden'); cy.get('#tex2WerteRow').should('not.have.attr', 'hidden');
       cy.get('#texW2_0').should('have.value', '0.3'); cy.get('#texW2_1').should('have.value', '-0.2');
       cy.expectHash('t2q', '0.3:-0.2');
-      cy.get('#tex2Werte input[type=range]').should('have.length', 2);
+      cy.get('#tex2Werte input[type=range]').should('have.length', 3);   // x, y und die Norm
       cy.pickOption('textur', '19');   // andere Art auf Platz 1: ihre Regler mit Vorgaben, nichts im Link
       cy.get('#texWerteRow').should('not.have.attr', 'hidden'); cy.get('#texW1_0').should('have.value', '0');
       cy.expectHash('tq', null);
