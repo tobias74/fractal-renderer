@@ -84,8 +84,8 @@ describe('Färbungen, Texturen, Innen, Zuordnungen, Mischmodi', () => {
     bild(T, 'aq-t-ohne').then(ohne => bild(T + '&tx=28&ts=1', 'aq-t-mit').then(mit => gleich(ohne, mit, 'neutral bei anderen Formeln')));
   });
   it('Sinuswellen (Färbung 40): alle Werte im Link, Zeilen sichtbar, anders als ohne; Masken und Schalter kommen zurück', () => {
-    const B = 'mode=mandel&re=0.25058891151424&im=-0.00002167715558&z=5.00853e11&it=2000&ff=7&fr=12';
-    const W = '128,93.0969787786799,1,1,-0.64159,0.87841,1.63841,0.23841,-0.92159,0.07841,0,0.19841,-1.064756629746322,1.0144342202718306,1.0066121384021123,11100,01110,00111,3';
+    const B = 'mode=mandel&re=-0.7453&im=0.1127&z=300&it=2000';
+    const W = '96,5,1,1,0.3,1.2,2.4,0,0.5,-0.5,0.8,0,1,1.1,0.9,11100,01110,00111,3';
     bild(B + '&map=0', 'sw-linear').then(l => bild(B + '&map=40&wv=' + W, 'sw-sinus').then(sw => {
       cy.expectHash('wv', W); cy.rowShown('sinusRow'); anders(l, sw, 'Sinuswellen');
       cy.get('#sinus_mG').should('have.value', '01110'); cy.get('#sinus_nachher').should('be.checked');
@@ -93,7 +93,7 @@ describe('Färbungen, Texturen, Innen, Zuordnungen, Mischmodi', () => {
     cy.visitApp(B + '&map=40'); cy.expectHash('wv', '64,0,1,0,0,2.0944,4.1888,0,0,0,0,0,1,1,1,1,1,1,0');   // die eigenen Vorgaben: ein Regenbogen ohne Sprünge
   });
   it('Sinuswellen, Zusätze: Verschiebung, XOR, polar, Rekursion stehen im Link und färben anders; ohne sie bleibt der Link kurz', () => {
-    const B = 'mode=mandel&re=0.25058891151424&im=-0.00002167715558&z=5.00853e11&it=2000&ff=7&fr=12&map=40&wv=128,93.0969787786799,1,1,-0.64159,0.87841,1.63841,0.23841,-0.92159,0.07841,0,0.19841,-1.064756629746322,1.0144342202718306,1.0066121384021123,11100,01110,00111,3';
+    const B = 'mode=mandel&re=-0.7453&im=0.1127&z=300&it=2000&map=40&wv=96,5,1,1,0.3,1.2,2.4,0,0.5,-0.5,0.8,0,1,1.1,0.9,11100,01110,00111,3';
     bild(B, 'swz-ohne').then(ohne => {
       for (const z of ['0.5,0,0,1', '0,0.02,0,1', '0,0,0.02,1', '0,0,0,3']) bild(B + ',' + z, 'swz-' + z).then(m => { cy.expectHash('wv', v => expect(v.endsWith(',3,' + z), 'Zusätze im Link').to.be.true); anders(ohne, m, 'Zusatz ' + z); });
       bild(B + ',0,0,0,1', 'swz-null').then(m => { cy.location('hash').should('not.include', '00111%2C3%2C'); gleich(ohne, m, 'Zusätze auf der Vorgabe: dasselbe Bild', 0.01); });

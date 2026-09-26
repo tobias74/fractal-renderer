@@ -3450,7 +3450,7 @@ const TEXTE = {
   'palette.aurora': { de: 'Aurora', en: 'Aurora' },
   'palette.bands': { de: 'Bänder', en: 'Bands' },
   'palette.binary-decomposition': { de: 'Binärzerlegung', en: 'Binary decomposition' },
-  'palette.bordeaux': { de: 'Weinrot', en: 'Wine red' },   // Kennung bleibt für alte Links; der Name ist keine Ursprungsbezeichnung
+  'palette.weinrot': { de: 'Weinrot', en: 'Wine red' },
   'palette.city-lights': { de: 'Stadtlichter', en: 'City lights' },
   'palette.classic': { de: 'Klassisch', en: 'Classic' },
   'palette.cobalt': { de: 'Kobalt', en: 'Cobalt' },
@@ -3475,7 +3475,7 @@ const TEXTE = {
   'palette.patina': { de: 'Patina', en: 'Patina' },
   'palette.rose-quartz': { de: 'Rosenquarz', en: 'Rose quartz' },
   'palette.peach': { de: 'Pfirsich', en: 'Peach' },
-  'palette.champagne': { de: 'Perlwein', en: 'Sparkling wine' },   // ebenso
+  'palette.perlwein': { de: 'Perlwein', en: 'Sparkling wine' },
   'palette.satin': { de: 'Satin', en: 'Satin' },
   'palette.lilac': { de: 'Flieder', en: 'Lilac' },
   'palette.glacier': { de: 'Gletscher', en: 'Glacier' },
@@ -4770,7 +4770,7 @@ const PALETTES = [
   verlauf('gold-leaf', 'palette.gold-leaf',     '7a5a1e@.09 c99a3c@.19 f3d27a@.26 fff3c8@.3 e8c25e@.37 a07424@.47 3b2a10@.6 0d0a06@.73 070605@.82 2a1d0c@.95'),
   verlauf('embers', 'palette.embers',      '8f1408@.05 e0490f@.15 ffa21f@.23 ffe38a@.29 fff1c9@.35 ff8a1a@.43 b3260b@.53 3d0606@.65 050102@.8 3a0508@.93'),
   verlauf('afterglow', 'palette.afterglow',      '8e2f6e@.03 e0525f@.11 ff8f5a@.18 ffd08a@.25 fff2c4@.3 ffc07a@.37 f06d5b@.45 7a2b66@.55 2a1650@.67 150f3a@.8 3d1f63@.93'),
-  verlauf('bordeaux', 'palette.bordeaux',      'e8a0a8@.05 fff0e6@.11 d9b36b@.17 7a3a1e@.23 2a0a14@.29 3a0e1e@.39 5a1830@.55 671b37@.69 6b1d3a@.8 9e3552@.93'),
+  verlauf('weinrot', 'palette.weinrot',        'e8a0a8@.05 fff0e6@.11 d9b36b@.17 7a3a1e@.23 2a0a14@.29 3a0e1e@.39 5a1830@.55 671b37@.69 6b1d3a@.8 9e3552@.93'),
   verlauf('art-nouveau', 'palette.art-nouveau',    '6fb8a8@.03 efe3b8@.11 d4a73a@.17 8a5a1c@.23 2a1d10@.28 0e2a30@.37 173f45@.55 1c5157@.69 1f5a5e@.8 2f7f7a@.93'),
   verlauf('patina', 'palette.patina',        '3fa58f@.05 9fe0c8@.15 f0e6cf@.21 e0a070@.27 b8652e@.37 6e3316@.47 2a150c@.6 10110d@.72 0f1a17@.8 1e4d44@.93'),   // Kupfer und Grünspan
   verlauf('aurora', 'palette.aurora',        '0fa37a@.05 6dfca6@.13 c9ffe0@.19 3fd0c8@.25 5a6cff@.31 9b4dff@.38 5b2aa8@.48 24124f@.59 0a0d24@.7 040a14@.8 06343a@.93'),
@@ -4786,7 +4786,7 @@ const PALETTES = [
   // 25.09.2026: zwanzig weitere, erst sieben auf hellem, dann dreizehn auf dunklem Grund (Neonpink, Purpur, Lila; warme Haut- und Samttöne)
   verlauf('rose-quartz', 'palette.rose-quartz', 'c2577a@.04 7a2346@.12 3a0f24@.18 d9869f@.25 f7d3dc@.34 fbe8ec@.5 f6dde3@.7 fceff1@.82 e8b8c6@.95'),
   verlauf('peach', 'palette.peach', 'e0795a@.04 a3402e@.12 4a1a12@.18 f0a585@.25 fcdcc8@.35 fff0e6@.5 fbe4d6@.7 fff5ee@.82 f2c2a8@.95'),
-  verlauf('champagne', 'palette.champagne', 'b88a3e@.05 6e4a18@.13 2e1f0a@.19 d9b777@.26 f3e3bf@.36 fbf4e3@.5 f7ecd4@.7 fdf8ee@.82 e6d2a6@.95'),
+  verlauf('perlwein', 'palette.perlwein',   'b88a3e@.05 6e4a18@.13 2e1f0a@.19 d9b777@.26 f3e3bf@.36 fbf4e3@.5 f7ecd4@.7 fdf8ee@.82 e6d2a6@.95'),
   verlauf('satin', 'palette.satin', '9c5aa8@.05 5a2a6e@.13 26102e@.19 c98ad6@.26 f0d6f2@.36 f9eef9@.5 f3e0f0@.7 fbf4fb@.82 dcb6e0@.95'),
   verlauf('lilac', 'palette.lilac', '7a5ab8@.05 3e2a78@.13 1a1036@.19 a78ce0@.26 dcd0f5@.36 f2eefb@.5 e8e0f8@.7 f7f4fd@.82 c8b8ec@.95'),
   verlauf('glacier', 'palette.glacier', '3f8fb8@.05 1a4f70@.13 0a2233@.19 7cc2dd@.26 cdeaf3@.36 f0f9fc@.5 e2f2f7@.7 f7fcfe@.82 b0dcea@.95'),
@@ -4958,7 +4958,7 @@ const PALETTES = [
 ];
 // Alte Links nannten die Stelle in der Liste: diese Reihenfolge galt damals und bleibt so, nur für solche Links
 const PAL_ALT = ['classic', 'mother-of-pearl', 'ink', 'cobalt', 'atoll', 'lavender', 'woodcut', 'deep-sea', 'gold-leaf', 'embers', 'afterglow',
-  'bordeaux', 'art-nouveau', 'patina', 'aurora', 'city-lights', 'neon-sign', 'tropical-bird', 'silver'];
+  'weinrot', 'art-nouveau', 'patina', 'aurora', 'city-lights', 'neon-sign', 'tropical-bird', 'silver'];
 function palNr(k) { return PALETTES.findIndex(p => p.kennung === k); }   // −1: unbekannt oder entfernt
 // Gruppen und Reihenfolge im Menü; die Werte bleiben die Nummern in PALETTES, jede kommt genau einmal vor
 const PAL_GRUPPEN = [
