@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adreno branch self-test</title>
+<style>
+  :root { --bg: #f6f7f9; --fg: #1b1f24; --muted: #5b6470; --line: #d5d9e0; --ok: #1d7a46; --bad: #b3261e; --card: #ffffff; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #14171b; --fg: #e6e9ee; --muted: #9aa3ae; --line: #2c3239; --ok: #5cc98a; --bad: #ff8a80; --card: #1b1f24; } }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 900px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p { margin: 6px 0; color: var(--muted); }
+  pre, code { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 13px; }
+  pre { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 10px; overflow-x: auto; white-space: pre-wrap; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  .ok { color: var(--ok); font-weight: 600; } .bad { color: var(--bad); font-weight: 600; }
+  .bilder { display: flex; flex-wrap: wrap; gap: 12px; margin: 8px 0 20px; }
+  figure { margin: 0; } figcaption { font-size: 12px; color: var(--muted); }
+  canvas { width: 192px; height: 192px; image-rendering: pixelated; border: 1px solid var(--line); display: block; }
+  button { font: inherit; padding: 8px 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--fg); cursor: pointer; }
+  button:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Adreno branch self-test (WebGPU)</h1>
+<p>Each case renders the same colour function twice into a 256 × 256 texture: once written with <code>if</code> / <code>else if</code> chains and early
+  <code>return</code>s (as in the affected application), once branch-free with <code>select</code>. Both must give the same pixels.
+  The input is an <code>rg32uint</code> texture (value, inside bit, a float in the second channel), like the fractal renderer where the bug was seen.</p>
+<pre id="info">Starting …</pre>
+<table><thead><tr><th>Branches</th><th>Mode</th><th>Texture step</th><th>Differing pixels</th><th>Pattern</th><th>Result</th></tr></thead><tbody id="zeilen"></tbody></table>
+<p><button id="kopieren" type="button">Copy results as text</button> <span id="kopiert"></span></p>
+<div id="bilder"></div>
+</main>
+<script>
+const W = 256, H = 256;
+const info = document.getElementById('info'), zeilen = document.getElementById('zeilen'), bilder = document.getElementById('bilder');
+const ergebnis = { adapter: null, userAgent: navigator.userAgent, faelle: [] };
+const f4 = x => x.toFixed(4);
+
+const GEMEINSAM = `
+struct U { mode: u32, tex: u32, a: u32, b: u32 }
+@group(0) @binding(0) var data: texture_2d<u32>;
+@group(0) @binding(1) var<uniform> u: U;
+@vertex fn vs(@builtin(vertex_index) i: u32) -> @builtin(position) vec4f {
+  var p = array<vec2f, 3>(vec2f(-1.0, -1.0), vec2f(3.0, -1.0), vec2f(-1.0, 3.0)); return vec4f(p[i], 0.0, 1.0);
+}
+fn pal(t: f32) -> vec3f { return vec3f(0.5) + 0.5 * cos(6.28318 * (vec3f(t) + vec3f(0.0, 0.33, 0.67))); }
+@fragment fn fs(@builtin(position) pos: vec4f) -> @location(0) vec4f {
+  let px = textureLoad(data, vec2i(pos.xy), 0).xy;
+  return vec4f(clamp(color(px), vec3f(0.0), vec3f(1.0)), 1.0);
+}
+`;
+function zweig(k, N) { return { a: f4(0.01 + 0.07 * k / N), b: f4(0.3 * k / N), c: f4(k / N), th: f4(0.2 + 0.6 * ((k * 37) % N) / N) }; }
+
+// Written with branches: a long else-if chain on a uniform, pixel-dependent assignments inside, the default path in the final else,
+// then pixel-dependent overrides and a helper with early returns (the shape of the affected shader)
+function shaderMitIf(N) {
+  let s = GEMEINSAM + `
+fn helper(v: f32, inside: bool) -> f32 {
+  if (inside) { return 0.0; }
+  if (v < 0.25) { return v * 2.0; }
+  return v;
+}
+fn color(px: vec2u) -> vec3f {
+  let inside = (px.x & 0x80000000u) != 0u;
+  let nu = f32(px.x & 0x03FFFFFFu) * (1.0 / 256.0);
+  let d = bitcast<f32>(px.y);
+  var col = vec3f(0.0);
+`;
+  for (let k = 1; k <= N; k++) { const z = zweig(k, N); s += `  ${k > 1 ? 'else ' : ''}if (u.mode == ${k}u) { col = pal(nu * ${z.a} + d * ${z.b} + ${z.c}); if (d > ${z.th}) { col = col.zyx; } }\n`; }
+  s += `  else { col = pal(nu * 0.05 + 0.1); if (d > 0.5) { col = mix(col, vec3f(1.0), 0.3); } }
+  if (inside) { col = vec3f(0.02, 0.03, 0.05); }
+  if (u.tex != 0u) { col = col * (0.5 + 0.5 * helper(fract(nu * 0.3), inside)); }
+  return col;
+}
+`;
+  return s;
+}
+// The same function branch-free: every side computed, select picks
+function shaderMitSelect(N) {
+  let s = GEMEINSAM + `
+fn helper(v: f32, inside: bool) -> f32 { return select(select(v, v * 2.0, v < 0.25), 0.0, inside); }
+fn color(px: vec2u) -> vec3f {
+  let inside = (px.x & 0x80000000u) != 0u;
+  let nu = f32(px.x & 0x03FFFFFFu) * (1.0 / 256.0);
+  let d = bitcast<f32>(px.y);
+  let c0 = pal(nu * 0.05 + 0.1);
+  var col = select(c0, mix(c0, vec3f(1.0), 0.3), d > 0.5);
+`;
+  for (let k = 1; k <= N; k++) { const z = zweig(k, N); s += `  { let ck = pal(nu * ${z.a} + d * ${z.b} + ${z.c}); col = select(col, select(ck, ck.zyx, d > ${z.th}), u.mode == ${k}u); }\n`; }
+  s += `  col = select(col, vec3f(0.02, 0.03, 0.05), inside);
+  col = select(col, col * (0.5 + 0.5 * helper(fract(nu * 0.3), inside)), u.tex != 0u);
+  return col;
+}
+`;
+  return s;
+}
+
+function daten() {   // value in 24.8 fixed point (bits 0–25), inside bit 31 for a disc, a float in the second channel
+  const a = new Uint32Array(W * H * 2), f = new Float32Array(1), fu = new Uint32Array(f.buffer);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const dx = (x - W * 0.62) / W, dy = (y - H * 0.5) / H, r2 = dx * dx + dy * dy;
+    const nu = 5 + 900 * r2 + 40 * Math.sin(x * 0.11) * Math.cos(y * 0.07);
+    let v = Math.min(0x03FFFFFF, Math.max(0, Math.round(nu * 256)));
+    if (r2 < 0.012) v |= 0x80000000;
+    f[0] = 0.5 + 0.5 * Math.sin(x * 0.05 + y * 0.031);
+    a[2 * (y * W + x)] = v >>> 0; a[2 * (y * W + x) + 1] = fu[0];
+  }
+  return a;
+}
+
+async function main() {
+  if (!navigator.gpu) { info.textContent = 'navigator.gpu is missing: WebGPU is not available here.'; return; }
+  const adapter = await navigator.gpu.requestAdapter();
+  if (!adapter) { info.textContent = 'No WebGPU adapter.'; return; }
+  const ai = adapter.info || {};
+  ergebnis.adapter = { vendor: ai.vendor, architecture: ai.architecture, device: ai.device, description: ai.description };
+  const device = await adapter.requestDevice();
+  info.textContent = `Adapter: ${[ai.vendor, ai.architecture, ai.device, ai.description].filter(Boolean).join(' · ') || '(no info)'}\nUser agent: ${navigator.userAgent}\nRunning …`;
+
+  const tex = device.createTexture({ size: [W, H], format: 'rg32uint', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST });
+  device.queue.writeTexture({ texture: tex }, daten(), { bytesPerRow: W * 8 }, [W, H]);
+  const ub = device.createBuffer({ size: 16, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+  const ziel = device.createTexture({ size: [W, H], format: 'rgba8unorm', usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC });
+  const buf = device.createBuffer({ size: W * H * 4, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
+  const bgl = device.createBindGroupLayout({ entries: [
+    { binding: 0, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: 'uint' } },
+    { binding: 1, visibility: GPUShaderStage.FRAGMENT, buffer: { type: 'uniform' } } ] });
+  const bg = device.createBindGroup({ layout: bgl, entries: [{ binding: 0, resource: tex.createView() }, { binding: 1, resource: { buffer: ub } }] });
+  const layout = device.createPipelineLayout({ bindGroupLayouts: [bgl] });
+
+  async function pipeline(code) {
+    const mod = device.createShaderModule({ code });
+    const ci = await mod.getCompilationInfo(); const err = ci.messages.filter(m => m.type === 'error');
+    if (err.length) throw new Error('WGSL: ' + err.map(m => m.lineNum + ':' + m.linePos + ' ' + m.message).join('; '));
+    return device.createRenderPipelineAsync({ layout, vertex: { module: mod, entryPoint: 'vs' }, fragment: { module: mod, entryPoint: 'fs', targets: [{ format: 'rgba8unorm' }] }, primitive: { topology: 'triangle-list' } });
+  }
+  async function rendern(p, mode, texStep) {
+    device.queue.writeBuffer(ub, 0, new Uint32Array([mode, texStep, 0, 0]));
+    const enc = device.createCommandEncoder();
+    const pass = enc.beginRenderPass({ colorAttachments: [{ view: ziel.createView(), loadOp: 'clear', storeOp: 'store', clearValue: { r: 1, g: 0, b: 1, a: 1 } }] });
+    pass.setPipeline(p); pass.setBindGroup(0, bg); pass.draw(3); pass.end();
+    enc.copyTextureToBuffer({ texture: ziel }, { buffer: buf, bytesPerRow: W * 4 }, [W, H]);
+    device.queue.submit([enc.finish()]);
+    await buf.mapAsync(GPUMapMode.READ); const px = new Uint8ClampedArray(buf.getMappedRange().slice(0)); buf.unmap();
+    return px;
+  }
+  function vergleichen(a, b) {   // differing pixels (any channel off by more than 1) and how they sit in the 8 × 8 grid
+    let n = 0; const zelle = new Array(64).fill(0);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const i = 4 * (y * W + x);
+      if (Math.abs(a[i] - b[i]) > 1 || Math.abs(a[i + 1] - b[i + 1]) > 1 || Math.abs(a[i + 2] - b[i + 2]) > 1) { n++; zelle[(x & 7) + 8 * (y & 7)]++; }
+    }
+    const jeZelle = W * H / 64, voll = zelle.filter(c => c > 0.9 * jeZelle).length, leer = zelle.filter(c => c === 0).length;
+    const muster = n === 0 ? '–' : voll + leer === 64 ? `${voll} of 64 grid cells (x mod 8, y mod 8) wrong, the others right` : 'irregular';
+    return { n, anteil: n / (W * H), muster };
+  }
+  function bild(titel, px) {
+    const c = document.createElement('canvas'); c.width = W; c.height = H; c.getContext('2d').putImageData(new ImageData(px, W, H), 0, 0);
+    const fig = document.createElement('figure'); const cap = document.createElement('figcaption'); cap.textContent = titel; fig.append(c, cap); return fig;
+  }
+
+  const groessen = [4, 16, 64, 120];   // WGSL allows at most 127 chained else-if
+  for (const N of groessen) {
+    let pIf, pSel;
+    try { [pIf, pSel] = await Promise.all([pipeline(shaderMitIf(N)), pipeline(shaderMitSelect(N))]); }
+    catch (e) { ergebnis.faelle.push({ N, fehler: String(e.message || e) }); zeilen.insertAdjacentHTML('beforeend', `<tr><td>${N}</td><td colspan="4">${String(e.message || e).replace(/</g, '&lt;')}</td><td class="bad">ERROR</td></tr>`); continue; }
+    for (const mode of [0, Math.ceil(N / 2)]) for (const texStep of [0, 1]) {
+      const a = await rendern(pIf, mode, texStep), b = await rendern(pSel, mode, texStep), v = vergleichen(a, b);
+      const ok = v.n === 0;
+      ergebnis.faelle.push({ N, mode, texStep, differing: v.n, share: +v.anteil.toFixed(5), pattern: v.muster, ok });
+      zeilen.insertAdjacentHTML('beforeend', `<tr><td>${N}</td><td>${mode === 0 ? '0 (default path)' : mode}</td><td>${texStep ? 'on' : 'off'}</td><td>${v.n} (${(100 * v.anteil).toFixed(2)} %)</td><td>${v.muster}</td><td class="${ok ? 'ok' : 'bad'}">${ok ? 'PASS' : 'FAIL'}</td></tr>`);
+      if (!ok) { const box = document.createElement('div'); box.className = 'bilder'; box.append(bild(`N=${N}, mode ${mode}, texture ${texStep ? 'on' : 'off'}: if/else`, a), bild('same, select (expected)', b)); bilder.append(box); }
+    }
+  }
+  const alleOk = ergebnis.faelle.every(f => f.ok);
+  info.textContent = `Adapter: ${[ai.vendor, ai.architecture, ai.device, ai.description].filter(Boolean).join(' · ') || '(no info)'}\nUser agent: ${navigator.userAgent}\n` +
+    (alleOk ? 'All cases PASS: branches and select give the same pixels here.' : 'At least one case FAILS: the branching shader gives different pixels than the branch-free one.');
+}
+document.getElementById('kopieren').addEventListener('click', async () => {
+  const t = JSON.stringify(ergebnis, null, 2);
+  try { await navigator.clipboard.writeText(t); document.getElementById('kopiert').textContent = 'Copied.'; }
+  catch { document.getElementById('kopiert').textContent = 'Copy failed; the results are also printed to the console.'; }
+  console.log(t);
+});
+main().catch(e => { info.textContent = 'Error: ' + (e && e.message || e); });
+</script>
+</body>
+</html>
