@@ -8832,6 +8832,14 @@ class GpuRenderer {
   }
   async _varianteBereit(art, k) { if (!this._variante(art, k)) { const e = this.nachPipes.get(art + '|' + Object.values(k).join(',')); if (e && e.laeuft) await e.laeuft; } }
   _leuchtPipes() { const a = this._variante('L', { L_AUSZUG: 1 }), b = this._variante('L', { L_AUSZUG: 0 }); return a && b ? [a, b] : null; }   // Leuchten: Auszug, dann die beiden Weichzeichner
+  variantenAnstossen(cp) {   // die Varianten dieser Einstellung anfordern, ohne zu zeichnen: sobald die Module der Nachbearbeitung stehen, gilt so ohne Lücke „wird übersetzt“ (sonst stünde einen Bildtakt lang „Fertig“ über der leeren Fläche)
+    const post = cp.post || cp, fp = this._cpFeld(post), fe = this._cpFeld(cp), tm = texMaskeAktiv(cp), maske = fe[447] > 0.5;
+    if (!cp.verbund && (nachAktiv(cp) || tm)) this._farbPipe(this._farbEintrag(fe), tm ? 'V1' : 'V0');
+    if (cp.verbund && (tm || maske)) this._farbPipe(this._farbEintrag(fe), tm ? 'V1' : 'V0');
+    if ((nachAktiv(post) || texMaskeAktiv(post)) && this.modP) { this._variante('P', postKonstanten(fp)); if (post.leucht) this._leuchtPipes(); }
+    if (maske && this.modM) this._variante('M', ebeneKonstanten(fe));
+    if (cp.verbund) this._variante('K', verbundKonstanten(cp.verbund));
+  }
   async _nachVariantenBereit(cp) {   // Export und Speichern: auf Nachbearbeitung, Leuchten, Ebenenmaske und Verbund dieser Einstellung warten
     const post = cp.post || cp, fp = this._cpFeld(post), fe = this._cpFeld(cp);
     if ((nachAktiv(post) || texMaskeAktiv(post)) && this.modP) { await this._varianteBereit('P', postKonstanten(fp)); if (post.leucht) { await this._varianteBereit('L', { L_AUSZUG: 1 }); await this._varianteBereit('L', { L_AUSZUG: 0 }); } }
@@ -10963,7 +10971,7 @@ async function initRenderer() {
   }
   $('fatal').hidden = true; neustartVersuche = 0;
   badge.hidden = true; badge.textContent = ''; badge.className = 'badge ' + renderer.kind;   // läuft alles, braucht es keinen Namen: es gibt nur einen Renderer
-  renderer.onBereit = () => { lastStatusKey = ''; colorDirty = true; ebenenMaskenVeraltet(); requestFrame(); };   // die Fassung des Farbpasses mit Nachbearbeitung ist übersetzt – umfärben
+  renderer.onBereit = () => { if (renderer.variantenAnstossen && hasImage && !renderer.nachFehler) renderer.variantenAnstossen(praesentParams()); lastStatusKey = ''; colorDirty = true; ebenenMaskenVeraltet(); requestFrame(); };   // die Fassung des Farbpasses mit Nachbearbeitung ist übersetzt – umfärben
   renderer.onFormelBereit = () => { lastStatusKey = ''; requestFrame(); };
   renderer.onFarbeBereit = () => { lastStatusKey = ''; colorDirty = true; requestFrame(); };   // eine Farbpass-Variante steht: neu einfärben, die Schleife rechnet weiter   // die Vorlage der Formel steht: die Schleife rechnet weiter
   renderer.onNachFehler = text => notify('status.post-error', text);   // die Fassung ließ sich nicht übersetzen: sagen, statt still ohne Ebenen zu zeichnen

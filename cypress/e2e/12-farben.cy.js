@@ -197,7 +197,7 @@ describe('Farbe und Farbschema-Editor', () => {
   });
 
   it('Verläufe Relief, Doppelt logarithmisch und Logarithmisch + Relief: Adresse, Neurender, andere Bilder', () => {
-    cy.get('#mapping option').should('have.length', 30);   // mit Domain Coloring, Kubikwurzel, Arkustangens, doppelt logarithmisch, Sinuswellen;   // 24 einwertige (mit dem eigenen Sammler; „Histogramm“ ist jetzt die Tabelle der Kurve) plus „Werte kombinieren“ (mit Kurve, Ursprungsnähe, Gesamtdrehung, Periodengebiete, Spiralfalle, logmap, äußerer Winkel) plus „Werte kombinieren“
+    cy.get('#mapping option').should('have.length', 32);   // mit Domain Coloring, Kubikwurzel, Arkustangens, doppelt logarithmisch, Sinuswellen, den zwei direkten Fallen;   // 24 einwertige (mit dem eigenen Sammler; „Histogramm“ ist jetzt die Tabelle der Kurve) plus „Werte kombinieren“ (mit Kurve, Ursprungsnähe, Gesamtdrehung, Periodengebiete, Spiralfalle, logmap, äußerer Winkel) plus „Werte kombinieren“
     cy.rerender(() => cy.pickOption('mapping', 2));
     cy.get('#logStufenRow').should('not.have.attr', 'hidden');       // die Stufen gehören zur logarithmischen Färbung
     for (const st of [2, 3, 4, 5, 6, 10]) {                          // früher fünf eigene Färbungen, heute ein Regler (bis 10)
@@ -367,6 +367,7 @@ describe('Farbe und Farbschema-Editor', () => {
   });
 
   it('Farbversatz steht im Link und kommt beim Laden zurück', () => {
+    cy.location('hash', { timeout: 20000 }).should('match', /[#&]ca=/);   // erst den Farbanker abwarten: er rechnet den Versatz nach dem ersten Bild einmal um
     cy.setRange('offset', 500);
     cy.expectHash('off', '0.500');
     cy.location('hash').then(h => {
@@ -1042,8 +1043,8 @@ describe('Färbungen nach Bahnstatistik', () => {
     const B = 'mode=mandel&re=-0.9&im=0.6&z=1&it=400';
     const deutlich = (a, b, text) => cy.task('pngDiff', { a: a.file, b: b.file, region: IMAGE_REGION }).then(d => expect(d.meanDiff, text).to.be.greaterThan(1.5));   // leiser als „anders“: manche Arten zeichnen fein
     cy.visitApp(B);
-    cy.get('#textur option').should('have.length', 29);   // Keine und 28 Arten (mit Karte, eigenem Ausdruck, Rosette, Feldlinien, Lagrange, Tropfen, Entropie, Äquikontinuität)
-    cy.get('#textur4 option').should('have.length', 29);
+    cy.get('#textur option').should('have.length', 32);   // Keine und 31 Arten (mit Karte, eigenem Ausdruck, Rosette, Feldlinien, Lagrange, Tropfen, Entropie, Äquikontinuität, Itinerar, Gitterwinkel, Gitter-Ungleichgewicht)
+    cy.get('#textur4 option').should('have.length', 32);
     cy.shotStats('arten-ohne').then(ohne => {
       for (const art of [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]) {
         cy.visitApp(B + '&tx=' + art + '&ts=0.8');
