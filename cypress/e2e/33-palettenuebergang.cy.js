@@ -1,0 +1,72 @@
+// Palettenübergang: eine zweite Palette, in die das Bild hineinwächst, während die Palettenstelle fortschreitet.
+// Spanne 0 ist die Vorgabe und heißt: kein Übergang, es bleibt bei der einen Palette und am alten Bild.
+import { IMAGE_REGION } from '../support/commands';
+
+describe('Palettenübergang', () => {
+  const B = 'mode=mandel&re=-0.7462586155&im=0.1111580353&z=5.6e4&it=400&ca=off';
+  const diff = (a, b) => cy.task('pngDiff', { a: a.file, b: b.file, region: IMAGE_REGION });
+
+  it('ohne Spanne gibt es keinen Übergang; zweite Palette und Beginn erscheinen erst mit ihr', () => {
+    cy.visitApp(B);
+    cy.pane('palette');
+    cy.get('#palPfadSpanne').should('have.value', '0');
+    cy.rowShown('palZweiRow', false); cy.rowShown('palPfadBeginnRow', false);
+    cy.expectHash('pps', null); cy.expectHash('ppv', null); cy.expectHash('ppb', null);
+    cy.rerender(() => cy.get('#palPfadSpanne').invoke('val', '6').trigger('input'));
+    cy.expectHash('pps', '6');
+    cy.rowShown('palZweiRow', true); cy.rowShown('palPfadBeginnRow', true);
+    cy.rerender(() => cy.get('#palPfadSpanne').invoke('val', '0').trigger('input'));
+    cy.expectHash('pps', null);
+    cy.rowShown('palZweiRow', false);
+  });
+
+  it('zweite Palette und Beginn stehen im Link und überstehen das Laden, Zurücksetzen räumt sie weg', () => {
+    cy.visitApp(B + '&pps=6&pp2=4&ppb=-2');
+    cy.pane('palette');
+    cy.get('#palPfadSpanneVal').should('have.value', '6,00');
+    cy.get('#palPfadBeginnVal').should('have.value', '-2,00');
+    cy.get('#palZwei').should('have.value', '4');
+    cy.expectHash('pp2', null); cy.expectHash('ppv', v => expect(v, 'die Zielpalette mit ihren Werten, ohne Nummer').to.match(/^~[1q]~/));
+    cy.location('hash').then(h => { cy.visitApp(h); cy.pane('palette'); cy.get('#palZwei').should('have.value', '4'); cy.location('hash').should('eq', h); });   // aus den Werten: dieselbe Vorgabe
+    cy.revealInDetails('reset'); cy.get('#reset').click();
+    cy.expectHash('pps', null); cy.expectHash('ppv', null); cy.expectHash('ppb', null);
+  });
+
+  it('der Übergang färbt anders, die zweite Palette zählt,', () => {
+    cy.visitApp(B); cy.waitRender();
+    cy.shotStats('pp-ohne').then(ohne => {
+      cy.visitApp(B + '&pps=6&pp2=4'); cy.waitRender();
+      cy.shotStats('pp-mit').then(mit => {
+        diff(ohne, mit).then(d => expect(d.meanDiff, 'die zweite Palette übernimmt nach hinten').to.be.greaterThan(3));
+        cy.visitApp(B + '&pps=6&pp2=9'); cy.waitRender();
+        cy.shotStats('pp-andere').then(a => diff(mit, a).then(d => expect(d.meanDiff, 'eine andere zweite Palette färbt anders').to.be.greaterThan(3)));
+      });
+      cy.visitApp(B + '&pps=0'); cy.waitRender();   // ausdrücklich ohne Spanne: dasselbe Bild
+      cy.shotStats('pp-null').then(nul => diff(ohne, nul).then(d => expect(d.meanDiff, 'ohne Spanne bleibt das alte Bild').to.be.lessThan(0.5)));
+    });
+    const H = B + '&pps=6&pp2=4&ppb=-2';
+    cy.visitApp(H); cy.waitRender();
+    cy.shotStats('pp-gpu').then(gpu => {
+      cy.waitRender();
+    });
+  });
+
+  it('eine Zielpalette aus dem Link, die keiner Vorgabe gleicht, gilt als eigene und bleibt im Link', () => {
+    const PPV = encodeURIComponent('~1~0.000:ff2020,0.500:20ff20');
+    cy.visitApp(B + '&pps=6&ppv=' + PPV); cy.pane('palette');
+    cy.get('#palZwei').should('have.value', 'link');
+    cy.get('#palZwei option:selected').should('have.text', 'Aus dem Link');
+    cy.expectHash('ppv', v => expect(v).to.contain('ff2020'));
+    cy.pickOption('palZwei', 4);   // eine Vorgabe gewählt: der Eintrag aus dem Link verschwindet
+    cy.get('#palZwei option[value="link"]').should('not.exist');
+    cy.expectHash('ppv', v => expect(v).to.not.contain('ff2020'));
+  });
+
+  it('der Übergang wirkt auch mit vorgefilterter Palette (gemitteltes Nachschlagen)', () => {
+    cy.visitApp(B + '&pf=1'); cy.waitRender();
+    cy.shotStats('pp-vf-ohne').then(ohne => {
+      cy.visitApp(B + '&pf=1&pps=6&pp2=4'); cy.waitRender();
+      cy.shotStats('pp-vf-mit').then(mit => diff(ohne, mit).then(d => expect(d.meanDiff, 'auch die gemittelte Palette folgt dem Übergang').to.be.greaterThan(3)));
+    });
+  });
+});
